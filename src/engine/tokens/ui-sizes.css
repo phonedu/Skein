@@ -6,7 +6,7 @@
 :root {
   /* The bar's own row; on a phone or tablet the status bar sits above it,
      inside the bar (--safe-top, mobile/styles/base.css). */
-  --window-bar-row: 40px;
+  --window-bar-row: 44px;
   --window-bar-height: calc(var(--safe-top, 0px) + var(--window-bar-row));
   /* Room above a tab in the bar: the tab is the bar less it. */
   --ui-tab-lift: 8px;
@@ -46,7 +46,7 @@
 }
 
 :root[data-ui-size="small"]:not([data-window-chrome="mobile"]) {
-  --window-bar-row: 36px;
+  --window-bar-row: 40px;
   --ui-tab-lift: 6px;
   --island-space: 8px;
   --control-height-sm: 22px;

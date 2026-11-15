@@ -47,4 +47,13 @@ describe("the interface's type scale", () => {
     expect(large["--text-caption"]).toBe("13px");
   });
 
+  it("the window bar row joins the same sheet: 44 Medium, 40 Small, 48 Large", () => {
+    expect(preset(":root {")["--window-bar-row"]).toBe("44px");
+    expect(preset(':root[data-ui-size="small"]')["--window-bar-row"]).toBe(
+      "40px",
+    );
+    expect(preset(':root[data-ui-size="large"]')["--window-bar-row"]).toBe(
+      "48px",
+    );
+  });
 });
