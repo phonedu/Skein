@@ -32,7 +32,7 @@
   gap: 8px;
   width: 100%;
   /* The small control height: a long list stays dense. */
-  min-height: 26px;
+  min-height: 28px;
   padding: 2px 8px 2px var(--tree-indent);
   background: none;
   border: none;
@@ -167,7 +167,7 @@
    tells the folder's length. */
 .tree-rows-more {
   /* --row: a drawn row's measured height, which text size changes. */
-  height: calc(var(--rows) * var(--row, 26px));
+  height: calc(var(--rows) * var(--row, 28px));
 }
 
 .file-tree-dragging .tree-row {
