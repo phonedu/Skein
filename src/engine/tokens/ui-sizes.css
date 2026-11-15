@@ -11,10 +11,10 @@
   /* Room above a tab in the bar: the tab is the bar less it. */
   --ui-tab-lift: 8px;
   --island-space: 10px;
-  --control-height-sm: 26px;
-  --control-height: 30px;
+  --control-height-sm: 28px;
+  --control-height: 34px;
   /* The small round icon button: a panel's tools (.tx-icon-button). */
-  --icon-button-s: 26px;
+  --icon-button-s: 28px;
   /* A tree's step in, a level at a time: files, the outline, plugin lists. */
   --tree-step: 14px;
   /* From a pane's edge to its text: its title's, and its rows'. A scrolling
@@ -49,9 +49,9 @@
   --window-bar-row: 40px;
   --ui-tab-lift: 6px;
   --island-space: 8px;
-  --control-height-sm: 22px;
-  --control-height: 26px;
-  --icon-button-s: 22px;
+  --control-height-sm: 24px;
+  --control-height: 30px;
+  --icon-button-s: 24px;
   --tree-step: 12px;
   --pane-inset: 12px;
   --pane-edge: 4px;
@@ -74,7 +74,7 @@
   --ui-tab-lift: 10px;
   --island-space: 12px;
   --control-height-sm: 32px;
-  --control-height: 36px;
+  --control-height: 40px;
   --icon-button-s: 32px;
   --tree-step: 16px;
   --pane-inset: 20px;

@@ -56,4 +56,17 @@ describe("the interface's type scale", () => {
       "48px",
     );
   });
+
+  it("the controls are 34 high (sm 28), the boards' button, one step down at Small", () => {
+    const medium = preset(":root {");
+    expect(medium["--control-height"]).toBe("34px");
+    expect(medium["--control-height-sm"]).toBe("28px");
+    expect(medium["--icon-button-s"]).toBe("28px");
+    const small = preset(':root[data-ui-size="small"]');
+    expect(small["--control-height"]).toBe("30px");
+    expect(small["--control-height-sm"]).toBe("24px");
+    const large = preset(':root[data-ui-size="large"]');
+    expect(large["--control-height"]).toBe("40px");
+    expect(large["--control-height-sm"]).toBe("32px");
+  });
 });
