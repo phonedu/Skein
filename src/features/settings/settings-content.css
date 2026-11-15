@@ -1,0 +1,32 @@
+/* The settings dialog's content column (spec Task 5): pages scroll under
+   the board's group headings; legacy pages render unchanged inside. */
+
+.settings-dialog-content {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.settings-legacy-page {
+  min-width: 0;
+}
+
+.settings-page-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-page-group-title {
+  min-height: 24px;
+  margin: 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--ui-muted);
+  display: flex;
+  align-items: center;
+}
+
+.settings-page-group-body {
+  min-width: 0;
+}
