@@ -1,47 +1,48 @@
 import type { SearchEntry } from "./settings-search";
-import { SHOW_SIDEBAR_TAB_EVENT } from "../utils/events";
-import { tabInUse, windowTabs } from "../engine/layout/store";
 
 /**
- * Settings on the desktop: its pages listed in the sidebar, the one picked
- * shown in the window's Settings tab (one tab, its page replaced). This is
- * what ties the two: the page the tab shows, for the list to mark; and a
- * request to show one, for the window to bring the tab to it.
+ * Settings on the desktop: one dialog floating over the window (the board
+ * ui-d-settings), opened from ⌘, the rail's gear or the app menu. A page
+ * picked in its list shows in its content column; a plugin's page shows
+ * there too. This is what ties the two: the dialog's state, and a request
+ * to open it at a page (a search result in the sidebar, a plugin's card).
  */
-let shown = "general";
+/** The prefix a plugin's page carries in the dialog's page id. */
+export const PLUGIN_PAGE_PREFIX = "plugin:";
+
+export function pluginPageId(id: string): string {
+  return PLUGIN_PAGE_PREFIX + id;
+}
+
+export interface SettingsDialogOpen {
+  page: string;
+  /** A row to go to there - a search result's. */
+  jump?: SearchEntry;
+  /** Counts requests: one made while the dialog is open goes to its page
+   *  from wherever it was. */
+  request: number;
+}
+
+let dialog: SettingsDialogOpen | null = null;
+let requests = 0;
 const listeners = new Set<() => void>();
 
-export function settingsPageShown(): string {
-  return shown;
+export function settingsDialogOpen(): SettingsDialogOpen | null {
+  return dialog;
 }
 
-export function setSettingsPageShown(id: string): void {
-  if (id === shown) return;
-  shown = id;
+export function showSettingsDialog(page = "general", jump?: SearchEntry): void {
+  dialog = { page, jump, request: ++requests };
   for (const listener of listeners) listener();
 }
 
-/** Whether the sidebar shows the list now (its panel mounted). */
-let listShown = false;
-
-export function settingsListShown(): boolean {
-  return listShown;
-}
-
-export function setSettingsListShown(on: boolean): void {
-  if (on === listShown) return;
-  listShown = on;
+export function closeSettingsDialog(): void {
+  if (!dialog) return;
+  dialog = null;
   for (const listener of listeners) listener();
 }
 
-/** The sidebar, open on Settings' pages. */
-export function showSettingsList(): void {
-  window.dispatchEvent(
-    new CustomEvent(SHOW_SIDEBAR_TAB_EVENT, { detail: "settings" }),
-  );
-}
-
-export function onSettingsPageShown(listener: () => void): () => void {
+export function onSettingsDialogChange(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
@@ -60,13 +61,4 @@ export function openSettingsPage(page: string, jump?: SearchEntry): void {
       detail: { page, jump },
     }),
   );
-}
-
-/** ⌘F is Settings' search while the Settings tab is the one in use. */
-export function settingsInUse(): boolean {
-  const tab = windowTabs<{
-    id: string;
-    view?: { kind: string; view: string } | null;
-  }>().find((t) => t.id === tabInUse());
-  return tab?.view?.kind === "page" && tab.view.view === "settings";
 }

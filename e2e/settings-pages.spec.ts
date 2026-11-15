@@ -1,8 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { emit, openApp, pasteMarkdown } from "./helpers";
 
-// Settings: the list of pages in the sidebar (the gear, ⌘,), one page at a
-// time in the one Settings tab; every way in lands there.
+// Settings: one dialog over the window (the board ui-d-settings) - the pages
+// in its nav column, the open page in its content column; every way in lands
+// there.
 
 const PAGES = [
   "general",
@@ -19,9 +20,13 @@ const PAGES = [
   "about",
 ];
 
-const gear = (page: Page) => page.locator(".activity-rail-settings");
+const dialog = (page: Page) => page.locator(".settings-dialog");
+const nav = (page: Page) => dialog(page).locator(".settings-nav");
+const content = (page: Page) => dialog(page).locator(".settings-content-host");
+const row = (page: Page, name: string) =>
+  nav(page).getByRole("button", { name, exact: true });
 const tabs = (page: Page) => page.locator(".tab-pill");
-const sidebarTitle = (page: Page) => page.locator(".sidebar-title");
+const gear = (page: Page) => page.locator(".activity-rail-settings");
 
 async function open(page: Page) {
   const errors: string[] = [];
@@ -31,32 +36,35 @@ async function open(page: Page) {
   return errors;
 }
 
-test("⌘, opens the list in the sidebar and the Settings tab; the gear toggles the list", async ({
+test("⌘, opens the dialog at General; Escape and the close button shut it; the gear opens it", async ({
   page,
 }) => {
   await open(page);
   await emit(page, "menu-settings");
-  await expect(tabs(page)).toHaveText(["未命名", "设置：通用"]);
-  await expect(sidebarTitle(page)).toHaveText("设置");
-  await expect(gear(page)).toHaveAttribute("aria-pressed", "true");
-  await gear(page).click();
-  await expect(gear(page)).toHaveAttribute("aria-pressed", "false");
-  await expect(tabs(page)).toHaveText(["未命名", "设置：通用"]);
-  await gear(page).click();
-  await expect(sidebarTitle(page)).toHaveText("设置");
-  // Open: ⌘, brings it forward where it was. Closed: back at General.
-  await page.getByRole("button", { name: "外观" }).first().click();
-  await expect(tabs(page).nth(1)).toHaveText("设置：外观");
-  await tabs(page).first().click();
-  await emit(page, "menu-settings");
-  await expect(tabs(page).nth(1)).toHaveText("设置：外观");
-  await emit(page, "menu-close-tab");
+  await expect(dialog(page)).toBeVisible();
+  await expect(row(page, "通用")).toHaveAttribute("aria-current", "page");
+  await expect(content(page).locator(".settings-row").first()).toBeVisible();
+  // Settings is not a tab any more: the document stays the only one.
   await expect(tabs(page)).toHaveText(["未命名"]);
+
+  await page.keyboard.press("Escape");
+  await expect(dialog(page)).toHaveCount(0);
+
+  await gear(page).click();
+  await expect(dialog(page)).toBeVisible();
+  await dialog(page).getByRole("button", { name: "关闭" }).click();
+  await expect(dialog(page)).toHaveCount(0);
+
+  // Open, ⌘, keeps the page it shows; shut, it opens at General.
+  await gear(page).click();
+  await row(page, "外观").click();
+  await expect(row(page, "外观")).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("Escape");
   await emit(page, "menu-settings");
-  await expect(tabs(page)).toHaveText(["未命名", "设置：通用"]);
+  await expect(row(page, "通用")).toHaveAttribute("aria-current", "page");
 });
 
-test("every page draws, in the one tab, without an error", async ({ page }) => {
+test("every page draws, in the dialog, without an error", async ({ page }) => {
   const errors = await open(page);
   await emit(page, "menu-settings");
   for (const id of PAGES) {
@@ -67,39 +75,59 @@ test("every page draws, in the one tab, without an error", async ({ page }) => {
         ),
       id,
     );
-    await expect(page.locator(".settings-tab-page > *").first()).toBeVisible();
-    await expect(tabs(page)).toHaveCount(2);
+    await expect(content(page).locator(":scope > *").first()).toBeVisible();
+    await expect(tabs(page)).toHaveCount(1);
   }
   expect(errors).toEqual([]);
 });
 
-test("groups fold, and open on the page shown", async ({ page }) => {
+test("groups fold in the nav, and a page opens where the list says", async ({
+  page,
+}) => {
   await open(page);
   await emit(page, "menu-settings");
-  const nav = page.locator(".sidebar");
-  await expect(nav.getByText("图片", { exact: true })).toHaveCount(0);
-  await nav.getByText("编辑", { exact: true }).click();
-  await nav.getByText("图片", { exact: true }).click();
-  await expect(nav.getByText("图片", { exact: true })).toBeVisible();
+  // Folded until opened: the editing pages are not in the list yet.
+  await expect(nav(page).getByText("图片", { exact: true })).toHaveCount(0);
+  await nav(page).getByRole("button", { name: "编辑", exact: true }).click();
+  await expect(nav(page).getByText("图片", { exact: true })).toBeVisible();
+  await nav(page).getByRole("button", { name: "图片", exact: true }).click();
+  await expect(row(page, "图片")).toHaveAttribute("aria-current", "page");
 });
 
-test("Check for Updates opens About; a plugin's settings open its page's tab", async ({
+test("search at the nav's top jumps to a row on another page", async ({
+  page,
+}) => {
+  await open(page);
+  await emit(page, "menu-settings");
+  await page.getByPlaceholder("搜索设置").fill("界面大小");
+  const result = content(page).locator(".settings-search-result", {
+    hasText: "界面大小",
+  });
+  await expect(result.first()).toBeVisible();
+  await result.first().click();
+  // The page the row is on opens, with the row in front of the reader.
+  await expect(row(page, "外观")).toHaveAttribute("aria-current", "page");
+  await expect(
+    content(page).locator(".settings-row", { hasText: "界面大小" }),
+  ).toBeVisible();
+});
+
+test("Check for Updates opens About; a plugin's settings open its page in the dialog", async ({
   page,
 }) => {
   await open(page);
   await emit(page, "menu-check-updates");
-  await expect(page.locator(".settings-about-card-icon")).toBeVisible();
+  await expect(row(page, "关于")).toHaveAttribute("aria-current", "page");
+  await expect(
+    content(page).locator(".settings-about-card-icon").first(),
+  ).toBeVisible();
   await emit(page, "menu-plugin-command", "plugin-settings:cloud-sync");
-  await expect(tabs(page).last()).toContainText("插件：");
+  await expect(content(page)).toHaveAttribute(
+    "data-settings-page",
+    "plugin:cloud-sync",
+  );
   await emit(page, "menu-manage-plugins");
-  await expect(sidebarTitle(page)).toHaveText("插件");
-});
-
-test("the list's last item goes to the plugins panel", async ({ page }) => {
-  await open(page);
-  await emit(page, "menu-settings");
-  await page.locator(".settings-nav-away").click();
-  await expect(sidebarTitle(page)).toHaveText("插件");
+  await expect(page.locator(".sidebar-title")).toHaveText("插件");
 });
 
 test("installed themes show as the store's do", async ({ page }) => {
@@ -118,21 +146,23 @@ test("installed themes show as the store's do", async ({ page }) => {
       }),
     ),
   );
-  const mine = page.locator('[data-user-theme="mine"]');
+  const mine = page.locator('.settings-content-host [data-user-theme="mine"]');
   await expect(mine).toHaveClass(/theme-gallery-item/);
   await expect(mine.locator(".theme-gallery-preview")).toBeVisible();
 });
 
-test("squeezed beside a document in a small window, Settings still shows its page", async ({
+test("a small window keeps the dialog whole and its page drawn", async ({
   page,
 }) => {
-  // Its list open in the sidebar by hand: nothing steps aside for it.
   await page.setViewportSize({ width: 900, height: 700 });
   await openApp(page, { settings: { menuBarShown: false } });
   await emit(page, "menu-settings");
-  await emit(page, "menu-split-right");
-  await expect(page.locator(".settings-tab-page")).toBeVisible();
-  await expect(page.locator(".settings-row").first()).toBeVisible();
+  const box = (await dialog(page).boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(900);
+  expect(box.y + box.height).toBeLessThanOrEqual(700);
+  await expect(content(page).locator(".settings-row").first()).toBeVisible();
 });
 
 test("first-line indent sets in the document's paragraphs, not a list's", async ({

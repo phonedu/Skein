@@ -12,8 +12,8 @@ import { hasDocumentsList } from "../platform/capabilities";
 import {
   CreateTabPage,
   PluginTabPage,
+  SettingsDialogLayer,
   SettingsLayer,
-  SettingsTabPage,
 } from "./SettingsLayer";
 import {
   PageTabProvider,
@@ -121,7 +121,7 @@ function App() {
   const tabsInBar = useTabsInBar(zenMode, showTabBar);
   const tabRow = tabsInBar || !zenMode ? "bar" : undefined;
 
-  // What Settings needs, as a sheet or as a tab.
+  // What Settings needs, as the desktop's dialog or the iPad's sheet.
   const settingsProps = {
     onOpenFile: (path: string) => void openFile(path),
     onFilesDeleted: skillFilesDeleted,
@@ -132,12 +132,12 @@ function App() {
       .filter((c) => !c.id.startsWith("textus."))
       .map((c) => ({ id: c.id, title: c.title(t), shortcut: c.shortcut })),
   };
+  // Settings is the dialog since the Base UI pass; a tab restored from before
+  // it (the layout saves paths) has nothing to draw.
   const renderPage = (page: AppPage, request: PageRequest | null) =>
     page === "ai" ? (
       <AiTab conversation={conversationIn(request)} />
-    ) : page === "settings" ? (
-      <SettingsTabPage request={request} {...settingsProps} />
-    ) : page === "create" ? (
+    ) : page === "settings" ? null : page === "create" ? (
       <CreateTabPage t={t} />
     ) : (
       <PluginTabPage request={request} t={t} />
@@ -241,6 +241,7 @@ function App() {
           />
 
           <SettingsLayer opening={settingsOpening} {...settingsProps} />
+          <SettingsDialogLayer opening={settingsOpening} {...settingsProps} />
 
           <ClosePrompt
             open={!!pendingClose}

@@ -2,13 +2,24 @@
    panel over the window. Sizes are base units the build leaves as written;
    the dialog's own frame grows by --chrome-scale (design-language 5.6). */
 
+/* Base UI's parts are headless: it draws neither the dim nor the panel's
+   place. Both are fixed over the window, the panel above the dim in the
+   DOM's order, centred by its margins. */
 .settings-dim {
-  background: rgb(0 0 0 / 24%);
+  position: fixed;
+  inset: 0;
+  background: var(--ui-overlay);
 }
 
 .settings-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
   width: calc(880px * var(--chrome-scale, 1));
   height: calc(556px * var(--chrome-scale, 1));
+  /* Never past the window's edge: a small window keeps the panel whole. */
+  max-width: calc(100vw - var(--space-6));
+  max-height: calc(100vh - var(--space-6));
   border-radius: var(--shape-m);
   box-shadow: var(--shadow-dialog);
   background: var(--ui-surface);

@@ -49,6 +49,13 @@ describe("the settings dialog shell", () => {
   it("the sheet is the board's 880×556, at the interface's scale", () => {
     expect(css).toContain("calc(880px * var(--chrome-scale, 1))");
     expect(css).toContain("calc(556px * var(--chrome-scale, 1))");
+    // Clamped to the window: a small one keeps the panel whole.
+    expect(css).toContain("max-width: calc(100vw");
+    expect(css).toContain("max-height: calc(100vh");
+    // Base UI draws neither the panel's place nor the dim: both are fixed
+    // over the window, the panel above the dim (later in the portal).
+    expect(css).toContain("position: fixed");
+    expect(css).toContain("inset: 0");
     // The board's radius 18 and shadow 0 34px 80px land on the nearest
     // tokens; no raw values may appear instead.
     expect(css).toContain("var(--shape-m)");

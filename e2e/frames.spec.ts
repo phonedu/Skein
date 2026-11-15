@@ -30,6 +30,13 @@ async function open(page: Page, width = 1200) {
 const aiButton = (page: Page) =>
   page.getByRole("button", { name: "Textus AI" }).first();
 
+/** The Create tab: a page tab of the window's own, like Settings was before
+ *  its dialog. */
+const openCreate = (page: Page) =>
+  page.evaluate(() =>
+    window.dispatchEvent(new CustomEvent("textus-open-create")),
+  );
+
 /** The islands on screen now, named sheet0, row0, sheet1… for a recording. */
 async function islandsNow(page: Page) {
   return {
@@ -144,15 +151,16 @@ test("opening the AI from a document, its island grows from nothing as the docum
   expectIslandGrewIn("a. AI from a document", frames);
 });
 
-test("opening the AI with only Settings open, its island grows from nothing as Settings' gives way @perf", async ({
+test("opening the AI with only the Create tab open, its island grows from nothing as Create's gives way @perf", async ({
   page,
 }) => {
   await open(page);
-  await emit(page, "menu-settings");
+  await openCreate(page);
+  await settled(page);
   const doc = page.locator(".tab-pill").filter({ hasText: "未命名" });
   await doc.click();
   await doc.locator(".tab-pill-close").click();
-  await expect(page.locator(".tab-pill")).toHaveText(["设置：通用"]);
+  await expect(page.locator(".tab-pill")).toHaveText(["创造"]);
   await settled(page);
   const frames = await recordFrames(
     page,
@@ -164,7 +172,7 @@ test("opening the AI with only Settings open, its island grows from nothing as S
     },
     () => aiButton(page).click(),
   );
-  expectIslandGrewIn("b. AI from Settings alone", frames);
+  expectIslandGrewIn("b. AI from Create alone", frames);
 });
 
 for (const width of [1200, 640]) {

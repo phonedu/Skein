@@ -1,6 +1,7 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { Select } from "@base-ui/react/select";
 import { Switch } from "@base-ui/react/switch";
+import { useSettingsRowLabel } from "./settings-row";
 import "./settings-controls.css";
 
 /**
@@ -20,6 +21,7 @@ export function SettingsSelect(props: {
   options: readonly SettingsOption[];
   onChange: (value: string) => void;
 }) {
+  const labelId = useSettingsRowLabel();
   return (
     <Select.Root
       items={props.options}
@@ -28,7 +30,7 @@ export function SettingsSelect(props: {
         if (typeof value === "string") props.onChange(value);
       }}
     >
-      <Select.Trigger className="settings-pill">
+      <Select.Trigger className="settings-pill" aria-labelledby={labelId}>
         <Select.Value />
         <Select.Icon className="settings-pill-chev">
           <Chevron />
@@ -72,9 +74,11 @@ export function SettingsSwitch(props: {
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const labelId = useSettingsRowLabel();
   return (
     <Switch.Root
       className={"settings-switch" + (props.checked ? " on" : "")}
+      aria-labelledby={labelId}
       checked={props.checked}
       onCheckedChange={(checked) => props.onChange(checked)}
     >
@@ -87,9 +91,11 @@ export function SettingsCheckbox(props: {
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
+  const labelId = useSettingsRowLabel();
   return (
     <Checkbox.Root
       className={"settings-check" + (props.checked ? " on" : "")}
+      aria-labelledby={labelId}
       checked={props.checked}
       onCheckedChange={(checked) => props.onChange(checked)}
     >

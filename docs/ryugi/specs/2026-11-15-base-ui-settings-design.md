@@ -57,12 +57,12 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值，�
 
 ## Base UI 组件映射（本次引四件）
 
-| 画板元素 | Base UI 组件 | 皮肤 |
-| --- | --- | --- |
-| 浮层本体（含焦点困住、Escape、背景 dim） | `Dialog` | surface 底、圆角 18→最近 shape token、0 34px 80px 阴影→`--shadow-*` |
-| srow 右侧的值选择 | `Select` | pill：paper 底 1px line 边，选中 sel 底 accent 字 |
-| 开关行 | `Switch` | iOS 式不透明开关（accent 填充） |
-| 多选行 | `Checkbox` | 画板 .tick 方盒 16px 圆角 5 |
+| 画板元素                                 | Base UI 组件 | 皮肤                                                                |
+| ---------------------------------------- | ------------ | ------------------------------------------------------------------- |
+| 浮层本体（含焦点困住、Escape、背景 dim） | `Dialog`     | surface 底、圆角 18→最近 shape token、0 34px 80px 阴影→`--shadow-*` |
+| srow 右侧的值选择                        | `Select`     | pill：paper 底 1px line 边，选中 sel 底 accent 字                   |
+| 开关行                                   | `Switch`     | iOS 式不透明开关（accent 填充）                                     |
+| 多选行                                   | `Checkbox`   | 画板 .tick 方盒 16px 圆角 5                                         |
 
 需要更多组件（Menu、ScrollArea…）时先回本文档增补，再动 package.json。
 
@@ -121,4 +121,3 @@ Builder check 提出 7 问，分拣如下——**1–5 为已定或我顺手定�
 7. **Escape/IME 兜底**：引擎规矩为上——先包一层补齐（合成中的 Escape 归输入法、
    关最内层）；若 Base UI Dialog 有硬冲突，关闭语义退回引擎自管、Base UI 只留
    焦点困住，§5.5 修订按此措辞。
-

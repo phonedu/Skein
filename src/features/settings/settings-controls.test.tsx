@@ -44,6 +44,25 @@ describe("the settings row", () => {
     expect(screen.getByText("直接进编辑器")).toBeTruthy();
     // The value control reads its current label.
     expect(screen.getByText("编辑器")).toBeTruthy();
+    // And the row's label is its name, for a screen reader.
+    expect(
+      screen.getByRole("combobox", { name: "打开文件时的落点" }),
+    ).toBeTruthy();
+  });
+
+  it("names a switch and a tick box by their row's label too", () => {
+    render(
+      <>
+        <SettingsRow label="自动保存">
+          <SettingsSwitch checked onChange={() => {}} />
+        </SettingsRow>
+        <SettingsRow label="记住窗口">
+          <SettingsCheckbox checked={false} onChange={() => {}} />
+        </SettingsRow>
+      </>,
+    );
+    expect(screen.getByRole("switch", { name: "自动保存" })).toBeTruthy();
+    expect(screen.getByRole("checkbox", { name: "记住窗口" })).toBeTruthy();
   });
 
   it("the row is a hairline-separated line, description under the label", () => {

@@ -13,13 +13,12 @@ import {
   OutlineTabIcon,
   SearchIcon,
   PluginsTabIcon,
-  SettingsIcon,
 } from "../../engine/controls/icons";
 import { Suspense } from "react";
 import { lazyModule } from "../../lazy/lazy-module";
 import { lazyComponent } from "../../lazy/lazy-component";
 import { isDesktopApp } from "../../platform/capabilities";
-import { canOpenFolder, isIOSApp } from "../../platform/capabilities";
+import { canOpenFolder } from "../../platform/capabilities";
 import type { Strings } from "../../i18n/strings";
 import type { OpenFolder } from "../useOpenFolder";
 import type { FileOpenHow } from "../../files/tree-shared";
@@ -168,41 +167,13 @@ const PLUGINS_TAB: SidebarTabDef = {
 
 const pluginsTab = () => (isDesktopApp ? [PLUGINS_TAB] : []);
 
-// Settings' pages, loaded when the gear first opens them.
-const SettingsNavPanel = lazyComponent(
-  lazyModule(
-    "settings-nav",
-    () => import("../../settings/tab/SettingsNavPanel"),
-  ),
-  (m) => m.SettingsNavPanel,
-);
-
-/** Settings: its pages, opened by the rail's gear (desktop); the page
- *  picked shows in the window's Settings tab. */
-const SETTINGS_TAB: SidebarTabDef = {
-  id: "settings",
-  label: (t) => t.settingsTitle,
-  Icon: SettingsIcon,
-  Panel: () => (
-    <Suspense fallback={null}>
-      <SettingsNavPanel />
-    </Suspense>
-  ),
-  railFoot: true,
-};
-const settingsTab = () => (isIOSApp ? [] : [SETTINGS_TAB]);
-
 /** The first tab, Files: where the sidebar opens with nothing remembered. */
 export const DEFAULT_SIDEBAR_TAB = "tree";
 
 /** Textus's own tabs (Files, Outline, Search, Plugins): always first,
  *  apart from the ones plugins add. */
 export function isOwnTab(id: string): boolean {
-  return (
-    id === PLUGINS_TAB.id ||
-    id === SETTINGS_TAB.id ||
-    BUILT_IN.some((tab) => tab.id === id)
-  );
+  return id === PLUGINS_TAB.id || BUILT_IN.some((tab) => tab.id === id);
 }
 reserveSidebarTabIds(isOwnTab);
 
@@ -221,7 +192,7 @@ export function railTabs(): SidebarTabDef[] {
   // Kept in the settings since 1.3.13; before, in this window's UI state.
   const order = loadSettings().activityRailOrder;
   return orderTabs(
-    [...BUILT_IN, ...pluginsTab(), ...settingsTab(), ...addedSidebarTabs()],
+    [...BUILT_IN, ...pluginsTab(), ...addedSidebarTabs()],
     order.length ? order : uiList("sidebarTabOrder"),
   );
 }

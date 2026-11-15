@@ -55,7 +55,7 @@ test("over Settings, a zoom does nothing", async ({ page }) => {
   await page.setViewportSize({ width: 1200, height: 760 });
   await openApp(page, { settings: { menuBarShown: false } });
   await emit(page, "menu-settings");
-  const page_ = (await page.locator(".settings-tab").boundingBox())!;
+  const page_ = (await page.locator(".settings-dialog").boundingBox())!;
   await zoomIn(page, page_.x + page_.width / 2, page_.y + 200);
   const zooms = await page
     .locator("[data-tab-id]")

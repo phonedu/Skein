@@ -1,5 +1,6 @@
-/* The dialog's search field (spec Task 6): a capsule at the nav column's
-   top - §5.4's shape; the legacy field's classes are restyled here, since
+/* The dialog's search field (spec Task 6): at the nav column's top, the
+   board's 10px-cornered field (design-language 6: a search field is a
+   rounded rectangle). The legacy field's classes are restyled here, since
    the old panel's stylesheet is not loaded under the dialog. */
 
 .settings-nav-search {
@@ -10,7 +11,7 @@
 .settings-nav-search .settings-search {
   width: 100%;
   height: var(--control-height-sm);
-  border-radius: var(--shape-pill);
+  border-radius: var(--shape-s);
   border: 1px solid var(--ui-border);
   background: var(--ui-surface);
   color: var(--ui-text);

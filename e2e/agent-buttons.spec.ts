@@ -77,8 +77,15 @@ test("an outside agent's button opens the AI with that agent", async ({
       new CustomEvent("textus:open-settings-page", { detail: { page: "mcp" } }),
     ),
   );
-  const row = page.locator(".settings-row", { hasText: "Coder" });
+  const row = page.locator(".settings-content-host .settings-row", {
+    hasText: "Coder",
+  });
   await expect(row).toBeVisible();
   await row.getByRole("button", { name: "管理" }).click();
-  await expect(page.locator(".tab-pill").last()).toContainText("插件：");
+  // The plugin's page opens in the dialog, not in a tab of its own.
+  await expect(page.locator(".settings-content-host")).toHaveAttribute(
+    "data-settings-page",
+    /^plugin:/,
+  );
+  await expect(page.locator(".tab-pill")).toHaveText(["未命名"]);
 });

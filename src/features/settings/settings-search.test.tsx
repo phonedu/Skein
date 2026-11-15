@@ -97,8 +97,8 @@ function Frame(props: {
 }
 
 describe("the dialog's settings search", () => {
-  it("the field is a capsule at the nav column's top", () => {
-    expect(css).toContain("var(--shape-pill)");
+  it("the field is a rounded rectangle at the nav column's top", () => {
+    expect(css).toContain("var(--shape-s)");
   });
 
   it("typing finds rows across the pages, grouped by page", () => {

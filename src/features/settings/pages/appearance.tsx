@@ -6,7 +6,11 @@ import {
 import type { Strings } from "../../../i18n/strings";
 import { appDrawsWindowFrame } from "../../../platform/window-chrome";
 import { canUseWindows } from "../../../platform/capabilities";
-import { ThemeSection, CustomCssRow } from "../../../settings/sections/theme";
+import {
+  ThemeSection,
+  CustomCssRow,
+  ThemesTab,
+} from "../../../settings/sections/theme";
 import { AdvancedFold } from "../../../settings/sections/controls";
 import { PageGroup } from "../settings-content";
 import { SettingsRow } from "../settings-row";
@@ -78,6 +82,9 @@ export function AppearancePage({ t }: { t: Strings }) {
       <AdvancedFold t={t}>
         <CustomCssRow t={t} />
       </AdvancedFold>
+      {/* The installed themes and the gallery, unchanged (the transition
+          rule): the board repaints the page above, not its store. */}
+      <ThemesTab t={t} />
     </>
   );
 }

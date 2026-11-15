@@ -20,6 +20,13 @@ async function open(page: Page) {
 const aiButton = (page: Page) =>
   page.getByRole("button", { name: "Textus AI" }).first();
 
+/** The Create tab: a page tab of the window's own, like Settings was before
+ *  its dialog. */
+const openCreate = (page: Page) =>
+  page.evaluate(() =>
+    window.dispatchEvent(new CustomEvent("textus-open-create")),
+  );
+
 test("the AI button opens a conversation tab in an island on the right", async ({
   page,
 }) => {
@@ -170,25 +177,25 @@ test("the window's other tabs stay with the document when the AI opens", async (
   page,
 }) => {
   await open(page);
-  await emit(page, "menu-settings");
-  await expect(tabs(page)).toHaveText(["未命名", "设置：通用"]);
+  await openCreate(page);
+  await expect(tabs(page)).toHaveText(["未命名", "创造"]);
   await aiButton(page).click();
   await expect(islands(page)).toHaveCount(2);
   const rows = page.locator(".island-row");
   await expect(rows.first().locator(".tab-pill")).toHaveText([
     "未命名",
-    "设置：通用",
+    "创造",
   ]);
   await expect(rows.last().locator(".tab-pill")).toHaveText(["Textus AI"]);
 });
 
 test("with Alt held, a tab's drag moves its whole island", async ({ page }) => {
   await open(page);
-  await emit(page, "menu-settings");
+  await openCreate(page);
   await aiButton(page).click();
   const rows = page.locator(".island-row");
   await expect(rows).toHaveCount(2);
-  const from = (await tabs(page).filter({ hasText: "设置" }).boundingBox())!;
+  const from = (await tabs(page).filter({ hasText: "创造" }).boundingBox())!;
   const sheet = (await page.locator("section.island").last().boundingBox())!;
   await page.keyboard.down("Alt");
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
@@ -202,10 +209,7 @@ test("with Alt held, a tab's drag moves its whole island", async ({ page }) => {
   await page.mouse.up();
   await page.keyboard.up("Alt");
   await expect(rows.first().locator(".tab-pill")).toHaveText(["Textus AI"]);
-  await expect(rows.last().locator(".tab-pill")).toHaveText([
-    "未命名",
-    "设置：通用",
-  ]);
+  await expect(rows.last().locator(".tab-pill")).toHaveText(["未命名", "创造"]);
 
   // And back, the document's island to the left of the AI's: each first
   // open tab at its island's edge still joins its sheet's square corner.
@@ -222,7 +226,7 @@ test("with Alt held, a tab's drag moves its whole island", async ({ page }) => {
   await page.keyboard.up("Alt");
   await expect(rows.first().locator(".tab-pill")).toHaveText([
     "未命名",
-    "设置：通用",
+    "创造",
   ]);
   await page.waitForTimeout(600);
   const corners = await page.evaluate(() =>
@@ -246,7 +250,7 @@ test("with Alt held, a tab's drag moves its whole island", async ({ page }) => {
   expect(corners.some((c) => c.joins)).toBe(true);
 });
 
-test("with only Settings open, the AI opens beside it and can be used; Settings' island is kept, not rebuilt", async ({
+test("with only the Create tab open, the AI opens beside it and can be used; its island is kept, not rebuilt", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1200, height: 760 });
@@ -254,17 +258,17 @@ test("with only Settings open, the AI opens beside it and can be used; Settings'
     settings: { menuBarShown: false },
     animations: true,
   });
-  await emit(page, "menu-settings");
+  await openCreate(page);
   const doc = tabs(page).filter({ hasText: "未命名" });
   await doc.click();
   await doc.hover();
   await doc.locator(".tab-pill-close").click();
-  await expect(tabs(page)).toHaveText(["设置：通用"]);
-  const settings = page.locator("section.island").first();
-  await settings.evaluate((el) => ((el as HTMLElement).dataset.mark = "kept"));
+  await expect(tabs(page)).toHaveText(["创造"]);
+  const create = page.locator("section.island").first();
+  await create.evaluate((el) => ((el as HTMLElement).dataset.mark = "kept"));
   await aiButton(page).click();
   await expect(page.locator("section.island")).toHaveCount(2);
-  await expect(settings).toHaveAttribute("data-mark", "kept");
+  await expect(create).toHaveAttribute("data-mark", "kept");
   await expect(page.locator(".ai-tab textarea").first()).toBeVisible();
 });
 

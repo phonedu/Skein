@@ -13,7 +13,6 @@ const ALLOWED: Record<string, string> = {
   "ai/chat/chat-history.ts": "paths relative to the app's Documents folder",
   "app/SettingsLayer.tsx": "Settings is a sheet over the window, not a tab",
   "app/frame/WindowControls.tsx": "the title row's menu button",
-  "app/frame/sidebar-tabs.tsx": "the drawer closes over a document it opened",
   "ai/chat/panel/agent-panel.tsx": "a docked panel drawn at its width",
   "document/word-import.ts":
     "Files' security-scoped URLs the converter can't read",

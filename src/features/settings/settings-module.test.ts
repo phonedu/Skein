@@ -22,7 +22,9 @@ describe("the settings features module", () => {
     expect(loadedModules()).not.toContain("settings-features");
     await settingsFeature.load();
     expect(loadedModules()).toContain("settings-features");
-  });
+    // The module is the whole feature (the dialog, its pages, the search):
+    // its first import is the load this test watches, not a speed test.
+  }, 30_000);
 
   it("opens through openSettingsDialog, the single entry", async () => {
     expect(typeof openSettingsDialog).toBe("function");

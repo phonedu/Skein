@@ -20,9 +20,16 @@ export function SettingsContent(props: {
   t: Strings;
   page: SettingsPageDef;
   onOpenPage: (id: string) => void;
+  /** Whether the window has room for the AI's margin. */
+  marginAvailable?: boolean;
   /** Shortcuts pages: what ShortcutsPage needs, passed on by the wiring. */
   fixedShortcuts?: FixedShortcutGroup[];
   pluginCommands?: ShortcutCommand[];
+  /** What the legacy pages take from the window: a document to open, the
+   *  one in front, and the files an action deleted. */
+  onOpenFile?: (path: string) => void;
+  onFilesDeleted?: (paths: string[]) => void;
+  docPath?: string | null;
 }) {
   const { settings, setSettings } = useSettings();
   if (props.page.id === "general") {
@@ -40,8 +47,14 @@ export function SettingsContent(props: {
           settings,
           setSettings,
           openPage: props.onOpenPage,
+          marginAvailable: props.marginAvailable,
           fixedShortcuts: props.fixedShortcuts ?? [],
           pluginCommands: props.pluginCommands ?? [],
+          ...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {}),
+          ...(props.onFilesDeleted
+            ? { onFilesDeleted: props.onFilesDeleted }
+            : {}),
+          ...(props.docPath !== undefined ? { docPath: props.docPath } : {}),
         })}
       />
     </div>

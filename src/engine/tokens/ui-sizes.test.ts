@@ -7,10 +7,7 @@ import { describe, expect, it } from "vitest";
  * phone keeps its own first design (ds-base.css) - 34/17/15/13/12 - which
  * the desktop's Medium matches.
  */
-const css = readFileSync(
-  new URL("./ui-sizes.css", import.meta.url),
-  "utf8",
-);
+const css = readFileSync(new URL("./ui-sizes.css", import.meta.url), "utf8");
 
 /** The values of `--text-*` (and one more property) in one preset's block. */
 function preset(blockStart: string): Record<string, string> {

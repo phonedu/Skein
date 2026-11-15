@@ -9,13 +9,16 @@ import { emit, openApp, pasteMarkdown, SAMPLE_DOC } from "./helpers";
  * violation instead of failing.
  */
 
-async function scan(page: Page, name: string) {
-  const results = await new AxeBuilder({ page })
+async function scan(page: Page, name: string, include?: string) {
+  const builder = new AxeBuilder({ page })
     // Inside the editor the caret scrolls a wide table; a tab stop there
     // would take clicks from the editor.
     .exclude(".ProseMirror .table-scroll")
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"])
-    .analyze();
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"]);
+  // A modal's own surface: what it dims behind it is not the scan's.
+  const results = await (
+    include ? builder.include(include) : builder
+  ).analyze();
   if (process.env.A11Y_REPORT) {
     for (const v of results.violations)
       console.log(
@@ -42,8 +45,10 @@ for (const colorScheme of ["light", "dark"] as const) {
     await scan(page, "document");
 
     await emit(page, "menu-settings");
-    await expect(page.locator(".settings-tab-page")).toBeVisible();
-    await scan(page, "settings");
+    await expect(page.locator(".settings-dialog")).toBeVisible();
+    await scan(page, "settings", ".settings-dialog");
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".settings-dialog")).toHaveCount(0);
 
     await emit(page, "menu-manage-plugins");
     await expect(page.locator(".plugins-panel-row").first()).toBeVisible();

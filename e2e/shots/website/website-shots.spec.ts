@@ -297,9 +297,14 @@ for (const lang of LANGS) {
       await launch(page, { lang, file: heroFile(s) });
       await caretAtEnd(page);
       await emit(page, "menu-settings");
-      await page
-        .locator(".settings-nav-item", { hasText: "Textus AI" })
-        .click();
+      // Textus AI › Models, in the dialog's content column.
+      await page.evaluate(() =>
+        window.dispatchEvent(
+          new CustomEvent("textus:open-settings-page", {
+            detail: { page: "providers" },
+          }),
+        ),
+      );
       await page.locator(".provider-picker .combobox-trigger").click();
       await expect(page.locator(".combobox-option")).toHaveCount(
         PROVIDERS.length,

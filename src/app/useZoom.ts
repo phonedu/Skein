@@ -69,6 +69,14 @@ type Pane =
 /// null when it shows no document.
 function zoomTab(x: number | null, y: number | null): HTMLElement | null {
   const island = x !== null && y !== null ? islandAt(x, y) : null;
+  // What the pointer is over must be the island's own: the Settings dialog
+  // floats above the window, and nothing under an overlay zooms.
+  if (island && x !== null && y !== null) {
+    const owner = document
+      .elementFromPoint(x, y)
+      ?.closest<HTMLElement>("[data-pane-id]");
+    if (owner?.dataset.paneId !== island.paneId) return null;
+  }
   const front = island && paneById(windowLayout().root, island.paneId)?.front;
   const tab = (front && tabElement(front)) || tabElement();
   return tab?.querySelector(".editor-scroll, .source-view") ? tab : null;

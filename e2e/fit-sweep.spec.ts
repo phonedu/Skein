@@ -1,10 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import { emit, openApp } from "./helpers";
 
-// Every Settings page at every island width it can be given, in the
-// longest languages: nothing past the island's edge, no two controls on
-// top of each other, and a control wrapped under its name starts where the
-// name does.
+// Every Settings page in the dialog at every window width and interface
+// size it can be given, in the longest languages: the panel whole in the
+// window, nothing past the content column's edge, no two controls on top of
+// each other, and a control wrapped under its name starts where the name
+// does.
 
 const PAGES = [
   "general",
@@ -20,21 +21,31 @@ const PAGES = [
   "privacy",
   "about",
 ];
-/** Panel widths asked for; the narrowest is held at the content's least. */
-const WIDTHS = [150, 320, 400, 480, 640];
+/** Window widths asked for: the desktop's least, and a usual window. */
+const WIDTHS = [760, 900, 1200];
 
 async function problems(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const out: string[] = [];
-    const island = document
-      .querySelector(".settings-tab")!
-      .closest<HTMLElement>("[data-pane-id]")!;
-    const edge = island.getBoundingClientRect();
-    const root = document.querySelector<HTMLElement>(".settings-tab-page")!;
+    const sheet = document.querySelector<HTMLElement>(".settings-dialog")!;
+    const panel = sheet.getBoundingClientRect();
+    if (
+      panel.left < -1 ||
+      panel.top < -1 ||
+      panel.right > innerWidth + 1 ||
+      panel.bottom > innerHeight + 1
+    )
+      out.push(
+        `the dialog past the window: ${Math.round(panel.left)},${Math.round(panel.top)} ` +
+          `${Math.round(panel.width)}x${Math.round(panel.height)} in ${innerWidth}x${innerHeight}`,
+      );
+    const root = sheet.querySelector<HTMLElement>(".settings-dialog-content")!;
+    const edge = root.getBoundingClientRect();
     // Drawn and not cut away by a folded or scrolled box around it.
     const shown = (el: Element) => {
       const r = el.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) return false;
+      // Base UI's native inputs are 1px, clipped: drawn nowhere.
+      if (r.width <= 2 || r.height <= 2) return false;
       if (getComputedStyle(el).visibility === "hidden") return false;
       const fold = el.closest("details:not([open])");
       if (fold && !el.closest("summary")) return false;
@@ -85,33 +96,34 @@ async function problems(page: Page): Promise<string[]> {
 }
 
 for (const language of ["zh", "en", "de"])
-  test(`Settings fits every width in ${language}`, async ({ page }) => {
+  test(`the Settings dialog fits the window in ${language}`, async ({
+    page,
+  }) => {
     test.setTimeout(120_000);
-    await page.setViewportSize({ width: 1400, height: 900 });
     const found: string[] = [];
-    for (const width of WIDTHS) {
-      await openApp(page, {
-        settings: { language, menuBarShown: false },
-        storage: { "textus-panel-px": String(width) },
-      });
-      await emit(page, "menu-settings");
-      await emit(page, "menu-split-right");
-      await page.locator(".settings-tab").waitFor();
-      for (const id of PAGES) {
-        await page.evaluate(
-          (p) =>
-            window.dispatchEvent(
-              new CustomEvent("textus:open-settings-page", {
-                detail: { page: p },
-              }),
-            ),
-          id,
-        );
-        await page.waitForTimeout(150);
-        for (const p of await problems(page))
-          found.push(`${width} ${id}: ${p}`);
+    for (const width of WIDTHS)
+      for (const uiTextScale of [1, 1.25]) {
+        await page.setViewportSize({ width, height: 900 });
+        await openApp(page, {
+          settings: { language, menuBarShown: false, uiTextScale },
+        });
+        await emit(page, "menu-settings");
+        await page.locator(".settings-dialog").waitFor();
+        for (const id of PAGES) {
+          await page.evaluate(
+            (p) =>
+              window.dispatchEvent(
+                new CustomEvent("textus:open-settings-page", {
+                  detail: { page: p },
+                }),
+              ),
+            id,
+          );
+          await page.waitForTimeout(150);
+          for (const p of await problems(page))
+            found.push(`${width}@${uiTextScale} ${id}: ${p}`);
+        }
       }
-    }
     expect(found).toEqual([]);
   });
 
@@ -219,7 +231,6 @@ for (const [os, platform] of [
     }, platform);
     await page.setViewportSize({ width: 1200, height: 760 });
     await openApp(page, { settings: { language: "de" } });
-    await emit(page, "menu-settings");
     await emit(page, "menu-split-right");
     const found: string[] = [];
     for (const state of STATES)
