@@ -51,6 +51,7 @@
 }
 
 .activity-rail-item {
+  position: relative;
   width: 40px;
   height: 40px;
   border: 0;
@@ -74,6 +75,19 @@
 .activity-rail-item[aria-pressed="true"] {
   background: var(--ui-selected);
   color: var(--ui-accent-text);
+}
+
+/* The entry that is open says so at the rail's edge: a bar in the accent,
+   so the eye finds where it is without reading the icons. */
+.activity-rail-item[aria-pressed="true"]::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 9px;
+  bottom: 9px;
+  width: 2.5px;
+  border-radius: 2px;
+  background: var(--ui-accent);
 }
 
 /* With the rail holding the tabs, the sidebar's header is the panel's

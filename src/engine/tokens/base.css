@@ -92,16 +92,16 @@
 
   color-scheme: light;
   /* The document's colours: what a theme sets. */
-  /* Apple's system palette (user's choice, 2026-11-09, for its brighter,
-     higher contrast text): white paper, #1d1d1f ink, Apple's greys, system
-     blue for the accent, system orange for highlights. */
-  --doc-bg: #ffffff;
-  --doc-text: #1d1d1f;
-  --doc-muted: #6e6e73;
-  --doc-accent: #007aff;
-  --doc-border: #d2d2d7;
-  --doc-quote-border: #d2d2d7;
-  --doc-code-bg: #f5f5f7;
+  /* Paper and ink (2026-11-15): warm paper, its ink, one ember accent. The
+     window's look is derived from the document's, so this is the whole app's
+     palette - the one the design boards are drawn in. */
+  --doc-bg: #faf6ee;
+  --doc-text: #2b2620;
+  --doc-muted: #706758;
+  --doc-accent: #9a5628;
+  --doc-border: #e4dcc8;
+  --doc-quote-border: #b5652f;
+  --doc-code-bg: #f1e9d8;
   /* What marks "here" and "now": highlights, matches, notes. */
   --doc-mark: #ff9500;
   --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 30%, var(--doc-bg));
@@ -113,9 +113,8 @@
   --ui-text: var(--doc-text);
   --ui-muted: var(--doc-muted);
   --ui-accent: var(--doc-accent);
-  /* The accent as words: a step towards the text, so a bright accent
-     (Apple's system blue is 4.0:1 on white) still reads; fills, toggles and
-     marks keep the accent itself. */
+  /* The accent as words: a step towards the text, so a bright accent still
+     reads; fills, toggles and marks keep the accent itself. */
   --ui-accent-text: color-mix(in srgb, var(--ui-accent) 80%, var(--ui-text));
   --doc-accent-text: color-mix(in srgb, var(--doc-accent) 80%, var(--doc-text));
   --ui-border: color-mix(in srgb, var(--ui-text) 16%, var(--ui-bg));
@@ -230,13 +229,13 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
     --ui-danger: #f18b99;
-    --doc-bg: #1c1c1e;
-    --doc-text: #f5f5f7;
-    --doc-muted: #98989d;
-    --doc-accent: #0a84ff;
-    --doc-border: #38383a;
-    --doc-quote-border: #48484a;
-    --doc-code-bg: #2c2c2e;
+    --doc-bg: #1f1b16;
+    --doc-text: #e8ddc9;
+    --doc-muted: #9c8f77;
+    --doc-accent: #d98b52;
+    --doc-border: #3a3226;
+    --doc-quote-border: #d98b52;
+    --doc-code-bg: #2b241c;
     --doc-mark: #ff9f0a;
     --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 34%, var(--doc-bg));
     /* Dark frames recede by darkening: a lighter frame would read as
@@ -252,13 +251,13 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
   --ui-danger: #f18b99;
-  --doc-bg: #1c1c1e;
-  --doc-text: #f5f5f7;
-  --doc-muted: #98989d;
-  --doc-accent: #0a84ff;
-  --doc-border: #38383a;
-  --doc-quote-border: #48484a;
-  --doc-code-bg: #2c2c2e;
+  --doc-bg: #1f1b16;
+  --doc-text: #e8ddc9;
+  --doc-muted: #9c8f77;
+  --doc-accent: #d98b52;
+  --doc-border: #3a3226;
+  --doc-quote-border: #d98b52;
+  --doc-code-bg: #2b241c;
   --doc-mark: #ff9f0a;
   --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 34%, var(--doc-bg));
   /* Dark frames recede by darkening: a lighter frame would read as

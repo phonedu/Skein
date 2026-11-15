@@ -8,7 +8,8 @@
 :root[data-content-theme="aurora"] {
   --ui-frame-paint: linear-gradient(170deg, #6ec5e6, #a9c4e4 50%, #f6cde1);
   --ui-frame-tint: #3f9cc0;
-  --doc-accent: #0b7fa3;
+  /* Deep enough for a link on the default warm paper (4.99:1). */
+  --doc-accent: #0a7396;
   --doc-mark: #ef8fbb;
 }
 

@@ -87,7 +87,7 @@ Each interface colour has exactly one job. A new surface MUST pick its colours f
 
 ### 3.2a One palette
 
-The default theme is Apple's system palette (Textus 1.3.13). A theme gives base colours - paper, ink, muted, line, accent, mark and the tones - and everything else is derived from them at fixed ratios: frames, selections, highlights (mark over paper), alerts (note = accent, tip = green, important = purple, warning = mark, caution = red), syntax tokens, find matches, review notes. A colour used as words steps towards the text so a bright base colour still reads. No surface MAY keep a palette of its own.
+The default theme is paper and ink (Textus 1.4.3): warm paper (`#faf6ee`), its ink (`#2b2620`), a muted sepia for what is said about something, and one ember accent (`#9a5628`) for what is chosen or waiting; dark is the same sheet at night. A theme gives base colours - paper, ink, muted, line, accent, mark and the tones - and everything else is derived from them at fixed ratios: frames, selections, highlights (mark over paper), alerts (note = accent, tip = green, important = purple, warning = mark, caution = red), syntax tokens, find matches, review notes. A colour used as words steps towards the text so a bright base colour still reads. No surface MAY keep a palette of its own.
 
 ### 3.3 Contrast
 

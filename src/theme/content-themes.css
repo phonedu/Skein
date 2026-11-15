@@ -3,7 +3,7 @@
    is three blocks: the light base, dark for "follow system", and dark
    pinned. The two dark blocks are identical. */
 
-/* Paper - warm, cream, serif-leaning */
+/* Paper - the default's colours in a serif face: the page as a book */
 
 [data-content-theme="paper"] {
   --doc-bg: #faf6ee;
