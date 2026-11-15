@@ -32,9 +32,9 @@
      for a welcome; mark is a badge's digit. */
   --text-caption: 12px;
   --text-list: 14px;
-  --text-body: 16px;
-  --text-title: 20px;
-  --text-large-title: 26px;
+  --text-body: 15px;
+  --text-title: 17px;
+  --text-large-title: 34px;
   --text-mark: 10px;
   /* Spacing on a 4-point grid, 8 the default step. */
   --space-1: 4px;
@@ -55,11 +55,11 @@
   --tree-step: 12px;
   --pane-inset: 12px;
   --pane-edge: 4px;
-  --text-caption: 12px;
-  --text-list: 12px;
+  --text-caption: 11px;
+  --text-list: 13px;
   --text-body: 14px;
-  --text-title: 18px;
-  --text-large-title: 22px;
+  --text-title: 16px;
+  --text-large-title: 28px;
   --text-mark: 8px;
   --space-1: 4px;
   --space-2: 6px;
@@ -79,11 +79,11 @@
   --tree-step: 16px;
   --pane-inset: 20px;
   --pane-edge: 6px;
-  --text-caption: 16px;
-  --text-list: 18px;
-  --text-body: 20px;
-  --text-title: 24px;
-  --text-large-title: 32px;
+  --text-caption: 13px;
+  --text-list: 15px;
+  --text-body: 17px;
+  --text-title: 20px;
+  --text-large-title: 40px;
   --text-mark: 12px;
   --space-1: 6px;
   --space-2: 10px;
