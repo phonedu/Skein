@@ -7,7 +7,7 @@
 
 :root:not(.zen, [data-window-chrome="mobile"])
   .app-shell:has(> .activity-rail) {
-  --rail-width: 48px;
+  --rail-width: 56px;
 }
 
 /* On a whole pixel, so the document beside it starts on one too: WebKitGTK
@@ -15,7 +15,7 @@
 @supports (width: round(down, 1px, 1px)) {
   :root:not(.zen, [data-window-chrome="mobile"])
     .app-shell:has(> .activity-rail) {
-    --rail-width: round(48px, 1px);
+    --rail-width: round(56px, 1px);
   }
 }
 
