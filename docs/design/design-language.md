@@ -128,12 +128,12 @@ Text names a role, never a size. Sizes are set per **Interface size** preset (Sm
 | `caption`         | 12      | 12    | 1.2         | 400/500 | Badges, counts, keycaps                                                           |
 | `footnote`        | 12      | 13    | 1.4         | 400     | Hints, group titles, empty states                                                 |
 | `list`            | 14      | 17    | 1.35        | 400     | A long list read at a glance (the file tree)                                      |
-| `secondary`       | 16      | 15    | 1.4         | 400     | Text beside the main text in a dense surface (a card, a list entry's second line) |
-| `control`         | 16      | 15    | 1.2         | 400/500 | A control's label                                                                 |
-| `body`            | 16      | 17    | 1.5         | 400     | The main text of a panel, menu, list or field                                     |
-| `body-large`      | 16      | 17    | 1.5         | 400     | Main text where there is room: Settings' rows, dialogs                            |
-| `title`           | 20      | 17    | 1.3         | 600     | A sheet's, panel's or navigation bar's title                                      |
-| `large-title`     | 26      | 34    | 1.2         | 600     | A page's own title                                                                |
+| `secondary`       | 15      | 15    | 1.4         | 400     | Text beside the main text in a dense surface (a card, a list entry's second line) |
+| `control`         | 15      | 15    | 1.2         | 400/500 | A control's label                                                                 |
+| `body`            | 15      | 17    | 1.5         | 400     | The main text of a panel, menu, list or field                                     |
+| `body-large`      | 15      | 17    | 1.5         | 400     | Main text where there is room: Settings' rows, dialogs                            |
+| `title`           | 17      | 17    | 1.3         | 600     | A sheet's, panel's or navigation bar's title                                      |
+| `large-title`     | 34      | 34    | 1.2         | 600     | A page's own title                                                                |
 
 - `--text-mark` (10) is not a text size: the digit in a count badge or a numbered mark.
 - Weights are 400, 500 and 600 only.
@@ -167,11 +167,11 @@ Every radius, padding, margin, gap and component size MUST be a multiple of 4 px
 
 ### 5.3 Control heights
 
-Two heights: `--control-height` 30 (36) for forms, dialogs and a Settings row's select; `--control-height-sm` 26 (32) for bars, cards, segmented controls and tags. Each reaches a 44 pt touch target on the phone. There is no density setting.
+Two heights: `--control-height` 34 (40) for forms, dialogs and a Settings row's select; `--control-height-sm` 28 (32) for bars, cards, segmented controls and tags. Each reaches a 44 pt touch target on the phone. There is no density setting.
 
 ### 5.4 Layout
 
-**Window** (desktop): sidebar (resizable, 198–528, 264 to start) | document column | AI panel (resizable, 330–792, 440 to start). Widths are kept in base units and drawn times `--chrome-scale` (5.6); each panel takes at most 45% of the window and leaves the document at least 360 × scale, the AI panel counting an open sidebar. The document column centres the text at the theme's measure; the margin for review notes takes 280 on the right when shown. The window bar is 40 high (`--window-bar-height`; 36 Small, 48 Large).
+**Window** (desktop): sidebar (resizable, 198–528, 316 to start) | document column | AI panel (resizable, 330–792, 440 to start). Widths are kept in base units and drawn times `--chrome-scale` (5.6); each panel takes at most 45% of the window and leaves the document at least 360 × scale, the AI panel counting an open sidebar. The document column centres the text at the theme's measure; the margin for review notes takes 280 on the right when shown. The window bar is 44 high (`--window-bar-height`; 40 Small, 48 Large). The activity rail is 56 wide (5.7).
 
 **Surface templates.** A new surface - in the app or a plugin - MUST use one of these:
 
@@ -211,7 +211,7 @@ Every surface that appears in the window is one of these. Each row says where it
 
 Every size in the interface is written once, in **interface pixels** on the 4 px grid, and drawn at the interface's size. Nothing - the app, a plugin, a script - draws a fixed number of screen pixels.
 
-**The scale.** Interface Size has three presets, Small, Medium and Large, as Chrome and macOS keep theirs: the sizes that set the frame (the window bar 36/40/48, control heights, text roles, spacing, pane insets) are chosen per preset on even pixels in `ui-sizes.css`, which the build leaves as written. Everything else is written at Medium and grows by `--chrome-scale` (0.85, 1, 1.25), the same on every desktop platform. It never follows the window's size: a bigger window shows more, not bigger (as VS Code, Obsidian and Typora). `--window-scale` stays 1 for plugins that read it. Icons draw a quarter over their design size (`--icon-scale`, 1.25). The phone keeps its first design (`--chrome-scale` 10/11). A plugin's own lengths are in the first design's pixels and are taken to Medium's (×1.1, on an even pixel) as its page loads. Hairlines (1–2 px) never scale; the document's typography doesn't either - it has the document's zoom.
+**The scale.** Interface Size has three presets, Small, Medium and Large, as Chrome and macOS keep theirs: the sizes that set the frame (the window bar 40/44/48, control heights, text roles, spacing, pane insets) are chosen per preset on even pixels in `ui-sizes.css`, which the build leaves as written. Everything else is written at Medium and grows by `--chrome-scale` (0.85, 1, 1.25), the same on every desktop platform. It never follows the window's size: a bigger window shows more, not bigger (as VS Code, Obsidian and Typora). `--window-scale` stays 1 for plugins that read it. Icons draw a quarter over their design size (`--icon-scale`, 1.25). The phone keeps its first design (`--chrome-scale` 10/11). A plugin's own lengths are in the first design's pixels and are taken to Medium's (×1.1, on an even pixel) as its page loads. Hairlines (1–2 px) never scale; the document's typography doesn't either - it has the document's zoom.
 
 **Where a size is written, and how it scales:**
 
