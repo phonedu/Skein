@@ -23,6 +23,10 @@ beforeAll(installTestLocalStorage);
 beforeEach(() => localStorage.clear());
 
 describe("the sidebar's width bounds", () => {
+  it("starts at 316, the boards' queue width", () => {
+    expect(SIDEBAR_DEFAULT_WIDTH).toBe(316);
+  });
+
   it("allows up to 528px on a wide window", () => {
     expect(sidePanelMax(1920, SIDEBAR_LIMITS)).toBe(528);
     // Beside a document and the AI, the islands keep what they need.

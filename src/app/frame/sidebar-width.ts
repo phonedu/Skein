@@ -11,7 +11,7 @@ import {
 
 /** The sidebar's width as it comes, and the narrowest it can be dragged to:
  *  under this the tree's names are cut to a few letters. */
-export const SIDEBAR_DEFAULT_WIDTH = 264;
+export const SIDEBAR_DEFAULT_WIDTH = 316;
 export const SIDEBAR_MIN_WIDTH = 198;
 /** Its narrowest, and the widest it can be dragged to in a window with
  *  room (side-panel-width keeps the document's room). */
