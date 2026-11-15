@@ -720,6 +720,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   completionEmoji: "Emoji",
   completionNotes: "Notas",
   tocEmpty: "Ainda não há títulos",
+  close: "Fechar",
   settingsTitle: "Ajustes",
   settingsPageTab: "Ajustes: {page}",
   settingsSearchPlaceholder: "Buscar nos ajustes",

@@ -630,6 +630,7 @@ export default {
   completionEmoji: "表情符號",
   completionNotes: "筆記",
   tocEmpty: "尚無標題",
+  close: "關閉",
   settingsTitle: "設定",
   settingsPageTab: "設定：{page}",
   settingsSearchPlaceholder: "搜尋設定",

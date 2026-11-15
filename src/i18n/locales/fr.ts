@@ -732,6 +732,7 @@ utiliser une.
   completionEmoji: "Émojis",
   completionNotes: "Notes",
   tocEmpty: "Aucun titre pour l’instant",
+  close: "Fermer",
   settingsTitle: "Réglages",
   settingsPageTab: "Réglages : {page}",
   settingsSearchPlaceholder: "Rechercher dans les réglages",

@@ -733,6 +733,7 @@ para usar una.
   completionEmoji: "Emoji",
   completionNotes: "Notas",
   tocEmpty: "Aún no hay encabezados",
+  close: "Cerrar",
   settingsTitle: "Ajustes",
   settingsPageTab: "Ajustes: {page}",
   settingsSearchPlaceholder: "Buscar en Ajustes",

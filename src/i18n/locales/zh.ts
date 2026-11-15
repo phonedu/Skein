@@ -629,6 +629,7 @@ export default {
   completionEmoji: "表情",
   completionNotes: "笔记",
   tocEmpty: "暂无标题",
+  close: "关闭",
   settingsTitle: "设置",
   settingsPageTab: "设置：{page}",
   settingsSearchPlaceholder: "搜索设置",

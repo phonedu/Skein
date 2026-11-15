@@ -1,0 +1,70 @@
+/* The settings dialog's shell (design board ui-d-settings): one opaque
+   panel over the window. Sizes are base units the build leaves as written;
+   the dialog's own frame grows by --chrome-scale (design-language 5.6). */
+
+.settings-dim {
+  background: rgb(0 0 0 / 24%);
+}
+
+.settings-dialog {
+  width: calc(880px * var(--chrome-scale, 1));
+  height: calc(556px * var(--chrome-scale, 1));
+  border-radius: var(--shape-m);
+  box-shadow: var(--shadow-dialog);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-dialog-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) 0;
+  flex: none;
+}
+
+.settings-dialog-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.settings-dialog-close {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--shape-pill);
+  background: color-mix(in srgb, var(--ui-text) 5%, transparent);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  display: grid;
+  place-items: center;
+}
+
+.settings-dialog-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.settings-dialog-nav {
+  width: 200px;
+  flex: none;
+  border-right: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  padding: var(--space-3) var(--space-2);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.settings-dialog-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--space-4) var(--space-8);
+}

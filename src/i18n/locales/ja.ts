@@ -676,6 +676,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   completionEmoji: "絵文字",
   completionNotes: "ノート",
   tocEmpty: "見出しはまだありません",
+  close: "閉じる",
   settingsTitle: "設定",
   settingsPageTab: "設定：{page}",
   settingsSearchPlaceholder: "設定を検索",

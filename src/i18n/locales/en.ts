@@ -689,6 +689,7 @@ type /name in a conversation to use one.
   completionEmoji: "Emoji",
   completionNotes: "Notes",
   tocEmpty: "No headings yet",
+  close: "Close",
   settingsTitle: "Settings",
   /** A Settings tab: the page it shows. */
   settingsPageTab: "Settings: {page}",

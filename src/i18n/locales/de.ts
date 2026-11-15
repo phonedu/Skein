@@ -704,6 +704,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   completionEmoji: "Emoji",
   completionNotes: "Notizen",
   tocEmpty: "Noch keine Überschriften",
+  close: "Schließen",
   settingsTitle: "Einstellungen",
   settingsPageTab: "Einstellungen: {page}",
   settingsSearchPlaceholder: "Einstellungen durchsuchen",

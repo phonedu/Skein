@@ -732,6 +732,7 @@ export default {
   completionEmoji: "Эмодзи",
   completionNotes: "Заметки",
   tocEmpty: "Заголовков пока нет",
+  close: "Закрыть",
   settingsTitle: "Настройки",
   settingsPageTab: "Настройки: {page}",
   settingsSearchPlaceholder: "Поиск по настройкам",
