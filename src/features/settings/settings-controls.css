@@ -1,0 +1,117 @@
+/* The settings dialog's value controls (spec Task 4): the board's pill,
+   an opaque switch, a tick box - colours only through semantic tokens. */
+
+.settings-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  height: var(--control-height-sm);
+  border-radius: var(--shape-pill);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  cursor: pointer;
+}
+
+.settings-pill[data-popup-open] {
+  background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
+  color: var(--ui-accent);
+  border-color: transparent;
+}
+
+.settings-pill-chev {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+.settings-popover-positioner {
+  z-index: var(--z-select);
+}
+
+.settings-popover {
+  border-radius: var(--shape-m);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-popover);
+  padding: var(--space-1);
+  min-width: 160px;
+}
+
+.settings-popover-item {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  height: var(--control-height-sm);
+  border-radius: var(--shape-s);
+  font-size: var(--text-body);
+  color: var(--ui-text);
+  cursor: pointer;
+}
+
+.settings-popover-item[data-highlighted] {
+  background: color-mix(in srgb, var(--ui-text) 6%, transparent);
+}
+
+/* An opaque switch: the accent fills it when on, no translucency. */
+.settings-switch {
+  width: 40px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--shape-pill);
+  background: color-mix(in srgb, var(--ui-text) 18%, transparent);
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.settings-switch.on {
+  background: var(--ui-accent);
+}
+
+.settings-switch-thumb {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--shape-pill);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-raised);
+  transition: translate var(--dur-fast) var(--ease-out);
+}
+
+.settings-switch.on .settings-switch-thumb {
+  translate: 16px 0;
+}
+
+/* The board's 16px tick box, radius from the shape scale. */
+.settings-check {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: var(--shape-s);
+  border: 1.5px solid var(--ui-border);
+  background: var(--ui-surface);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.settings-check.on {
+  background: var(--ui-text);
+  border-color: var(--ui-text);
+}
+
+.settings-check-ind {
+  display: none;
+  color: var(--ui-bg);
+}
+
+.settings-check.on .settings-check-ind {
+  display: grid;
+}
+
+.settings-check-ind svg {
+  width: 11px;
+  height: 11px;
+}
