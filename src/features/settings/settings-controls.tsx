@@ -1,6 +1,7 @@
 import { Checkbox } from "@base-ui/react/checkbox";
 import { Select } from "@base-ui/react/select";
 import { Switch } from "@base-ui/react/switch";
+import { ChevronIcon } from "../../engine/controls/icons";
 import { useSettingsRowLabel } from "./settings-row";
 import "./settings-controls.css";
 
@@ -33,7 +34,7 @@ export function SettingsSelect(props: {
       <Select.Trigger className="settings-pill" aria-labelledby={labelId}>
         <Select.Value />
         <Select.Icon className="settings-pill-chev">
-          <Chevron />
+          <ChevronIcon />
         </Select.Icon>
       </Select.Trigger>
       <Select.Portal>
@@ -54,19 +55,6 @@ export function SettingsSelect(props: {
         </Select.Positioner>
       </Select.Portal>
     </Select.Root>
-  );
-}
-
-function Chevron() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d="M9 6l6 6-6 6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-    </svg>
   );
 }
 
