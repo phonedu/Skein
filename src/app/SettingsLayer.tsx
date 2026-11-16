@@ -2,6 +2,7 @@ import { CreateChat } from "../settings/pages/create-chat-lazy";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { OPEN_CREATE_EVENT } from "../ai/chat/create-request";
 import { lazyModule } from "../lazy/lazy-module";
+import { settingsFeature } from "../features/settings/lazy";
 import { lazyComponent } from "../lazy/lazy-component";
 import {
   openExtensionsTab,
@@ -20,32 +21,13 @@ import {
   showSettingsDialog,
   type SettingsPageRequest,
 } from "../settings/settings-nav";
-import { pageOf, showPage, type PageRequest } from "./tabs/page-tabs";
-import { placeOnArrival, tabInUse } from "../engine/layout/store";
-import { moveTab } from "../engine/layout/ops";
-import { panesOf } from "../engine/layout/tree";
+import { showPage, type PageRequest } from "./tabs/page-tabs";
 import type { TabState } from "./tabs/useTabState";
 import type { Strings } from "../i18n/strings";
 
-/** The dialog's module: loaded the first time it opens, never at startup. */
-const SettingsDialog = lazyComponent(
-  lazyModule("settings-features", () => import("../features/settings")),
-  (m) => m.SettingsHost,
-);
-
-/** Settings asked for from the AI's column: its new tab goes to an island
- *  of documents, not the AI's narrow one. */
-function showSettings(tabs: TabState, to?: string, jump?: unknown): void {
-  const isAi = (id: string) =>
-    pageOf(tabs.tabsRef.current.find((tab) => tab.id === id)) === "ai";
-  const fromAi = isAi(tabInUse());
-  const made = showPage(tabs, "settings", to, undefined, jump);
-  if (made && fromAi)
-    placeOnArrival(made, (now) => {
-      const home = now && panesOf(now.root).find((p) => !p.tabs.some(isAi));
-      return (home && moveTab(now, made, home.id)) || now;
-    });
-}
+/** The dialog's module: the features module's own lazy entry - the one
+ *  registration the app and its tests share. */
+const SettingsDialog = lazyComponent(settingsFeature, (m) => m.SettingsHost);
 
 /** Settings and the plugins' pages as tabs: the iPhone and iPad (ruling 3:
  *  the desktop has the dialog). */
@@ -77,9 +59,9 @@ const SettingsPanel = lazyComponent(
   (m) => m.SettingsPanel,
 );
 
-/** Where the iPad's Settings sheet opens: a page, or "updates" - About,
- *  checking. */
-type SettingsStart = "general" | "extensions" | "updates";
+/** Where the iPad's Settings sheet opens: a page's id, or "extensions" -
+ *  the phone's plugins and themes. */
+type SettingsStart = string;
 
 /**
  * Whether Settings is open, and at which page. Each request counts, so one
@@ -113,8 +95,10 @@ export function useSettingsOpening(tabs: TabState) {
     // A page picked in the sidebar's list, or a search result there.
     const page = (e: Event) => {
       const { page, jump } = (e as CustomEvent<SettingsPageRequest>).detail;
+      // The desktop's dialog; the iPad's sheet, at that page (the tab the
+      // deep link used to open is gone).
       if (!inTabs) return showSettingsDialog(page, jump);
-      showSettings(tabs, page, jump);
+      request(page);
     };
     window.addEventListener(OPEN_SETTINGS_PAGE_EVENT, page);
     return () => {
@@ -134,7 +118,8 @@ export function useSettingsOpening(tabs: TabState) {
     },
     openUpdates: () => {
       if (inTabs) return request("updates");
-      showSettingsDialog("about");
+      // "updates" is the About page, checking at once.
+      showSettingsDialog("updates");
     },
     openPluginSettings: (id?: string) => {
       if (!inTabs)

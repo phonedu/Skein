@@ -112,7 +112,7 @@ test("search at the nav's top jumps to a row on another page", async ({
   ).toBeVisible();
 });
 
-test("Check for Updates opens About; a plugin's settings open its page in the dialog", async ({
+test("Check for Updates opens About and checks; a plugin's settings open its page in the dialog", async ({
   page,
 }) => {
   await open(page);
@@ -121,6 +121,10 @@ test("Check for Updates opens About; a plugin's settings open its page in the di
   await expect(
     content(page).locator(".settings-about-card-icon").first(),
   ).toBeVisible();
+  // The check really runs: the page answers (latest, or why it could not).
+  await expect(
+    content(page).locator(".settings-about-status").first(),
+  ).toBeVisible();
   await emit(page, "menu-plugin-command", "plugin-settings:cloud-sync");
   await expect(content(page)).toHaveAttribute(
     "data-settings-page",
@@ -128,6 +132,32 @@ test("Check for Updates opens About; a plugin's settings open its page in the di
   );
   await emit(page, "menu-manage-plugins");
   await expect(page.locator(".sidebar-title")).toHaveText("插件");
+});
+
+test("the dialog is a layer above the window's own surfaces", async ({
+  page,
+}) => {
+  await open(page);
+  await emit(page, "menu-settings");
+  const layer = await dialog(page).evaluate(
+    (el) => getComputedStyle(el).zIndex,
+  );
+  expect(layer).not.toBe("auto");
+});
+
+test("Escape in the search clears the query and leaves the dialog open", async ({
+  page,
+}) => {
+  await open(page);
+  await emit(page, "menu-settings");
+  const field = page.getByPlaceholder("搜索设置");
+  await field.fill("界面大小");
+  await field.press("Escape");
+  await expect(dialog(page)).toBeVisible();
+  await expect(field).toHaveValue("");
+  // The next Escape closes it.
+  await field.press("Escape");
+  await expect(dialog(page)).toHaveCount(0);
 });
 
 test("installed themes show as the store's do", async ({ page }) => {

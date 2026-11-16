@@ -8,12 +8,14 @@
 .settings-dim {
   position: fixed;
   inset: 0;
+  z-index: var(--z-modal);
   background: var(--ui-overlay);
 }
 
 .settings-dialog {
   position: fixed;
   inset: 0;
+  z-index: var(--z-modal);
   margin: auto;
   width: calc(880px * var(--chrome-scale, 1));
   height: calc(556px * var(--chrome-scale, 1));

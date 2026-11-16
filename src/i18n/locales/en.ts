@@ -692,7 +692,6 @@ type /name in a conversation to use one.
   close: "Close",
   settingsTitle: "Settings",
   /** A Settings tab: the page it shows. */
-  settingsPageTab: "Settings: {page}",
   settingsSearchPlaceholder: "Search settings",
   settingsSearchResults: "Search results",
   settingsSearchNoMatches: "No settings match.",

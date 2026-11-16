@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { listMove } from "../../engine/controls/list-keys";
 import {
   SettingsSearchField,
@@ -25,6 +26,10 @@ export function useSettingsDialogSearch(props: {
   onPick: (match: SearchMatch) => void;
 }) {
   const search = useSettingsSearch(() => props.owns);
+  // The pages are mounted out of sight only once there is a query: until
+  // then no page runs its effects (the MCP page polls the backend).
+  const [indexed, setIndexed] = useState(false);
+  if (search.searching && !indexed) setIndexed(true);
   const resultGroups = props.pages
     .map((page) => ({
       key: page.key,
@@ -47,10 +52,11 @@ export function useSettingsDialogSearch(props: {
 
   return {
     searching: search.searching,
-    /** The pages, mounted out of sight and read into entries. */
-    index: (
+    /** The pages, mounted out of sight and read into entries - once the
+     *  search has something to look for. */
+    index: indexed ? (
       <SettingsSearchIndex pages={props.pages} onEntries={search.setEntries} />
-    ),
+    ) : null,
     field: (
       <div className="settings-nav-search">
         <SettingsSearchField

@@ -706,7 +706,6 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   tocEmpty: "Noch keine Überschriften",
   close: "Schließen",
   settingsTitle: "Einstellungen",
-  settingsPageTab: "Einstellungen: {page}",
   settingsSearchPlaceholder: "Einstellungen durchsuchen",
   settingsSearchResults: "Suchergebnisse",
   settingsSearchNoMatches: "Keine Einstellung passt.",

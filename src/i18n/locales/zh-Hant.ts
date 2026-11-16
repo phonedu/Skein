@@ -632,7 +632,6 @@ export default {
   tocEmpty: "尚無標題",
   close: "關閉",
   settingsTitle: "設定",
-  settingsPageTab: "設定：{page}",
   settingsSearchPlaceholder: "搜尋設定",
   settingsSearchResults: "搜尋結果",
   settingsSearchNoMatches: "沒有符合的設定。",

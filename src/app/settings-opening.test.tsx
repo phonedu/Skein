@@ -19,7 +19,6 @@ afterEach(() => {
   cleanup();
   closeSettingsDialog();
 });
-
 const tabs = {
   tabsRef: { current: [] },
   setTabs: vi.fn(),
@@ -45,10 +44,10 @@ it("⌘, opens the dialog at General; while open it keeps its page", () => {
   expect(settingsDialogOpen()).toMatchObject({ page: "look-basic" });
 });
 
-it("Check for Updates opens the dialog at About", () => {
+it("Check for Updates opens the dialog at About, checking", () => {
   const { result } = renderHook(() => useSettingsOpening(tabs));
   act(() => result.current.openUpdates());
-  expect(settingsDialogOpen()).toMatchObject({ page: "about" });
+  expect(settingsDialogOpen()).toMatchObject({ page: "updates" });
 });
 
 it("a plugin's settings open in the dialog; its list needs no page", () => {

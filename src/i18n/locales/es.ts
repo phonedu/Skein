@@ -735,7 +735,6 @@ para usar una.
   tocEmpty: "Aún no hay encabezados",
   close: "Cerrar",
   settingsTitle: "Ajustes",
-  settingsPageTab: "Ajustes: {page}",
   settingsSearchPlaceholder: "Buscar en Ajustes",
   settingsSearchResults: "Resultados de la búsqueda",
   settingsSearchNoMatches: "Ningún ajuste coincide.",

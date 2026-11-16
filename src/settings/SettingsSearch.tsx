@@ -132,7 +132,10 @@ export function SettingsSearchField({
             onPick();
           } else if (e.key === "Escape" && query) {
             // Handled: the dialog closes on the next Escape, not this one.
+            // The key stops here too: a dismiss that listens on the
+            // document (the Base UI dialog's) must not take it for its own.
             e.preventDefault();
+            e.stopPropagation();
             onQueryChange("");
           }
         }}

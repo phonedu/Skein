@@ -1,6 +1,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { CloseIcon } from "../../engine/controls/icons";
 import type { Strings } from "../../i18n/strings";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import "./settings-dialog.css";
 
@@ -21,6 +22,18 @@ export function SettingsDialog(props: {
   children: ReactNode;
 }) {
   const t = props.t;
+  // A modal the app knows about: the window bar rests while it is open, as
+  // it does for the engine's own dialogs (useModalDialog's mark).
+  useEffect(() => {
+    if (!props.open) return;
+    const root = document.documentElement;
+    const had = root.hasAttribute("data-modal-open");
+    if (!had) root.setAttribute("data-modal-open", "");
+    return () => {
+      // Only the one that set the mark takes it away.
+      if (!had) root.removeAttribute("data-modal-open");
+    };
+  }, [props.open]);
   return (
     <Dialog.Root
       open={props.open}
@@ -30,7 +43,7 @@ export function SettingsDialog(props: {
     >
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-dim" />
-        <Dialog.Popup className="settings-dialog">
+        <Dialog.Popup className="settings-dialog" aria-modal="true">
           <div className="settings-dialog-top">
             <Dialog.Title className="settings-dialog-title">
               {t.settingsTitle}

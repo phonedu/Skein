@@ -5,6 +5,7 @@
 // imported at startup, and this file is the lazy entry.
 import { useEffect, useRef, useState } from "react";
 import { useSettings } from "../../prefs/SettingsContext";
+import type { Strings } from "../../i18n/strings";
 import type { FixedShortcutGroup } from "../../registry/fixed-shortcuts";
 import { useMarginAvailable } from "../../ai/margin/margin-room";
 import {
@@ -20,6 +21,7 @@ import { SettingsContent } from "./settings-content";
 import { useSettingsDialogSearch } from "./settings-search";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
 import { PluginDetail } from "../../settings/pages/PluginDetail";
+import { AboutPage } from "../../settings/pages/AboutPage";
 import { pluginName, pluginRecord } from "../../plugins/store/plugin-records";
 import { isImeKeydown } from "../../utils/ime";
 import {
@@ -27,6 +29,32 @@ import {
   showSettingsDialog,
 } from "../../settings/settings-nav";
 import "./settings-host.css";
+// The plugin page's own box (its reading width): its old host's stylesheet
+// lived in the retired plugin tab's chunk, which the desktop no longer
+// loads.
+import "../../settings/pages/plugin-tab.css";
+
+/** A plugin's page, as the dialog's page def. Kept per plugin, so the
+ *  component's identity is stable: a new one each render would remount the
+ *  page (and lose its scroll) on every keystroke in the search. */
+const pluginDefs = new Map<string, SettingsPageDef>();
+function pluginDef(plugin: string): SettingsPageDef {
+  let def = pluginDefs.get(plugin);
+  if (!def) {
+    const record = pluginRecord(plugin);
+    def = {
+      id: PLUGIN_PAGE_PREFIX + plugin,
+      label: () => (record ? pluginName(record) : plugin),
+      Page: ({ t }: { t: Strings }) => (
+        <div className="plugin-tab tx-scroll-reveal">
+          <PluginDetail id={plugin} t={t} />
+        </div>
+      ),
+    };
+    pluginDefs.set(plugin, def);
+  }
+  return def;
+}
 
 /** Opens the settings dialog: the feature's one entry for the window. */
 export function openSettingsDialog(): void {
@@ -70,18 +98,18 @@ export function SettingsHost(props: {
   }, []);
 
   const def = (id: string): SettingsPageDef => {
-    if (id.startsWith(PLUGIN_PAGE_PREFIX)) {
-      const plugin = id.slice(PLUGIN_PAGE_PREFIX.length);
-      const record = pluginRecord(plugin);
+    if (id === "updates") {
+      // The app menu's Check for Updates…: the About page, checking at
+      // once (what the retired Settings tab showed).
       return {
         id,
-        label: () => (record ? pluginName(record) : plugin),
-        Page: ({ t: strings }) => (
-          <div className="plugin-tab tx-scroll-reveal">
-            <PluginDetail id={plugin} t={strings} />
-          </div>
-        ),
+        label: () => t.navAbout,
+        Page: (props) => <AboutPage {...props} checkUpdates />,
       };
+    }
+    if (id.startsWith(PLUGIN_PAGE_PREFIX)) {
+      const plugin = id.slice(PLUGIN_PAGE_PREFIX.length);
+      return pluginDef(plugin);
     }
     return settingsPage(id) ?? settingsPages()[0];
   };
@@ -148,7 +176,8 @@ export function SettingsHost(props: {
           <SettingsNavColumn
             t={t}
             pages={pages}
-            active={pageId}
+            // "updates" is the About page, checking.
+            active={pageId === "updates" ? "about" : pageId}
             onOpen={setPageId}
           />
         </>

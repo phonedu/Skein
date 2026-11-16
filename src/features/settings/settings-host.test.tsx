@@ -1,8 +1,15 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsHost } from ".";
-import { SettingsProvider } from "../../prefs/SettingsContext";
+import { SettingsProvider, useSettings } from "../../prefs/SettingsContext";
 import { settingsPage } from "../../settings/settings-pages";
 import en from "../../i18n/locales/en";
 
@@ -26,8 +33,17 @@ vi.mock("../../platform/ipc", async (importOriginal) => {
       ...(ipc.cli as object),
       cliCommandStatus: () => Promise.resolve("missing"),
     },
+    // The updater's answer, so the check can be watched end to end.
+    updater: {
+      ...(ipc.updater as object),
+      check: () => Promise.resolve(null),
+    },
   };
 });
+vi.mock("../../platform/distribution", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  selfUpdateAllowed: () => Promise.resolve(true),
+}));
 
 // jsdom lacks CSS.escape (the search index's selectors).
 beforeEach(() => {
@@ -88,5 +104,60 @@ describe("the settings dialog, as the window opens it", () => {
     for (const id of ["general", "look-basic", "privacy", "about"]) {
       expect(settingsPage(id)).toBeTruthy();
     }
+  });
+
+  it("'updates' checks for updates: the page asked for says so", async () => {
+    // The app menu's Check for Updates… opens Settings at "updates": the
+    // About page, checking at once.
+    host("updates");
+    await screen.findByText(en.updateLatest);
+  });
+
+  it("the plugin's page keeps its host box: its own stylesheet loads here", () => {
+    const source = readFileSync("src/features/settings/index.tsx", "utf8");
+    expect(source).toContain("plugin-tab.css");
+  });
+
+  it("the plugin's page is not remounted when the host redraws", () => {
+    // A store change redraws the host: the plugin's page keeps its node
+    // (a new component type each render would remount it, and it would
+    // lose its scroll).
+    let set: ((patch: { typewriterMode: boolean }) => void) | null = null;
+    function Frame() {
+      const { setSettings } = useSettings();
+      set = setSettings;
+      return (
+        <SettingsHost
+          page="plugin:cloud-sync"
+          jump={null}
+          onClose={() => {}}
+          fixedShortcuts={[]}
+          pluginCommands={[]}
+        />
+      );
+    }
+    render(
+      <SettingsProvider>
+        <Frame />
+      </SettingsProvider>,
+    );
+    const before = document.querySelector(".plugin-tab");
+    act(() => set!({ typewriterMode: true }));
+    expect(document.querySelector(".plugin-tab")).toBe(before);
+  });
+
+  it("the About card keeps its frame: its stylesheet loads with the page", () => {
+    const about = readFileSync("src/settings/sections/about.css", "utf8");
+    expect(about).toContain(".settings-about-card");
+  });
+
+  it("the legacy pages keep their chrome on the desktop", () => {
+    // The desktop does not load the iPad's sheet, so its pages' styles
+    // have to come with the module.
+    const source = readFileSync(
+      "src/features/settings/settings-content.tsx",
+      "utf8",
+    );
+    expect(source).toContain("SettingsPanel.css");
   });
 });

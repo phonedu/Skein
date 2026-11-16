@@ -8,6 +8,10 @@ import { pageProps, type ShortcutCommand } from "../../settings/pages/types";
 import { GeneralPage } from "./pages/general";
 import { AppearancePage } from "./pages/appearance";
 import "./settings-content.css";
+// The pages the dialog still draws the old way need the old chrome: the
+// desktop does not load the iPad's sheet, so its styles come with the
+// module (the sheet's own stylesheet imports them).
+import "../../settings/SettingsPanel.css";
 
 /**
  * The settings dialog's content column (spec Task 5): it hosts the open

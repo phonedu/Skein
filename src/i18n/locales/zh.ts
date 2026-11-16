@@ -631,7 +631,6 @@ export default {
   tocEmpty: "暂无标题",
   close: "关闭",
   settingsTitle: "设置",
-  settingsPageTab: "设置：{page}",
   settingsSearchPlaceholder: "搜索设置",
   settingsSearchResults: "搜索结果",
   settingsSearchNoMatches: "没有匹配的设置。",

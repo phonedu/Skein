@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { useRef, useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useSettingsDialogSearch } from "./settings-search";
+import { SettingsDialog } from "./settings-dialog";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
 import type { SearchEntry, SearchMatch } from "../../settings/settings-search";
 import type { Strings } from "../../i18n/strings";
@@ -152,5 +153,39 @@ describe("the dialog's settings search", () => {
     expect(field.value).toBe("语言");
     fireEvent.keyDown(field, { key: "Escape", keyCode: 27 });
     expect(field.value).toBe("");
+  });
+
+  it("inside the dialog, Escape clears the query and leaves it open", () => {
+    // The field's own Escape belongs to the field: the dialog's Escape
+    // (Base UI's) must not see it.
+    function Dialog() {
+      const [open, setOpen] = useState(true);
+      return (
+        <SettingsDialog
+          t={{ settingsTitle: "设置", close: "关闭" } as never}
+          open={open}
+          onClose={() => setOpen(false)}
+          nav={<Frame onPick={() => {}} />}
+        >
+          <div />
+        </SettingsDialog>
+      );
+    }
+    render(<Dialog />);
+    const field = screen.getByPlaceholderText("搜索设置") as HTMLInputElement;
+    fireEvent.change(field, { target: { value: "语言" } });
+    fireEvent.keyDown(field, { key: "Escape", keyCode: 27 });
+    expect(field.value).toBe("");
+    expect(screen.getByRole("dialog")).toBeTruthy();
+  });
+
+  it("the pages are mounted for the index only once a query is typed", () => {
+    // Until then, no page runs its effects (the MCP page polls).
+    const { rerender } = render(<Frame onPick={() => {}} />);
+    expect(document.querySelector("[data-search-page]")).toBeNull();
+    const field = screen.getByPlaceholderText("搜索设置");
+    fireEvent.change(field, { target: { value: "语" } });
+    rerender(<Frame onPick={() => {}} />);
+    expect(document.querySelector("[data-search-page]")).toBeTruthy();
   });
 });

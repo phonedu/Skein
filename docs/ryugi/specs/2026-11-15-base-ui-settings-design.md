@@ -13,7 +13,7 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值，�
 库选 Base UI 而非 Radix 的裁决已记入台账：Radix 维护停摆、作者转做 Base UI；
 两者 API 同源，约束照用户的六条走。
 
-## 画板说什么（.ryugi/artifacts/artboard/textus-breakpoints/pages/screens/ui-d-settings.html）
+## 画板说什么（`docs/baseline/boards/screens/ui-d-settings.html`，图见 `docs/baseline/boards/screens/ui-d-settings.png`）
 
 - 设置是**浮在当前界面上的面板**：1440×900 上叠 **880×556** 的弹窗，圆角 18，
   背景**不卸载不重载**——关掉立刻回到文档，编辑内容不丢。

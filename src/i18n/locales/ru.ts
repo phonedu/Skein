@@ -734,7 +734,6 @@ export default {
   tocEmpty: "Заголовков пока нет",
   close: "Закрыть",
   settingsTitle: "Настройки",
-  settingsPageTab: "Настройки: {page}",
   settingsSearchPlaceholder: "Поиск по настройкам",
   settingsSearchResults: "Результаты поиска",
   settingsSearchNoMatches: "Нет подходящих настроек.",

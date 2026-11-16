@@ -11,6 +11,7 @@ vi.mock("../platform/capabilities", async (importOriginal) => ({
 import { useSettingsOpening } from "./SettingsLayer";
 import {
   closeSettingsDialog,
+  OPEN_SETTINGS_PAGE_EVENT,
   settingsDialogOpen,
 } from "../settings/settings-nav";
 
@@ -33,4 +34,17 @@ it("the iPad keeps the sheet: the dialog stays shut", () => {
   expect(result.current.sheet).toMatchObject({ open: "general" });
   act(() => result.current.close());
   expect(result.current.sheet).toMatchObject({ open: null });
+});
+
+it("a deep link opens the sheet at its page, not a blank tab", () => {
+  const { result } = renderHook(() => useSettingsOpening(tabs));
+  act(() =>
+    window.dispatchEvent(
+      new CustomEvent(OPEN_SETTINGS_PAGE_EVENT, {
+        detail: { page: "look-basic" },
+      }),
+    ),
+  );
+  expect(settingsDialogOpen()).toBeNull();
+  expect(result.current.sheet).toMatchObject({ open: "look-basic" });
 });

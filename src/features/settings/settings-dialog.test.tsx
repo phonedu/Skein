@@ -63,4 +63,25 @@ describe("the settings dialog shell", () => {
     expect(css).not.toMatch(/border-radius:\s*\d+px/);
     expect(css).not.toMatch(/box-shadow:\s*\d/);
   });
+
+  it("takes the modal's layer, so nothing draws over it", () => {
+    expect(css).toContain("z-index: var(--z-modal)");
+  });
+
+  it("says it is a modal, and the window rests while it is open", () => {
+    render(
+      <SettingsDialog
+        t={{ settingsTitle: "设置", close: "关闭" } as never}
+        open
+        onClose={() => {}}
+        nav={null}
+      >
+        <div />
+      </SettingsDialog>,
+    );
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    // The window bar rests while a modal is open (the engine's mark).
+    expect(document.documentElement.hasAttribute("data-modal-open")).toBe(true);
+  });
 });

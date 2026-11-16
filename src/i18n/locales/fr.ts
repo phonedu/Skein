@@ -734,7 +734,6 @@ utiliser une.
   tocEmpty: "Aucun titre pour l’instant",
   close: "Fermer",
   settingsTitle: "Réglages",
-  settingsPageTab: "Réglages : {page}",
   settingsSearchPlaceholder: "Rechercher dans les réglages",
   settingsSearchResults: "Résultats de la recherche",
   settingsSearchNoMatches: "Aucun réglage ne correspond.",

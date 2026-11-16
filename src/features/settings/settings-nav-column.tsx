@@ -21,9 +21,12 @@ export function SettingsNavColumn(props: {
   onOpen: (id: string) => void;
 }) {
   const { t, pages, active, onOpen } = props;
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  // The groups the user folded; the one holding the open page stays open,
+  // so the page they are on is in sight (the old list did the same).
+  const [folded, setFolded] = useState<Record<string, boolean>>({});
   const ungrouped = pages.filter((p) => !p.group);
   const groups = Object.keys(SETTINGS_GROUPS) as SettingsGroupId[];
+  const activeGroup = pages.find((p) => p.id === active)?.group;
   const row = (page: SettingsPageDef) => (
     <button
       key={page.id}
@@ -43,7 +46,9 @@ export function SettingsNavColumn(props: {
         const group = SETTINGS_GROUPS[id];
         const inGroup = pages.filter((p) => p.group === id);
         if (!inGroup.length) return null;
-        const open = !!openGroups[id];
+        // Folded until opened - unless the group holds the open page, which
+        // the old list also kept in sight. The user's own choice wins.
+        const open = folded[id] ?? activeGroup === id;
         return (
           <div
             key={id}
@@ -54,7 +59,7 @@ export function SettingsNavColumn(props: {
               type="button"
               className="settings-nav-group-head"
               aria-expanded={open}
-              onClick={() => setOpenGroups((f) => ({ ...f, [id]: !open }))}
+              onClick={() => setFolded((f) => ({ ...f, [id]: !open }))}
             >
               <group.Icon className="settings-nav-ic" />
               <span className="settings-nav-label">{group.label(t)}</span>

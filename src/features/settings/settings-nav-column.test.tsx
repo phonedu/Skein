@@ -80,4 +80,13 @@ describe("the settings nav column", () => {
   it("the registry's groups are the same two the current app folds by", () => {
     expect(Object.keys(SETTINGS_GROUPS).sort()).toEqual(["ai", "edit"]);
   });
+
+  it("the group holding the open page is open, so the page is in sight", () => {
+    render(column("providers"));
+    // The AI group's page is the active one: the group shows it.
+    expect(screen.getByText("模型")).toBeTruthy();
+    expect(
+      screen.getByText("模型").closest("button")?.getAttribute("aria-current"),
+    ).toBe("page");
+  });
 });

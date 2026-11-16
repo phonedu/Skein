@@ -1,0 +1,84 @@
+/* About's card: the app's icon, name and version, and checking for
+   updates at its end - the page's one row that isn't in a section. It
+   lives with the page, not with a host that may go (the tab it was in
+   is gone; the dialog and the iPad's sheet both show this page). */
+
+.settings-about-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--ui-border) 75%, transparent);
+  border-radius: var(--shape-m);
+}
+
+.settings-about-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--shape-m);
+}
+
+.settings-about-card-main {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.settings-about-card-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings-about-card-name {
+  font-weight: 600;
+}
+
+.settings-about-card-version {
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+/* Under the version, as quiet as it. */
+.settings-about-sponsor {
+  display: block;
+  margin-top: 2px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--ui-muted);
+  font: inherit;
+  font-size: var(--text-caption);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Where Textus lives and who made it: one quiet line, last; wrapping,
+   each part whole, spaced rather than dotted. */
+.settings-about-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin: 16px 0 0;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+.settings-about-links > button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settings-about-links > button:hover,
+.settings-about-sponsor:hover {
+  color: var(--ui-text);
+}
