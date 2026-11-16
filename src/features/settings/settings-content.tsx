@@ -9,6 +9,8 @@ import { GeneralPage } from "./pages/general";
 import { AppearancePage } from "./pages/appearance";
 import { EditorPage } from "./pages/editor";
 import { ShortcutsPage } from "./pages/shortcuts";
+import { ImagesPage } from "./pages/images";
+import { ExportPage } from "./pages/export";
 import "./settings-content.css";
 // The pages the dialog still draws the old way need the old chrome: the
 // desktop does not load the iPad's sheet, so its styles come with the
@@ -55,6 +57,12 @@ export function SettingsContent(props: {
         pluginCommands={props.pluginCommands ?? []}
       />
     );
+  }
+  if (props.page.id === "edit-img") {
+    return <ImagesPage t={props.t} docPath={props.docPath ?? null} />;
+  }
+  if (props.page.id === "edit-export") {
+    return <ExportPage t={props.t} />;
   }
   const Page = pageComponent(props.page);
   return (

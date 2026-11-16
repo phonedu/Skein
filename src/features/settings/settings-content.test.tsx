@@ -117,6 +117,16 @@ const t = {
   shortcutToggleTextusAi: "Textus AI",
   menuHeadingTemplate: "标题 {n}",
   shortcutParagraph: "正文",
+  imageStorageGroupLabel: "图片与存储",
+  imageAlignLabel: "图片对齐",
+  imageAlignCenter: "居中",
+  imageAlignLeft: "左对齐",
+  menuExport: "导出",
+  pdfPageNumbersLabel: "PDF 页码",
+  pdfLightColorsLabel: "PDF 浅色",
+  exportTocLabel: "导出目录",
+  exportNumberHeadingsLabel: "标题编号",
+  exportNumberHeadingsHelp: "正文标题编上号",
 } as unknown as Strings;
 
 /** A legacy-shaped page, as the old ones are: it takes SettingsPageProps. */
@@ -182,6 +192,20 @@ describe("the settings content column", () => {
     const { container } = content("shortcuts");
     expect(screen.getByText("查找与编辑")).toBeTruthy();
     expect(screen.getByText("标题层级")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("draws Images with the new rows, not the legacy wrapper", () => {
+    const { container } = content("edit-img");
+    expect(screen.getByText("图片与存储")).toBeTruthy();
+    expect(screen.getByText("图片对齐")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("draws Export with the new rows, not the legacy wrapper", () => {
+    const { container } = content("edit-export");
+    expect(screen.getByText("导出")).toBeTruthy();
+    expect(screen.getByText("PDF 页码")).toBeTruthy();
     expect(container.querySelector(".settings-legacy-page")).toBeNull();
   });
 
