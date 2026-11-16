@@ -515,6 +515,8 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   grammarApplyTo: "“{s}”(으)로 고치기",
   grammarPrevious: "이전 항목",
   grammarNext: "다음 항목",
+  notesFootCount: "총 {n}개",
+  notesFootNote: "Markdown이 전부입니다",
   treeTab: "파일",
   outlineTab: "개요",
   searchTab: "검색",

@@ -32,6 +32,9 @@ import type { FileOpenHow } from "./tree-shared";
 import { useTreeView } from "./useTreeData";
 import { useRowMenu } from "./useRowMenu";
 import { useNewEntry } from "./useNewEntry";
+import { useNoteCount } from "./note-count";
+import { ViewFoot } from "../engine/controls/view-foot";
+import { fill } from "../i18n/fill";
 
 interface FileTreeProps {
   /** Where the tree is rooted. With no folder opened, the toolbar's parent
@@ -69,7 +72,11 @@ export function FileTree({
   onEntryMoved,
 }: FileTreeProps) {
   const { t } = useSettings();
-  const view = useTreeView(folder ?? root);
+  // The notes view's foot (the board's bottom strip): the folder's note
+  // count beside what the view is.
+  const base = folder ?? root;
+  const noteCount = useNoteCount(base);
+  const view = useTreeView(base);
   const { generation, setGeneration } = view;
   const { sort, setSort, scope, setScope, versions, reload } = view;
   const { showHidden, setShowHidden } = view;
@@ -302,6 +309,14 @@ export function FileTree({
               />
             </div>
           </div>
+          <ViewFoot
+            left={t.notesFootNote}
+            right={
+              noteCount === null
+                ? undefined
+                : fill(t.notesFootCount, { n: noteCount })
+            }
+          />
           <Presence show={menu !== null}>
             {menu && (
               <ContextMenu

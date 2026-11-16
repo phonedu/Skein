@@ -570,6 +570,8 @@ export default {
   grammarApplyTo: "Заменить на «{s}»",
   grammarPrevious: "Предыдущее замечание",
   grammarNext: "Следующее замечание",
+  notesFootCount: "Заметок: {n}",
+  notesFootNote: "Markdown — это всё",
   treeTab: "Файлы",
   outlineTab: "Оглавление",
   searchTab: "Поиск",

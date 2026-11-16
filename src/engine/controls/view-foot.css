@@ -1,0 +1,24 @@
+/* A view's foot: the board's bottom strip - one hairline up, the note at
+   the left, the fact at the right, caption text in the muted voice. */
+
+.view-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-top: 1px solid var(--ui-border);
+  font-size: var(--text-caption);
+  color: var(--ui-muted);
+  min-width: 0;
+}
+
+.view-foot-note,
+.view-foot-count {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -540,6 +540,8 @@ type /name in a conversation to use one.
   grammarApplyTo: "Change to “{s}”",
   grammarPrevious: "Previous issue",
   grammarNext: "Next issue",
+  notesFootCount: "{n} notes",
+  notesFootNote: "Markdown is everything",
   treeTab: "Files",
   outlineTab: "Outline",
   searchTab: "Search",
