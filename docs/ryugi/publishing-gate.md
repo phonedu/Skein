@@ -39,7 +39,12 @@
 - 规则表（路径黑名单、词表、豁免）是 `gate.mjs` 顶部的 `CONFIG` 常量；改词表
   就是改那里，别绕过。
 - 树对比按 merge-base 语义（同 `git diff A...B`）：上游前进带来的"假回退"
-  不算我们的改动。`.github/` 出现在上游范围只警告不拦（AGENTS.md 禁改 CI，
+  不算我们的改动；**内容与提交信息只扫我们自己写的提交**（以 `upstream/main`
+  为分界），同步 main 不会因为上游自带的测试邮箱、dependabot 签名误报。
+  **提交作者/提交者邮箱始终全量检查**：只放行 GitHub noreply 形式和
+  `upstream/main` 历史里已有的身份（本来就公开），别的（比如某台机器全局
+  git 配置里的私人邮箱）一律拦下。
+- `.github/` 出现在上游范围只警告不拦（AGENTS.md 禁改 CI，
   且 fork 的 token 没有 workflow scope，带了也推不上去）。
 - 误报先例（都已修，遇到新的按同样思路改 CONFIG）：npm 版本串 `react@1.9.0`
   曾经被当邮箱（现在要求域名含字母）；`fixedShortcuts` 曾经撞上代号 `dsh`

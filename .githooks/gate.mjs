@@ -49,6 +49,13 @@ const CONFIG = {
   // Privacy patterns run in every mode, fork pushes included. The email
   // domain must hold a letter, so version strings like react@1.9.0 pass.
   emailAllowDomains: ["users.noreply.github.com", "example.com"],
+  // Commit identities are published too. Allowed: GitHub's noreply forms,
+  // plus every author/committer already in upstream/main's history - those
+  // are public wherever upstream's commits are, and a synced-main push
+  // republishes them. Anything else (a personal address some machine's
+  // global git config left on a commit) stops the push.
+  identityAllowEmails: ["noreply@github.com"],
+  identityAllowSuffixes: ["@users.noreply.github.com"],
   keyPatterns: [
     /\bghp_[A-Za-z0-9]{20,}\b/,
     /\bgho_[A-Za-z0-9]{20,}\b/,
@@ -260,9 +267,10 @@ function scanDiff(base, head, mode, findings) {
   }
 }
 
-// Commit messages are published with the push too.
-function scanMessages(base, head, mode, findings) {
-  const log = git("log", "--format=%h %s%n%b", `${base}..${head}`);
+// Commit messages are published with the push too. The revision args come
+// from the caller, already narrowed to this side's commits.
+function scanMessages(revArgs, mode, findings) {
+  const log = git("log", "--format=%h %s%n%b", ...revArgs);
   for (const line of log.split("\n")) {
     for (const hit of privacyFindings(line)) {
       findings.push({ where: "commit message", ...hit, sample: line });
@@ -270,6 +278,50 @@ function scanMessages(base, head, mode, findings) {
     if (mode === "upstream") {
       for (const hit of upstreamFindings(line)) {
         findings.push({ where: "commit message", ...hit, sample: line });
+      }
+    }
+  }
+}
+
+// The author and the committer of every published commit are public too.
+// A personal address left in some machine's global git config would ride
+// along unnoticed; upstream's own identities are the baseline, because a
+// synced-main push legitimately republishes them.
+function scanIdentities(base, head, findings) {
+  const allowed = new Set(CONFIG.identityAllowEmails);
+  try {
+    for (const identity of git("log", "--format=%ae%n%ce", "upstream/main")
+      .split("\n")
+      .filter(Boolean)) {
+      allowed.add(identity.toLowerCase());
+    }
+  } catch {
+    // No upstream/main yet: noreply forms still pass, fetch upstream first.
+  }
+  const isAllowed = (email) =>
+    allowed.has(email.toLowerCase()) ||
+    CONFIG.identityAllowSuffixes.some((suffix) =>
+      email.toLowerCase().endsWith(suffix),
+    );
+  const commits = git(
+    "log",
+    "--format=%h%x00%ae%x00%ce%x00%s",
+    `${base}..${head}`,
+  );
+  for (const line of commits.split("\n")) {
+    const [hash, author, committer, subject] = line.split("\0");
+    if (!hash) continue;
+    for (const [role, email] of [
+      ["author", author],
+      ["committer", committer],
+    ]) {
+      if (email && !isAllowed(email)) {
+        findings.push({
+          where: `${hash} ${role}`,
+          rule: "commit identity (not noreply, not upstream's own)",
+          detail: email,
+          sample: subject ?? "",
+        });
       }
     }
   }
@@ -309,13 +361,27 @@ if (mode.length !== 1 || !["fork", "upstream"].includes(mode[0])) {
 }
 
 const [base, head] = resolveBaseHead(args);
-const mergeBase = git("merge-base", base, head).trim();
 const findings = [];
 const warnings = [];
 
+// Content and messages are scanned for this side's commits only, measured
+// against upstream/main: a push that syncs the fork with upstream
+// republishes upstream's own (already public) fixtures, sign-offs and
+// identities, and flagging those would make every sync a false alarm.
+// Without a fetched upstream/main the whole pushed range is scanned.
+let contentBase = git("merge-base", base, head).trim();
+let logArgs = [head, "--not", base];
+try {
+  git("rev-parse", "--verify", "-q", "upstream/main");
+  contentBase = git("merge-base", "upstream/main", head).trim();
+  logArgs = [head, "--not", base, "upstream/main"];
+} catch {
+  // No upstream/main in this clone yet; scan everything pushed.
+}
+
 if (mode[0] === "upstream") {
   // -z: raw NUL-separated paths, immune to the quoting of non-ASCII names.
-  const paths = git("diff", "--name-only", "-z", mergeBase, head)
+  const paths = git("diff", "--name-only", "-z", contentBase, head)
     .split("\0")
     .filter(Boolean);
   for (const path of paths) {
@@ -333,8 +399,9 @@ if (mode[0] === "upstream") {
   }
 }
 
-scanDiff(mergeBase, head, mode[0], findings);
-scanMessages(base, head, mode[0], findings);
+scanDiff(contentBase, head, mode[0], findings);
+scanMessages(logArgs, mode[0], findings);
+scanIdentities(base, head, findings);
 
 for (const warning of warnings) {
   console.error(`gate: WARNING ${warning}`);
