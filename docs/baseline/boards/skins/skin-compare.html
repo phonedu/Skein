@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=1600">
+<title>Textus · 四款皮肤对照</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:1600px;background:#e9e6df;color:#2b2620;
+  font-family:"Inter","Segoe UI",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.page{padding:28px 20px 40px;display:flex;flex-direction:column;gap:22px}
+
+/* ---------- page header ---------- */
+.page-head{padding:0 10px}
+.page-head h1{font-size:26px;margin:0 0 6px;font-weight:650;letter-spacing:-.01em}
+.page-head p{font-size:13px;line-height:1.7;color:#6b6154;margin:0;max-width:1100px}
+.page-head b{color:#2b2620}
+
+/* ---------- skin section ---------- */
+.skin{border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(43,38,32,.12),0 14px 40px rgba(43,38,32,.10);background:#fff}
+.skin-head{display:flex;align-items:flex-start;gap:24px;padding:16px 20px 14px;background:#f7f5f0;border-bottom:1px solid rgba(43,38,32,.08)}
+.skin-head .no{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:#8a7c66;padding-top:4px}
+.skin-head h2{font-size:19px;margin:0 0 3px;font-weight:650}
+.skin-head .thesis{font-size:12px;line-height:1.6;color:#6b6154;margin:0;max-width:620px}
+.swatches{margin-left:auto;display:grid;grid-template-columns:repeat(2,auto);gap:4px 18px;padding-top:2px}
+.sw-row{display:flex;gap:6px;align-items:center}
+.sw-row .lbl{font-size:9.5px;color:#8a7c66;width:16px;font-weight:600}
+.sw{display:flex;flex-direction:column;gap:2px;align-items:center}
+.sw i{display:block;width:34px;height:22px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(43,38,32,.14)}
+.sw span{font-size:8.5px;color:#8a7c66;font-variant-numeric:tabular-nums}
+
+.mode{display:flex;gap:22px;padding:20px;align-items:flex-start}
+.mode.light{background:linear-gradient(to bottom,#efede6,#efede6)}
+.mode.dark{background:linear-gradient(to bottom,#232019,#232019);border-top:1px solid rgba(43,38,32,.25)}
+.mode-tag{position:absolute;top:8px;left:14px;font-size:10px;letter-spacing:.1em;font-weight:600;z-index:5}
+.mode.light .mode-tag{color:#9a8d76}
+.mode.dark .mode-tag{color:#7d7466}
+
+/* ---------- palettes（每款只改这八个值） ---------- */
+.mode.light,.mode.dark{--tone-blue:#3E63DD;--tone-orange:#C2600A;
+  --tone-blue-tint:color-mix(in srgb,var(--tone-blue) 14%,var(--card));
+  --tone-orange-tint:color-mix(in srgb,var(--tone-orange) 14%,var(--card))}
+.mode.dark{--tone-blue:#7C9AFF;--tone-orange:#F0A05A}
+
+.skin-1 .light{--bg:#FAFAF9;--panel:#F4F4F2;--card:#FFFFFF;--ink:#1C1B1A;--muted:#787774;--accent:#3B6EA5;--accent-text:#33608F}
+.skin-1 .dark {--bg:#17171A;--panel:#1D1D21;--card:#232328;--ink:#E7E7E5;--muted:#9C9C99;--accent:#6FA3D9;--accent-text:#8AB6E4}
+.skin-2 .light{--bg:#FDFCFA;--panel:#F7F5F1;--card:#FFFFFF;--ink:#1A1611;--muted:#6E655A;--accent:#B4531F;--accent-text:#9A4417}
+.skin-2 .dark {--bg:#14120F;--panel:#1A1815;--card:#201D19;--ink:#EDE7DC;--muted:#A2978A;--accent:#E0884A;--accent-text:#E8995F}
+.skin-3 .light{--bg:#F5F5F7;--panel:#ECECF1;--card:#FFFFFF;--ink:#1D1D1F;--muted:#6E6E73;--accent:#0071E3;--accent-text:#0060C9}
+.skin-3 .dark {--bg:#1C1C1E;--panel:#232326;--card:#2C2C2E;--ink:#F5F5F7;--muted:#98989D;--accent:#0A84FF;--accent-text:#409CFF}
+.skin-4 .light{--bg:#F6F5F1;--panel:#F0EEE9;--card:#FFFFFF;--ink:#151412;--muted:#837F78;--accent:#5B5BD6;--accent-text:#4E4EC2}
+.skin-4 .dark {--bg:#171717;--panel:#1D1D1E;--card:#262629;--ink:#F0EFED;--muted:#9C9CA3;--accent:#8A8AF0;--accent-text:#9A98F5}
+
+/* 推导比例 = design-language §3.1 的落地比例，四款一致 */
+.mode.light,.mode.dark{
+  --border:color-mix(in srgb,var(--ink) 16%,var(--bg));
+  --border-soft:color-mix(in srgb,var(--ink) 10%,var(--bg));
+  --hover:color-mix(in srgb,var(--ink) 7%,var(--panel));
+  --sel:color-mix(in srgb,var(--accent) 13%,var(--panel));
+  --linkline:color-mix(in srgb,var(--accent) 34%,transparent);
+  --doc-bg:var(--card);
+  --sh2:0 8px 24px color-mix(in srgb,var(--ink) 13%,transparent);
+  --sh1:0 1px 2px color-mix(in srgb,var(--ink) 9%,transparent)
+}
+
+/* ---------- desktop frame（1440×900 缩到 0.62） ---------- */
+.frame{position:relative;width:893px;height:558px;flex:none;border-radius:8px;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(0,0,0,.18),0 10px 28px rgba(0,0,0,.16)}
+.desktop{width:1440px;height:900px;transform:scale(.62014);transform-origin:top left;
+  background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+
+/* window bar */
+.bar{height:44px;display:flex;align-items:center;gap:14px;padding:0 12px;flex:none;background:var(--panel);position:relative;z-index:3}
+.lights{display:flex;gap:8px;padding:0 6px;flex:none}
+.lights i{width:12px;height:12px;border-radius:50%;background:#f0b6a8}
+.lights i:nth-child(2){background:#efd49a}
+.lights i:nth-child(3){background:#b7d3a8}
+.tabs{display:flex;align-items:center;gap:2px;flex:1;min-width:0;height:100%}
+.tab{height:32px;display:flex;align-items:center;gap:6px;padding:0 10px;border-radius:8px;font-size:12.5px;color:var(--muted);white-space:nowrap;max-width:260px}
+.tab.on{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--border-soft),var(--sh1)}
+.tab .dirty{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.tab .x{font-size:14px;color:var(--muted);line-height:1;padding-left:2px}
+.bar-end{display:flex;align-items:center;gap:2px;flex:none}
+.count{font-size:11px;color:var(--muted);margin-right:8px;font-variant-numeric:tabular-nums}
+.ibtn{width:30px;height:30px;border:0;border-radius:999px;background:none;color:color-mix(in srgb,var(--ink) 72%,var(--bg));display:grid;place-items:center;padding:0}
+.plus{width:28px;height:28px;border:0;background:none;color:var(--muted);display:grid;place-items:center;border-radius:999px;flex:none}
+
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.sm{width:14px;height:14px}
+.ic.lg{width:20px;height:20px}
+
+/* shell */
+.body{flex:1;display:flex;min-height:0;position:relative}
+.rail{width:56px;flex:none;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0}
+.rail-item{width:38px;height:38px;border-radius:8px;display:grid;place-items:center;color:color-mix(in srgb,var(--ink) 64%,var(--panel))}
+.rail-item.on{background:var(--sel);color:var(--accent-text)}
+.rail-sp{flex:1}
+.side{width:316px;flex:none;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.side-head{height:40px;display:flex;align-items:center;gap:6px;padding:0 10px 0 16px;font-size:13px;font-weight:600;color:var(--ink)}
+.side-head .end{margin-left:auto;display:flex;gap:2px}
+.search{height:30px;margin:0 12px 8px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--border-soft);
+  display:flex;align-items:center;gap:6px;padding:0 10px;font-size:12px;color:var(--muted);flex:none}
+.search.focus{box-shadow:inset 0 0 0 2px var(--accent);color:var(--muted)}
+.tree{padding:2px 8px;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.row{height:28px;display:flex;align-items:center;gap:6px;padding:0 8px;border-radius:6px;font-size:13px;color:color-mix(in srgb,var(--ink) 84%,var(--panel));white-space:nowrap}
+.row .ind{width:14px;display:grid;place-items:center;color:var(--muted);flex:none}
+.row.folder{font-weight:500;color:var(--ink)}
+.row.on{background:var(--sel);color:var(--accent-text);font-weight:500}
+.row .meta{margin-left:auto;font-size:10px;color:var(--muted)}
+.side-foot{margin-top:auto;padding:10px 16px 12px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--border-soft)}
+
+.main{flex:1;min-width:0;padding:8px;display:flex;background:var(--bg)}
+.sheet{flex:1;min-width:0;background:var(--doc-bg);border-radius:12px;box-shadow:inset 0 0 0 1px var(--border-soft);display:flex;flex-direction:column;overflow:hidden}
+.fmt{height:36px;flex:none;display:flex;align-items:center;gap:2px;padding:0 18px;border-bottom:1px solid var(--border-soft);color:color-mix(in srgb,var(--ink) 68%,var(--card))}
+.fmt .fb{width:28px;height:26px;border-radius:6px;display:grid;place-items:center}
+.fmt .g{width:1px;height:16px;background:var(--border-soft);margin:0 6px}
+.doc{flex:1;overflow:hidden;padding:30px 46px 34px;position:relative;
+  font-family:Georgia,"Songti SC","SimSun",serif}
+.doc-inner{max-width:600px;margin:0 auto;position:relative}
+.doc h1{font-family:inherit;font-size:30px;line-height:1.25;margin:0 0 18px;font-weight:700}
+.doc p{font-family:inherit;font-size:15.5px;line-height:1.85;margin:0 0 12px;color:color-mix(in srgb,var(--ink) 88%,var(--card))}
+.doc h2{font-family:inherit;font-size:21px;line-height:1.3;margin:24px 0 10px;font-weight:700}
+.doc a{color:var(--accent-text);text-decoration:underline;text-decoration-color:var(--linkline);text-underline-offset:3px}
+.doc blockquote{font-family:inherit;margin:16px 0 18px;padding:8px 16px;border-left:3px solid var(--accent);
+  background:color-mix(in srgb,var(--accent) 7%,var(--card));border-radius:0 8px 8px 0;color:color-mix(in srgb,var(--ink) 82%,var(--card));font-size:14.5px;line-height:1.8}
+.doc ul{font-family:inherit;font-size:15.5px;line-height:1.85;margin:0 0 12px;padding-left:24px;color:color-mix(in srgb,var(--ink) 88%,var(--card))}
+.doc code{font-family:ui-monospace,Consolas,monospace;font-size:.82em;background:color-mix(in srgb,var(--ink) 7%,var(--card));
+  border-radius:4px;padding:1px 5px;color:color-mix(in srgb,var(--ink) 90%,var(--card))}
+.doc .count{position:absolute;right:36px;bottom:16px;font-size:11px;color:var(--muted);font-family:"Inter","Segoe UI","PingFang SC",sans-serif}
+.doc strong{font-weight:700;color:var(--ink)}
+
+/* ---------- kit（控件条，原尺寸） ---------- */
+.kit{flex:1;min-width:0;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--border-soft);
+  padding:18px 20px 16px;display:flex;flex-direction:column;gap:10px;color:var(--ink)}
+.kit-sec{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.kit-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:999px;font-size:14px}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.secondary{box-shadow:inset 0 0 0 1px var(--border);color:var(--ink)}
+.btn.text{color:var(--accent-text);padding:0 8px}
+.btn.dis{opacity:.45;pointer-events:none}
+.select{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;
+  background:var(--card);box-shadow:inset 0 0 0 1px var(--border);font-size:14px;color:var(--ink)}
+.select .ic{width:14px;height:14px;color:var(--muted)}
+.switch{width:40px;height:24px;border-radius:999px;display:inline-flex;align-items:center;padding:2px;flex:none}
+.switch i{display:block;width:20px;height:20px;border-radius:50%;background:var(--card);box-shadow:var(--sh1)}
+.switch{background:color-mix(in srgb,var(--ink) 16%,var(--card))}
+.switch.on{background:var(--accent)}
+.switch.on i{margin-left:16px}
+.check{width:16px;height:16px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--border);display:grid;place-items:center;flex:none}
+.check.on{background:var(--ink);box-shadow:none;color:var(--bg)}
+.check .ic{width:11px;height:11px;stroke-width:2.6}
+.chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:999px;font-size:11.5px}
+.chip i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.blue{background:var(--tone-blue-tint);color:var(--tone-blue)}
+.chip.orange{background:var(--tone-orange-tint);color:var(--tone-orange)}
+.capsule{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;
+  background:var(--card);box-shadow:inset 0 0 0 2px var(--accent);font-size:14px;color:var(--muted)}
+.field{display:inline-flex;align-items:center;height:34px;padding:0 12px;border-radius:8px;
+  background:var(--card);box-shadow:inset 0 0 0 1px var(--border);font-size:14px;color:var(--ink)}
+.menu{width:230px;border-radius:12px;background:var(--card);box-shadow:var(--sh2),0 0 0 1px var(--border-soft);padding:4px;flex:none}
+.mrow{height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:8px;font-size:13px;color:var(--ink)}
+.mrow.hover{background:var(--hover)}
+.mrow .ic{width:14px;height:14px;color:var(--muted)}
+.mrow .k{margin-left:auto;font-size:11px;color:var(--muted)}
+.msep{height:1px;margin:4px 8px;background:var(--border-soft)}
+.statelist{flex:1;min-width:220px;border-radius:12px;background:var(--panel);padding:6px;display:flex;flex-direction:column;gap:2px}
+.srow{height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:8px;font-size:13px}
+.srow .meta{margin-left:auto;font-size:11px;color:var(--muted)}
+.srow.hov{background:var(--hover)}
+.srow.sel{background:var(--sel);color:var(--accent-text);font-weight:500}
+.kit-text{font-size:14px;line-height:1.7;margin:0;color:color-mix(in srgb,var(--ink) 86%,var(--bg));max-width:600px}
+.kit-text a{color:var(--accent-text);text-decoration:underline;text-decoration-color:var(--linkline);text-underline-offset:3px}
+.kit-text code{font-family:ui-monospace,Consolas,monospace;font-size:.85em;background:color-mix(in srgb,var(--ink) 7%,var(--bg));border-radius:4px;padding:1px 5px}
+</style></head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></symbol>
+<symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M9.5 4.5a2 2 0 1 1 4 0V6h3a1 1 0 0 1 1 1v3h1.5a2 2 0 1 1 0 4H17v3a1 1 0 0 1-1 1h-3v1.5a2 2 0 1 1-4 0V18H6a1 1 0 0 1-1-1v-3H3.5a2 2 0 1 1 0-4H5V7a1 1 0 0 1 1-1h3.5Z"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><circle cx="4" cy="12" r="1.6"/><circle cx="12" cy="10" r="1.6"/><circle cx="20" cy="14" r="1.6"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5 13.7 9l5.5 1.7-5.5 1.7L12 18l-1.7-5.6L4.8 10.7 10.3 9Z"/><path d="M19 3v3M17.5 4.5h3"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+<symbol id="i-chevd" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-chevr" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-bold" viewBox="0 0 24 24"><path d="M7 4h6a4 4 0 0 1 0 8H7zM7 12h7a4 4 0 0 1 0 8H7z"/></symbol>
+<symbol id="i-italic" viewBox="0 0 24 24"><path d="M10 4h8M6 20h8M15 4 9 20"/></symbol>
+<symbol id="i-strike" viewBox="0 0 24 24"><path d="M16 5a4 4 0 0 0-4-2c-2.2 0-4 1.2-4 3 0 1.5 1 2.4 3 3M8 19a4 4 0 0 0 4 2c2.2 0 4-1.2 4-3 0-1.1-.5-1.9-1.5-2.5M3 12h18"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7L11 6"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7L13 18"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></symbol>
+<symbol id="i-olist" viewBox="0 0 24 24"><path d="M10 6h11M10 12h11M10 18h11M4 5h1v4M3.5 9h2M3 15.5c0-.8.6-1.5 1.5-1.5s1.5.5 1.5 1.3c0 1.2-3 1.6-3 3.7h3"/></symbol>
+<symbol id="i-quote" viewBox="0 0 24 24"><path d="M9 7H5v5h4v5H5M19 7h-4v5h4v5h-4"/></symbol>
+<symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></symbol>
+<symbol id="i-heading" viewBox="0 0 24 24"><path d="M6 5v14M18 5v14M6 12h12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+</defs></svg>
+
+<div class="page">
+
+<div class="page-head">
+  <h1>Textus · 四款皮肤对照</h1>
+  <p>同一块屏、同一份内容、同一套几何（窗口栏 44 · 轨道 56 · 侧栏 316 · 树行 28 · 控件 34 · 圆角 12/8/4 · 4px 栅格），
+  <b>四列之间只有调色板不同</b>。A 层修法——三段明度（背景 &lt; 面板 &lt; 卡片）、强调色系统（焦点环 / 选中 / 链接 / 开关）、
+  暗色「越浮越亮」、次要文字过 4.5:1——在四款中同样生效，用来公平对比。推导比例沿用设计语言 §3.1
+  （边线 = 墨 16%、悬停 = 墨 7%、选中 = 强调色 13%），右列控件条为原尺寸近观。几何、密度、动效一概不动：这是换肤，不是重排。</p>
+</div>
+
+<!-- ═══════════ 1 石墨 ═══════════ -->
+<section class="skin skin-1" id="s1">
+  <div class="skin-head">
+    <div>
+      <div class="no">Skin 01</div>
+      <h2>石墨 Graphite</h2>
+      <p class="thesis">中性冷静的工具感：冷灰三段 + 纯白卡片 + 钢蓝强调。界面退后、编辑区最亮，暗色的「越浮越亮」最自然。与纸墨差异最大的一档。</p>
+    </div>
+    <div class="swatches">
+      <div class="sw-row"><span class="lbl">亮</span>
+        <span class="sw"><i style="background:#FAFAF9"></i><span>FAFAF9</span></span>
+        <span class="sw"><i style="background:#F4F4F2"></i><span>F4F4F2</span></span>
+        <span class="sw"><i style="background:#FFFFFF"></i><span>FFFFFF</span></span>
+        <span class="sw"><i style="background:#1C1B1A"></i><span>1C1B1A</span></span>
+        <span class="sw"><i style="background:#787774"></i><span>787774</span></span>
+        <span class="sw"><i style="background:#3B6EA5"></i><span>3B6EA5</span></span>
+      </div>
+      <div class="sw-row"><span class="lbl">暗</span>
+        <span class="sw"><i style="background:#17171A"></i><span>17171A</span></span>
+        <span class="sw"><i style="background:#232328"></i><span>232328</span></span>
+        <span class="sw"><i style="background:#E7E7E5"></i><span>E7E7E5</span></span>
+        <span class="sw"><i style="background:#6FA3D9"></i><span>6FA3D9</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="mode light"><span class="mode-tag">LIGHT</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+  <div class="mode dark"><span class="mode-tag">DARK</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+</section>
+
+<!-- ═══════════ 2 亮纸 ═══════════ -->
+<section class="skin skin-2" id="s2">
+  <div class="skin-head">
+    <div>
+      <div class="no">Skin 02</div>
+      <h2>亮纸重墨 Bright Paper</h2>
+      <p class="thesis">纸墨性格保留，但纸洗白到接近白、墨加深拉开对比；ember 橙从「一屏一次的点缀」升为系统（焦点环、选中、链接、开关、引用线）。iA Writer / Bear 亮色那一味。</p>
+    </div>
+    <div class="swatches">
+      <div class="sw-row"><span class="lbl">亮</span>
+        <span class="sw"><i style="background:#FDFCFA"></i><span>FDFCFA</span></span>
+        <span class="sw"><i style="background:#F7F5F1"></i><span>F7F5F1</span></span>
+        <span class="sw"><i style="background:#FFFFFF"></i><span>FFFFFF</span></span>
+        <span class="sw"><i style="background:#1A1611"></i><span>1A1611</span></span>
+        <span class="sw"><i style="background:#6E655A"></i><span>6E655A</span></span>
+        <span class="sw"><i style="background:#B4531F"></i><span>B4531F</span></span>
+      </div>
+      <div class="sw-row"><span class="lbl">暗</span>
+        <span class="sw"><i style="background:#14120F"></i><span>14120F</span></span>
+        <span class="sw"><i style="background:#201D19"></i><span>201D19</span></span>
+        <span class="sw"><i style="background:#EDE7DC"></i><span>EDE7DC</span></span>
+        <span class="sw"><i style="background:#E0884A"></i><span>E0884A</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="mode light"><span class="mode-tag">LIGHT</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+  <div class="mode dark"><span class="mode-tag">DARK</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+</section>
+
+<!-- ═══════════ 3 苹果 ═══════════ -->
+<section class="skin skin-3" id="s3">
+  <div class="skin-head">
+    <div>
+      <div class="no">Skin 03</div>
+      <h2>苹果 Apple</h2>
+      <p class="thesis">macOS 系统质感：#F5F5F7 灰白窗口、纯白内容、系统蓝强调、Apple 灰阶文字。最「原生」的一档，编辑器内容完全交给主题，界面零存在感。</p>
+    </div>
+    <div class="swatches">
+      <div class="sw-row"><span class="lbl">亮</span>
+        <span class="sw"><i style="background:#F5F5F7"></i><span>F5F5F7</span></span>
+        <span class="sw"><i style="background:#ECECF1"></i><span>ECECF1</span></span>
+        <span class="sw"><i style="background:#FFFFFF"></i><span>FFFFFF</span></span>
+        <span class="sw"><i style="background:#1D1D1F"></i><span>1D1D1F</span></span>
+        <span class="sw"><i style="background:#6E6E73"></i><span>6E6E73</span></span>
+        <span class="sw"><i style="background:#0071E3"></i><span>0071E3</span></span>
+      </div>
+      <div class="sw-row"><span class="lbl">暗</span>
+        <span class="sw"><i style="background:#1C1C1E"></i><span>1C1C1E</span></span>
+        <span class="sw"><i style="background:#2C2C2E"></i><span>2C2C2E</span></span>
+        <span class="sw"><i style="background:#F5F5F7"></i><span>F5F5F7</span></span>
+        <span class="sw"><i style="background:#0A84FF"></i><span>0A84FF</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="mode light"><span class="mode-tag">LIGHT</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+  <div class="mode dark"><span class="mode-tag">DARK</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+</section>
+
+<!-- ═══════════ 4 Craft ═══════════ -->
+<section class="skin skin-4" id="s4">
+  <div class="skin-head">
+    <div>
+      <div class="no">Skin 04</div>
+      <h2>Craft</h2>
+      <p class="thesis">Craft 文档的味道：暖米底、纯白卡片、靛紫强调、柔和观感——但层次不靠柔光，靠明度阶梯与发丝线，几何仍按设计语言来。四档里最「内容产品」的一味。</p>
+    </div>
+    <div class="swatches">
+      <div class="sw-row"><span class="lbl">亮</span>
+        <span class="sw"><i style="background:#F6F5F1"></i><span>F6F5F1</span></span>
+        <span class="sw"><i style="background:#F0EEE9"></i><span>F0EEE9</span></span>
+        <span class="sw"><i style="background:#FFFFFF"></i><span>FFFFFF</span></span>
+        <span class="sw"><i style="background:#151412"></i><span>151412</span></span>
+        <span class="sw"><i style="background:#837F78"></i><span>837F78</span></span>
+        <span class="sw"><i style="background:#5B5BD6"></i><span>5B5BD6</span></span>
+      </div>
+      <div class="sw-row"><span class="lbl">暗</span>
+        <span class="sw"><i style="background:#171717"></i><span>171717</span></span>
+        <span class="sw"><i style="background:#262629"></i><span>262629</span></span>
+        <span class="sw"><i style="background:#F0EFED"></i><span>F0EFED</span></span>
+        <span class="sw"><i style="background:#8A8AF0"></i><span>8A8AF0</span></span>
+      </div>
+    </div>
+  </div>
+  <div class="mode light"><span class="mode-tag">LIGHT</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+  <div class="mode dark"><span class="mode-tag">DARK</span><div class="slot-desk"></div><div class="slot-kit"></div></div>
+</section>
+
+</div>
+
+<!-- ---------- 桌面画板模板（四款 × 亮暗共用） ---------- -->
+<template id="tpl-desk">
+<div class="desktop">
+  <div class="bar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="tabs">
+      <div class="tab on"><span>红楼梦.md</span><b class="dirty"></b><span class="x">×</span></div>
+      <div class="tab"><span>A Study in Scarlet.md</span><span class="x">×</span></div>
+      <button class="plus"><svg class="ic sm"><use href="#i-plus"/></svg></button>
+    </div>
+    <div class="bar-end">
+      <span class="count">222 字</span>
+      <button class="ibtn" aria-label="Textus AI"><svg class="ic"><use href="#i-spark"/></svg></button>
+      <button class="ibtn" aria-label="更多"><svg class="ic"><use href="#i-more"/></svg></button>
+    </div>
+  </div>
+  <div class="body">
+    <nav class="rail">
+      <div class="rail-item on"><svg class="ic lg"><use href="#i-folder"/></svg></div>
+      <div class="rail-item"><svg class="ic lg"><use href="#i-file"/></svg></div>
+      <div class="rail-item"><svg class="ic lg"><use href="#i-search"/></svg></div>
+      <div class="rail-item"><svg class="ic lg"><use href="#i-puzzle"/></svg></div>
+      <div class="rail-sp"></div>
+      <div class="rail-item"><svg class="ic lg"><use href="#i-settings"/></svg></div>
+    </nav>
+    <aside class="side">
+      <div class="side-head"><span>文件树</span><span class="end">
+        <button class="ibtn"><svg class="ic sm"><use href="#i-plus"/></svg></button>
+        <button class="ibtn"><svg class="ic sm"><use href="#i-more"/></svg></button></span></div>
+      <div class="search focus"><svg class="ic sm"><use href="#i-search"/></svg><span>搜索文件…</span></div>
+      <div class="tree">
+        <div class="row folder"><span class="ind"><svg class="ic sm"><use href="#i-chevd"/></svg></span><svg class="ic sm"><use href="#i-folder"/></svg><span>红楼梦</span></div>
+        <div class="row on"><span class="ind"></span><svg class="ic sm"><use href="#i-file"/></svg><span>第 1 回.md</span></div>
+        <div class="row"><span class="ind"></span><svg class="ic sm"><use href="#i-file"/></svg><span>人物谱.md</span><span class="meta">昨天</span></div>
+        <div class="row folder"><span class="ind"><svg class="ic sm"><use href="#i-chevr"/></svg></span><svg class="ic sm"><use href="#i-folder"/></svg><span>推理笔记</span><span class="meta">12</span></div>
+        <div class="row folder"><span class="ind"><svg class="ic sm"><use href="#i-chevr"/></svg></span><svg class="ic sm"><use href="#i-folder"/></svg><span>素材</span><span class="meta">9</span></div>
+      </div>
+      <div class="side-foot">共 6 篇 · 3 个文件夹</div>
+    </aside>
+    <div class="main">
+      <div class="sheet">
+        <div class="fmt">
+          <span class="fb"><svg class="ic sm"><use href="#i-heading"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-bold"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-italic"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-strike"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-code"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-link"/></svg></span>
+          <span class="g"></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-list"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-olist"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-quote"/></svg></span>
+          <span class="fb"><svg class="ic sm"><use href="#i-table"/></svg></span>
+        </div>
+        <article class="doc">
+          <div class="doc-inner">
+            <h1>红楼梦</h1>
+            <p>此开卷第一回也。作者自云：因曾历过一番梦幻之后，故将<strong>真事隐去</strong>，而借“通灵”之说，撰此《石头记》一书也。故曰“<a>甄士隐</a>”云云。</p>
+            <blockquote>但书中所记何事何人？自又云：“今风尘碌碌，一事无成，忽念及当日所有之女子，一一细考较去，觉其行止见识，皆出于我之上。”</blockquote>
+            <h2>读书笔记</h2>
+            <ul>
+              <li>这一段交代写作缘由，是全书的总纲；<code>通灵</code>与<code>甄士隐</code>是进入正文的钥匙。</li>
+              <li>甄士隐先失女儿、再失家宅、最后随道人而去，“由盛而衰”的线从此埋下。</li>
+            </ul>
+          </div>
+          <div class="count">222 字</div>
+        </article>
+      </div>
+    </div>
+  </div>
+</div>
+</template>
+
+<!-- ---------- 控件条模板 ---------- -->
+<template id="tpl-kit">
+<div class="kit">
+  <div class="kit-sec">按钮</div>
+  <div class="kit-row">
+    <span class="btn primary">保存</span>
+    <span class="btn secondary">取消</span>
+    <span class="btn text">了解更多</span>
+    <span class="btn primary dis">不可用</span>
+  </div>
+  <div class="kit-sec">控件</div>
+  <div class="kit-row">
+    <span class="select">简体中文 <svg class="ic"><use href="#i-chevd"/></svg></span>
+    <span class="switch on"><i></i></span>
+    <span class="switch"><i></i></span>
+    <span class="check on"><svg class="ic"><use href="#i-check"/></svg></span>
+    <span class="check"></span>
+    <span class="chip blue"><i></i>进行中</span>
+    <span class="chip orange"><i></i>素材</span>
+  </div>
+  <div class="kit-sec">字段与浮层（焦点环 = 强调色，2px 内描）</div>
+  <div class="kit-row">
+    <span class="capsule"><svg class="ic sm"><use href="#i-search"/></svg>搜索设置…</span>
+    <span class="field">一段默认文字</span>
+  </div>
+  <div class="kit-row">
+    <div class="menu">
+      <div class="mrow"><svg class="ic"><use href="#i-file"/></svg>在新页签打开<span class="k">Ctrl+T</span></div>
+      <div class="mrow hover"><svg class="ic"><use href="#i-plus"/></svg>新建文件<span class="k">Ctrl+N</span></div>
+      <div class="msep"></div>
+      <div class="mrow"><svg class="ic"><use href="#i-settings"/></svg>设置…<span class="k">Ctrl+,</span></div>
+    </div>
+    <div class="statelist">
+      <div class="srow">第 1 回<span class="meta">刚刚</span></div>
+      <div class="srow hov">人物谱<span class="meta">昨天</span></div>
+      <div class="srow sel">读书笔记<span class="meta">周二</span></div>
+    </div>
+  </div>
+  <div class="kit-sec">正文与链接</div>
+  <p class="kit-text">笔记里出现<a>链接文字</a>时用强调色文字加下划线，正文保持墨色；行内代码<code>inline code</code>走墨色浅底，不用强调色。</p>
+</div>
+</template>
+
+<script>
+const desk = document.getElementById("tpl-desk").content.firstElementChild;
+const kit = document.getElementById("tpl-kit").content.firstElementChild;
+document.querySelectorAll(".slot-desk").forEach((el) => {
+  const frame = document.createElement("div"); frame.className = "frame";
+  frame.appendChild(desk.cloneNode(true)); el.appendChild(frame);
+});
+document.querySelectorAll(".slot-kit").forEach((el) => el.appendChild(kit.cloneNode(true)));
+</script>
+</body></html>
