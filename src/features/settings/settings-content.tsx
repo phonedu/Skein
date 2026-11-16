@@ -12,6 +12,10 @@ import { ShortcutsPage } from "./pages/shortcuts";
 import { ImagesPage } from "./pages/images";
 import { ExportPage } from "./pages/export";
 import { PrivacyPage } from "./pages/privacy";
+import { ProvidersPage } from "./pages/providers";
+import { MemoryPage } from "./pages/memory";
+import { ChatPage } from "./pages/chat";
+import { McpPage } from "./pages/mcp";
 import "./settings-content.css";
 // The pages the dialog still draws the old way need the old chrome: the
 // desktop does not load the iPad's sheet, so its styles come with the
@@ -20,15 +24,17 @@ import "../../settings/SettingsPanel.css";
 
 /**
  * The settings dialog's content column: it hosts the open
- * page. General, Appearance, Editing and Shortcuts are drawn here with the
- * new rows; every other page - built-in or a plugin's - renders its
- * existing component unchanged, the transition rule. Mount with
- * `key={page.id}` so a page reopens fresh, like a request.
+ * page. General, Appearance, Editing, Shortcuts, Images, Export, Privacy
+ * and the Textus AI pages are drawn here with the new shells; every other
+ * page - built-in or a plugin's - renders its existing component
+ * unchanged, the transition rule. Mount with `key={page.id}` so a page
+ * reopens fresh, like a request.
  */
 export function SettingsContent(props: {
   t: Strings;
   page: SettingsPageDef;
   onOpenPage: (id: string) => void;
+  onClose: () => void;
   /** Whether the window has room for the AI's margin. */
   marginAvailable?: boolean;
   /** Shortcuts pages: what ShortcutsPage needs, passed on by the wiring. */
@@ -41,6 +47,13 @@ export function SettingsContent(props: {
   docPath?: string | null;
 }) {
   const { settings, setSettings } = useSettings();
+  /** A Textus AI page drawn only while Textus AI is on. */
+  const ai = (page: ReactNode) =>
+    settings.textusAi ? (
+      page
+    ) : (
+      <p className="tx-list-note">{props.t.textusAiOffHint}</p>
+    );
   if (props.page.id === "general") {
     return <GeneralPage t={props.t} />;
   }
@@ -68,6 +81,29 @@ export function SettingsContent(props: {
   if (props.page.id === "privacy") {
     return <PrivacyPage t={props.t} />;
   }
+  if (props.page.id === "providers") {
+    return ai(<ProvidersPage t={props.t} />);
+  }
+  if (props.page.id === "memory") {
+    return ai(
+      <MemoryPage
+        t={props.t}
+        onClose={props.onClose}
+        {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
+        {...(props.onFilesDeleted
+          ? { onFilesDeleted: props.onFilesDeleted }
+          : {})}
+      />,
+    );
+  }
+  if (props.page.id === "chat") {
+    return ai(
+      <ChatPage t={props.t} marginAvailable={props.marginAvailable ?? false} />,
+    );
+  }
+  if (props.page.id === "mcp") {
+    return ai(<McpPage t={props.t} />);
+  }
   const Page = pageComponent(props.page);
   return (
     <div className="settings-legacy-page">
@@ -91,11 +127,26 @@ export function SettingsContent(props: {
   );
 }
 
-/** A page section: the board's group heading over its rows. */
-export function PageGroup(props: { title: string; children: ReactNode }) {
+/** A page section: the board's group heading over its rows; the heading
+ *  row may carry what acts on the whole group (import, add). The title is
+ *  none for a headless group that only holds a panel. */
+export function PageGroup(props: {
+  title?: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <section className="settings-page-group">
-      <h3 className="settings-page-group-title">{props.title}</h3>
+    <section className="settings-page-group" aria-label={props.title}>
+      {(props.title || props.actions) && (
+        <div className="settings-page-group-head">
+          {props.title && (
+            <h3 className="settings-page-group-title">{props.title}</h3>
+          )}
+          {props.actions && (
+            <div className="settings-page-group-actions">{props.actions}</div>
+          )}
+        </div>
+      )}
       <div className="settings-page-group-body">{props.children}</div>
     </section>
   );

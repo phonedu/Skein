@@ -124,6 +124,7 @@ export function SettingsHost(props: {
           t={t}
           page={page}
           onOpenPage={() => {}}
+          onClose={props.onClose}
           marginAvailable={marginAvailable}
           fixedShortcuts={props.fixedShortcuts}
           pluginCommands={props.pluginCommands}
@@ -145,6 +146,7 @@ export function SettingsHost(props: {
                 t={t}
                 page={def(pageId)}
                 onOpenPage={() => {}}
+                onClose={props.onClose}
                 marginAvailable={marginAvailable}
               />
             ),
@@ -197,6 +199,7 @@ export function SettingsHost(props: {
             t={t}
             page={def(pageId)}
             onOpenPage={setPageId}
+            onClose={props.onClose}
             marginAvailable={marginAvailable}
             fixedShortcuts={props.fixedShortcuts}
             pluginCommands={props.pluginCommands}

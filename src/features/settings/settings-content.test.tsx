@@ -36,6 +36,38 @@ vi.mock("../../platform/ipc", async (importOriginal) => {
   };
 });
 
+// The providers' catalog: one entry with its own label, so the page's list
+// and panels have a provider to draw without the real catalog's fetch.
+vi.mock("../../ai/provider-catalog", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return {
+    ...actual,
+    useProviderCatalog: () => [
+      { id: "custom", label: "Test", keyOptional: true },
+    ],
+  };
+});
+
+// The providers page's panels keep their components (the transition rule):
+// their internals are not this page's contract, only their hosting is.
+vi.mock("../../settings/sections/provider-auth", () => ({
+  ProviderAuthPanel: () => <div data-testid="auth-panel" />,
+}));
+vi.mock("../../settings/sections/custom-provider", () => ({
+  CustomProviderPanel: () => <div data-testid="custom-panel" />,
+}));
+vi.mock("../../settings/sections/agent", () => ({
+  ModelListRow: () => <div data-testid="model-list" />,
+  AgentModelSection: () => null,
+  WritingModelSection: () => null,
+  AgentSystemPromptSection: () => null,
+  AgentWorkspaceRootSection: () => null,
+  AgentWorkspaceSection: () => null,
+}));
+vi.mock("../../settings/sections/market-skills", () => ({
+  AvailableSkills: () => null,
+}));
+
 /**
  * The content column's contract: it hosts pages keyed by id -
  * General and Appearance drawn with the new rows, their values read from and
@@ -130,6 +162,18 @@ const t = {
   exportTocLabel: "导出目录",
   exportNumberHeadingsLabel: "标题编号",
   exportNumberHeadingsHelp: "正文标题编上号",
+  providersGroup: "提供者",
+  memoryGroup: "记忆与技能",
+  aiAskLabel: "对话",
+  skillsInstalledNone: "这里还没有技能",
+  extensionsAvailable: "可用技能",
+  providerCustom: "自定义端点",
+  providerDoubao: "豆包",
+  providerMiniMax: "MiniMax",
+  providerMiniMaxIntl: "MiniMax 国际",
+  providerNoKeyRequired: "无需密钥",
+  providerModelsGroup: "模型",
+  providerKeysLocal: "密钥只存本机",
 } as unknown as Strings;
 
 /** A legacy-shaped page, as the old ones are: it takes SettingsPageProps. */
@@ -142,7 +186,15 @@ function content(page: string) {
   if (!def) throw new Error(`no page ${page}`);
   return render(
     <SettingsProvider>
-      <SettingsContent key={def.id} t={t} page={def} onOpenPage={() => {}} />
+      <SettingsContent
+        key={def.id}
+        t={t}
+        page={def}
+        onOpenPage={() => {}}
+        onClose={() => {}}
+        onOpenFile={() => {}}
+        onFilesDeleted={() => {}}
+      />
     </SettingsProvider>,
   );
 }
@@ -219,6 +271,29 @@ describe("the settings content column", () => {
     expect(container.querySelector(".settings-legacy-page")).toBeNull();
   });
 
+  it("draws Providers with the new shells, not the legacy wrapper", () => {
+    const { container } = content("providers");
+    expect(screen.getByText("提供者")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("draws Memory with the new shells, not the legacy wrapper", () => {
+    const { container } = content("memory");
+    expect(screen.getByText("记忆与技能")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("draws Writing assist with the new shells, not the legacy wrapper", () => {
+    const { container } = content("chat");
+    expect(screen.getByText("对话")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("draws External tools without the legacy wrapper", () => {
+    const { container } = content("mcp");
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
   it("a legacy page renders its existing component inside the column", () => {
     render(
       <SettingsProvider>
@@ -226,6 +301,7 @@ describe("the settings content column", () => {
           t={t}
           page={{ id: "legacy-test", label: () => "旧页", Page: LegacyPage }}
           onOpenPage={() => {}}
+          onClose={() => {}}
         />
       </SettingsProvider>,
     );
@@ -245,6 +321,7 @@ describe("the settings content column", () => {
             t={t}
             page={settingsPage("plugin-test")!}
             onOpenPage={() => {}}
+            onClose={() => {}}
           />
         </SettingsProvider>,
       );
