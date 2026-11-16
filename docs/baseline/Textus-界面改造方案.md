@@ -52,22 +52,22 @@
 
 ### 2.1 原则：画板是尺寸的权威，代码是执行者
 
-对齐不是"再设计一次"，而是把画板已经声明的数值落到代码与令牌上。画板在
-`.ryugi/artifacts/artboard/textus-breakpoints/pages/screens/`（`ui-d-*.html`），
+对齐不是"再设计一次"，而是把画板已经声明的数值落到代码与令牌上。画板已入库：
+图与源文件在 [`boards/`](boards/README.md)（`screens/ui-d-*.html` 等，**原路径见 boards/README.md 的对照表**），
 声明的尺寸优先于平台规范（Fluent / Apple）：**画板是批准过的设计，Textus 保持自己跨平台的控件高度体系**（§5.3）。
 
 ### 2.2 对齐后的尺寸表（落地值）
 
-| 项                 | 画板                   | 落地                                              | 落点                                                |
-| ------------------ | ---------------------- | ------------------------------------------------- | --------------------------------------------------- |
-| 字号级差（Medium） | 34 / 17 / 15 / 14 / 12 | 大标题 34 · 标题 17 · 正文 15 · 列表 14 · 说明 12 | `--text-*` 角色（`src/engine/tokens/ui-sizes.css`） |
-| 字号预设           | —                      | Small 28/16/14/13/11 · Large 40/20/17/15/13       | 预设各档保持"一档"的步差，不等比                    |
-| 窗口栏高           | 44                     | 40 / **44** / 48（Small/Medium/Large）            | `--window-bar-row`                                  |
-| 活动轨宽           | 56                     | **56**                                            | `--rail-width`                                      |
-| 侧栏宽             | 316                    | **316** 起（最小 198，最大 528）                  | `SIDEBAR_DEFAULT_WIDTH`                             |
-| 控件高             | 34                     | **34**（小号 28；Small 30/24，Large 40/32）       | `--control-height` / `--control-height-sm`          |
-| 文件树行高         | 28                     | **28**                                            | `src/files/FileTree.css`                            |
-| 设置浮层           | 880×556                | 880 × 556（× `--chrome-scale`）                   | `src/features/settings/settings-dialog.css`         |
+| 项                 | 画板                   | 落地                                              | 落点                                                | 落地截图                                                                                      |
+| ------------------ | ---------------------- | ------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 字号级差（Medium） | 34 / 17 / 15 / 14 / 12 | 大标题 34 · 标题 17 · 正文 15 · 列表 14 · 说明 12 | `--text-*` 角色（`src/engine/tokens/ui-sizes.css`） | [桌面 Medium](boards/shots/desktop-medium-light.png)                                          |
+| 字号预设           | —                      | Small 28/16/14/13/11 · Large 40/20/17/15/13       | 预设各档保持"一档"的步差，不等比                    | [Small](boards/shots/desktop-small-light.png) · [Large](boards/shots/desktop-large-light.png) |
+| 窗口栏高           | 44                     | 40 / **44** / 48（Small/Medium/Large）            | `--window-bar-row`                                  | [桌面 Medium](boards/shots/desktop-medium-light.png)                                          |
+| 活动轨宽           | 56                     | **56**                                            | `--rail-width`                                      | [桌面 Medium](boards/shots/desktop-medium-light.png)                                          |
+| 侧栏宽             | 316                    | **316** 起（最小 198，最大 528）                  | `SIDEBAR_DEFAULT_WIDTH`                             | [桌面 Medium](boards/shots/desktop-medium-light.png)                                          |
+| 控件高             | 34                     | **34**（小号 28；Small 30/24，Large 40/32）       | `--control-height` / `--control-height-sm`          | [设置浮层](boards/shots/settings-dialog-general-light.png)                                    |
+| 文件树行高         | 28                     | **28**                                            | `src/files/FileTree.css`                            | [桌面 Medium](boards/shots/desktop-medium-light.png)                                          |
+| 设置浮层           | 880×556                | 880 × 556（× `--chrome-scale`）                   | `src/features/settings/settings-dialog.css`         | [设置浮层](boards/shots/settings-dialog-general-light.png)                                    |
 
 > 画板的小数字（13.5 / 11.5）按 4px 栅格就近取整（14 / 12），不引入半像素角色。
 
@@ -91,8 +91,78 @@
 - 一切尺寸落 4px 栅格。
 
 **证据**：`ui-alignment` 分支 8 个任务逐个 TDD 落地（提交 `0247c068` → `90680cb1`）；
-截图五张（桌面 Small/Medium/Large 亮色 + Medium 暗色 + 手机亮色）存于
-`.ryugi/sdd/textus-redesign.zh.md/shots/`；`docs/design/design-language.md` 的 §4.2 / §5.3 / §5.4 / §5.6 同步改写；发布说明 `docs/releases/next/ui-alignment.md`。
+截图五张（桌面 Small/Medium/Large 亮色 + Medium 暗色 + 手机亮色）存于 [`boards/shots/`](boards/shots/)（§2.6）；
+`docs/design/design-language.md` 的 §4.2 / §5.3 / §5.4 / §5.6 同步改写；发布说明 `docs/releases/next/ui-alignment.md`。
+
+### 2.5 画板对照（已入库，逐张可比）
+
+画板与落地截图都搬进了 [`boards/`](boards/README.md)：**画板是「设计」的一侧，截图是「实现」的一侧**。
+下面内嵌的是界面清单十张（总览 + 桌面七屏 + 手机两块板）；骨架（今天桌面 / 手机、断点阶梯、行与三段式、两个缺口的出路）与
+三份方向稿只有源文件，全量索引在 [boards/README.md](boards/README.md)。
+
+**总览：桌面七屏 + 手机九屏，同一套 token、同一条三段式**
+
+![界面清单 · 总览](boards/screens/ui-all.png)
+
+**桌面 · 今天** —— 队列即首页，五个固定分组
+
+![桌面 · 今天](boards/screens/ui-d-today.png)
+
+**桌面 · 笔记** —— 文件树 + Markdown 编辑器
+
+![桌面 · 笔记](boards/screens/ui-d-notes.png)
+
+**桌面 · 资产** —— 按触发排，边界三件套
+
+![桌面 · 资产](boards/screens/ui-d-assets.png)
+
+**桌面 · 确认中心** —— 列表 / diff / 证据三栏
+
+![桌面 · 确认中心](boards/screens/ui-d-confirm.png)
+
+**桌面 · Agent 时间线** —— 每次调用一张卡片
+
+![桌面 · Agent 时间线](boards/screens/ui-d-agent.png)
+
+**桌面 · 收集** —— 浮层，不占轨道位置
+
+![桌面 · 收集](boards/screens/ui-d-collect.png)
+
+**桌面 · 设置** —— 弹窗面板，不占一轨
+
+![桌面 · 设置](boards/screens/ui-d-settings.png)
+
+**移动端 A** —— 今天 / 笔记 / 收集 / 资产；底栏 56 + 安全区 34，触栏 44 起
+
+![移动端 A](boards/screens/ui-p-a.png)
+
+**移动端 B** —— 详情 / 确认 / Agent / 更多 / 设置
+
+![移动端 B](boards/screens/ui-p-b.png)
+
+### 2.6 落地截图（实现的一侧）
+
+`ui-alignment` 落地后的真实界面，与 §2.5 的画板逐张比。
+
+**桌面 Small（亮色）**
+
+![桌面 Small](boards/shots/desktop-small-light.png)
+
+**桌面 Medium（亮色）**
+
+![桌面 Medium](boards/shots/desktop-medium-light.png)
+
+**桌面 Large（亮色）**
+
+![桌面 Large](boards/shots/desktop-large-light.png)
+
+**桌面 Medium（暗色）**
+
+![桌面 Medium（暗色）](boards/shots/desktop-medium-dark.png)
+
+**手机（亮色）**
+
+![手机（亮色）](boards/shots/phone-light.png)
 
 ---
 
@@ -131,6 +201,10 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值；�
 | 左导航 200       | 200                                                                             | 导航行 32 高、组标题 24 高 / 12px / 600      |
 | 内容行 `.srow`   | 标签 + 小字说明（12px muted）+ 右侧值控件                                       | 行间 1px 发丝线，行内距 13 → 12（4px 栅格）  |
 
+画板原样（1440×900 上叠 880×556 的弹窗，左导航 200）：
+
+![设置：浮在上面，不占一屏](boards/screens/ui-d-settings.png)
+
 ### 3.4 行与控件皮肤
 
 - **行**：`.settings-row` = 标签 / 说明在左，值控件在右；说明用 `--text-caption` + `--ui-muted`；
@@ -166,6 +240,16 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值；�
 - ⌘F 绑定不变：设置开着时聚焦浮层里的搜索框（开着才归设置）；
 - 结果站位内容列，拣选后**跳到该行**（复用引擎既有的 reveal：滚动居中 + 聚焦 + 短暂着色）；
 - 合成中的 Escape 归输入法，**不关浮层**（引擎规矩优先于库行为）。
+
+### 3.8 浮层对照（画板 → 落地）
+
+画板画的是新 IA 的七项导航（库与同步 / 模型与 Agent / 插件 / 技能 / 外观 / 快捷键 / 关于），
+落地按裁决 1 沿用现有页面清单；**壳、行、控件皮肤与画板一致**（浮层 880×556、左导航 200、行 + pill 值控件）。
+
+| 亮色                                                               | 暗色                                                              |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| ![通用（亮色）](boards/shots/settings-dialog-general-light.png)    | ![通用（暗色）](boards/shots/settings-dialog-general-dark.png)    |
+| ![外观（亮色）](boards/shots/settings-dialog-appearance-light.png) | ![外观（暗色）](boards/shots/settings-dialog-appearance-dark.png) |
 
 ---
 
@@ -214,7 +298,7 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值；�
 | e2e           | `e2e/settings-pages.spec.ts` 按新表面重写；`a11y / agent-buttons / ai-tabs / fit-sweep / frames / zoom-per-tab` 随之调整（`menu-settings` 不再开页签） |
 | 插件 e2e 前置 | 需 `TEXTUS_PLUGINS_DIR` 指向 `textus-plugins` 检出，否则插件目录为空（上游 AGENTS.md 明写的前置）                                                      |
 | 已知环境噪声  | 本机 `check:quick` 有 4 个编辑器侧失败（html-align / SplitView / note-embed-render），在干净基线 `paper-and-ink` 上同样复现 → 机器基线问题，非本次引入 |
-| 截图          | 亮 / 暗 × 三档尺寸 + 手机，见 §2.4                                                                                                                     |
+| 截图          | 亮 / 暗 × 三档尺寸 + 手机，见 §2.5–§2.6；设置浮层见 §3.8                                                                                               |
 
 ---
 
@@ -244,6 +328,6 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值；�
 
 ## 8. 修订记录
 
-| 版本 | 日期       | 变化                                                                                                                        |
-| ---- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
-| v0.1 | 2026-11-16 | 首版：把已落地的界面改写（画板对齐 + Base UI 设置页重建）从上游仓的分散文档汇总成本项目基线，含 11 条裁决、预算门与证据口径 |
+| 版本 | 日期       | 变化                                                                                                                                                                                                          |
+| ---- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v0.1 | 2026-11-16 | 首版：把已落地的界面改写（画板对齐 + Base UI 设置页重建）从上游仓的分散文档汇总成本项目基线，含 11 条裁决、预算门与证据口径；同日补记：画板与落地截图入库 `docs/baseline/boards/`，§2.5–§2.6、§3.8 内嵌对照图 |

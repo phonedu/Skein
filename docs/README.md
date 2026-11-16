@@ -73,6 +73,10 @@ Writing plugins:
   outline of [releases/TEMPLATE.md](releases/TEMPLATE.md). The release workflow uses
   them as the GitHub release's text. Unreleased notes are fragments in
   [releases/next/](releases/next/README.md), one file per change.
+- [baseline/](baseline/) - the project's baseline documents (in Chinese): the
+  interface baseline, the redesign plan, the tool contract, the notes theory and
+  the agent research. [baseline/boards/](baseline/boards/README.md) holds the
+  design boards and the screenshots of the shipped interface, side by side.
 - [images/](images/) - README and App Store screenshots
   (`npm run screenshots:readme` regenerates the README's).
 - [archive/](archive/) - records that are no longer updated (some in Chinese).

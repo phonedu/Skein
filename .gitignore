@@ -53,3 +53,9 @@ playwright-report/
 # The official plugins checked out beside the app, for the dev server
 # and the plugin flows (vite.dev-plugins.ts); a repository of its own.
 textus-plugins/
+
+# The local scratch space the boards and task ledgers are drafted in
+# (.prettierignore lists it too); the approved record lives in docs/baseline/.
+.ryugi/
+# The security scanner's local state
+.mimosa/
