@@ -2,7 +2,7 @@
 
 > 版本：v0.3
 > 日期：2026-11-15
-> 关联：《Textus-改造方案》第 5 节与附录 B、《笔记资产理论》v0.2
+> 关联：《Textus-改造方案》第 5 节与附录 B、《笔记资产理论》v0.2、《Textus-界面改造方案》v0.1
 > 状态：已评审（2026-11-15），作为实现基线随阶段推进
 
 v0.2 对齐“结果闭环”：增加结果、边界、触发与复用形态；新增 `resolve_assets_for_trigger`，把资产检索从“搜索框”改为“按动作阶段触发”。
@@ -31,14 +31,14 @@ v0.3 修评审发现的不一致：`taskType` 定义匹配口径（§3.7）；�
 建议位置：`src/features/assets/tools/contracts.ts`
 
 ```ts
-export type CardType = 'task' | 'judgment' | 'asset';
+export type CardType = "task" | "judgment" | "asset";
 
-export type TaskStatus = 'inbox' | 'active' | 'blocked' | 'done' | 'archived';
-export type JudgmentStatus = 'draft' | 'confirmed' | 'archived';
-export type AssetStatus = 'draft' | 'active' | 'deprecated' | 'archived';
+export type TaskStatus = "inbox" | "active" | "blocked" | "done" | "archived";
+export type JudgmentStatus = "draft" | "confirmed" | "archived";
+export type AssetStatus = "draft" | "active" | "deprecated" | "archived";
 
 export type CardStatus = TaskStatus | JudgmentStatus | AssetStatus;
-export type Actor = 'user' | 'agent' | 'import';
+export type Actor = "user" | "agent" | "import";
 
 export interface CardRef {
   id: string;
@@ -51,18 +51,10 @@ export interface CardRef {
 }
 
 export type ReuseForm =
-  | 'checklist'
-  | 'template'
-  | 'prompt'
-  | 'script'
-  | 'decision_table'
-  | 'doc';
+  "checklist" | "template" | "prompt" | "script" | "decision_table" | "doc";
 
 export type TriggerStage =
-  | 'before_delivery'
-  | 'during_task'
-  | 'after_result'
-  | 'on_demand';
+  "before_delivery" | "during_task" | "after_result" | "on_demand";
 
 export interface AssetTrigger {
   stage: TriggerStage;
@@ -93,7 +85,7 @@ export interface CardDocument extends CardRef {
 
 export interface EvidenceRef {
   id: string;
-  kind: 'note' | 'file' | 'url' | 'message';
+  kind: "note" | "file" | "url" | "message";
   title: string;
   locator: string;
   addedAt: string;
@@ -108,14 +100,14 @@ export interface HistoryEntry {
 }
 
 export type ToolErrorCode =
-  | 'NOT_FOUND'
-  | 'REVISION_CONFLICT'
-  | 'INVALID_STATE'
-  | 'PERMISSION_DENIED'
-  | 'VALIDATION_FAILED'
-  | 'STORAGE_UNAVAILABLE'
-  | 'RATE_LIMITED'
-  | 'NEEDS_CONFIRMATION';
+  | "NOT_FOUND"
+  | "REVISION_CONFLICT"
+  | "INVALID_STATE"
+  | "PERMISSION_DENIED"
+  | "VALIDATION_FAILED"
+  | "STORAGE_UNAVAILABLE"
+  | "RATE_LIMITED"
+  | "NEEDS_CONFIRMATION";
 
 export interface ToolError {
   code: ToolErrorCode;
@@ -125,8 +117,7 @@ export interface ToolError {
 }
 
 export type ToolResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: ToolError };
+  { ok: true; data: T } | { ok: false; error: ToolError };
 
 export interface ToolEnvelope<I> {
   requestId: string; // 写入类工具必填，用于幂等
@@ -146,11 +137,11 @@ Agent 调用时固定携带：
 
 ```ts
 export interface ToolContext {
-  actor: 'agent';
+  actor: "agent";
   sessionId: string;
   libraryRoot: string; // 只允许操作该根目录
   contractVersion: 1;
-  now: string;         // ISO 8601
+  now: string; // ISO 8601
 }
 ```
 
@@ -166,30 +157,30 @@ export interface ToolContext {
 
 ### 2.3 限制值
 
-| 项目 | 限制 |
-| --- | --- |
-| 搜索关键词 | ≤ 200 字符 |
-| 搜索返回 | 默认 20，最大 50 |
-| 标题 | ≤ 120 字符 |
-| 正文 | ≤ 20,000 字符 |
-| `sourceIds` | ≤ 20 个 |
-| 单次 patch 字段 | ≤ 20 个 |
-| 使用记录上下文 | ≤ 200 字符 |
-| `boundary.appliesWhen` / `failsWhen` | 各 ≤ 10 项 |
-| `trigger.label` | ≤ 40 字符 |
-| 触发匹配返回 | 默认 10，最大 20 |
+| 项目                                 | 限制             |
+| ------------------------------------ | ---------------- |
+| 搜索关键词                           | ≤ 200 字符       |
+| 搜索返回                             | 默认 20，最大 50 |
+| 标题                                 | ≤ 120 字符       |
+| 正文                                 | ≤ 20,000 字符    |
+| `sourceIds`                          | ≤ 20 个          |
+| 单次 patch 字段                      | ≤ 20 个          |
+| 使用记录上下文                       | ≤ 200 字符       |
+| `boundary.appliesWhen` / `failsWhen` | 各 ≤ 10 项       |
+| `trigger.label`                      | ≤ 40 字符        |
+| 触发匹配返回                         | 默认 10，最大 20 |
 
 ### 2.4 限流（每个会话每分钟）
 
-| 工具 | 上限 |
-| --- | --- |
-| `search_notes` | 30 |
-| `resolve_assets_for_trigger` | 30 |
-| `read_note` | 60 |
-| `create_draft` | 5 |
-| `propose_patch` | 20 |
-| `request_confirm` | 5 |
-| `record_use` | 30 |
+| 工具                         | 上限 |
+| ---------------------------- | ---- |
+| `search_notes`               | 30   |
+| `resolve_assets_for_trigger` | 30   |
+| `read_note`                  | 60   |
+| `create_draft`               | 5    |
+| `propose_patch`              | 20   |
+| `request_confirm`            | 5    |
+| `record_use`                 | 30   |
 
 超限返回 `RATE_LIMITED`，`retryable: true`。
 
@@ -214,7 +205,7 @@ export interface SearchNotesOutput {
   items: Array<
     CardRef & {
       snippet: string;
-      matchedFields: Array<'title' | 'body' | 'tags'>;
+      matchedFields: Array<"title" | "body" | "tags">;
     }
   >;
   total: number;
@@ -277,7 +268,7 @@ export interface CreateDraftInput {
 export interface CreateDraftOutput {
   id: string;
   type: CardType;
-  status: 'inbox' | 'draft';
+  status: "inbox" | "draft";
   revision: 1;
   path: string;
 }
@@ -303,19 +294,19 @@ export interface CreateDraftOutput {
 
 ```ts
 export type PatchField =
-  | 'title'
-  | 'body'
-  | 'tags'
-  | 'sourceIds'
-  | 'expectedOutcome'
-  | 'actualOutcome'
-  | 'variance'
-  | 'boundary_applies'
-  | 'boundary_fails'
-  | 'boundary_counterexample'
-  | 'trigger_stage'
-  | 'trigger_label'
-  | 'reuseForm';
+  | "title"
+  | "body"
+  | "tags"
+  | "sourceIds"
+  | "expectedOutcome"
+  | "actualOutcome"
+  | "variance"
+  | "boundary_applies"
+  | "boundary_fails"
+  | "boundary_counterexample"
+  | "trigger_stage"
+  | "trigger_label"
+  | "reuseForm";
 
 export interface FieldPatch {
   field: PatchField;
@@ -361,12 +352,7 @@ export interface ProposePatchOutput {
 
 ```ts
 export type TransitionTarget =
-  | 'active'
-  | 'blocked'
-  | 'done'
-  | 'archived'
-  | 'confirmed'
-  | 'deprecated';
+  "active" | "blocked" | "done" | "archived" | "confirmed" | "deprecated";
 
 export interface RequestConfirmInput {
   id: string;
@@ -380,7 +366,7 @@ export interface RequestConfirmOutput {
   requestId: string;
   id: string;
   target: TransitionTarget;
-  status: 'pending';
+  status: "pending";
   expiresAt: string;
 }
 ```
@@ -404,7 +390,7 @@ export interface RequestConfirmOutput {
 export interface RecordUseInput {
   assetId: string;
   context: string;
-  result?: 'better' | 'same' | 'worse';
+  result?: "better" | "same" | "worse";
   taskId?: string;
 }
 
@@ -471,15 +457,15 @@ export interface ResolveAssetsForTriggerOutput {
 
 ## 4. 权限矩阵
 
-| 工具 | 读文件 | 写文件 | 改状态 | 需要人工确认 |
-| --- | --- | --- | --- | --- |
-| `search_notes` | 是 | 否 | 否 | 否 |
-| `resolve_assets_for_trigger` | 是 | 否 | 否 | 否 |
-| `read_note` | 是 | 否 | 否 | 否 |
-| `create_draft` | 是 | 仅新建草稿 | 否 | 否 |
-| `propose_patch` | 是 | 否 | 否 | 确认 proposal 时 |
-| `request_confirm` | 是 | 否 | 否 | 是 |
-| `record_use` | 是 | 追加使用日志 | 否 | 否 |
+| 工具                         | 读文件 | 写文件       | 改状态 | 需要人工确认     |
+| ---------------------------- | ------ | ------------ | ------ | ---------------- |
+| `search_notes`               | 是     | 否           | 否     | 否               |
+| `resolve_assets_for_trigger` | 是     | 否           | 否     | 否               |
+| `read_note`                  | 是     | 否           | 否     | 否               |
+| `create_draft`               | 是     | 仅新建草稿   | 否     | 否               |
+| `propose_patch`              | 是     | 否           | 否     | 确认 proposal 时 |
+| `request_confirm`            | 是     | 否           | 否     | 是               |
+| `record_use`                 | 是     | 追加使用日志 | 否     | 否               |
 
 补充：
 
@@ -491,18 +477,18 @@ export interface ResolveAssetsForTriggerOutput {
 
 ## 5. 状态迁移权限
 
-| 类型 | 起始状态 | 目标状态 | Agent 可发起 | 执行者 |
-| --- | --- | --- | --- | --- |
-| 任务 | `inbox` | `active` | 是 | 宿主 |
-| 任务 | `active` | `blocked` | 是 | 宿主 |
-| 任务 | `blocked` | `active` | 是 | 宿主 |
-| 任务 | `active` | `done` | 是 | 宿主 |
-| 任务 | 任意 | `archived` | 是 | 宿主 |
-| 判断 | `draft` | `confirmed` | 是 | 宿主 |
-| 判断 | `confirmed` | `archived` | 是 | 宿主 |
-| 资产 | `draft` | `active` | 是 | 宿主 |
-| 资产 | `active` | `deprecated` | 是 | 宿主 |
-| 资产 | 任意 | `archived` | 是 | 宿主 |
+| 类型 | 起始状态    | 目标状态     | Agent 可发起 | 执行者 |
+| ---- | ----------- | ------------ | ------------ | ------ |
+| 任务 | `inbox`     | `active`     | 是           | 宿主   |
+| 任务 | `active`    | `blocked`    | 是           | 宿主   |
+| 任务 | `blocked`   | `active`     | 是           | 宿主   |
+| 任务 | `active`    | `done`       | 是           | 宿主   |
+| 任务 | 任意        | `archived`   | 是           | 宿主   |
+| 判断 | `draft`     | `confirmed`  | 是           | 宿主   |
+| 判断 | `confirmed` | `archived`   | 是           | 宿主   |
+| 资产 | `draft`     | `active`     | 是           | 宿主   |
+| 资产 | `active`    | `deprecated` | 是           | 宿主   |
+| 资产 | 任意        | `archived`   | 是           | 宿主   |
 
 "Agent 可发起"不等于"Agent 可执行"。宿主必须在用户确认后，用 `expectedRevision` 再校验一次，然后写入。
 
@@ -523,16 +509,16 @@ export interface ResolveAssetsForTriggerOutput {
 
 ## 6. 错误处理
 
-| 错误码 | 含义 | 是否需要重试 |
-| --- | --- | --- |
-| `NOT_FOUND` | 卡片或文件不存在 | 否 |
-| `REVISION_CONFLICT` | 版本已变化 | 否，必须重新读取 |
-| `INVALID_STATE` | 当前状态不允许该操作 | 否 |
-| `PERMISSION_DENIED` | 超出库范围或权限不足 | 否 |
-| `VALIDATION_FAILED` | 参数不合法 | 否 |
-| `STORAGE_UNAVAILABLE` | 存储不可用或未授权 | 是，提示用户 |
-| `RATE_LIMITED` | 超过限流 | 是，退避后重试 |
-| `NEEDS_CONFIRMATION` | 操作需要人工确认 | 否，转为确认流程 |
+| 错误码                | 含义                 | 是否需要重试     |
+| --------------------- | -------------------- | ---------------- |
+| `NOT_FOUND`           | 卡片或文件不存在     | 否               |
+| `REVISION_CONFLICT`   | 版本已变化           | 否，必须重新读取 |
+| `INVALID_STATE`       | 当前状态不允许该操作 | 否               |
+| `PERMISSION_DENIED`   | 超出库范围或权限不足 | 否               |
+| `VALIDATION_FAILED`   | 参数不合法           | 否               |
+| `STORAGE_UNAVAILABLE` | 存储不可用或未授权   | 是，提示用户     |
+| `RATE_LIMITED`        | 超过限流             | 是，退避后重试   |
+| `NEEDS_CONFIRMATION`  | 操作需要人工确认     | 否，转为确认流程 |
 
 Agent 收到 `REVISION_CONFLICT` 时，必须重新读取再决定，不能自动覆盖。
 
@@ -551,7 +537,7 @@ export interface AuditEntry {
   cardId: string;
   fromRevision?: number;
   toRevision?: number;
-  result: 'ok' | 'rejected' | 'conflict';
+  result: "ok" | "rejected" | "conflict";
 }
 ```
 
@@ -566,15 +552,15 @@ export interface AuditEntry {
 
 ## 8. 阶段 1：插件实现映射
 
-| 工具 | 实现方式 | 风险 |
-| --- | --- | --- |
-| `search_notes` | 工作区元数据索引 + Front Matter | 索引可能滞后 |
-| `resolve_assets_for_trigger` | 索引 + `trigger.stage` 过滤 | 触发字段可能缺失 |
-| `read_note` | 读取文件并解析 | 大文件需要截断 |
-| `create_draft` | 通用文件写入到草稿目录 | 可绕过目录约定 |
-| `propose_patch` | 内存中生成 diff | 无副作用 |
-| `request_confirm` | `ui.confirm` 后调用 `files.processWrite`（token 版本化） | 确认来自插件，不是宿主 |
-| `record_use` | `files.processRead` / `files.processWrite` 修改计数字段 | 可能与编辑冲突（token 重试处理） |
+| 工具                         | 实现方式                                                 | 风险                             |
+| ---------------------------- | -------------------------------------------------------- | -------------------------------- |
+| `search_notes`               | 工作区元数据索引 + Front Matter                          | 索引可能滞后                     |
+| `resolve_assets_for_trigger` | 索引 + `trigger.stage` 过滤                              | 触发字段可能缺失                 |
+| `read_note`                  | 读取文件并解析                                           | 大文件需要截断                   |
+| `create_draft`               | 通用文件写入到草稿目录                                   | 可绕过目录约定                   |
+| `propose_patch`              | 内存中生成 diff                                          | 无副作用                         |
+| `request_confirm`            | `ui.confirm` 后调用 `files.processWrite`（token 版本化） | 确认来自插件，不是宿主           |
+| `record_use`                 | `files.processRead` / `files.processWrite` 修改计数字段  | 可能与编辑冲突（token 重试处理） |
 
 关键说明：
 

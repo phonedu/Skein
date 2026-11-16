@@ -2,24 +2,27 @@
 
 > 从 Markdown 编辑器到多端笔记 Agent 工作台
 >
-> 版本：v1.1（项目基线）
-> 日期：2026-11-15
+> 版本：v1.2（项目基线）
+> 日期：2026-11-16
 > 对象：`CatVinci-Studio/Textus` v1.4.2（MIT License）
-> 配套：《笔记资产理论》v0.2 · 《Textus-Agent工具契约》v0.3 · 《Agent基座与竞品调研》v0.1
+> 配套：《笔记资产理论》v0.2 · 《Textus-Agent工具契约》v0.3 · 《Textus-界面改造方案》v0.1 · 《Agent基座与竞品调研》v0.2
 > 存放：`C:\Project\textus\docs\baseline\`（工作仓内，独立子目录不与上游 docs 混排）
 
 ## 文档说明
 
-本文是「笔记 Agent 工作台」项目的**基线文档**：产品定位、架构、数据模型、界面与实施计划。四份文档分工固定，各管一个真相——
+本文是「笔记 Agent 工作台」项目的**基线文档**：产品定位、架构、数据模型、界面与实施计划。五份文档分工固定，各管一个真相——
 
 - **《笔记资产理论》（v0.2）**：假设、指标与淘汰机制——理论真相；
 - **《Textus-Agent工具契约》（v0.3）**：Agent 能做什么、不能做什么——接口真相；
-- **本文（v1.1）**：定位与实施——计划真相；
-- **《Agent基座与竞品调研》（v0.1）**：Textus 基座 agent-ready 九项能力判定 + happy-friday-lite（源码级）/ ima / WorkBuddy / Astryx 竞品参照——结论已并入本文 §8 阶段 1、§9 风险表、§11 决议记录。
+- **本文（v1.2）**：定位与实施——计划真相；
+- **《Textus-界面改造方案》（v0.1）**：已经落地的界面改写（画板对齐 + Base UI 设置页重建）——界面现状真相；
+- **《Agent基座与竞品调研》（v0.2）**：Textus 基座 agent-ready 九项能力判定 + happy-friday-lite（源码级）/ ima / WorkBuddy / Astryx 竞品参照——结论已并入本文 §8 阶段 1、§9 风险表、§11 决议记录。
 
 对象：`CatVinci-Studio/Textus` v1.4.2（MIT）。附录 A = 阶段 1 验收清单；附录 B = 2026-11-15 的逐文件代码核对与墨契吸收清单。
 
 **v1.1 变更**：① 阶段 1 增「基座承载判定」——不引 DeepAgents/LangChain，资产闭环跑在 Textus 原生 agent 骨架上，并借 happy-friday-lite 四条决策作实现细则；② §9 风险表补「上游同域演进」「同类开源产品许可边界」两行；③ §7.8 先不做补「墨契式浮层格式条」（触发点 = 上游浮层格式条落地）；④ §11 决议记录补三条（基座判定 / 参考项目 / 浮层工具栏触发点）。
+
+**v1.2 变更**：① 增《Textus-界面改造方案》v0.1 为第五份基线文档，管界面现状真相；② §7 增一句分工说明——§7 是「往哪走」，界面基线是「已经走到哪」；③ §11 决议记录补三条（界面基线归属 / 组件库选型 Base UI / 设置页桌面形态为浮层）。
 
 ---
 
@@ -38,32 +41,32 @@
 
 ### 1.1 技术栈
 
-| 项目 | 现状 |
-| --- | --- |
-| 桌面框架 | Tauri 2 |
-| 前端 | React 19 + TypeScript + Vite |
-| 后端 | Rust |
-| 编辑器 | Milkdown / ProseMirror 富文本；CodeMirror 6 源码模式 |
-| 文件格式 | Markdown + YAML Front Matter |
-| 生态兼容 | Obsidian Vault |
-| AI | 本地/在线 Provider、Agent loop、Skills、MCP |
-| 发布平台 | macOS、Windows、Linux、iPhone、iPad、Android |
+| 项目     | 现状                                                 |
+| -------- | ---------------------------------------------------- |
+| 桌面框架 | Tauri 2                                              |
+| 前端     | React 19 + TypeScript + Vite                         |
+| 后端     | Rust                                                 |
+| 编辑器   | Milkdown / ProseMirror 富文本；CodeMirror 6 源码模式 |
+| 文件格式 | Markdown + YAML Front Matter                         |
+| 生态兼容 | Obsidian Vault                                       |
+| AI       | 本地/在线 Provider、Agent loop、Skills、MCP          |
+| 发布平台 | macOS、Windows、Linux、iPhone、iPad、Android         |
 
 ### 1.2 可直接复用的能力
 
-| 能力 | 位置 | 复用方式 |
-| --- | --- | --- |
-| 多端能力统一入口 | `src/platform/capabilities.ts` | 新增功能按同一模式做平台门控 |
-| 插件沙箱与 RPC | `src/plugins/host/` | 资产插件运行在同一沙箱内 |
-| 插件贡献点 | `src/plugins/contributions/` | 列表页、Webview 页、文件编辑器、命令、AI 工具 |
-| 插件 API 权限表 | `src/plugins/api-permissions.ts` | 判断资产插件需要哪些权限 |
-| 工作区元数据索引 | `src/plugins/workspace/` | 读取 Front Matter、检索卡片、glob |
-| 版本化读写 | `src/plugins/host/broker-files.ts`（`files.process`） | 第一版乐观并发控制基础 |
-| 原子写入 | `src-tauri/src/atomic.rs` | 桌面路径直接复用，无需重写 |
-| AI / Agent 基础设施 | `src-tauri/src/ai/`、`src-tauri/crates/aicompat/` | 增加资产相关工具即可 |
-| 文档保存与冲突检测 | `docs/dev/documents.md` | 沿用 mtime、草稿恢复、外部修改重载 |
-| iOS 文件授权 | `src-tauri/plugins/textus-files`（Swift） | 安全作用域、书签恢复 |
-| Android 文件访问 | `src-tauri/plugins/textus-files/android/`（Kotlin） | SAF、`content://` 读写 |
+| 能力                | 位置                                                  | 复用方式                                      |
+| ------------------- | ----------------------------------------------------- | --------------------------------------------- |
+| 多端能力统一入口    | `src/platform/capabilities.ts`                        | 新增功能按同一模式做平台门控                  |
+| 插件沙箱与 RPC      | `src/plugins/host/`                                   | 资产插件运行在同一沙箱内                      |
+| 插件贡献点          | `src/plugins/contributions/`                          | 列表页、Webview 页、文件编辑器、命令、AI 工具 |
+| 插件 API 权限表     | `src/plugins/api-permissions.ts`                      | 判断资产插件需要哪些权限                      |
+| 工作区元数据索引    | `src/plugins/workspace/`                              | 读取 Front Matter、检索卡片、glob             |
+| 版本化读写          | `src/plugins/host/broker-files.ts`（`files.process`） | 第一版乐观并发控制基础                        |
+| 原子写入            | `src-tauri/src/atomic.rs`                             | 桌面路径直接复用，无需重写                    |
+| AI / Agent 基础设施 | `src-tauri/src/ai/`、`src-tauri/crates/aicompat/`     | 增加资产相关工具即可                          |
+| 文档保存与冲突检测  | `docs/dev/documents.md`                               | 沿用 mtime、草稿恢复、外部修改重载            |
+| iOS 文件授权        | `src-tauri/plugins/textus-files`（Swift）             | 安全作用域、书签恢复                          |
+| Android 文件访问    | `src-tauri/plugins/textus-files/android/`（Kotlin）   | SAF、`content://` 读写                        |
 
 ### 1.3 移动端真实情况
 
@@ -102,11 +105,11 @@
 
 ### 2.1 三种可能形态
 
-| 形态 | 主体 | Agent 角色 | 问题 |
-| --- | --- | --- | --- |
-| 编辑器 + AI 侧栏 | 笔记文件 | 问答、改写 | AI 是配角，难以形成资产 |
-| 聊天式笔记 Agent | 对话 | 主界面 | 同质化严重，笔记沦为附件 |
-| **工作台 + 常驻 Agent** | **笔记文件** | **加工层** | **推荐：产物可复用** |
+| 形态                    | 主体         | Agent 角色 | 问题                     |
+| ----------------------- | ------------ | ---------- | ------------------------ |
+| 编辑器 + AI 侧栏        | 笔记文件     | 问答、改写 | AI 是配角，难以形成资产  |
+| 聊天式笔记 Agent        | 对话         | 主界面     | 同质化严重，笔记沦为附件 |
+| **工作台 + 常驻 Agent** | **笔记文件** | **加工层** | **推荐：产物可复用**     |
 
 ### 2.2 一句话定义
 
@@ -136,13 +139,13 @@ Agent 的能力上限由这四件事决定，而不是由模型决定。
 收集 → 整理 → 晋升 → 调用 → 记录
 ```
 
-| 阶段 | 谁主导 | 主要发生端 |
-| --- | --- | --- |
-| 收集 | 用户 | 手机、桌面 |
-| 整理 | Agent 提议，用户确认 | 桌面为主 |
-| 晋升 | 用户确认 | 桌面、手机 |
-| 调用 | Agent / 用户 | 桌面、手机 |
-| 记录 | 系统 | 全端 |
+| 阶段 | 谁主导               | 主要发生端 |
+| ---- | -------------------- | ---------- |
+| 收集 | 用户                 | 手机、桌面 |
+| 整理 | Agent 提议，用户确认 | 桌面为主   |
+| 晋升 | 用户确认             | 桌面、手机 |
+| 调用 | Agent / 用户         | 桌面、手机 |
+| 记录 | 系统                 | 全端       |
 
 "晋升"是整条链路的关键动作：**普通笔记不会自动变成资产，必须经过一次人工确认。**
 
@@ -185,14 +188,14 @@ Agent 的能力上限由这四件事决定，而不是由模型决定。
 
 ### 3.2 新增模块职责
 
-| 模块 | 职责 | 位置建议 |
-| --- | --- | --- |
-| 领域模型 | 卡片类型、状态机、字段校验、晋升规则 | `src/features/assets/domain/` |
-| 存储适配 | 统一读写接口，屏蔽平台差异 | `src/features/assets/storage/` |
-| Agent 工具 | 七个窄接口（含触发检索），供 AI 调用 | 插件内或 `src-tauri/src/ai/tools/` |
-| 桌面界面 | 今天、复盘、资产库、关系视图 | `src/features/assets/` |
-| 手机界面 | 收集、今日、确认、调用 | `src/features/mobile/` 扩展 |
-| 宿主写入服务 | 正式状态迁移、历史、归档 | `src-tauri/src/assets/`（阶段 2） |
+| 模块         | 职责                                 | 位置建议                           |
+| ------------ | ------------------------------------ | ---------------------------------- |
+| 领域模型     | 卡片类型、状态机、字段校验、晋升规则 | `src/features/assets/domain/`      |
+| 存储适配     | 统一读写接口，屏蔽平台差异           | `src/features/assets/storage/`     |
+| Agent 工具   | 七个窄接口（含触发检索），供 AI 调用 | 插件内或 `src-tauri/src/ai/tools/` |
+| 桌面界面     | 今天、复盘、资产库、关系视图         | `src/features/assets/`             |
+| 手机界面     | 收集、今日、确认、调用               | `src/features/mobile/` 扩展        |
+| 宿主写入服务 | 正式状态迁移、历史、归档             | `src-tauri/src/assets/`（阶段 2）  |
 
 ### 3.3 硬性边界
 
@@ -259,9 +262,9 @@ boundary:
   fails_when: ["周期 < 15 天", "需求方未定稿"]
   counterexample: "上一次 10 天项目，因材料等待延期 6 天"
 trigger:
-  stage: before_delivery   # before_delivery / during_task / after_result / on_demand
+  stage: before_delivery # before_delivery / during_task / after_result / on_demand
   label: "报价前"
-reuse_form: checklist      # checklist / template / prompt / script / decision_table / doc
+reuse_form: checklist # checklist / template / prompt / script / decision_table / doc
 last_used_at: null
 ```
 
@@ -276,11 +279,11 @@ Front Matter 使用 snake_case，Agent API 使用 camelCase，映射在领域层
 
 ### 4.4 状态机
 
-| 类型 | 状态 |
-| --- | --- |
+| 类型 | 状态                                                 |
+| ---- | ---------------------------------------------------- |
 | 任务 | `inbox` / `active` / `blocked` / `done` / `archived` |
-| 判断 | `draft` / `confirmed` / `archived` |
-| 资产 | `draft` / `active` / `deprecated` / `archived` |
+| 判断 | `draft` / `confirmed` / `archived`                   |
+| 资产 | `draft` / `active` / `deprecated` / `archived`       |
 
 规则：
 
@@ -335,15 +338,15 @@ Front Matter 使用 snake_case，Agent API 使用 camelCase，映射在领域层
 
 第一版只提供七个工具，宁可少，不可宽。
 
-| 工具 | 输入 | 副作用 | 是否需要确认 |
-| --- | --- | --- | --- |
-| `search_notes` | 关键词、类型、状态 | 无 | 否 |
-| `resolve_assets_for_trigger` | 触发阶段、任务类型 | 无 | 否 |
-| `read_note` | 卡片 ID | 无 | 否 |
-| `create_draft` | 类型、标题、正文、来源、结果/边界/触发/形态（可选） | 新建草稿文件 | 否（仅草稿） |
-| `propose_patch` | 卡片 ID、修改建议、理由 | 无，只返回 diff | 是 |
-| `request_confirm` | 卡片 ID、目标状态 | 无，只发起确认 | 是 |
-| `record_use` | 资产 ID、使用场景、结果评价 | 计数、日志与 `last_used_at` | 否 |
+| 工具                         | 输入                                                | 副作用                      | 是否需要确认 |
+| ---------------------------- | --------------------------------------------------- | --------------------------- | ------------ |
+| `search_notes`               | 关键词、类型、状态                                  | 无                          | 否           |
+| `resolve_assets_for_trigger` | 触发阶段、任务类型                                  | 无                          | 否           |
+| `read_note`                  | 卡片 ID                                             | 无                          | 否           |
+| `create_draft`               | 类型、标题、正文、来源、结果/边界/触发/形态（可选） | 新建草稿文件                | 否（仅草稿） |
+| `propose_patch`              | 卡片 ID、修改建议、理由                             | 无，只返回 diff             | 是           |
+| `request_confirm`            | 卡片 ID、目标状态                                   | 无，只发起确认              | 是           |
+| `record_use`                 | 资产 ID、使用场景、结果评价                         | 计数、日志与 `last_used_at` | 否           |
 
 v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动作之前，而不是搜索框里。其余六个工具不变，但 `create_draft` / `propose_patch` 需要接受 `boundary`、`trigger`、`reuse_form` 以及任务结果字段。
 
@@ -445,6 +448,8 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ## 7. 界面与功能重规划
 
+> **与界面基线的分工**：本节是**往哪走**（新信息架构，尚未开工）；已经落地的界面改写——画板对齐与 Base UI 设置页重建——记在《Textus-界面改造方案》v0.1，那是**已经走到哪**。新 IA 开工前先读那份：设置页的壳（浮层、导航列、行与控件皮肤）可直接复用，只换导航清单与页面内容。
+
 ### 7.1 为什么不能"直接加页面"
 
 现有界面以编辑器和文件为中心，AI 是侧栏。资产能力如果只是再加一个列表页，就会变成第四个功能堆叠，用户仍然不知道每天从哪里开始。
@@ -486,34 +491,34 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ### 7.3 五个一级入口
 
-| 入口 | 回答的问题 | 主要内容 | 支持端 |
-| --- | --- | --- | --- |
-| 今天 | 我现在该做什么、该用哪条资产 | 进行中任务、触发匹配的资产、待确认、最近笔记 | 桌面 + 手机 |
-| 笔记 | 我写过什么 | 文件树、编辑器、搜索 | 桌面 + 手机 |
-| 资产 | 我有哪些可复用的结论、在什么条件下成立 | 判断、资产、边界与触发条件、来源链 | 桌面 + 手机 |
-| Agent | 帮我加工 | 对话、工具调用、diff | 桌面常驻 + 手机入口 |
-| 设置 | 配置与维护 | 库、模型、插件、同步 | 桌面完整 + 手机精简 |
+| 入口  | 回答的问题                             | 主要内容                                     | 支持端              |
+| ----- | -------------------------------------- | -------------------------------------------- | ------------------- |
+| 今天  | 我现在该做什么、该用哪条资产           | 进行中任务、触发匹配的资产、待确认、最近笔记 | 桌面 + 手机         |
+| 笔记  | 我写过什么                             | 文件树、编辑器、搜索                         | 桌面 + 手机         |
+| 资产  | 我有哪些可复用的结论、在什么条件下成立 | 判断、资产、边界与触发条件、来源链           | 桌面 + 手机         |
+| Agent | 帮我加工                               | 对话、工具调用、diff                         | 桌面常驻 + 手机入口 |
+| 设置  | 配置与维护                             | 库、模型、插件、同步                         | 桌面完整 + 手机精简 |
 
 ### 7.4 现有功能处置
 
-| 现有功能 | 处置 | 说明 |
-| --- | --- | --- |
-| 富文本编辑器 / 源码模式 | 保留 | 核心工作面，不改 |
-| 文件树 / 文档列表 | 保留，改名为"笔记" | 现有能力足够 |
-| AI 侧栏 | 改造为 Agent 面板 | 增加工具调用时间线与 diff |
-| Quick Ask | 并入 Agent | 手机保留快捷提问 |
-| Skills | 保留 | 作为 Agent 的能力来源 |
-| Agents | 保留 | 不向普通用户暴露复杂配置 |
-| MCP | 降级到设置-高级 | 桌面专属 |
-| 插件管理页 | 降为二级 | 从一级导航移除 |
-| 多窗口 | 保留桌面 | 不进入手机 |
-| 托盘 / 后台 | 保留桌面 | 与任务提醒结合 |
-| CLI | 保留桌面 | 高级用户 |
-| 自动更新 | 保留 | fork 后需要独立更新通道 |
-| Tracked changes | 保留 | 用于审阅 Agent 修改 |
-| 导出 | 保留 | 资产对外输出 |
-| 主题 | 保留 | 不做界面改造重点 |
-| Onboarding | 改造 | 改为"收集第一条笔记"，而不是功能 tour |
+| 现有功能                | 处置               | 说明                                  |
+| ----------------------- | ------------------ | ------------------------------------- |
+| 富文本编辑器 / 源码模式 | 保留               | 核心工作面，不改                      |
+| 文件树 / 文档列表       | 保留，改名为"笔记" | 现有能力足够                          |
+| AI 侧栏                 | 改造为 Agent 面板  | 增加工具调用时间线与 diff             |
+| Quick Ask               | 并入 Agent         | 手机保留快捷提问                      |
+| Skills                  | 保留               | 作为 Agent 的能力来源                 |
+| Agents                  | 保留               | 不向普通用户暴露复杂配置              |
+| MCP                     | 降级到设置-高级    | 桌面专属                              |
+| 插件管理页              | 降为二级           | 从一级导航移除                        |
+| 多窗口                  | 保留桌面           | 不进入手机                            |
+| 托盘 / 后台             | 保留桌面           | 与任务提醒结合                        |
+| CLI                     | 保留桌面           | 高级用户                              |
+| 自动更新                | 保留               | fork 后需要独立更新通道               |
+| Tracked changes         | 保留               | 用于审阅 Agent 修改                   |
+| 导出                    | 保留               | 资产对外输出                          |
+| 主题                    | 保留               | 不做界面改造重点                      |
+| Onboarding              | 改造               | 改为"收集第一条笔记"，而不是功能 tour |
 
 ### 7.5 新增界面
 
@@ -538,15 +543,15 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ### 7.7 与现有代码的对应
 
-| 界面 | 复用机制 | 需要新增 |
-| --- | --- | --- |
-| 一级导航 | 现有侧栏 tab 注册 | "今天""资产"两个入口 |
-| 列表页 | 插件列表视图 | 任务、判断、资产三种列表 |
-| 详情页 | Webview 视图或文件编辑器接管 | 卡片详情三段式 |
-| Agent 面板 | 现有 AI 容器 | 时间线、diff、确认交互 |
-| 命令面板 | 现有命令注册 | 收集、晋升、确认、归档 |
-| 手机入口 | 现有抽屉与 ActionSheet | 底部四入口 |
-| 卡片识别 | Front Matter | 按 `type` 自动切换详情视图 |
+| 界面       | 复用机制                     | 需要新增                   |
+| ---------- | ---------------------------- | -------------------------- |
+| 一级导航   | 现有侧栏 tab 注册            | "今天""资产"两个入口       |
+| 列表页     | 插件列表视图                 | 任务、判断、资产三种列表   |
+| 详情页     | Webview 视图或文件编辑器接管 | 卡片详情三段式             |
+| Agent 面板 | 现有 AI 容器                 | 时间线、diff、确认交互     |
+| 命令面板   | 现有命令注册                 | 收集、晋升、确认、归档     |
+| 手机入口   | 现有抽屉与 ActionSheet       | 底部四入口                 |
+| 卡片识别   | Front Matter                 | 按 `type` 自动切换详情视图 |
 
 ### 7.8 界面改造顺序
 
@@ -686,22 +691,22 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ## 9. 风险与对策
 
-| 风险 | 说明 | 对策 |
-| --- | --- | --- |
-| 插件权限过宽 | `files.write` 是通用写权限，插件理论上可绕过领域规则 | 阶段 1 接受；阶段 2 下沉宿主 |
-| Android 原子性不足 | SAF 输出流覆盖写，崩溃可能损坏文件 | 先限制目录；补临时文件 + 替换；明确降级 |
-| Agent 误改 | 模型可能生成看似合理的错误修改 | 只提议 diff；禁止直接确认；保留历史 |
-| 同步冲突 | 多端同时编辑同一文件 | 复用 revision 检查；冲突时保留双方版本 |
-| 范围膨胀 | 容易滑向知识图谱、多人协作、自建云 | 用"不做清单"约束 |
-| 移动端投入过重 | 一开始就重做导航，拖慢验证 | 第一版只做四个动作，复用现有外壳 |
-| 结构过度设计 | 强制所有笔记分类，用户放弃使用 | 日常笔记自由；只有资产才强制结构 |
-| 理论退化成台账 | 只有记录，没有结果、边界和触发 | 阶段 0.5 先验证；资产激活强制四项字段 |
-| 字段过多不愿填 | 结构化成本高于交付收益 | 任务只加三行；资产四项；其余可选 |
-| **上游同域演进** | Textus 官方已表态要把格式条浮层化；我方若自建浮层会正面撞车 | **不自建**；等上游落地后在既有事件管线上叠层（我方浮层只消费事件、不改其文件） |
-| **上游停摆或接管** | 上游 release 停摆 >6 个月或转向与资产闭环冲突的方向 | 触发点退路：从最后成功 rebase 点转独立维护（§12.7 三条触发点） |
-| **同类开源产品许可边界** | happy-friday-lite 为 PolyForm Noncommercial（禁商用）；混码进 MIT fork 将卡死未来分发 | 只借产品决策与设计思路，**代码一行不收**；clone 仅作调研（ref/ 区） |
-| **上游同域演进** | Textus 官方已表态要把格式条浮层化；我方若自建浮层会正面撞车 | **不自建**；等上游落地后在既有事件管线上叠层（我方浮层只消费事件、不改其文件） |
-| **同类开源产品许可边界** | happy-friday-lite 为 PolyForm Noncommercial（禁商用）；混码进 MIT fork 将卡死未来分发 | 只借产品决策与设计思路，**代码一行不收**；clone 仅作调研（ref/ 区） |
+| 风险                     | 说明                                                                                  | 对策                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 插件权限过宽             | `files.write` 是通用写权限，插件理论上可绕过领域规则                                  | 阶段 1 接受；阶段 2 下沉宿主                                                   |
+| Android 原子性不足       | SAF 输出流覆盖写，崩溃可能损坏文件                                                    | 先限制目录；补临时文件 + 替换；明确降级                                        |
+| Agent 误改               | 模型可能生成看似合理的错误修改                                                        | 只提议 diff；禁止直接确认；保留历史                                            |
+| 同步冲突                 | 多端同时编辑同一文件                                                                  | 复用 revision 检查；冲突时保留双方版本                                         |
+| 范围膨胀                 | 容易滑向知识图谱、多人协作、自建云                                                    | 用"不做清单"约束                                                               |
+| 移动端投入过重           | 一开始就重做导航，拖慢验证                                                            | 第一版只做四个动作，复用现有外壳                                               |
+| 结构过度设计             | 强制所有笔记分类，用户放弃使用                                                        | 日常笔记自由；只有资产才强制结构                                               |
+| 理论退化成台账           | 只有记录，没有结果、边界和触发                                                        | 阶段 0.5 先验证；资产激活强制四项字段                                          |
+| 字段过多不愿填           | 结构化成本高于交付收益                                                                | 任务只加三行；资产四项；其余可选                                               |
+| **上游同域演进**         | Textus 官方已表态要把格式条浮层化；我方若自建浮层会正面撞车                           | **不自建**；等上游落地后在既有事件管线上叠层（我方浮层只消费事件、不改其文件） |
+| **上游停摆或接管**       | 上游 release 停摆 >6 个月或转向与资产闭环冲突的方向                                   | 触发点退路：从最后成功 rebase 点转独立维护（§12.7 三条触发点）                 |
+| **同类开源产品许可边界** | happy-friday-lite 为 PolyForm Noncommercial（禁商用）；混码进 MIT fork 将卡死未来分发 | 只借产品决策与设计思路，**代码一行不收**；clone 仅作调研（ref/ 区）            |
+| **上游同域演进**         | Textus 官方已表态要把格式条浮层化；我方若自建浮层会正面撞车                           | **不自建**；等上游落地后在既有事件管线上叠层（我方浮层只消费事件、不改其文件） |
+| **同类开源产品许可边界** | happy-friday-lite 为 PolyForm Noncommercial（禁商用）；混码进 MIT fork 将卡死未来分发 | 只借产品决策与设计思路，**代码一行不收**；clone 仅作调研（ref/ 区）            |
 
 ---
 
@@ -724,21 +729,24 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 开工前需要裁的事项均已随正文与配套文档落定；改任何一条 = 改基线，须留版本记录。
 
-| 事项 | 决议 | 出处 |
-| --- | --- | --- |
-| 资产能力放哪 | 插件先行，阶段 2 下沉宿主 | 契约 §0 两阶段；本文 §12.2 |
-| 资产目录位置 | 用户可见的独立目录（Vault 内），不复用 `.textus/library` | §4.1 / §4.5 |
-| 卡片命名 | 数据用任务 / 判断 / 资产；界面只暴露"笔记 / 任务 / 资产"，判断作为内部类型 | §7.3 |
-| 手机首版范围 | 只做四个动作 | §6.2 |
-| 同步 | 首版第三方，自建放最后 | §8 阶段 3 慎重项 |
-| Android 策略 | 先限制目录，再补 SAF | §6.4 路线 B |
-| 维护模式 | 纯插件起步，薄 fork 收口，不做深度分叉 | §12.6 |
-| 上游 PR | 通用能力优先提回上游 | §12.6 |
-| 理论版本策略 | 每张卡带 `theory_version`，历史不重写 | 《笔记资产理论》§7.6 |
-| Agent 基座判定 | Textus 原生骨架承载，不引 DeepAgents / LangChain | §8 阶段 1；《Agent基座与竞品调研》§2 |
-| 参考项目 | happy-friday-lite（决策参照，PolyForm NC 代码不收）/ ima / WorkBuddy（产品形态）/ Astryx（agent-ready 形态）/ **DeepSeek Harness**（agent 运行时平台，MIT，developer preview——嵌入与插件开放均待审） | 《Agent基座与竞品调研》§5 |
-| 墨契式浮层工具栏 | 触发点：上游浮层格式条发布后叠层；我方只消费事件 | §7.8 先不做；§9 上游同域演进 |
-| 上游跟随策略 | 按 release 节奏跟随（rebase patch 清单）；独立维护仅触发点后退路（三条可证伪触发点见 §12.7） | §12.7 |
+| 事项             | 决议                                                                                                                                                                                                 | 出处                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 资产能力放哪     | 插件先行，阶段 2 下沉宿主                                                                                                                                                                            | 契约 §0 两阶段；本文 §12.2           |
+| 资产目录位置     | 用户可见的独立目录（Vault 内），不复用 `.textus/library`                                                                                                                                             | §4.1 / §4.5                          |
+| 卡片命名         | 数据用任务 / 判断 / 资产；界面只暴露"笔记 / 任务 / 资产"，判断作为内部类型                                                                                                                           | §7.3                                 |
+| 手机首版范围     | 只做四个动作                                                                                                                                                                                         | §6.2                                 |
+| 同步             | 首版第三方，自建放最后                                                                                                                                                                               | §8 阶段 3 慎重项                     |
+| Android 策略     | 先限制目录，再补 SAF                                                                                                                                                                                 | §6.4 路线 B                          |
+| 维护模式         | 纯插件起步，薄 fork 收口，不做深度分叉                                                                                                                                                               | §12.6                                |
+| 上游 PR          | 通用能力优先提回上游                                                                                                                                                                                 | §12.6                                |
+| 理论版本策略     | 每张卡带 `theory_version`，历史不重写                                                                                                                                                                | 《笔记资产理论》§7.6                 |
+| Agent 基座判定   | Textus 原生骨架承载，不引 DeepAgents / LangChain                                                                                                                                                     | §8 阶段 1；《Agent基座与竞品调研》§2 |
+| 参考项目         | happy-friday-lite（决策参照，PolyForm NC 代码不收）/ ima / WorkBuddy（产品形态）/ Astryx（agent-ready 形态）/ **DeepSeek Harness**（agent 运行时平台，MIT，developer preview——嵌入与插件开放均待审） | 《Agent基座与竞品调研》§5            |
+| 墨契式浮层工具栏 | 触发点：上游浮层格式条发布后叠层；我方只消费事件                                                                                                                                                     | §7.8 先不做；§9 上游同域演进         |
+| 上游跟随策略     | 按 release 节奏跟随（rebase patch 清单）；独立维护仅触发点后退路（三条可证伪触发点见 §12.7）                                                                                                         | §12.7                                |
+| 界面基线归属     | 已落地的界面改写（画板对齐 + Base UI 设置页重建）单独立《Textus-界面改造方案》管，本文 §7 只管新 IA                                                                                                  | 《Textus-界面改造方案》§0 / §7       |
+| 组件库选型       | **Base UI**（`@base-ui/react@1.9.0`，MIT，Radix 原班人马的续作）；Radix 仅作 Base UI 缺件时的退路                                                                                                    | 《Textus-界面改造方案》§4.3          |
+| 设置页桌面形态   | 浮层（替换设置页签与侧栏设置列表）；iPhone / iPad 保留旧面板（平台门控）                                                                                                                             | 《Textus-界面改造方案》§3.5–§3.6     |
 
 ---
 
@@ -752,11 +760,11 @@ Textus 使用 MIT 许可证，允许修改、分发，包括闭源分发，只�
 
 ### 12.2 三种维护模式
 
-| 模式 | 改动范围 | 与上游冲突 | 长期成本 | 适用阶段 |
-| --- | --- | --- | --- | --- |
-| 纯插件 | 插件目录 + 少量注册 | 极低 | 低 | 阶段 1 |
-| 薄 fork | 新增模块 + 少量接入点 | 中 | 中 | 阶段 2 |
-| 深度分叉 | 导航、编辑器、同步、发布链 | 高 | 高 | 不建议 |
+| 模式     | 改动范围                   | 与上游冲突 | 长期成本 | 适用阶段 |
+| -------- | -------------------------- | ---------- | -------- | -------- |
+| 纯插件   | 插件目录 + 少量注册        | 极低       | 低       | 阶段 1   |
+| 薄 fork  | 新增模块 + 少量接入点      | 中         | 中       | 阶段 2   |
+| 深度分叉 | 导航、编辑器、同步、发布链 | 高         | 高       | 不建议   |
 
 ### 12.3 纯插件模式
 
@@ -866,18 +874,18 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 
 ### B.1 §1.2 复用能力逐项核对
 
-| §1.2 声称 | 实测 | 证据 |
-| --- | --- | --- |
-| 平台能力门 `capabilities.ts` | ✅ 属实 | 99 行纯布尔表（`canOpenFolder` 覆盖手机、`hasTextusAi` 是 AI 总闸）；注释自带纪律「the one place the desktop/iOS split is decided」 |
-| 插件沙箱与 RPC `plugins/host/` | ✅ 属实，比方案说的更全 | broker 24 个文件按域拆分（files / editor / ui / layout / schedule / scope…），RPC 在 `rpc.ts` |
-| 贡献点 `contributions/` | ✅ 属实 | 40+ 文件：ai-tools、slash-commands、decorations、hover-providers、will-save / will-export、status-items、file-badges、embeds… |
-| 权限表 `api-permissions.ts` | ✅ 属实 | 158 行单表 + `guarded()` 运行时检查 + `PERMISSION_CALLS` 安装期代码扫描；`ai.tools` 注明「Checked in Rust」 |
-| 元数据索引 `workspace/` | ✅ 属实 | `metadata-cache.ts`：title / tags / aliases / frontmatter 统一解析，links / backlinks / tasks 跨文档；`metadata.search`、`metadata.tasks` 已在权限表 |
-| 版本化读写 `broker-files.ts` | ✅ 属实，**名称要修正** | 实际 API 是 **`files.processRead` / `files.processWrite`（token 版本化）**，不是 `files.process`；token 两态：打开的标签页 = `tab:<revision>`，磁盘 = Rust `fsWriteIf`；`change()` 自带 4 次重读重写循环。**另有 `files.frontmatterGet/Set`（Set 走同一条重试链）与 `files.blockId`**——资产卡读与写的原子件都是现成的 |
-| 原子写入 `atomic.rs` | ✅ 属实 | write-then-rename：临时文件放目标同目录、fsync 文件、Unix 再 fsync 父目录；测试在 `atomic/tests.rs` |
-| AI / Agent 基建 | ✅ 属实，**深于方案所述**（见下） | `src-tauri/src/ai/{agent,tools,catalog,skills,memory,workspace,live_eval,web}` + `crates/aicompat`（ToolSpec / ToolCall / ToolOutput / agent loop） |
-| 保存与冲突 `docs/dev/documents.md` | ✅ 属实 | 179 行；干净标签页在文件被外部改动后自动 reload（`useExternalChangeReload.ts`）、草稿恢复、mtime 提示 |
-| iOS / Android 文件 | ✅ 属实 | `src-tauri/plugins/textus-files/{ios,android,permissions}`；Android 走系统选择器 + scoped-folder（capabilities 注释可证） |
+| §1.2 声称                          | 实测                              | 证据                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 平台能力门 `capabilities.ts`       | ✅ 属实                           | 99 行纯布尔表（`canOpenFolder` 覆盖手机、`hasTextusAi` 是 AI 总闸）；注释自带纪律「the one place the desktop/iOS split is decided」                                                                                                                                                                                   |
+| 插件沙箱与 RPC `plugins/host/`     | ✅ 属实，比方案说的更全           | broker 24 个文件按域拆分（files / editor / ui / layout / schedule / scope…），RPC 在 `rpc.ts`                                                                                                                                                                                                                         |
+| 贡献点 `contributions/`            | ✅ 属实                           | 40+ 文件：ai-tools、slash-commands、decorations、hover-providers、will-save / will-export、status-items、file-badges、embeds…                                                                                                                                                                                         |
+| 权限表 `api-permissions.ts`        | ✅ 属实                           | 158 行单表 + `guarded()` 运行时检查 + `PERMISSION_CALLS` 安装期代码扫描；`ai.tools` 注明「Checked in Rust」                                                                                                                                                                                                           |
+| 元数据索引 `workspace/`            | ✅ 属实                           | `metadata-cache.ts`：title / tags / aliases / frontmatter 统一解析，links / backlinks / tasks 跨文档；`metadata.search`、`metadata.tasks` 已在权限表                                                                                                                                                                  |
+| 版本化读写 `broker-files.ts`       | ✅ 属实，**名称要修正**           | 实际 API 是 **`files.processRead` / `files.processWrite`（token 版本化）**，不是 `files.process`；token 两态：打开的标签页 = `tab:<revision>`，磁盘 = Rust `fsWriteIf`；`change()` 自带 4 次重读重写循环。**另有 `files.frontmatterGet/Set`（Set 走同一条重试链）与 `files.blockId`**——资产卡读与写的原子件都是现成的 |
+| 原子写入 `atomic.rs`               | ✅ 属实                           | write-then-rename：临时文件放目标同目录、fsync 文件、Unix 再 fsync 父目录；测试在 `atomic/tests.rs`                                                                                                                                                                                                                   |
+| AI / Agent 基建                    | ✅ 属实，**深于方案所述**（见下） | `src-tauri/src/ai/{agent,tools,catalog,skills,memory,workspace,live_eval,web}` + `crates/aicompat`（ToolSpec / ToolCall / ToolOutput / agent loop）                                                                                                                                                                   |
+| 保存与冲突 `docs/dev/documents.md` | ✅ 属实                           | 179 行；干净标签页在文件被外部改动后自动 reload（`useExternalChangeReload.ts`）、草稿恢复、mtime 提示                                                                                                                                                                                                                 |
+| iOS / Android 文件                 | ✅ 属实                           | `src-tauri/plugins/textus-files/{ios,android,permissions}`；Android 走系统选择器 + scoped-folder（capabilities 注释可证）                                                                                                                                                                                             |
 
 **核对中发现的两个额外事实（方案没写，但直接决定阶段 1 怎么做）：**
 
@@ -888,16 +896,16 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 
 ### B.2 契约七工具的落点（阶段 1 = folder 插件；阶段 2 = Rust `src-tauri/src/assets/`）
 
-| 工具 | 阶段 1 落点（现成件） | 要新写的 | 风险 |
-| --- | --- | --- | --- |
-| `search_notes` | `files.find` + `metadata.search` / `metadata.all`（按 frontmatter 的 type / status 过滤）+ `files.read` 截 200 字 snippet | 插件内索引缓存（启动批量 `frontmatterGet` + `FILE_WRITTEN_EVENT` 增量） | 索引滞后（契约 §8 已列；缓存 + 事件增量可压到可用） |
-| `resolve_assets_for_trigger` | 同上索引 + `trigger.stage` 过滤 | stage 常量与排序（taskType 缺口见 B.4-①） | trigger 缺失的资产不出现（契约已定义） |
-| `read_note` | `files.read` + `files.frontmatterGet` + `_history/` glob | outbound / inbound 用 `metadata.backlinks` 组装 | 大文件截断（契约已列） |
-| `create_draft` | `files.create` 到 `inbox/` `judgments/` `assets/` + `files.frontmatterSet` 写 schema 字段 | id 生成（T-YYYYMMDD-xxxx）与目录守卫 | 阶段 1 是约定不是保证（契约 §8 已写明，不对外宣称） |
-| `propose_patch` | **不落盘**：`files.processRead` 读现状 → 插件内算统一 diff → 存插件 store（project scope）；确认时才 `files.processWrite(token)` | diff 生成、proposal 30 分钟过期、REVISION_CONFLICT 判定（token 失效即冲突） | 与内置 propose_edit 的分工要定位：编辑器内改动走它的 margin 审阅；**文件级 / 字段级 patch 走资产插件自己的提案 store**——两者不合并，避免把资产语义塞进编辑器 |
-| `request_confirm` | pending 存插件 store + 插件面板确认（views / panels 贡献点）；宿主在阶段 2 接管 | 迁移表校验（契约 §5）、一次性确认凭证 | 同一卡片同一目标只留一个 pending（契约已定义） |
-| `record_use` | `files.frontmatterGet` → 改字段 → `files.frontmatterSet`（自带 token 重试，正好处理与用户编辑的并发） | use log 追加文件（`_history/` 旁） | frontmatterSet 是整对象替换——外部编辑器同窗口写入仍可能踩计数字段（约束见《笔记资产理论》§10 第 6 条） |
-| 审计（§7） | 插件 store 追加 `audit.jsonl`（project scope，库外隐藏目录） | — | 损坏不影响卡片读取：读文件不依赖它（契约已定义） |
+| 工具                         | 阶段 1 落点（现成件）                                                                                                            | 要新写的                                                                    | 风险                                                                                                                                                         |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `search_notes`               | `files.find` + `metadata.search` / `metadata.all`（按 frontmatter 的 type / status 过滤）+ `files.read` 截 200 字 snippet        | 插件内索引缓存（启动批量 `frontmatterGet` + `FILE_WRITTEN_EVENT` 增量）     | 索引滞后（契约 §8 已列；缓存 + 事件增量可压到可用）                                                                                                          |
+| `resolve_assets_for_trigger` | 同上索引 + `trigger.stage` 过滤                                                                                                  | stage 常量与排序（taskType 缺口见 B.4-①）                                   | trigger 缺失的资产不出现（契约已定义）                                                                                                                       |
+| `read_note`                  | `files.read` + `files.frontmatterGet` + `_history/` glob                                                                         | outbound / inbound 用 `metadata.backlinks` 组装                             | 大文件截断（契约已列）                                                                                                                                       |
+| `create_draft`               | `files.create` 到 `inbox/` `judgments/` `assets/` + `files.frontmatterSet` 写 schema 字段                                        | id 生成（T-YYYYMMDD-xxxx）与目录守卫                                        | 阶段 1 是约定不是保证（契约 §8 已写明，不对外宣称）                                                                                                          |
+| `propose_patch`              | **不落盘**：`files.processRead` 读现状 → 插件内算统一 diff → 存插件 store（project scope）；确认时才 `files.processWrite(token)` | diff 生成、proposal 30 分钟过期、REVISION_CONFLICT 判定（token 失效即冲突） | 与内置 propose_edit 的分工要定位：编辑器内改动走它的 margin 审阅；**文件级 / 字段级 patch 走资产插件自己的提案 store**——两者不合并，避免把资产语义塞进编辑器 |
+| `request_confirm`            | pending 存插件 store + 插件面板确认（views / panels 贡献点）；宿主在阶段 2 接管                                                  | 迁移表校验（契约 §5）、一次性确认凭证                                       | 同一卡片同一目标只留一个 pending（契约已定义）                                                                                                               |
+| `record_use`                 | `files.frontmatterGet` → 改字段 → `files.frontmatterSet`（自带 token 重试，正好处理与用户编辑的并发）                            | use log 追加文件（`_history/` 旁）                                          | frontmatterSet 是整对象替换——外部编辑器同窗口写入仍可能踩计数字段（约束见《笔记资产理论》§10 第 6 条）                                                       |
+| 审计（§7）                   | 插件 store 追加 `audit.jsonl`（project scope，库外隐藏目录）                                                                     | —                                                                           | 损坏不影响卡片读取：读文件不依赖它（契约已定义）                                                                                                             |
 
 **阶段 2 的形状**：契约 §9 的 `assets_*` 七个命令按 Tauri 常规 `invoke_handler` 注册；校验、历史（写 `_history/`）、原子写全部搬进 Rust（复用 `atomic.rs`）；`assets_resolve_confirm` 只收宿主内部调用。此时才可对外写「Agent 无法自行确认或激活资产」。
 
@@ -907,15 +915,15 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 
 **B.3.1 机制与设计（优先级高，只搬设计）**
 
-| 借什么 | 墨契的出处 | 落到契约哪里 |
-| --- | --- | --- |
-| 中文/拼音搜索两列物化 | `blocks_fts` FTS5 trigram + `pinyin_full` / `pinyin_initials` 两列 + `fts-rebuilt-at` 版本标记（版本变更整列重建） | `search_notes` 的检索面：资产标题/标签是中文，Textus 的 frontmatter 索引对拼音检索弱；照搬「物化两列 + 版本标记触发重建」 |
-| 幂等写语义 | `commitPersistBatch`：相同 batchId + 相同内容重试 no-op，不同内容拒绝 | 契约 §2.2 的 `requestId` 24h 幂等——语义一字不差，照抄判定规则 |
-| 审计表结构 | `transaction_history`：只追加、operations / inverse 分列、undone 标记、与内容分离 | 契约 §7 AuditEntry 的落表方式 |
-| 「AI 提案 = 单事务 + inverse + 采纳/拒绝回退」 | aiMeta 状态机（needs-confirmation → accepted；采用后界面与普通块完全一样） | propose_patch 的提案生命周期口径（与 Textus 内置 propose_edit 对齐后写进插件） |
-| 冲突兜底原则 | 「宁可保留待写集让用户导出抢救，不静默丢变更」 | request_confirm 宿主确认时版本已变的处置行为与文案 |
-| 导入安全三道门 | zip 单条目 8MB / 总量 64MB / 条目 2000 + 文件名守卫（single_file_name / clean_restore_stamp） | 资产库批量导入、备份恢复。**最适合连代码带测试搬**：模块小、测试全 |
-| 原子写降级话术 | 分步写入、失败保留步骤、无法保证时明确降级提示 | §6.4 Android SAF「无法保证原子替换」的现成答案 |
+| 借什么                                         | 墨契的出处                                                                                                         | 落到契约哪里                                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| 中文/拼音搜索两列物化                          | `blocks_fts` FTS5 trigram + `pinyin_full` / `pinyin_initials` 两列 + `fts-rebuilt-at` 版本标记（版本变更整列重建） | `search_notes` 的检索面：资产标题/标签是中文，Textus 的 frontmatter 索引对拼音检索弱；照搬「物化两列 + 版本标记触发重建」 |
+| 幂等写语义                                     | `commitPersistBatch`：相同 batchId + 相同内容重试 no-op，不同内容拒绝                                              | 契约 §2.2 的 `requestId` 24h 幂等——语义一字不差，照抄判定规则                                                             |
+| 审计表结构                                     | `transaction_history`：只追加、operations / inverse 分列、undone 标记、与内容分离                                  | 契约 §7 AuditEntry 的落表方式                                                                                             |
+| 「AI 提案 = 单事务 + inverse + 采纳/拒绝回退」 | aiMeta 状态机（needs-confirmation → accepted；采用后界面与普通块完全一样）                                         | propose_patch 的提案生命周期口径（与 Textus 内置 propose_edit 对齐后写进插件）                                            |
+| 冲突兜底原则                                   | 「宁可保留待写集让用户导出抢救，不静默丢变更」                                                                     | request_confirm 宿主确认时版本已变的处置行为与文案                                                                        |
+| 导入安全三道门                                 | zip 单条目 8MB / 总量 64MB / 条目 2000 + 文件名守卫（single_file_name / clean_restore_stamp）                      | 资产库批量导入、备份恢复。**最适合连代码带测试搬**：模块小、测试全                                                        |
+| 原子写降级话术                                 | 分步写入、失败保留步骤、无法保证时明确降级提示                                                                     | §6.4 Android SAF「无法保证原子替换」的现成答案                                                                            |
 
 **B.3.2 方法论（方案已在用，补个名字）**
 
