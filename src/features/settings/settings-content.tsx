@@ -8,6 +8,7 @@ import { pageProps, type ShortcutCommand } from "../../settings/pages/types";
 import { GeneralPage } from "./pages/general";
 import { AppearancePage } from "./pages/appearance";
 import { EditorPage } from "./pages/editor";
+import { ShortcutsPage } from "./pages/shortcuts";
 import "./settings-content.css";
 // The pages the dialog still draws the old way need the old chrome: the
 // desktop does not load the iPad's sheet, so its styles come with the
@@ -16,8 +17,8 @@ import "../../settings/SettingsPanel.css";
 
 /**
  * The settings dialog's content column: it hosts the open
- * page. General, Appearance and Editing are drawn here with the new rows;
- * every other page - built-in or a plugin's - renders its
+ * page. General, Appearance, Editing and Shortcuts are drawn here with the
+ * new rows; every other page - built-in or a plugin's - renders its
  * existing component unchanged, the transition rule. Mount with
  * `key={page.id}` so a page reopens fresh, like a request.
  */
@@ -45,6 +46,15 @@ export function SettingsContent(props: {
   }
   if (props.page.id === "edit-text") {
     return <EditorPage t={props.t} />;
+  }
+  if (props.page.id === "shortcuts") {
+    return (
+      <ShortcutsPage
+        t={props.t}
+        fixedShortcuts={props.fixedShortcuts ?? []}
+        pluginCommands={props.pluginCommands ?? []}
+      />
+    );
   }
   const Page = pageComponent(props.page);
   return (

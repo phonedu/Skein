@@ -97,6 +97,26 @@ const t = {
   colorSwatchesCode: "代码里",
   colorSwatchesEverywhere: "全部",
   autoCloseMarksLabel: "自动补全标记",
+  shortcutEditorGroupLabel: "查找与编辑",
+  shortcutAiGroupLabel: "AI",
+  shortcutHeadingsGroupLabel: "标题层级",
+  menuPlugins: "插件",
+  shortcutFixedGroupLabel: "固定快捷键",
+  shortcutCommandPalette: "命令面板",
+  menuFindReplace: "查找与替换",
+  shortcutSearchFiles: "搜索文件",
+  shortcutNextTab: "下一个标签页",
+  shortcutPreviousTab: "上一个标签页",
+  menuToggleSidebar: "显示边栏",
+  menuToggleAgentPanel: "显示 Agent 面板",
+  menuToggleZenMode: "专注模式",
+  menuSplitRight: "向右分屏",
+  shortcutTriggerCompletion: "触发补全",
+  shortcutTriggerGrammarCheck: "触发语法检查",
+  shortcutToggleFloatingChat: "悬浮对话",
+  shortcutToggleTextusAi: "Textus AI",
+  menuHeadingTemplate: "标题 {n}",
+  shortcutParagraph: "正文",
 } as unknown as Strings;
 
 /** A legacy-shaped page, as the old ones are: it takes SettingsPageProps. */
@@ -156,6 +176,13 @@ describe("the settings content column", () => {
     const sw = screen.getByLabelText("打字机模式");
     fireEvent.click(sw);
     expect(sw.getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("draws Shortcuts with the new group shells, not the legacy wrapper", () => {
+    const { container } = content("shortcuts");
+    expect(screen.getByText("查找与编辑")).toBeTruthy();
+    expect(screen.getByText("标题层级")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
   });
 
   it("a legacy page renders its existing component inside the column", () => {
