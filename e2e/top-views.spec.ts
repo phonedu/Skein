@@ -23,6 +23,9 @@ test("today stands alone: its groups draw without an error", async ({
   const errors = await open(page);
   await page.locator('.activity-rail-item[aria-label="今天"]').click();
   await expect(page.locator(".today-page")).toBeVisible();
+  // The page fills the main pane, not a stray grid cell.
+  const box = await page.locator(".today-page").boundingBox();
+  expect(box.width).toBeGreaterThan(500);
   await expect(page.getByText("进行中", { exact: true })).toBeVisible();
   await expect(page.getByText("最近笔记")).toBeVisible();
   expect(errors).toEqual([]);
@@ -32,6 +35,8 @@ test("assets stands alone with its empty state", async ({ page }) => {
   const errors = await open(page);
   await page.locator('.activity-rail-item[aria-label="资产"]').click();
   await expect(page.locator(".assets-page")).toBeVisible();
+  const box = await page.locator(".assets-page").boundingBox();
+  expect(box.width).toBeGreaterThan(500);
   expect(errors).toEqual([]);
 });
 

@@ -231,16 +231,22 @@ function App() {
           />
 
           {topView === "today" ? (
-            <TodayPage
-              t={t}
-              onOpenFile={(path) => {
-                void openFile(path);
-                setTopView("notes");
-              }}
-              onGoNotes={() => setTopView("notes")}
-            />
+            // The pages stand where the islands stand: the main pane's grid
+            // cell, which their height: 100% fills.
+            <div className="main-pane">
+              <TodayPage
+                t={t}
+                onOpenFile={(path) => {
+                  void openFile(path);
+                  setTopView("notes");
+                }}
+                onGoNotes={() => setTopView("notes")}
+              />
+            </div>
           ) : topView === "assets" ? (
-            <AssetsPage t={t} />
+            <div className="main-pane">
+              <AssetsPage t={t} />
+            </div>
           ) : (
             <DocumentIslands
               tabs={tabs}
