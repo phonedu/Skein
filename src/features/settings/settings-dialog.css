@@ -53,6 +53,13 @@
   font-size: var(--text-caption);
   display: grid;
   place-items: center;
+  border: none;
+  cursor: pointer;
+}
+
+.settings-dialog-close:hover {
+  background: color-mix(in srgb, var(--ui-text) 10%, transparent);
+  color: var(--ui-text);
 }
 
 .settings-dialog-body {

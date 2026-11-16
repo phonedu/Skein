@@ -209,7 +209,7 @@ headless 库的收益（无障碍、键盘、浮层定位）在这里最值；�
 
 | 证据          | 结果                                                                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 单元测试      | `src/features/settings` + `src/settings` + 唤起钩子：**57 passed**（含 jsdom 下的浮层、控件、搜索、跳转、IME Escape、桌面/iPad 两条分支）              |
+| 单元测试      | `src/features/settings` + `src/settings` + 唤起钩子：**58 passed**（含 jsdom 下的浮层、控件、搜索、跳转、IME Escape、桌面/iPad 两条分支）              |
 | 契约测试      | 令牌 / 尺寸类断言写在测试里（先红后绿），如 `--window-bar-row: 44px`、`SIDEBAR_DEFAULT_WIDTH === 316`、控件 34/28、树行 28                             |
 | e2e           | `e2e/settings-pages.spec.ts` 按新表面重写；`a11y / agent-buttons / ai-tabs / fit-sweep / frames / zoom-per-tab` 随之调整（`menu-settings` 不再开页签） |
 | 插件 e2e 前置 | 需 `TEXTUS_PLUGINS_DIR` 指向 `textus-plugins` 检出，否则插件目录为空（上游 AGENTS.md 明写的前置）                                                      |

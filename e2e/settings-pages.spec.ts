@@ -165,6 +165,37 @@ test("a small window keeps the dialog whole and its page drawn", async ({
   await expect(content(page).locator(".settings-row").first()).toBeVisible();
 });
 
+test("the keys stay in the dialog, and a composing Escape is the input method's", async ({
+  page,
+}) => {
+  await open(page);
+  await emit(page, "menu-settings");
+  await expect(dialog(page)).toBeVisible();
+  // Tab walks the dialog, not the document behind it.
+  for (let i = 0; i < 8; i++) {
+    await page.keyboard.press("Tab");
+    const inside = await page.evaluate(
+      () => !!document.activeElement?.closest(".settings-dialog"),
+    );
+    expect(inside).toBe(true);
+  }
+  // An Escape that ends a composition belongs to the input method: the
+  // dialog stays (design-language 5.5).
+  await page.evaluate(() => {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Escape",
+        keyCode: 229,
+        bubbles: true,
+      }),
+    );
+  });
+  await expect(dialog(page)).toBeVisible();
+  // A plain Escape closes it.
+  await page.keyboard.press("Escape");
+  await expect(dialog(page)).toHaveCount(0);
+});
+
 test("first-line indent sets in the document's paragraphs, not a list's", async ({
   page,
 }) => {

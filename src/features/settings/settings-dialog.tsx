@@ -1,4 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog";
+import { CloseIcon } from "../../engine/controls/icons";
 import type { Strings } from "../../i18n/strings";
 import type { ReactNode } from "react";
 import "./settings-dialog.css";
@@ -37,7 +38,9 @@ export function SettingsDialog(props: {
             <Dialog.Close
               className="settings-dialog-close"
               aria-label={t.close}
-            />
+            >
+              <CloseIcon />
+            </Dialog.Close>
           </div>
           <div className="settings-dialog-body">
             <div className="settings-dialog-nav">{props.nav}</div>
