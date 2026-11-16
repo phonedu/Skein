@@ -2,3 +2,4 @@
 
 - Settings opens as a dialog over the window: ⌘, , the rail's gear or the app menu open it, the pages list sits in a column on the left with the search on top, and the page you pick shows on the right. The Settings tab and the sidebar's list of pages are gone on the desktop; the iPad keeps its sheet.
 - The dialog's rows are new: the label with a small description under it, the value at its end - a pill to pick from, an opaque switch to turn on, a tick box to check. The search inside it jumps to the row it finds.
+- Editing joins General and Appearance in the new rows: the text, view and Markdown groups read and write the store through the dialog's rows; the document-text and advanced folds keep their sections for now.
