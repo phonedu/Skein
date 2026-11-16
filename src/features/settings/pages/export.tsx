@@ -1,6 +1,9 @@
 import type { Strings } from "../../../i18n/strings";
 import { useSettings } from "../../../prefs/SettingsContext";
-import { canExportPdf, canExportWithPandoc } from "../../../platform/capabilities";
+import {
+  canExportPdf,
+  canExportWithPandoc,
+} from "../../../platform/capabilities";
 import { isMacPlatform } from "../../../platform/os";
 import { AdvancedFold } from "../../../settings/sections/controls";
 import { ExportFileRow } from "../../../settings/sections/export-files";

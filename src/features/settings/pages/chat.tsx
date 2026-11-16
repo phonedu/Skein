@@ -14,7 +14,11 @@ import {
   revisionDisplayName,
 } from "../../../ai/revision/revision-display";
 import type { TextKey } from "../../../i18n/strings";
-import { SettingRow, ToggleRow, VERBATIM_INPUT } from "../../../settings/sections/controls";
+import {
+  SettingRow,
+  ToggleRow,
+  VERBATIM_INPUT,
+} from "../../../settings/sections/controls";
 import { SearchServiceSection } from "../../../settings/sections/search-service";
 import { WritingConventionsRow } from "../../../settings/sections/skills";
 import { Select } from "../../../engine/controls/Select";
@@ -65,7 +69,9 @@ export function ChatPage({
                 aria-label={t.revisionDisplayLabel}
                 value={settings.revisionDisplay}
                 onChange={(e) =>
-                  setSettings({ revisionDisplay: e.target.value as RevisionDisplay })
+                  setSettings({
+                    revisionDisplay: e.target.value as RevisionDisplay,
+                  })
                 }
               >
                 {REVISION_DISPLAYS.map((mode) => (

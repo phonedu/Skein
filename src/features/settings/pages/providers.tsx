@@ -102,7 +102,12 @@ function ProviderDetail({
       ? t.providerNoKeyRequired
       : undefined;
   const panel = (
-    <ProviderPanel t={t} entry={entry} connected={connected} onStatusChange={onStatusChange} />
+    <ProviderPanel
+      t={t}
+      entry={entry}
+      connected={connected}
+      onStatusChange={onStatusChange}
+    />
   );
   return (
     <div className="providers-detail">

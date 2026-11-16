@@ -11,7 +11,13 @@ import { SettingsSelect } from "../settings-controls";
  * storage section keeps its existing component for now - the transition
  * rule, repainted when its rows are.
  */
-export function ImagesPage({ t, docPath }: { t: Strings; docPath: string | null }) {
+export function ImagesPage({
+  t,
+  docPath,
+}: {
+  t: Strings;
+  docPath: string | null;
+}) {
   const { settings, setSettings } = useSettings();
   return (
     <PageGroup title={t.imageStorageGroupLabel}>

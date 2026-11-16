@@ -71,7 +71,10 @@ export function EditorPage({ t }: { t: Strings }) {
             onChange={(on) => setSettings({ formatBar: on })}
           />
         </SettingsRow>
-        <SettingsRow label={t.zoomTogetherLabel} description={t.zoomTogetherHint}>
+        <SettingsRow
+          label={t.zoomTogetherLabel}
+          description={t.zoomTogetherHint}
+        >
           <SettingsSwitch
             checked={settings.zoomTogether}
             onChange={(on) => setSettings({ zoomTogether: on })}
@@ -130,7 +133,7 @@ export function EditorPage({ t }: { t: Strings }) {
         </SettingsRow>
       </PageGroup>
       {/* Rarely changed: how diagrams are drawn, colour swatches, and the
-          ** and ` pairs. */}
+       ** and ` pairs. */}
       <AdvancedFold t={t}>
         {settings.enableMermaid && (
           <SettingsRow

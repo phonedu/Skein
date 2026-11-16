@@ -37,7 +37,9 @@ describe("the default theme's base colours", () => {
   });
 
   it("the paper content theme mirrors them", () => {
-    const paper = themesCss.slice(themesCss.indexOf('[data-content-theme="paper"]'));
+    const paper = themesCss.slice(
+      themesCss.indexOf('[data-content-theme="paper"]'),
+    );
     for (const [name, value] of Object.entries(boards))
       expect(
         new RegExp(`--doc-${name}:\\s*${value};`).test(paper),

@@ -1,9 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { Strings } from "../../../i18n/strings";
 import { useSettings } from "../../../prefs/SettingsContext";
-import {
-  useSettingsIndexing,
-} from "../../../settings/indexing";
+import { useSettingsIndexing } from "../../../settings/indexing";
 import { ToggleRow } from "../../../settings/sections/controls";
 import {
   AgentSystemPromptSection,
@@ -66,11 +64,7 @@ export function MemoryPage({
           onChange={(v) => setSettings({ rememberAutomatically: v })}
         />
         {canPickFolder && <AgentWorkspaceRootSection t={t} />}
-        <AgentSystemPromptSection
-          t={t}
-          onOpenFile={openFile}
-          onClose={close}
-        />
+        <AgentSystemPromptSection t={t} onOpenFile={openFile} onClose={close} />
         {canRevealInFileManager && <AgentWorkspaceSection t={t} />}
       </PageGroup>
       <PageGroup
