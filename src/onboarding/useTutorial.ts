@@ -22,6 +22,11 @@ interface TutorialProgress {
 
 const IDLE: TutorialProgress = { active: false, stepIndex: 0, tabId: null };
 
+/** The tour is parked while the interface is being rebuilt: the switch
+ *  keeps every way in (first run, the Help menu, a saved run) behind one
+ *  line, so bringing it back is flipping this to true. */
+const TOUR_ENABLED = false;
+
 function loadProgress(): TutorialProgress {
   try {
     const saved = getUiState("tutorialProgress") as Record<
@@ -31,7 +36,7 @@ function loadProgress(): TutorialProgress {
     if (!saved || typeof saved !== "object" || Array.isArray(saved))
       return IDLE;
     return {
-      active: saved.active === true,
+      active: TOUR_ENABLED && saved.active === true,
       stepIndex: resolveSavedStep(saved),
       tabId: typeof saved.tabId === "string" ? saved.tabId : null,
     };
@@ -69,6 +74,7 @@ export function useTutorial(
   }, []);
 
   const start = useCallback((tabId: string) => {
+    if (!TOUR_ENABLED) return;
     setStop(0);
     setProgress({ active: true, stepIndex: 0, tabId });
   }, []);
