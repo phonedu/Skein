@@ -101,7 +101,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-describe.skip("the tour's card" (parked with the tour), () => {
+describe.skip("the tour's card (parked with the tour)", () => {
   it("starts, then waits for the sidebar to open", () => {
     resumeAt("welcome");
     expect(card()).toHaveAccessibleName(t.tutorialWelcomeTitle);
@@ -194,7 +194,7 @@ describe.skip("the tour's card" (parked with the tour), () => {
   });
 });
 
-describe.skip("the tour's dimming" (parked with the tour), () => {
+describe.skip("the tour's dimming (parked with the tour)", () => {
   it("draws again when a step that left the window undimmed ends", () => {
     const layer = (open: boolean) => (
       <TourLayer

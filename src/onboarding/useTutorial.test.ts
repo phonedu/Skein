@@ -23,7 +23,7 @@ function resumeAt(stepId: TutorialStepId) {
 beforeAll(installTestLocalStorage);
 beforeEach(() => localStorage.clear());
 
-describe.skip("useTutorial" (parked with the tour), () => {
+describe.skip("useTutorial (parked with the tour)", () => {
   it("saves the step's id beside its index", () => {
     const { result } = renderHook(() => useTutorial());
     act(() => result.current.start("practice"));
@@ -66,7 +66,7 @@ describe.skip("useTutorial" (parked with the tour), () => {
   });
 });
 
-describe.skip("the practice tab's AI" (parked with the tour), () => {
+describe.skip("the practice tab's AI (parked with the tour)", () => {
   it("is live, in write mode, only on the step that uses it", () => {
     const result = resumeAt("editor");
     expect(result.current.practiceAi).toBe("muted");
