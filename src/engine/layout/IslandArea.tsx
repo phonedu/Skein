@@ -48,7 +48,8 @@ export interface IslandPlace {
   whole?: CSSProperties;
   /** Its row is under another island's, not in the window bar's. */
   inner: boolean;
-  /** No floating sheets: a clean sheet's, Zen's (Island's plain). */
+  /** No floating sheets: a single island's - the page itself - Zen
+   *  included (Island's plain). */
   plain: boolean;
   /** Its key in the window's frame: its parts' data-frame. */
   frame: string;

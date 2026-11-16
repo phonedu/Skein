@@ -92,16 +92,18 @@
 
   color-scheme: light;
   /* The document's colours: what a theme sets. */
-  /* Paper and ink (2026-11-15): warm paper, its ink, one ember accent. The
-     window's look is derived from the document's, so this is the whole app's
-     palette - the one the design boards are drawn in. */
-  --doc-bg: #faf6ee;
-  --doc-text: #2b2620;
-  --doc-muted: #706758;
-  --doc-accent: #9a5628;
-  --doc-border: #e4dcc8;
+  /* Paper and ink (2026-11-15, the palette's base set taken to the design
+     boards' declared values 2026-11-16, ruling 14; the code sheet sits a
+     touch lighter than the board's own so the ember keeps 4.5:1 on it).
+     The window's look is derived from the document's, so this is the whole
+     app's palette - the one the design boards are drawn in. */
+  --doc-bg: #fbf8f2;
+  --doc-text: #241f19;
+  --doc-muted: #5f574b;
+  --doc-accent: #b0531f;
+  --doc-border: #e4ddcf;
   --doc-quote-border: #b5652f;
-  --doc-code-bg: #f1e9d8;
+  --doc-code-bg: #f6f1e8;
   /* What marks "here" and "now": highlights, matches, notes. */
   --doc-mark: #ff9500;
   --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 30%, var(--doc-bg));

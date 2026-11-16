@@ -6,11 +6,11 @@
  */
 export const DOC_DEFAULTS = {
   light: {
-    bg: "#faf6ee",
-    text: "#2b2620",
-    muted: "#706758",
-    accent: "#9a5628",
-    border: "#e4dcc8",
+    bg: "#fbf8f2",
+    text: "#241f19",
+    muted: "#5f574b",
+    accent: "#b0531f",
+    border: "#e4ddcf",
   },
   dark: {
     bg: "#1f1b16",

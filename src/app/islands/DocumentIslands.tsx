@@ -53,6 +53,14 @@ function pluginTabItems(
 /** Panes named in reading order, for tests and styles to find. */
 const ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth"];
 
+/** One island lies flat - plain paper, no floating sheet, Zen included -
+ *  and only a split keeps its sheets, so its islands stay tellable apart
+ *  (interface redesign, ruling 12: the ui-d-notes board draws the page
+ *  unframed). */
+export function islandsPlain(zen: boolean, paneCount: number): boolean {
+  return zen || paneCount === 1;
+}
+
 /** The documents islands: each pane of open tabs an island, its tab row over
  *  its sheet, each tab's view on it - drawn by the engine's island area. */
 
@@ -121,7 +129,8 @@ export function DocumentIslands({
   const byId = new Map(tabs.map((tab) => [tab.id, tab]));
   const tabsInBar = useTabsInBar(zen, showTabBar);
   // Out of Zen with no row of tabs (the title on a row of its own, one
-  // document): its sheet is still an island, only with no row.
+  // document): its sheet is still an island, only with no row - and plain,
+  // one island being the page itself (islandsPlain).
   const lone = !zen && !tabsInBar;
   // Each pane's sheet in the area's grid, as the area places them; without
   // its row, the sheet reaches up into the bar's.
@@ -286,7 +295,7 @@ export function DocumentIslands({
     <IslandArea
       layout={layout}
       rows={tabsInBar}
-      plain={!tabsInBar && !lone}
+      plain={islandsPlain(zen, panes.length)}
       // A panel's island holds pages only (the AI, Settings, a plugin's).
       isPanel={isPanel}
       content={documents}
