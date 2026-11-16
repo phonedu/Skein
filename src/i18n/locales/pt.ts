@@ -558,6 +558,20 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   grammarApplyTo: "Mudar para “{s}”",
   grammarPrevious: "Problema anterior",
   grammarNext: "Próximo problema",
+  navToday: "Hoje",
+  navNotes: "Notas",
+  navAssets: "Ativos",
+  todayGroupActive: "Em andamento",
+  todayEmptyActive:
+    "Tarefas em andamento aparecem aqui - escreva a primeira nota.",
+  todayGroupAssets: "Ativos para esta etapa",
+  todayEmptyAssets:
+    "Ainda não há ativos reutilizáveis - aparecem quando um julamento se firma.",
+  todayGroupConfirm: "Aguardando você",
+  todayEmptyConfirm: "Nada aguarda sua confirmação.",
+  todayRecentGroup: "Notas recentes",
+  assetsEmpty:
+    "Os ativos aparecem aqui quando entregas reais se firmam em julamentos - reúna a primeira nota.",
   notesLibrary: "Biblioteca",
   notesRecent: "Recentes",
   notesFootCount: "{n} notas",

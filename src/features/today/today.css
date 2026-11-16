@@ -1,0 +1,25 @@
+/* Today's first pass: the groups' places, their empty states speaking in
+   the footnote's voice. The queue's data arrives with the workspace pass. */
+
+.today-page {
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+.today-group {
+  margin: 0 0 var(--space-6);
+}
+
+.today-group-title {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--ui-muted);
+  margin: 0 0 var(--space-2);
+}
+
+.today-empty {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--ui-muted);
+}

@@ -568,6 +568,20 @@ para usar una.
   grammarApplyTo: "Cambiar a «{s}»",
   grammarPrevious: "Problema anterior",
   grammarNext: "Problema siguiente",
+  navToday: "Hoy",
+  navNotes: "Notas",
+  navAssets: "Activos",
+  todayGroupActive: "En curso",
+  todayEmptyActive:
+    "Las tareas en marcha aparecen aquí - escribe la primera nota.",
+  todayGroupAssets: "Activos para esta etapa",
+  todayEmptyAssets:
+    "Aún no hay activos reutilizables - aparecen cuando se asienta un juicio.",
+  todayGroupConfirm: "Esperando tu confirmación",
+  todayEmptyConfirm: "Nada espera tu confirmación.",
+  todayRecentGroup: "Notas recientes",
+  assetsEmpty:
+    "Los activos aparecen aquí cuando las entregas reales se asientan en juicios - recoge la primera nota.",
   notesLibrary: "Biblioteca",
   notesRecent: "Recientes",
   notesFootCount: "{n} notas",

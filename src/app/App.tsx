@@ -5,9 +5,13 @@ import { useWindowAi } from "./islands/useWindowAi";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStack } from "../engine/controls/CornerToast";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
+import { getUiState, setUiState } from "../storage/ui-state";
+import type { TopView } from "./top-view";
+import { TodayPage } from "../features/today/TodayPage";
+import { AssetsPage } from "../features/assets/AssetsPage";
 import { hasDocumentsList } from "../platform/capabilities";
 import {
   CreateTabPage,
@@ -84,6 +88,19 @@ function App() {
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
   const { tabs, activeTabId, setActiveTabId, addBlankTab } = shell.tabState;
   const { panelOpen, setPanelOpen, toggleSidebar, sidebarWidth } = shell.panels;
+  // The window's top view (the notes board's rail): the notes workspace is
+  // the islands as they are; today and assets stand alone over the main
+  // pane until their data arrives. Kept in the window's ui-state.
+  const [topView, setTopViewState] = useState<TopView>(
+    () => (getUiState("topView") as TopView | null) ?? "notes",
+  );
+  const setTopView = (view: TopView) => {
+    setTopViewState(view);
+    setUiState("topView", view);
+    // The pages stand alone: arriving, they close the workspace's panels;
+    // returning to the notes opens them again.
+    setPanelOpen(view === "notes");
+  };
   const { agentPanel, toggleAgentPanel } = shell.panels;
   const { sidebarPresence, sidebarClosing, agentPresence } = shell.panels;
   const { panelMode, setPanelMode } = shell.panels;
@@ -208,37 +225,52 @@ function App() {
             onEntryMoved={entryMoved}
             searchFocusRequest={searchFocusRequest}
             onSearchFocusHandled={clearSearchFocusRequest}
+            topView={topView}
+            onTopView={setTopView}
             t={t}
           />
 
-          <DocumentIslands
-            tabs={tabs}
-            activeTabId={activeTabId}
-            showTabBar={showTabBar}
-            onActivate={setActiveTabId}
-            onClose={requestCloseTab}
-            onAdd={addBlankTab}
-            onDetach={handleTabDetach}
-            onMoveToNewWindow={moveTabToNewWindow}
-            onToggleReadOnly={toggleReadOnly}
-            onKeep={(id) => shell.tabState.updateTab(id, { preview: false })}
-            previewTab={dragHoverPreview}
-            onChange={handleChange}
-            typewriter={settings.typewriterMode}
-            formatBar={settings.formatBar}
-            tour={
-              tutorial.active && tutorial.tabId
-                ? {
-                    tabId: tutorial.tabId,
-                    ai: tutorial.practiceAi,
-                    mode: tutorial.agentMode,
-                  }
-                : null
-            }
-            zen={zenMode}
-            lang={settings.language}
-            t={t}
-          />
+          {topView === "today" ? (
+            <TodayPage
+              t={t}
+              onOpenFile={(path) => {
+                void openFile(path);
+                setTopView("notes");
+              }}
+              onGoNotes={() => setTopView("notes")}
+            />
+          ) : topView === "assets" ? (
+            <AssetsPage t={t} />
+          ) : (
+            <DocumentIslands
+              tabs={tabs}
+              activeTabId={activeTabId}
+              showTabBar={showTabBar}
+              onActivate={setActiveTabId}
+              onClose={requestCloseTab}
+              onAdd={addBlankTab}
+              onDetach={handleTabDetach}
+              onMoveToNewWindow={moveTabToNewWindow}
+              onToggleReadOnly={toggleReadOnly}
+              onKeep={(id) => shell.tabState.updateTab(id, { preview: false })}
+              previewTab={dragHoverPreview}
+              onChange={handleChange}
+              typewriter={settings.typewriterMode}
+              formatBar={settings.formatBar}
+              tour={
+                tutorial.active && tutorial.tabId
+                  ? {
+                      tabId: tutorial.tabId,
+                      ai: tutorial.practiceAi,
+                      mode: tutorial.agentMode,
+                    }
+                  : null
+              }
+              zen={zenMode}
+              lang={settings.language}
+              t={t}
+            />
+          )}
 
           <SettingsLayer opening={settingsOpening} {...settingsProps} />
           <SettingsDialogLayer opening={settingsOpening} {...settingsProps} />

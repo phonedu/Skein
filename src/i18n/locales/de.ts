@@ -548,6 +548,20 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   grammarApplyTo: "Ändern in „{s}“",
   grammarPrevious: "Vorheriger Hinweis",
   grammarNext: "Nächster Hinweis",
+  navToday: "Heute",
+  navNotes: "Notizen",
+  navAssets: "Assets",
+  todayGroupActive: "In Arbeit",
+  todayEmptyActive:
+    "Tasks in Bewegung erscheinen hier - schreibe die erste Notiz.",
+  todayGroupAssets: "Assets für diese Phase",
+  todayEmptyAssets:
+    "Noch keine wiederverwendbaren Assets - sie erscheinen, wenn sich eine Entscheidung festigt.",
+  todayGroupConfirm: "Wartet auf dich",
+  todayEmptyConfirm: "Nichts wartet auf deine Bestätigung.",
+  todayRecentGroup: "Neueste Notizen",
+  assetsEmpty:
+    "Assets erscheinen hier, wenn echte Lieferungen zu Entscheidungen werden - sammle die erste Notiz.",
   notesLibrary: "Bibliothek",
   notesRecent: "Zuletzt",
   notesFootCount: "{n} Notizen",

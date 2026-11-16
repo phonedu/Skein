@@ -570,6 +570,20 @@ utiliser une.
   grammarApplyTo: "Remplacer par «\u00a0{s}\u00a0»",
   grammarPrevious: "Problème précédent",
   grammarNext: "Problème suivant",
+  navToday: "Aujourd'hui",
+  navNotes: "Notes",
+  navAssets: "Actifs",
+  todayGroupActive: "En cours",
+  todayEmptyActive:
+    "Les tâches en cours apparaissent ici - écris la première note.",
+  todayGroupAssets: "Actifs pour cette étape",
+  todayEmptyAssets:
+    "Pas encore d'actifs réutilisables - ils apparaissent quand un jugement se fixe.",
+  todayGroupConfirm: "En attente de vous",
+  todayEmptyConfirm: "Rien n'attend votre confirmation.",
+  todayRecentGroup: "Notes récentes",
+  assetsEmpty:
+    "Les actifs apparaissent ici quand les livraisons réelles se fixent en jugements - recueillez la première note.",
   notesLibrary: "Bibliothèque",
   notesRecent: "Récents",
   notesFootCount: "{n} notes",

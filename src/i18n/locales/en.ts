@@ -540,6 +540,20 @@ type /name in a conversation to use one.
   grammarApplyTo: "Change to “{s}”",
   grammarPrevious: "Previous issue",
   grammarNext: "Next issue",
+  navToday: "Today",
+  navNotes: "Notes",
+  navAssets: "Assets",
+  todayGroupActive: "In progress",
+  todayEmptyActive:
+    "Tasks in motion show up here - start by writing the first note.",
+  todayGroupAssets: "Assets for this stage",
+  todayEmptyAssets:
+    "No reusable assets yet - they appear once a judgment settles.",
+  todayGroupConfirm: "Waiting for you",
+  todayEmptyConfirm: "Nothing is waiting for your confirm.",
+  todayRecentGroup: "Recent notes",
+  assetsEmpty:
+    "Assets appear here once real deliveries settle into judgments - capture the first note to begin.",
   notesLibrary: "Library",
   notesRecent: "Recent",
   notesFootCount: "{n} notes",

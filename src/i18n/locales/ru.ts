@@ -570,6 +570,20 @@ export default {
   grammarApplyTo: "Заменить на «{s}»",
   grammarPrevious: "Предыдущее замечание",
   grammarNext: "Следующее замечание",
+  navToday: "Сегодня",
+  navNotes: "Заметки",
+  navAssets: "Активы",
+  todayGroupActive: "В работе",
+  todayEmptyActive:
+    "Задачи в работе появятся здесь — начните с первой заметки.",
+  todayGroupAssets: "Активы для этапа",
+  todayEmptyAssets:
+    "Переиспользуемых активов пока нет — они появятся, когда устоится суждение.",
+  todayGroupConfirm: "Ждут вас",
+  todayEmptyConfirm: "Ничего не ждёт вашего подтверждения.",
+  todayRecentGroup: "Недавние заметки",
+  assetsEmpty:
+    "Активы появятся здесь, когда реальные поставки устоятся в суждения — соберите первую заметку.",
   notesLibrary: "Библиотека",
   notesRecent: "Недавние",
   notesFootCount: "Заметок: {n}",
