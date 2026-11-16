@@ -117,6 +117,9 @@ const t = {
   shortcutToggleTextusAi: "Textus AI",
   menuHeadingTemplate: "标题 {n}",
   shortcutParagraph: "正文",
+  privacyChatHistoryLabel: "对话历史",
+  privacyDraftRecoveryLabel: "草稿恢复",
+  settingsFileLabel: "设置文件",
   imageStorageGroupLabel: "图片与存储",
   imageAlignLabel: "图片对齐",
   imageAlignCenter: "居中",
@@ -206,6 +209,13 @@ describe("the settings content column", () => {
     const { container } = content("edit-export");
     expect(screen.getByText("导出")).toBeTruthy();
     expect(screen.getByText("PDF 页码")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("draws Privacy with the new group shells, not the legacy wrapper", () => {
+    const { container } = content("privacy");
+    expect(screen.getByText("对话历史")).toBeTruthy();
+    expect(screen.getByText("草稿恢复")).toBeTruthy();
     expect(container.querySelector(".settings-legacy-page")).toBeNull();
   });
 

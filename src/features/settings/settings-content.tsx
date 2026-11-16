@@ -11,6 +11,7 @@ import { EditorPage } from "./pages/editor";
 import { ShortcutsPage } from "./pages/shortcuts";
 import { ImagesPage } from "./pages/images";
 import { ExportPage } from "./pages/export";
+import { PrivacyPage } from "./pages/privacy";
 import "./settings-content.css";
 // The pages the dialog still draws the old way need the old chrome: the
 // desktop does not load the iPad's sheet, so its styles come with the
@@ -63,6 +64,9 @@ export function SettingsContent(props: {
   }
   if (props.page.id === "edit-export") {
     return <ExportPage t={props.t} />;
+  }
+  if (props.page.id === "privacy") {
+    return <PrivacyPage t={props.t} />;
   }
   const Page = pageComponent(props.page);
   return (

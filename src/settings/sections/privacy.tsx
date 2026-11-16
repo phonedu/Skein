@@ -15,7 +15,7 @@ import { SettingsFileSection } from "./settings-file";
 // switch off only stops new writes; a clear can't be undone, so it asks first.
 // Last, the settings file, which can carry the AI history away.
 
-function ClearRow({
+export function ClearRow({
   label,
   warning,
   t,
