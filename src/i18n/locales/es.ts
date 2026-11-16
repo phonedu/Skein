@@ -568,6 +568,8 @@ para usar una.
   grammarApplyTo: "Cambiar a «{s}»",
   grammarPrevious: "Problema anterior",
   grammarNext: "Problema siguiente",
+  notesLibrary: "Biblioteca",
+  notesRecent: "Recientes",
   notesFootCount: "{n} notas",
   notesFootNote: "Markdown lo es todo",
   treeTab: "Archivos",

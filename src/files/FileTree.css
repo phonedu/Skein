@@ -296,3 +296,35 @@
   font-variant-numeric: tabular-nums;
   opacity: 0.8;
 }
+
+/* The notes board's three sections: the recents, then the library's tree
+   under its caption. Captions speak in the group title's voice. */
+.tree-section-title {
+  min-height: 24px;
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--ui-muted);
+}
+
+.recent-section {
+  flex: none;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.recent-row {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: var(--shape-s);
+  text-align: left;
+  color: var(--ui-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-row:hover {
+  background: var(--ui-hover);
+}

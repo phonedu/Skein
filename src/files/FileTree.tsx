@@ -33,6 +33,7 @@ import { useTreeView } from "./useTreeData";
 import { useRowMenu } from "./useRowMenu";
 import { useNewEntry } from "./useNewEntry";
 import { useNoteCount } from "./note-count";
+import { RecentSection } from "./recent-section";
 import { ViewFoot } from "../engine/controls/view-foot";
 import { fill } from "../i18n/fill";
 
@@ -58,6 +59,9 @@ interface FileTreeProps {
   /** A file or folder was dragged into another folder: open tabs follow
    *  it to its new path. */
   onEntryMoved: (from: string, to: string) => void;
+  /** The recently opened documents, most recent first; the foot of the
+   *  notes board's three sections. */
+  recentFiles?: readonly string[];
 }
 
 export function FileTree({
@@ -70,6 +74,7 @@ export function FileTree({
   onOpenAsFolder,
   onCloseFolder,
   onEntryMoved,
+  recentFiles,
 }: FileTreeProps) {
   const { t } = useSettings();
   // The notes view's foot (the board's bottom strip): the folder's note
@@ -279,6 +284,15 @@ export function FileTree({
                   <RefreshIcon />
                 </button>
               </Tooltip>
+            </div>
+            <RecentSection
+              t={t}
+              files={recentFiles ?? []}
+              root={base}
+              onOpen={(path) => onFileSelect(path)}
+            />
+            <div className="tree-section-title">
+              {t.notesLibrary} · {folderName(base)}
             </div>
             <div
               ref={treeRef}

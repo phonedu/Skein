@@ -570,6 +570,8 @@ utiliser une.
   grammarApplyTo: "Remplacer par «\u00a0{s}\u00a0»",
   grammarPrevious: "Problème précédent",
   grammarNext: "Problème suivant",
+  notesLibrary: "Bibliothèque",
+  notesRecent: "Récents",
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown, c'est tout",
   treeTab: "Fichiers",

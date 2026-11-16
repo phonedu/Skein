@@ -489,6 +489,8 @@ export default {
   grammarApplyTo: "改为“{s}”",
   grammarPrevious: "上一个问题",
   grammarNext: "下一个问题",
+  notesLibrary: "库",
+  notesRecent: "最近",
   notesFootCount: "共 {n} 篇",
   notesFootNote: "Markdown 就是全部",
   treeTab: "文件树",

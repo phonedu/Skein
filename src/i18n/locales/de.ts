@@ -548,6 +548,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   grammarApplyTo: "Ändern in „{s}“",
   grammarPrevious: "Vorheriger Hinweis",
   grammarNext: "Nächster Hinweis",
+  notesLibrary: "Bibliothek",
+  notesRecent: "Zuletzt",
   notesFootCount: "{n} Notizen",
   notesFootNote: "Markdown ist alles",
   treeTab: "Dateien",

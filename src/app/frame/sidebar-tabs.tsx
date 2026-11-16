@@ -7,6 +7,8 @@ import {
 import { StartActions } from "../StartActions";
 import "../start-page.css";
 import type { ComponentType } from "react";
+import { useEffect, useState } from "react";
+import { readRecents } from "../menu/recents";
 import { FileTree } from "../../files/FileTree";
 import {
   TreeTabIcon,
@@ -77,6 +79,19 @@ function FilesPanel({
   onOpenFile,
   onEntryMoved,
 }: SidebarTabProps) {
+  // The notes board's recents: read when the panel mounts, refreshed on the
+  // window's next mount - a foot-level fact, not a live meter.
+  const [recentFiles, setRecentFiles] = useState<readonly string[]>([]);
+  useEffect(() => {
+    let stale = false;
+    readRecents().then(
+      (recents) => !stale && setRecentFiles(recents.files),
+      () => undefined,
+    );
+    return () => {
+      stale = true;
+    };
+  }, []);
   if (!openFolder.treeRoot)
     // No folder: the start page's three ways to begin, so a window with
     // nothing open is never a dead end.
@@ -96,6 +111,7 @@ function FilesPanel({
       onOpenAsFolder={canOpenFolder ? openFolder.openFolder : undefined}
       onCloseFolder={openFolder.closeFolder}
       onEntryMoved={onEntryMoved}
+      recentFiles={recentFiles}
     />
   );
 }

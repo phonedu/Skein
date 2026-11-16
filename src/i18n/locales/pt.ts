@@ -558,6 +558,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   grammarApplyTo: "Mudar para “{s}”",
   grammarPrevious: "Problema anterior",
   grammarNext: "Próximo problema",
+  notesLibrary: "Biblioteca",
+  notesRecent: "Recentes",
   notesFootCount: "{n} notas",
   notesFootNote: "Markdown é tudo",
   treeTab: "Arquivos",

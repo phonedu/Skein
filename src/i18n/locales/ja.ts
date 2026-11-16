@@ -525,6 +525,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   grammarApplyTo: "「{s}」に修正",
   grammarPrevious: "前の指摘",
   grammarNext: "次の指摘",
+  notesLibrary: "ライブラリ",
+  notesRecent: "最近",
   notesFootCount: "全 {n} 件",
   notesFootNote: "Markdown がすべて",
   treeTab: "ファイル",
