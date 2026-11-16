@@ -65,6 +65,38 @@ const t = {
   activityRailLabel: "活动栏",
   titleRowLabel: "标题行",
   menuBarLabel: "菜单栏",
+  settingsTextGroup: "文本",
+  settingsViewGroup: "视图",
+  navMarkdown: "Markdown",
+  contentWidthLabel: "内容宽度",
+  contentWidthAuto: "自适应",
+  contentWidthStandard: "标准",
+  contentWidthFull: "全宽",
+  firstLineIndentLabel: "首行缩进",
+  emptyLineHintLabel: "空行提示",
+  viewModeLabel: "视图模式",
+  viewModeRich: "富文本",
+  menuToggleSourceMode: "源码模式",
+  menuToggleSplitView: "分屏",
+  menuFormatBar: "格式工具栏",
+  zoomTogetherLabel: "缩放联动",
+  zoomTogetherHint: "缩放跟着正文走",
+  menuToggleTypewriterMode: "打字机模式",
+  enableMathLabel: "公式",
+  enableMermaidLabel: "Mermaid 图表",
+  codeLineNumbersLabel: "代码行号",
+  autoCloseBracketsLabel: "自动补全括号",
+  plainTextMenuLabel: "纯文本菜单",
+  embedDisplayLabel: "嵌入展示",
+  embedDisplayExpand: "展开",
+  embedDisplayCard: "卡片",
+  diagramEngineLabel: "图表引擎",
+  diagramEngineHint: "Mermaid 图表的绘制引擎",
+  colorSwatchesLabel: "颜色色板",
+  colorSwatchesOff: "关闭",
+  colorSwatchesCode: "代码里",
+  colorSwatchesEverywhere: "全部",
+  autoCloseMarksLabel: "自动补全标记",
 } as unknown as Strings;
 
 /** A legacy-shaped page, as the old ones are: it takes SettingsPageProps. */
@@ -108,6 +140,22 @@ describe("the settings content column", () => {
     expect(screen.getByText("界面文字大小")).toBeTruthy();
     // The activity rail is one of the page's switches.
     expect(screen.getAllByRole("switch").length).toBeGreaterThan(0);
+  });
+
+  it("draws Editing with the new rows, not the legacy wrapper", () => {
+    const { container } = content("edit-text");
+    expect(screen.getByText("文本")).toBeTruthy();
+    expect(screen.getByText("内容宽度")).toBeTruthy();
+    expect(screen.getByText("视图")).toBeTruthy();
+    expect(screen.getByText("打字机模式")).toBeTruthy();
+    expect(container.querySelector(".settings-legacy-page")).toBeNull();
+  });
+
+  it("an Editing switch writes through to the store", () => {
+    content("edit-text");
+    const sw = screen.getByLabelText("打字机模式");
+    fireEvent.click(sw);
+    expect(sw.getAttribute("aria-checked")).toBe("true");
   });
 
   it("a legacy page renders its existing component inside the column", () => {
