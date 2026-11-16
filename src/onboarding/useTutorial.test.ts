@@ -1,3 +1,5 @@
+// Parked with the tour (useTutorial.ts's TOUR_ENABLED): these hold the
+// mechanics for the day it returns - unskip these describes when it does.
 // @vitest-environment jsdom
 
 import { act, renderHook } from "@testing-library/react";
@@ -21,7 +23,7 @@ function resumeAt(stepId: TutorialStepId) {
 beforeAll(installTestLocalStorage);
 beforeEach(() => localStorage.clear());
 
-describe("useTutorial", () => {
+describe.skip("useTutorial" (parked with the tour), () => {
   it("saves the step's id beside its index", () => {
     const { result } = renderHook(() => useTutorial());
     act(() => result.current.start("practice"));
@@ -64,7 +66,7 @@ describe("useTutorial", () => {
   });
 });
 
-describe("the practice tab's AI", () => {
+describe.skip("the practice tab's AI" (parked with the tour), () => {
   it("is live, in write mode, only on the step that uses it", () => {
     const result = resumeAt("editor");
     expect(result.current.practiceAi).toBe("muted");

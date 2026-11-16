@@ -1,3 +1,5 @@
+// Parked with the tour (useTutorial.ts's TOUR_ENABLED): these hold the
+// mechanics for the day it returns - unskip these describes when it does.
 // @vitest-environment jsdom
 
 import "@testing-library/jest-dom/vitest";
@@ -99,7 +101,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-describe("the tour's card", () => {
+describe.skip("the tour's card" (parked with the tour), () => {
   it("starts, then waits for the sidebar to open", () => {
     resumeAt("welcome");
     expect(card()).toHaveAccessibleName(t.tutorialWelcomeTitle);
@@ -192,7 +194,7 @@ describe("the tour's card", () => {
   });
 });
 
-describe("the tour's dimming", () => {
+describe.skip("the tour's dimming" (parked with the tour), () => {
   it("draws again when a step that left the window undimmed ends", () => {
     const layer = (open: boolean) => (
       <TourLayer
