@@ -551,6 +551,9 @@ type /name in a conversation to use one.
     "No reusable assets yet - they appear once a judgment settles.",
   todayGroupConfirm: "Waiting for you",
   todayEmptyConfirm: "Nothing is waiting for your confirm.",
+  todayEmptyRecent: "Notes you have opened list here.",
+  todayStartHint: "Start from one note: open a folder or just write - the AI and the assets hook in as you go.",
+  todayGoNotes: "Go to Notes",
   todayRecentGroup: "Recent notes",
   assetsEmpty:
     "Assets appear here once real deliveries settle into judgments - capture the first note to begin.",
@@ -558,7 +561,7 @@ type /name in a conversation to use one.
   notesRecent: "Recent",
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown is everything",
-  treeTab: "Files",
+  treeTab: "Notes",
   outlineTab: "Outline",
   searchTab: "Search",
   searchPlaceholder: "Search names and text",

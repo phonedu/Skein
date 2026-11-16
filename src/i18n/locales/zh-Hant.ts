@@ -498,6 +498,9 @@ export default {
   todayEmptyAssets: "還沒有可用的資產——判斷沉澱之後才會出現。",
   todayGroupConfirm: "待確認",
   todayEmptyConfirm: "沒有等你確認的提議。",
+  todayEmptyRecent: "打開過的筆記會列在這裡。",
+  todayStartHint: "從一篇筆記開始：打開資料夾或直接寫作，AI 與資產隨後接入。",
+  todayGoNotes: "去筆記",
   todayRecentGroup: "最近筆記",
   assetsEmpty:
     "完成一次真實交付、沉澱一條判斷之後，可複用的資產會出現在這裡——先收集第一篇筆記。",
@@ -505,7 +508,7 @@ export default {
   notesRecent: "最近",
   notesFootCount: "共 {n} 篇",
   notesFootNote: "Markdown 就是全部",
-  treeTab: "檔案",
+  treeTab: "筆記",
   outlineTab: "大綱",
   searchTab: "搜尋",
   searchPlaceholder: "搜尋檔名和內容",

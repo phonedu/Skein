@@ -525,6 +525,9 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
     "아직 쓸 수 있는 자산이 없습니다. 판단이 쌓이면 나타납니다.",
   todayGroupConfirm: "확인 대기",
   todayEmptyConfirm: "확인을 기다리는 것이 없습니다.",
+  todayEmptyRecent: "연 노트가 여기에 나열됩니다.",
+  todayStartHint: "한 노트에서 시작하세요: 폴더를 열거나 바로 씁니다. AI와 자산은 이어서 연결됩니다.",
+  todayGoNotes: "노트로",
   todayRecentGroup: "최근 노트",
   assetsEmpty:
     "실제 납품이 판단으로 쌓이면 재사용 가능한 자산이 여기에 나타납니다. 첫 노트를 모아 보세요.",

@@ -535,6 +535,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   todayEmptyAssets: "使えるアセットはまだありません。判断が蓄まると現れます。",
   todayGroupConfirm: "確認待ち",
   todayEmptyConfirm: "確認を待っているものはありません。",
+  todayEmptyRecent: "開いたノートがここに並びます。",
+  todayStartHint: "一枚のノートから始めましょう：フォルダを開くか、そのまま書きます。AI とアセットは後から繋がります。",
+  todayGoNotes: "ノートへ",
   todayRecentGroup: "最近のノート",
   assetsEmpty:
     "実際の納品を判断として蓄めると、再利用できるアセットがここに現れます。最初のノートを収集しましょう。",

@@ -579,6 +579,9 @@ para usar una.
     "Aún no hay activos reutilizables - aparecen cuando se asienta un juicio.",
   todayGroupConfirm: "Esperando tu confirmación",
   todayEmptyConfirm: "Nada espera tu confirmación.",
+  todayEmptyRecent: "Las notas abiertas se listan aquí.",
+  todayStartHint: "Empieza con una nota: abre una carpeta o escribe directamente; la IA y los activos se conectan sobre la marcha.",
+  todayGoNotes: "Ir a notas",
   todayRecentGroup: "Notas recientes",
   assetsEmpty:
     "Los activos aparecen aquí cuando las entregas reales se asientan en juicios - recoge la primera nota.",

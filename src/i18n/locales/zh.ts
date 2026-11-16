@@ -498,6 +498,9 @@ export default {
   todayEmptyAssets: "还没有可用的资产——判断沉淀之后才会出现。",
   todayGroupConfirm: "待确认",
   todayEmptyConfirm: "没有等你确认的提议。",
+  todayEmptyRecent: "打开过的笔记会列在这里。",
+  todayStartHint: "从一篇笔记开始：打开文件夹或直接写作，AI 与资产随后接入。",
+  todayGoNotes: "去笔记",
   todayRecentGroup: "最近笔记",
   assetsEmpty:
     "完成一次真实交付、沉淀一条判断之后，可复用的资产会出现在这里——先收集第一篇笔记。",
@@ -505,7 +508,7 @@ export default {
   notesRecent: "最近",
   notesFootCount: "共 {n} 篇",
   notesFootNote: "Markdown 就是全部",
-  treeTab: "文件树",
+  treeTab: "笔记",
   outlineTab: "大纲",
   searchTab: "搜索",
   searchPlaceholder: "搜索文件名和内容",
