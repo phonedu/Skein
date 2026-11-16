@@ -81,6 +81,16 @@ const CONFIG = {
     /\/testdata\//,
     /\.test\.[cm]?[jt]sx?$/,
   ],
+  // The ruling record - which ruling number, decided when, by which
+  // review - lives in docs/baseline/ and nowhere else. Code comments state
+  // the rule generically ("the design boards draw the page unframed"),
+  // never the record: scanned on added lines of code files in every mode.
+  // (Pattern built from escapes so this source stays plain ASCII, the
+  // same way cjkPattern above is.)
+  rulingRecordPattern: new RegExp(
+    "\\u88c1\\u51b3\\s*\\d|\\u88c1\\u51b3\\u8bb0\\u5f55|ruling\\s*\\d",
+  ),
+  codeExts: [".ts", ".tsx", ".js", ".mjs", ".cjs", ".rs", ".css"],
   // Examples past this many per rule group are summarised as a count.
   maxExamplesPerRule: 8,
 };
@@ -234,6 +244,26 @@ function upstreamFindings(line) {
   return hits;
 }
 
+const isCodeFile = (path) =>
+  CONFIG.codeExts.some((ext) => path.toLowerCase().endsWith(ext));
+
+// A ruling's record (its number, its date, its review) belongs to
+// docs/baseline/, not to the code: a comment here states the rule itself
+// ("the design boards draw the page unframed"), which outlives the record
+// and never goes stale against it.
+function rulingFindings(file, line) {
+  if (!isCodeFile(file) || !CONFIG.rulingRecordPattern.test(line)) {
+    return [];
+  }
+  return [
+    {
+      rule:
+        "ruling record in code (state the rule generically; the record " +
+        "lives in docs/baseline)",
+    },
+  ];
+}
+
 // Walks the added lines of the tree diff, tracking which file each line
 // belongs to so path exemptions apply. Private-path files are skipped: the
 // path itself is already a finding, their content is only noise. Binary
@@ -256,6 +286,9 @@ function scanDiff(base, head, mode, findings) {
         continue;
       }
       for (const hit of privacyFindings(added)) {
+        findings.push({ where: file, ...hit, sample: added });
+      }
+      for (const hit of rulingFindings(file, added)) {
         findings.push({ where: file, ...hit, sample: added });
       }
       if (mode === "upstream" && !isCjkExempt(file)) {
