@@ -59,3 +59,5 @@ textus-plugins/
 .ryugi/
 # The security scanner's local state
 .mimosa/
+# The agent session's local plans and scratch
+.zcode/
