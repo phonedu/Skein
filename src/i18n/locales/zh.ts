@@ -508,7 +508,7 @@ export default {
   notesRecent: "最近",
   notesFootCount: "共 {n} 篇",
   notesFootNote: "Markdown 就是全部",
-  treeTab: "笔记",
+  treeTab: "文件",
   outlineTab: "大纲",
   searchTab: "搜索",
   searchPlaceholder: "搜索文件名和内容",

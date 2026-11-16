@@ -561,7 +561,7 @@ type /name in a conversation to use one.
   notesRecent: "Recent",
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown is everything",
-  treeTab: "Notes",
+  treeTab: "Files",
   outlineTab: "Outline",
   searchTab: "Search",
   searchPlaceholder: "Search names and text",

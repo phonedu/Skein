@@ -10,8 +10,9 @@ const baseName = (path: string) =>
 
 /**
  * The notes board's recent files, above the library's tree: only the ones
- * inside the tree's root (recents are global across folders), the most
- * recent first as the list arrives. Nothing inside the root, nothing drawn.
+ * inside the tree's root when one is given (recents are global across
+ * folders), the most recent first as the list arrives. Nothing to show,
+ * nothing drawn.
  */
 export function RecentSection({
   t,
@@ -21,10 +22,13 @@ export function RecentSection({
 }: {
   t: Strings;
   files: readonly string[];
-  root: string;
+  /** Left out: no filtering, the list stands as it arrived. */
+  root?: string;
   onOpen: (path: string) => void;
 }) {
-  const recent = files.filter((path) => isWithin(path, root)).slice(0, 5);
+  const recent = (
+    root ? files.filter((path) => isWithin(path, root)) : [...files]
+  ).slice(0, 5);
   if (recent.length === 0) return null;
   return (
     <section className="recent-section">
