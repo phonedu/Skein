@@ -654,7 +654,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 - Android SAF 适配。
 - iOS / Android 真机回归。
 
-**待审（触发点后启动，本阶段默认不做）**：子代理编排（researcher 模式）、向量 RAG（若关键词级检索被证不够）、资产 MCP / CLI 对外开放（Astryx 同款 agent-ready 形态，依赖受控写入成熟）。
+**待审（触发点后启动，本阶段默认不做）**：子代理编排（researcher 模式）、向量 RAG（若关键词级检索被证不够）、资产 MCP / CLI 对外开放（Astryx 同款 agent-ready 形态，依赖受控写入成熟）、**DSH 集成两档**（DeepSeek Harness：嵌入 agent 模块 / 资产工具做成 DSH 插件——触发点 = DSH 出稳定版且插件 API 冻结；详见《Agent基座与竞品调研》§5）。
 
 **验收**
 
@@ -733,7 +733,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 | 上游 PR | 通用能力优先提回上游 | §12.6 |
 | 理论版本策略 | 每张卡带 `theory_version`，历史不重写 | 《笔记资产理论》§7.6 |
 | Agent 基座判定 | Textus 原生骨架承载，不引 DeepAgents / LangChain | §8 阶段 1；《Agent基座与竞品调研》§2 |
-| 参考项目 | happy-friday-lite（决策参照，PolyForm NC 代码不收）/ ima / WorkBuddy（产品形态）/ Astryx（agent-ready 形态） | 《Agent基座与竞品调研》 |
+| 参考项目 | happy-friday-lite（决策参照，PolyForm NC 代码不收）/ ima / WorkBuddy（产品形态）/ Astryx（agent-ready 形态）/ **DeepSeek Harness**（agent 运行时平台，MIT，developer preview——嵌入与插件开放均待审） | 《Agent基座与竞品调研》§5 |
 | 墨契式浮层工具栏 | 触发点：上游浮层格式条发布后叠层；我方只消费事件 | §7.8 先不做；§9 上游同域演进 |
 
 ---

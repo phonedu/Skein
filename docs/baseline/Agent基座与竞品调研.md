@@ -1,8 +1,8 @@
 # Agent 基座与竞品调研
 
-> 版本：v0.1
-> 日期：2026-11-15
-> 关联：《Textus-改造方案》v1.0 /《Textus-Agent工具契约》v0.3 /《笔记资产理论》v0.2
+> 版本：v0.2
+> 日期：2026-11-15（v0.2 补记 2026-11-16）
+> 关联：《Textus-改造方案》v1.1 /《Textus-Agent工具契约》v0.3 /《笔记资产理论》v0.2
 > 回答两个问题：① **Textus 基座能不能做成一个成熟的 Agent？** ② happy-friday-lite / ima / WorkBuddy 三个参照各借什么、怎么借。
 > 调研方法：happy-friday-lite 为**源码级**调研（clone 于 `C:\Project\ref\happy-friday-lite`）；Textus 侧为 v1.4.2 逐文件核对结论（见《改造方案》附录 B）；ima / WorkBuddy 为公开资料调研。
 
@@ -103,3 +103,42 @@
 | 版本 | 日期 | 变化 |
 | --- | --- | --- |
 | v0.1 | 2026-11-15 | 首版：happy-friday-lite 源码级调研（9 条架构决策）+ Textus 基座九项能力对照 + ima/WorkBuddy 参照要点 |
+| v0.2 | 2026-11-16 | 补 **DeepSeek Harness（DSH）专项**（§五，实时核证）：官方 agent 运行时平台（MIT，281k★，TypeScript/Cordis 插件架构，developer preview 有破坏性变更）；happy-friday-lite 已把 DSH 作为嵌入模块（iframe + 服务进程）；底座判定不变，DSH 两用法（嵌入 agent 模块 / 资产工具做成 DSH 插件）进待审，触发点 = DSH 稳定版。另：用户指出首轮对比漏 DSH 属实——DSH 爆发发生在笔者训练截止之后，已当日补查 |
+
+---
+
+## 五、DeepSeek Harness（DSH）专项补充（2026-11-16 实时核证）
+
+> 触发：用户指出对比遗漏了 DeepSeek 官方的 Harness——真实的信息滞后（DSH 的爆发发生在笔者训练截止之后），本节为 11-16 补查结论。
+
+### 5.1 DSH 是什么
+
+- `deepseek-ai/deepseek-harness`，**MIT**，TypeScript，281k★，本周仍在提交（deepseek.com/harness）。
+- 定位：**通用 Agent 运行时**，"Everything is a Plugin"，基于 Cordis 插件框架（时空可组合编程范式论文）。
+- 形态：`npx @deepseek-ai/dsh web` 起 Web UI（127.0.0.1:3080）；社区桌面端 **dsh-desktop**（MIT，36k★，"桌面本身也是插件"）；插件精选列表 24k★；cc-switch 等工具已支持。
+- ⚠️ **官方明示 developer preview，将持续破坏性变更**（README 红字）。
+
+### 5.2 happy-friday-lite 的集成形态（源码实锤）
+
+- 它把 DSH 作为**一个模块**嵌进笔记壳：Electron 主进程拉起 DSH 服务（状态机 idle / starting / ready / config-required / failed），Vue 端 `<iframe :src="status.url">` 把 DSH Web UI 嵌成一个标签页（`views/harness/DeepSeekHarness.vue`），剪贴板权限照给。
+- 能这么便宜的原因：**Electron 天然自带 Node**——拉起 `npx dsh web` 几乎零成本。
+
+### 5.3 对「底座选择」的影响
+
+| 维度 | Textus 底座（Tauri/Rust） | DSH 底座（Node/插件平台） |
+| --- | --- | --- |
+| Agent 运行时 | 自研循环（九项七原生） | ✅ 官方平台 + 生态分发 |
+| 笔记编辑器 | ✅ Milkdown 字节保真（最难的件已解决） | ✗ **自建**（大头仍在这） |
+| 移动端 | ✅ iOS/Android 原生 | ✗ 桌面 / 移动浏览器 |
+| 稳定性 | v1.4.2 发布线 | ⚠️ developer preview，官方承诺破坏性变更 |
+| 嵌 DSH 作 agent 模块 | 需 Node sidecar（成本中） | ✅ iframe 即可（Electron 自带 Node） |
+
+**结论补记：底座判定不变（Textus）。** DSH 的正确用法有两条，都进待审、共用同一触发点（**DSH 出稳定版 / 插件 API 冻结**）：
+
+1. **嵌入 agent 模块**：像 happy-friday-lite 那样把 DSH 作为 Agent 面板的引擎之一嵌入（Textus 侧需解决 Node sidecar 的打包与升级）；
+2. **资产能力开放通道**：把契约七工具做成 **DSH 插件**，向 DSH 生态分发资产能力（Astryx 同款 agent-ready 思路，MIT 与 DSH 的 MIT 同族无冲突）。
+
+### 5.4 信息时效披露
+
+- 首轮对比（11-15）漏掉 DSH：其爆发发生在笔者训练截止之后——真实滞后，用户 11-16 指出后当日补查。
+- 本节全部结论来自 2026-11-16 实时核证：DSH 仓库与 README（GitHub API 当日读取）、happy-friday-lite 仓内 Harness 模块源码、npm registry 实时版本。
