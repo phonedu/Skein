@@ -55,8 +55,8 @@ const ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth"];
 
 /** One island lies flat - plain paper, no floating sheet, Zen included -
  *  and only a split keeps its sheets, so its islands stay tellable apart
- *  (interface redesign, ruling 12: the ui-d-notes board draws the page
- *  unframed). */
+ *  (the design boards draw the
+ *  page unframed). */
 export function islandsPlain(zen: boolean, paneCount: number): boolean {
   return zen || paneCount === 1;
 }

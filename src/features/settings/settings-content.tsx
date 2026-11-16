@@ -14,9 +14,9 @@ import "./settings-content.css";
 import "../../settings/SettingsPanel.css";
 
 /**
- * The settings dialog's content column (spec Task 5): it hosts the open
- * page. General and Appearance are drawn here with the new rows (ruling 3);
- * every other page - built-in or a plugin's (ruling 5) - renders its
+ * The settings dialog's content column: it hosts the open
+ * page. General and Appearance are drawn here with the new rows;
+ * every other page - built-in or a plugin's - renders its
  * existing component unchanged, the transition rule. Mount with
  * `key={page.id}` so a page reopens fresh, like a request.
  */

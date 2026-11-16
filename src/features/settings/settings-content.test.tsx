@@ -37,11 +37,11 @@ vi.mock("../../platform/ipc", async (importOriginal) => {
 });
 
 /**
- * The content column's contract (spec Task 5): it hosts pages keyed by id -
+ * The content column's contract: it hosts pages keyed by id -
  * General and Appearance drawn with the new rows, their values read from and
  * written to the settings store; any other page renders its existing
  * component inside the column unchanged (the transition rule); a plugin's
- * registered page renders the same way (ruling 5).
+ * registered page renders the same way.
  */
 const css = readFileSync("src/features/settings/settings-content.css", "utf8");
 

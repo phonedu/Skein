@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-// The desktop: not an iPhone or iPad, so the dialog (ruling 1).
+// The desktop: not an iPhone or iPad, so the dialog.
 vi.mock("../platform/capabilities", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   isIOSApp: false,

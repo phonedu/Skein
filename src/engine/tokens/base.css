@@ -92,9 +92,9 @@
 
   color-scheme: light;
   /* The document's colours: what a theme sets. */
-  /* Paper and ink (2026-11-15, the palette's base set taken to the design
-     boards' declared values 2026-11-16, ruling 14; the code sheet sits a
-     touch lighter than the board's own so the ember keeps 4.5:1 on it).
+  /* Paper and ink: the palette's base set follows the design boards'
+     declared values; the code sheet sits a touch lighter than the board's
+     own so the ember keeps 4.5:1 on it.
      The window's look is derived from the document's, so this is the whole
      app's palette - the one the design boards are drawn in. */
   --doc-bg: #fbf8f2;

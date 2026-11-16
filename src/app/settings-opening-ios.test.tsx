@@ -2,7 +2,7 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 
-// An iPad: the old sheet over the window, the dialog shut (ruling 3).
+// An iPad: the old sheet over the window, the dialog shut.
 vi.mock("../platform/capabilities", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   isIOSApp: true,

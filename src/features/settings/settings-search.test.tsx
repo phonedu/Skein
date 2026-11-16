@@ -10,7 +10,7 @@ import type { SearchEntry, SearchMatch } from "../../settings/settings-search";
 import type { Strings } from "../../i18n/strings";
 
 /**
- * The dialog's search (spec Task 6, ruling 4): the capsule field at the nav
+ * The dialog's search: the capsule field at the nav
  * column's top; results stand in for the page; picking one opens its page
  * and jumps to the row (the engine's reveal); ⌘F focuses the field while
  * the dialog is open; Escape during composition belongs to the input

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { islandsPlain } from "./DocumentIslands";
 
 /**
- * The single island lies flat (interface redesign, ruling 12: the
- * `ui-d-notes` board draws the editing paper unframed): one island is the
+ * The single island lies flat (the design boards draw the
+ * editing paper unframed): one island is the
  * page itself, Zen included; only a split keeps the floating sheets, so the
  * islands stay tellable apart.
  */

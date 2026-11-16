@@ -10,11 +10,11 @@ import {
 } from "./settings-controls";
 
 /**
- * The row's and the controls' contract (spec Task 4): a `.srow` row - label,
+ * The row's and the controls' contract: a `.srow` row - label,
  * a small description, the value control at the end - and the three Base UI
  * controls skinned to the board: the pill select, the opaque iOS-style
  * switch, the tick checkbox. They are pure controlled parts; the store is
- * wired where pages use them (spec Task 5).
+ * wired where pages use them.
  */
 const rowCss = readFileSync("src/features/settings/settings-row.css", "utf8");
 const ctlCss = readFileSync(

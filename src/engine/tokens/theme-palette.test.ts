@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { DOC_DEFAULTS } from "./doc-defaults";
 
 /**
- * The base palette's contract (interface redesign, ruling 14: the boards'
- * paper and ink are the target, so the fork's default theme takes their
- * three base colours): warm paper #fbf8f2, its ink #241f19, one ember
- * accent #b0531f. Dark keeps its own night sheet (ruling 16).
+ * The base palette's contract (the design boards' paper and ink are the
+ * target, so the default theme takes their base colours): warm paper
+ * #fbf8f2, its ink #241f19, one ember accent #b0531f. Dark keeps its own
+ * night sheet.
  */
 const boards = {
   bg: "#fbf8f2",
@@ -21,7 +21,7 @@ const themesCss = readFileSync(
 );
 
 describe("the default theme's base colours", () => {
-  it("are the design boards' paper, ink and ember (ruling 14)", () => {
+  it("are the design boards' paper, ink and ember", () => {
     expect(DOC_DEFAULTS.light.bg).toBe(boards.bg);
     expect(DOC_DEFAULTS.light.text).toBe(boards.text);
     expect(DOC_DEFAULTS.light.accent).toBe(boards.accent);

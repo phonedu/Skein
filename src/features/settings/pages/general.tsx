@@ -16,7 +16,7 @@ import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
 
 /**
- * General, drawn with the new rows (spec Task 5, ruling 3): language,
+ * General, drawn with the new rows: language,
  * start-up and close-last from the store; the file rows as switches; the
  * system sections keep their existing components for now - the transition
  * rule, repainted when their rows are.

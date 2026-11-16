@@ -16,7 +16,7 @@ import { PageGroup } from "../settings-content";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
 
-/** Appearance, drawn with the new rows (spec Task 5, ruling 3): the theme
+/** Appearance, drawn with the new rows: the theme
  *  section keeps its existing component for now (the transition rule); the
  *  interface scale, layout, rail, title row and menu bar are new rows off
  *  the store, one's own CSS under Advanced. */

@@ -12,7 +12,7 @@ import type { Strings } from "../../i18n/strings";
 import "./settings-search.css";
 
 /**
- * The dialog's search (spec Task 6, ruling 4): the capsule field at the nav
+ * The dialog's search: the capsule field at the nav
  * column's top; while it holds a query the results stand in for the page;
  * picking one is the frame's to turn into the page open plus the jump (the
  * engine's reveal). ⌘F focuses the field while the dialog is open - the

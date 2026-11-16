@@ -5,7 +5,7 @@ import { useSettingsRowLabel } from "./settings-row";
 import "./settings-controls.css";
 
 /**
- * The settings dialog's three value controls (spec Task 4), Base UI for the
+ * The settings dialog's three value controls, Base UI for the
  * behaviour, the board's skin: a select drawn as the board's pill, an
  * opaque iOS-style switch, a tick checkbox. Controlled parts: pages read
  * and write the settings store through `onChange`.

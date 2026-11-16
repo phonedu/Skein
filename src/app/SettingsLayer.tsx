@@ -29,8 +29,8 @@ import type { Strings } from "../i18n/strings";
  *  registration the app and its tests share. */
 const SettingsDialog = lazyComponent(settingsFeature, (m) => m.SettingsHost);
 
-/** Settings and the plugins' pages as tabs: the iPhone and iPad (ruling 3:
- *  the desktop has the dialog). */
+/** Settings and the plugins' pages as tabs: the iPhone and iPad keep
+ *  them in tabs; the desktop has the dialog. */
 const inTabs = isIOSApp;
 
 /** The Create tab's page: its conversation, filling the tab. */
@@ -66,8 +66,8 @@ type SettingsStart = string;
 /**
  * Whether Settings is open, and at which page. Each request counts, so one
  * made while Settings is open goes to its page from wherever it was. The
- * desktop opens the dialog (ruling 1); the iPhone and iPad keep the sheet
- * over the window (ruling 3), and the plugins' and the Create tab's pages
+ * desktop opens the dialog; the iPhone and iPad keep the sheet over the
+ * window, and the plugins' and the Create tab's pages
  * - which the desktop does not have as sheets.
  */
 export function useSettingsOpening(tabs: TabState) {

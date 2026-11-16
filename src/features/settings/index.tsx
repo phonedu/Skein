@@ -62,11 +62,11 @@ export function openSettingsDialog(): void {
 }
 
 /**
- * The dialog the window shows (spec Task 7): the board's panel, its nav
+ * The dialog the window shows: the board's panel, its nav
  * column - search on top, the pages' list under it - and the open page's
  * content. Mounted with `key={request}` so each request lands on its page.
  * A plugin's page (`plugin:<id>`) draws its detail inside the same content
- * column (ruling 5), with its own stylesheet as before.
+ * column, with its own stylesheet as before.
  */
 export function SettingsHost(props: {
   page: string;
@@ -87,7 +87,7 @@ export function SettingsHost(props: {
   const content = useRef<HTMLDivElement>(null);
   const marginAvailable = useMarginAvailable();
 
-  // The engine's Escape rule wins (ruling 7): an Escape that ends a compose
+  // The engine's Escape rule wins: an Escape that ends a compose
   // belongs to the input method, never to the dialog.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

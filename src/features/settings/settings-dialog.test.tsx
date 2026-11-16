@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { SettingsDialog } from "./settings-dialog";
 
 /**
- * The shell's contract (spec Task 2): a Base UI Dialog skinned to the board
+ * The shell's contract: a Base UI Dialog skinned to the board
  * - opaque surface, the shape/shadow tokens nearest the board's values, the
  * 880×556 base box drawn at the interface's scale - with a top row (title,
  * close) and two slots: the nav column and the page's content.

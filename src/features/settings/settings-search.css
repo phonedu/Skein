@@ -1,4 +1,4 @@
-/* The dialog's search field (spec Task 6): at the nav column's top, the
+/* The dialog's search field: at the nav column's top, the
    board's 10px-cornered field (design-language 6: a search field is a
    rounded rectangle). The legacy field's classes are restyled here, since
    the old panel's stylesheet is not loaded under the dialog. */

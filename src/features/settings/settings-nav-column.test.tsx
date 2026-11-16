@@ -10,7 +10,7 @@ import {
 import type { Strings } from "../../i18n/strings";
 
 /**
- * The nav column's contract (spec Task 3, ruling 6): its pages under their
+ * The nav column's contract: its pages under their
  * groups, folded until opened; a row at the board's 32 high, active =
  * surface + hair ring + 500 weight; plugins' group semantics hold. The
  * column is pure over its `pages` data - the registry is wired in later.

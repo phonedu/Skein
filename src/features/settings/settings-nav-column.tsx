@@ -9,7 +9,7 @@ import {
 import "./settings-nav-column.css";
 
 /**
- * The settings dialog's nav column (design board ui-d-settings, ruling 6):
+ * The settings dialog's nav column (design board ui-d-settings):
  * the registry's pages, ungrouped ones first, then under their groups folded
  * until opened - the plugins' `group` semantics unchanged. Rows at the
  * board's 32 high; the active one on the surface with a hair ring.
