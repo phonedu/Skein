@@ -1,25 +1,78 @@
-/* Today's first pass: the groups' places, their empty states speaking in
-   the footnote's voice. The queue's data arrives with the workspace pass. */
+/* Today's first pass, the board's three regions: the queue's column (its
+   fixed groups, real zeros until the workspace pass), and the day's main
+   area with the start card where the detail will grow. */
 
 .today-page {
   height: 100%;
+  display: flex;
+  overflow: hidden;
+  background: var(--ui-bg);
+}
+
+.today-queue {
+  flex: none;
+  width: 300px;
+  overflow-y: auto;
+  padding: var(--space-4);
+  border-right: 1px solid var(--ui-border);
+}
+
+.today-queue-group {
+  margin: 0 0 var(--space-4);
+}
+
+.today-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--ui-muted);
+  margin: 0 0 var(--space-1);
+}
+
+.today-group-count {
+  font-weight: 400;
+}
+
+.today-empty {
+  font-size: var(--text-caption);
+  color: var(--ui-muted);
+}
+
+.today-main {
+  flex: 1;
+  min-width: 0;
   overflow-y: auto;
   padding: var(--space-6);
 }
 
-.today-group {
-  margin: 0 0 var(--space-6);
-}
-
-.today-group-title {
-  font-size: var(--text-caption);
+.today-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-large-title);
   font-weight: 600;
-  color: var(--ui-muted);
-  margin: 0 0 var(--space-2);
+  color: var(--ui-text);
 }
 
-.today-empty {
-  margin: 0;
-  font-size: var(--text-caption);
-  color: var(--ui-muted);
+.today-start {
+  max-width: 40em;
+}
+
+.today-start-hint {
+  margin: 0 0 var(--space-4);
+  color: var(--ui-text);
+}
+
+.today-go-notes {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--shape-s);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-primary);
+  color: var(--ui-on-primary);
+  font-size: var(--text-control);
+}
+
+.today-go-notes:hover {
+  background: var(--ui-hover);
+  color: var(--ui-text);
 }

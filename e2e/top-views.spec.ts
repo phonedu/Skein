@@ -26,7 +26,9 @@ test("today stands alone: its groups draw without an error", async ({
   // The page fills the main pane, not a stray grid cell.
   const box = await page.locator(".today-page").boundingBox();
   expect(box.width).toBeGreaterThan(500);
-  await expect(page.getByText("进行中", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".today-group-title", { hasText: "进行中" }),
+  ).toBeVisible();
   await expect(page.getByText("最近笔记")).toBeVisible();
   expect(errors).toEqual([]);
 });

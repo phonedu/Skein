@@ -5,9 +5,10 @@ import { RecentSection } from "../../files/recent-section";
 import "./today.css";
 
 /**
- * Today (the notes board's ui-d-today), its first pass: the three groups'
- * places with their empty states - the queue's data lands with the
- * workspace pass - and the recent notes, which the window already knows.
+ * Today (the notes board's ui-d-today), first pass: the queue's column with
+ * its fixed groups - the counts are real zeros until the workspace pass
+ * brings the tasks and assets - the recent notes the window already knows,
+ * and a start card where the day's detail will grow.
  */
 export function TodayPage({
   t,
@@ -37,26 +38,43 @@ export function TodayPage({
   ];
   return (
     <div className="today-page">
-      {empty.map(({ title, hint }) => (
-        <section key={title} className="today-group">
-          <div className="today-group-title">{title}</div>
-          <p className="today-empty">{hint}</p>
+      <aside className="today-queue" aria-label={t.navToday}>
+        {empty.map(({ title, hint }) => (
+          <section key={title} className="today-queue-group">
+            <div className="today-group-title">
+              {title}
+              <span className="today-group-count">0</span>
+            </div>
+            <div className="today-empty">{hint}</div>
+          </section>
+        ))}
+        <section className="today-queue-group">
+          <div className="today-group-title">
+            {t.todayRecentGroup}
+            <span className="today-group-count">{recents.length}</span>
+          </div>
+          <RecentSection
+            t={t}
+            files={recents}
+            onOpen={(path) => {
+              onOpenFile(path);
+              onGoNotes();
+            }}
+          />
+          {recents.length === 0 && (
+            <div className="today-empty">{t.todayEmptyRecent}</div>
+          )}
         </section>
-      ))}
-      <section className="today-group">
-        <div className="today-group-title">{t.todayRecentGroup}</div>
-        <RecentSection
-          t={t}
-          files={recents}
-          onOpen={(path) => {
-            onOpenFile(path);
-            onGoNotes();
-          }}
-        />
-        {recents.length === 0 && (
-          <p className="today-empty">{t.todayEmptyActive}</p>
-        )}
-      </section>
+      </aside>
+      <div className="today-main">
+        <h1 className="today-title">{t.navToday}</h1>
+        <div className="today-start">
+          <p className="today-start-hint">{t.todayStartHint}</p>
+          <button type="button" className="today-go-notes" onClick={onGoNotes}>
+            {t.todayGoNotes}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
