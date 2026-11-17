@@ -5,13 +5,9 @@ import { useWindowAi } from "./islands/useWindowAi";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStack } from "../engine/controls/CornerToast";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
-import { getUiState, setUiState } from "../storage/ui-state";
-import type { TopView } from "./top-view";
-import { TodayPage } from "../features/today/TodayPage";
-import { AssetsPage } from "../features/assets/AssetsPage";
 import { hasDocumentsList } from "../platform/capabilities";
 import {
   CreateTabPage,
@@ -88,19 +84,6 @@ function App() {
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
   const { tabs, activeTabId, setActiveTabId, addBlankTab } = shell.tabState;
   const { panelOpen, setPanelOpen, toggleSidebar, sidebarWidth } = shell.panels;
-  // The window's top view (the notes board's rail): the notes workspace is
-  // the islands as they are; today and assets stand alone over the main
-  // pane until their data arrives. Kept in the window's ui-state.
-  const [topView, setTopViewState] = useState<TopView>(
-    () => (getUiState("topView") as TopView | null) ?? "notes",
-  );
-  const setTopView = (view: TopView) => {
-    setTopViewState(view);
-    setUiState("topView", view);
-    // The pages stand alone: arriving, they close the workspace's panels;
-    // returning to the notes opens them again.
-    setPanelOpen(view === "notes");
-  };
   const { agentPanel, toggleAgentPanel } = shell.panels;
   const { sidebarPresence, sidebarClosing, agentPresence } = shell.panels;
   const { panelMode, setPanelMode } = shell.panels;
@@ -225,30 +208,10 @@ function App() {
             onEntryMoved={entryMoved}
             searchFocusRequest={searchFocusRequest}
             onSearchFocusHandled={clearSearchFocusRequest}
-            topView={topView}
-            onTopView={setTopView}
             t={t}
           />
 
-          {topView === "today" ? (
-            // The pages stand where the islands stand: the main pane's grid
-            // cell, which their height: 100% fills.
-            <div className="main-pane">
-              <TodayPage
-                t={t}
-                folder={openFolder.folder ?? openFolder.treeRoot ?? null}
-                onOpenFile={(path) => {
-                  void openFile(path);
-                  setTopView("notes");
-                }}
-                onGoNotes={() => setTopView("notes")}
-              />
-            </div>
-          ) : topView === "assets" ? (
-            <div className="main-pane">
-              <AssetsPage t={t} />
-            </div>
-          ) : (
+          {
             <DocumentIslands
               tabs={tabs}
               activeTabId={activeTabId}
@@ -277,7 +240,7 @@ function App() {
               lang={settings.language}
               t={t}
             />
-          )}
+          }
 
           <SettingsLayer opening={settingsOpening} {...settingsProps} />
           <SettingsDialogLayer opening={settingsOpening} {...settingsProps} />

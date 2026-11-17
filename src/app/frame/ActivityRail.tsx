@@ -1,6 +1,5 @@
 import { useScrollFade } from "../../engine/controls/scroll-fade";
 import { useRef, useState } from "react";
-import { Sun, Layers, PenLine } from "lucide-react";
 import { Tooltip } from "../../engine/controls/Tooltip";
 import {
   ContextMenu,
@@ -9,23 +8,14 @@ import {
 import { Presence } from "../../engine/motion/usePresence";
 import { RAIL_DIVIDER, railDrag } from "./rail-drag";
 import { useSettings } from "../../prefs/SettingsContext";
-import { SettingsIcon, lucide } from "../../engine/controls/icons";
+import { SettingsIcon } from "../../engine/controls/icons";
 import { RailUpdate } from "./RailUpdate";
 import { emitToThisWindow } from "../../platform/menu-events";
 import type { Strings } from "../../i18n/strings";
-import type { TopView } from "../top-view";
 import { isOwnTab, railOrder, type SidebarTabDef } from "./sidebar-tabs";
 
 /** The rail's width in interface px (activity-rail.css draws the same). */
 export const RAIL_WIDTH = 48;
-
-/** The top views' icons (the notes board's rail): today, the notes
- *  workspace, assets. */
-const VIEW_ICONS = {
-  today: lucide(Sun, 16),
-  notes: lucide(PenLine, 16),
-  assets: lucide(Layers, 16),
-} as const;
 
 /**
  * The column of icons at the window's left edge (design-language.md 5.7):
@@ -37,8 +27,6 @@ export function ActivityRail({
   tabs,
   shownId,
   sidebarOpen,
-  topView,
-  onTopView,
   onSelect,
   onCloseSidebar,
   onReorder,
@@ -47,9 +35,6 @@ export function ActivityRail({
   tabs: SidebarTabDef[];
   shownId: string;
   sidebarOpen: boolean;
-  /** The window's top view: the rail's first group switches it. */
-  topView: TopView;
-  onTopView: (view: TopView) => void;
   onSelect: (id: string) => void;
   onCloseSidebar: () => void;
   /** The rail's icons dragged into a new order. */
@@ -130,34 +115,6 @@ export function ActivityRail({
         setMenu({ x: e.clientX, y: e.clientY });
       }}
     >
-      {/* The top views first (the notes board's rail): today, notes, assets
-          - a click switches the window's view, the notes one being the
-          workspace these tabs belong to. */}
-      <div className="activity-rail-group">
-        {(
-          [
-            ["today", t.navToday],
-            ["notes", t.navNotes],
-            ["assets", t.navAssets],
-          ] as [TopView, string][]
-        ).map(([id, label]) => {
-          const Icon = VIEW_ICONS[id];
-          return (
-            <Tooltip key={id} text={label} side="right">
-              <button
-                type="button"
-                className="activity-rail-item"
-                aria-label={label}
-                aria-pressed={topView === id}
-                onClick={() => onTopView(id)}
-              >
-                <Icon />
-              </button>
-            </Tooltip>
-          );
-        })}
-        <hr className="activity-rail-divider" />
-      </div>
       <RailGroup
         tabs={top}
         on={(id) => sidebarOpen && shownId === id}

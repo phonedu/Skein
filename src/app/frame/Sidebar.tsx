@@ -9,7 +9,6 @@ import { railShown, type SidebarTabId } from "./useSidePanels";
 import type { useSidebarWidth } from "./sidebar-width";
 import type { OpenFolder } from "../useOpenFolder";
 import { ActivityRail } from "./ActivityRail";
-import type { TopView } from "../top-view";
 import { useSettings } from "../../prefs/SettingsContext";
 import { railTabs, sidebarTab } from "./sidebar-tabs";
 import { ViewTitleActions } from "../../plugins/views/plugin-views";
@@ -33,8 +32,6 @@ export function Sidebar({
   onEntryMoved,
   searchFocusRequest,
   onSearchFocusHandled,
-  topView,
-  onTopView,
   t,
 }: {
   open: boolean;
@@ -42,9 +39,6 @@ export function Sidebar({
   closing: boolean;
   mode: SidebarTabId;
   onModeChange: (mode: SidebarTabId) => void;
-  /** The window's top view: opening a workspace tab returns to the notes. */
-  topView: TopView;
-  onTopView: (view: TopView) => void;
   width: ReturnType<typeof useSidebarWidth>;
   openFolder: OpenFolder;
   activePath: string | null;
@@ -89,11 +83,8 @@ export function Sidebar({
           tabs={railTabs()}
           shownId={shown.id}
           sidebarOpen={open}
-          topView={topView}
-          onTopView={onTopView}
           onSelect={(id) => {
             onModeChange(id);
-            onTopView("notes");
             if (!open) onToggle();
           }}
           onCloseSidebar={onToggle}

@@ -32,8 +32,8 @@ src-tauri/crates/aicompat/data/model-capabilities.json
 # Golden output of the Word import (extract/docx.rs tests); its bytes are the test.
 src-tauri/src/extract/testdata/*.md
 textus-plugins/
-# The design boards copied into the docs are the approved record of the
-# interface; they are kept byte for byte, so prettier must not rewrite them.
-docs/baseline/boards/**/*.html
+# The design boards are kept byte for byte, so prettier must not rewrite
+# them (they are frozen: ruling 29 of the interface plan shelves them).
+docs/skein/04-boards/**/*.html
 # The local scratch space the boards and the task ledgers live in.
 .ryugi/

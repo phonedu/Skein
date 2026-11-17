@@ -2,9 +2,6 @@
 export interface UiState {
   /** The onboarding tour's step. */
   tutorialProgress: unknown;
-  /** The window's top view (the notes board's rail): today, notes or
-   *  assets, as it was left. */
-  topView: string;
   agentPanelOpen: boolean;
   /** The width a panel keeps (the AI's, Settings', a plugin page's;
    *  an iPad's docked AI), in Medium's pixels. */

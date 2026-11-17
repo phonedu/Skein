@@ -55,7 +55,7 @@ playwright-report/
 textus-plugins/
 
 # The local scratch space the boards and task ledgers are drafted in
-# (.prettierignore lists it too); the approved record lives in docs/baseline/.
+# (.prettierignore lists it too); the approved records live in docs/skein/.
 .ryugi/
 # The security scanner's local state
 .mimosa/
