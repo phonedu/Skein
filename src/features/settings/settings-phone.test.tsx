@@ -1,11 +1,17 @@
 // @vitest-environment jsdom
 // The phone's settings: the list is the first sight, a section pushes as
 // its own page under a back row, and the desktop's dialog never mounts.
+import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsHost } from ".";
 import { SettingsProvider } from "../../prefs/SettingsContext";
 import en from "../../i18n/locales/en";
+
+const settingsPhoneCss = readFileSync(
+  "src/features/settings/settings-phone.css",
+  "utf8",
+);
 
 vi.mock("../../engine/controls/usePhoneLayout", () => ({
   usePhoneLayout: () => true,
@@ -81,5 +87,11 @@ describe("the phone's settings", () => {
     host("about");
     expect(document.querySelector(".settings-content-host")).toBeTruthy();
     expect(screen.getAllByText(en.navAbout).length).toBeGreaterThan(0);
+  });
+
+  it("uses a phone sized settings header and body rhythm", () => {
+    expect(settingsPhoneCss).toContain("width: 48px;");
+    expect(settingsPhoneCss).toContain("height: 48px;");
+    expect(settingsPhoneCss).toContain("padding: 0 var(--space-4)");
   });
 });

@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import en from "../i18n/locales/en";
 import type { Strings } from "../i18n/strings";
 import { PhoneHome } from "./PhoneHome";
+
+const phoneHomeCss = readFileSync("src/phone/PhoneHome.css", "utf8");
 
 vi.mock("../files/FileTree", () => ({
   FileTree: () => (
@@ -67,5 +70,10 @@ describe("the phone library home", () => {
 
     fireEvent.click(screen.getByRole("button", { name: en.menuNewFile }));
     expect(onNewFile).toHaveBeenCalledOnce();
+  });
+
+  it("uses the Android phone rhythm for search and library rows", () => {
+    expect(phoneHomeCss).toContain("min-height: 56px;");
+    expect(phoneHomeCss).toContain("padding: 0 var(--space-4);");
   });
 });

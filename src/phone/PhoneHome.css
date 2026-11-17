@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 48px;
   padding: 0 var(--space-3);
   border-radius: var(--shape-m);
   border: 1px solid var(--phone-line);
@@ -70,8 +70,8 @@
 }
 
 .ph-ic {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: 0;
   background: none;
   border-radius: 12px;
@@ -90,9 +90,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  min-height: 46px;
-  margin: var(--space-3) var(--space-6) var(--space-3);
-  padding: 0 var(--space-3);
+  min-height: 56px;
+  margin: var(--space-4) var(--space-6) var(--space-4);
+  padding: 0 var(--space-4);
   border: 1px solid var(--phone-line);
   border-radius: var(--shape-m);
   background: color-mix(in srgb, var(--phone-paper) 76%, white);
@@ -134,7 +134,7 @@
 }
 
 .phone-home .tree-row {
-  min-height: 50px;
+  min-height: 56px;
   gap: var(--space-2);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--shape-m);
@@ -177,7 +177,7 @@
 }
 
 .phone-home .recent-row {
-  min-height: 50px;
+  min-height: 56px;
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-body);
 }
@@ -191,8 +191,8 @@
 .ph-open {
   display: block;
   margin: 24px auto;
-  height: 46px;
-  padding: 0 18px;
+  min-height: 48px;
+  padding: 0 var(--space-6);
   border-radius: var(--shape-m);
   border: 1px solid var(--phone-line);
   background: color-mix(in srgb, var(--phone-paper) 70%, white);

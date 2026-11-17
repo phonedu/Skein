@@ -17,7 +17,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  min-height: 64px;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .settings-phone-title {
@@ -32,10 +34,10 @@
   text-overflow: ellipsis;
 }
 
-/* The row's touch: the phone's bars are 44 tall (PhoneEditorBar's). */
+/* Android app bars and navigation actions keep a 48px touch target. */
 .settings-phone-ic {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: 0;
   background: none;
   border-radius: var(--shape-m);
@@ -56,12 +58,30 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 var(--space-4) var(--space-5);
+  padding: var(--space-2) var(--space-4) var(--space-6);
 }
 
 /* The list screen: the nav column's rows at the body's width. */
 .settings-phone .settings-nav {
   width: 100%;
+}
+
+.settings-phone .settings-nav {
+  gap: var(--space-1);
+}
+
+.settings-phone .settings-nav-row {
+  min-height: 56px;
+  padding: 0 var(--space-4);
+  border-radius: var(--shape-m);
+}
+
+.settings-phone .settings-nav-group-head {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  letter-spacing: 0.04em;
 }
 
 /* The pushed page arrives from the right, as a phone's page does. */

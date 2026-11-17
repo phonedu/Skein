@@ -52,7 +52,23 @@
 :root[data-window-chrome="mobile"]
   .main-pane:not(:has(> .tab-bar))
   :is(.editor-content:not(.typewriter-active), .source-view .cm-scroller) {
-  padding-top: calc(var(--mobile-top) + 1.5rem);
+  padding-top: calc(var(--mobile-top) + var(--space-6));
+  padding-inline: var(--space-6);
+}
+
+:root[data-window-chrome="mobile"] .milkdown {
+  font-size: var(--text-body);
+  line-height: 1.8;
+}
+
+:root[data-window-chrome="mobile"] .milkdown .ProseMirror > p {
+  margin-block: var(--space-4);
+}
+
+:root[data-window-chrome="mobile"] .milkdown h1 {
+  font-family: "Source Han Serif SC", "Noto Serif SC", Songti, serif;
+  font-size: var(--text-large-title);
+  line-height: 1.25;
 }
 
 :root[data-window-chrome="mobile"]

@@ -1,5 +1,5 @@
 /* The document page's top row on the phone - the same family as the home's
-   (PhoneHome.css): the safe area's inset, 44px touches, the paper's look.
+   (PhoneHome.css): the safe area's inset, 48px touches, the paper's look.
    The back chevron leads home; the title takes the middle; Textus AI sits
    at the end. */
 .phone-editor-bar {
@@ -7,21 +7,22 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: var(--safe-top, 0px) 12px 0 8px;
-  background: var(--paper);
-  color: var(--ink);
+  padding: var(--safe-top, 0px) var(--space-2) 0;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .pe-ic {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: 0;
   background: none;
-  border-radius: 12px;
+  border-radius: var(--shape-m);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ink);
+  color: var(--ui-text);
   flex: none;
 }
 
@@ -31,7 +32,7 @@
 }
 
 .pe-ic:active {
-  background: var(--line);
+  background: var(--ui-hover);
 }
 
 .pe-title {
@@ -40,8 +41,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 16px;
-  font-weight: 650;
+  font-size: var(--text-body);
+  font-weight: 600;
   text-align: center;
   padding: 0 4px;
 }

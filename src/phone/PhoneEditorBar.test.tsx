@@ -1,10 +1,14 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PhoneEditorBar } from "./PhoneEditorBar";
 import en from "../i18n/locales/en";
 import type { Strings } from "../i18n/strings";
+
+const editorBarCss = readFileSync("src/phone/PhoneEditorBar.css", "utf8");
+const mobileEditorCss = readFileSync("src/mobile/styles/editor.css", "utf8");
 
 vi.mock("../ai/TextusAiSwitch", () => ({
   TextusAiButton: (props: { showPanel: boolean }) =>
@@ -45,5 +49,13 @@ describe("the phone's editor bar", () => {
     cleanup();
     setup(true);
     expect(screen.getByText("ai")).toBeTruthy();
+  });
+
+  it("keeps phone editor controls at the Android touch size", () => {
+    expect(editorBarCss).toContain("width: 48px;");
+    expect(editorBarCss).toContain("height: 48px;");
+    expect(editorBarCss).toContain("font-size: var(--text-body);");
+    expect(mobileEditorCss).toContain("padding-inline: var(--space-6);");
+    expect(mobileEditorCss).toContain("line-height: 1.8;");
   });
 });
