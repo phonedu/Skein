@@ -1,54 +1,71 @@
-/* UIKit's action sheet: grouped rows rising from the bottom edge, Cancel set
-   apart beneath them. */
+/* The phone's bottom sheet: a paper card rising from the edge, a grab handle
+   at the top, rows left-aligned with an optional icon capsule, Cancel set
+   apart beneath. Shared by the editor's "document actions", the library
+   switcher, and every context menu rendered on a phone. */
 .action-sheet {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: 0 var(--space-2) calc(var(--space-2) + var(--safe-bottom));
+  padding: var(--space-2) var(--space-2)
+    calc(var(--space-2) + var(--safe-bottom));
 }
 
-.action-sheet-group,
-.action-sheet-cancel {
-  overflow: hidden;
-  border-radius: var(--shape-l);
-  background: var(--ui-surface);
+.action-sheet-grab {
+  width: 40px;
+  height: 4px;
+  margin: var(--space-1) auto var(--space-2);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ui-text) 20%, transparent);
 }
 
 .action-sheet-group {
-  max-height: calc(100vh - 154px);
+  overflow: hidden;
+  max-height: calc(100vh - 160px);
   overflow-y: auto;
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ui-surface) 96%, white 4%),
+    var(--ui-surface)
+  );
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ui-text) 6%, transparent);
 }
 
+.action-sheet-cancel {
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--ui-surface);
+}
+
+.action-sheet-head,
 .action-sheet-title {
-  padding: var(--space-3) var(--space-4);
-  text-align: left;
+  padding: var(--space-3) var(--space-6) var(--space-2);
   font-size: var(--text-footnote);
+  letter-spacing: 0.08em;
   color: var(--ui-muted);
-  border-bottom: 1px solid var(--ui-border);
+  text-align: left;
 }
 
 .action-sheet-section + .action-sheet-section {
-  border-top: 6px solid color-mix(in srgb, var(--ui-text) 6%, transparent);
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--ui-border);
 }
 
 .action-sheet-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   width: 100%;
   min-height: 56px;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-6);
   border: none;
   background: none;
-  color: var(--ui-accent-text);
+  color: var(--ui-text);
   font: inherit;
   font-size: var(--text-body);
   text-align: left;
-  /* iOS's highlight: on at the touch, fading out after it. */
   transition: background-color var(--dur-base) var(--ease-standard);
-}
-
-.action-sheet-section .action-sheet-item + .action-sheet-item {
-  border-top: 1px solid var(--ui-border);
 }
 
 .action-sheet-item:active {
@@ -56,12 +73,71 @@
   transition-duration: 0s;
 }
 
+.action-sheet-ic {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-text) 6%, transparent);
+  color: var(--ui-muted);
+  --icon-scale: 1.1;
+}
+
+.action-sheet-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.action-sheet-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.action-sheet-sub {
+  font-size: var(--text-footnote);
+  color: var(--ui-muted);
+}
+
+.action-sheet-check {
+  flex: none;
+  color: var(--ui-accent);
+  font-weight: 700;
+}
+
 .action-sheet-item-danger {
   color: var(--ui-danger);
+}
+
+.action-sheet-item-danger .action-sheet-ic {
+  background: color-mix(in srgb, var(--ui-danger) 12%, transparent);
+  color: var(--ui-danger);
+}
+
+.action-sheet-item-fire {
+  color: var(--ui-accent);
+  font-weight: 600;
+}
+
+.action-sheet-item-fire .action-sheet-ic {
+  background: color-mix(in srgb, var(--ui-accent) 14%, transparent);
+  color: var(--ui-accent);
+}
+
+.action-sheet-item-current .action-sheet-label {
+  font-weight: 600;
 }
 
 /* Doubled class: .action-sheet-item's "background: none" comes later. */
 .action-sheet-item.action-sheet-cancel {
   background: var(--ui-surface);
+  justify-content: center;
   font-weight: 600;
+  padding: 0 var(--space-4);
 }
