@@ -5,7 +5,7 @@ import { useWindowAi } from "./islands/useWindowAi";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStack } from "../engine/controls/CornerToast";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -69,6 +69,7 @@ const phoneParts = lazyModule(
 );
 const DocumentList = lazyComponent(phoneParts, (m) => m.DocumentList);
 const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
+const PhoneEditorBar = lazyComponent(phoneParts, (m) => m.PhoneEditorBar);
 
 /**
  * One window: its tabs, the panels around them, and the prompts and notices
@@ -80,6 +81,11 @@ function App() {
   const docs = useWindowDocuments({ shell, settings, t });
   const wiring = useWindowWiring({ shell, docs, settings, setSettings, t });
   const phone = usePhoneLayout();
+  // The phone's two surfaces: the library home and the document in front.
+  // A desktop has no such state - its surfaces are the window's panels -
+  // and a phone has no tab strip, so this, not the tabs, is its navigation.
+  const [phoneView, setPhoneView] = useState<"home" | "doc">("home");
+  const phoneHome = phone && phoneView === "home";
 
   const { tutorial, settingsOpening, pendingClose } = shell;
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
@@ -170,9 +176,23 @@ function App() {
                 } as React.CSSProperties)
           }
         >
-          {/* The phone's library home has its own top bar (PhoneHome's): the
-             window bar's menu and agent toggle belong to a document. */}
-          {!(phone && tabs.length === 0) && (
+          {/* The phone's pages carry their own top rows - the home's
+             (PhoneHome's) and the document page's (PhoneEditorBar) - so the
+             window bar, whose menu and tabs belong to the desktop, stays
+             out of a phone entirely. */}
+          {phone ? (
+            !phoneHome && (
+              <PhoneEditorBar
+                t={t}
+                title={activeTitle}
+                showAgent={aiFeatures(settings, tutorial.active).chat}
+                agentOpen={agentPanel.open}
+                agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
+                onBack={() => setPhoneView("home")}
+                onToggleAgent={toggleAgentPanel}
+              />
+            )
+          ) : (
             <WindowBar
               menuChecks={menuChecks}
               title={activeTitle}
@@ -187,7 +207,9 @@ function App() {
               onToggleReadOnly={() => toggleReadOnly()}
             />
           )}
-          {!(phone && tabs.length === 0) && (
+          {/* No sidebar on a phone: the library home is the navigation, and
+             a panel beside the document is the desktop's shape. */}
+          {!phone && (
             <Sidebar
               open={sidebarShown}
               presence={sidebarPresence}
@@ -202,8 +224,6 @@ function App() {
               onToggle={toggleSidebar}
               onClose={() => setPanelOpen(false)}
               onOpenFile={(path, how, line) => {
-                // A phone's page comes back with the file opened.
-                if (phone) setPanelOpen(false);
                 void openFile(path, {
                   ...(how === "beside"
                     ? { where: "beside" }
@@ -218,13 +238,18 @@ function App() {
             />
           )}
 
-          {phone && tabs.length === 0 ? (
+          {phoneHome ? (
             <PhoneHome
               t={t}
               openFolder={openFolder}
               activePath={activeTab.path}
               onOpenFile={(path) => {
                 void openFile(path);
+                setPhoneView("doc");
+              }}
+              onNewFile={() => {
+                addBlankTab();
+                setPhoneView("doc");
               }}
               onEntryMoved={entryMoved}
             />
@@ -232,7 +257,7 @@ function App() {
             <DocumentIslands
               tabs={tabs}
               activeTabId={activeTabId}
-              showTabBar={showTabBar}
+              showTabBar={phone ? false : showTabBar}
               onActivate={setActiveTabId}
               onClose={requestCloseTab}
               onAdd={addBlankTab}

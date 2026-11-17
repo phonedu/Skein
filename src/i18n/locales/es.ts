@@ -573,6 +573,7 @@ para usar una.
   notesFootCount: "{n} notas",
   notesFootNote: "Markdown lo es todo",
   treeTab: "Archivos",
+  phoneBackToLibrary: "Volver a la biblioteca",
   outlineTab: "Esquema",
   searchTab: "Buscar",
   searchPlaceholder: "Buscar nombres y texto",

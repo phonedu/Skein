@@ -530,6 +530,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   notesFootCount: "全 {n} 件",
   notesFootNote: "Markdown がすべて",
   treeTab: "ファイル",
+  phoneBackToLibrary: "ライブラリに戻る",
   outlineTab: "アウトライン",
   searchTab: "検索",
   searchPlaceholder: "ファイル名と本文を検索",

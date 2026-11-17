@@ -1,0 +1,47 @@
+/* The document page's top row on the phone - the same family as the home's
+   (PhoneHome.css): the safe area's inset, 44px touches, the paper's look.
+   The back chevron leads home; the title takes the middle; Textus AI sits
+   at the end. */
+.phone-editor-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--safe-top, 0px) 12px 0 8px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pe-ic {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  flex: none;
+}
+
+.pe-ic svg {
+  width: 22px;
+  height: 22px;
+}
+
+.pe-ic:active {
+  background: var(--line);
+}
+
+.pe-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+  font-weight: 650;
+  text-align: center;
+  padding: 0 4px;
+}

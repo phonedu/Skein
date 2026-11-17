@@ -494,6 +494,7 @@ export default {
   notesFootCount: "共 {n} 篇",
   notesFootNote: "Markdown 就是全部",
   treeTab: "文件",
+  phoneBackToLibrary: "回到文件库",
   outlineTab: "大纲",
   searchTab: "搜索",
   searchPlaceholder: "搜索文件名和内容",

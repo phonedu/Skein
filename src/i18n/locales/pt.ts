@@ -563,6 +563,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   notesFootCount: "{n} notas",
   notesFootNote: "Markdown é tudo",
   treeTab: "Arquivos",
+  phoneBackToLibrary: "Voltar para a biblioteca",
   outlineTab: "Estrutura",
   searchTab: "Pesquisar",
   searchPlaceholder: "Pesquisar nomes e texto",

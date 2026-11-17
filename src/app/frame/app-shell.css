@@ -27,6 +27,14 @@ body {
   background: var(--ui-frame-fill) fixed;
 }
 
+/* On a phone the shell is one column: the page's own top row (the home's
+   or PhoneEditorBar's), then the document's pane under it. The desktop's
+   row is its panels' rail-and-sidebar arrangement, which a phone has
+   none of. */
+:root[data-window-chrome="mobile"] .app-shell {
+  flex-direction: column;
+}
+
 /* On the desktop the window is one grid (design-language.md 5.7): the
    activity rail's column, the sidebar's, the islands' area; the window
    bar's row over them, the rest under it. Each part is placed by its cell,

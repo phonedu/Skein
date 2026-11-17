@@ -553,6 +553,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   notesFootCount: "{n} Notizen",
   notesFootNote: "Markdown ist alles",
   treeTab: "Dateien",
+  phoneBackToLibrary: "Zurück zur Bibliothek",
   outlineTab: "Gliederung",
   searchTab: "Suchen",
   searchPlaceholder: "Namen und Text suchen",

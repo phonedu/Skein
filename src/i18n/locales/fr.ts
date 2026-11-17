@@ -575,6 +575,7 @@ utiliser une.
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown, c'est tout",
   treeTab: "Fichiers",
+  phoneBackToLibrary: "Retour à la bibliothèque",
   outlineTab: "Plan",
   searchTab: "Rechercher",
   searchPlaceholder: "Rechercher noms et texte",

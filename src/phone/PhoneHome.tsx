@@ -17,12 +17,15 @@ export function PhoneHome({
   openFolder,
   activePath,
   onOpenFile,
+  onNewFile,
   onEntryMoved,
 }: {
   t: Strings;
   openFolder: OpenFolder;
   activePath: string | null;
   onOpenFile: (path: string, how?: FileOpenHow, line?: number) => void;
+  /** A blank document, and the page turns to it. */
+  onNewFile: () => void;
   onEntryMoved: (from: string, to: string) => void;
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
@@ -65,7 +68,7 @@ export function PhoneHome({
             type="button"
             className="ph-ic"
             aria-label={t.menuNewFile}
-            onClick={() => emitToThisWindow("menu-new-file")}
+            onClick={onNewFile}
           >
             <svg
               viewBox="0 0 24 24"

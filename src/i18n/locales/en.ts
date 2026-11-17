@@ -545,6 +545,7 @@ type /name in a conversation to use one.
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown is everything",
   treeTab: "Files",
+  phoneBackToLibrary: "Back to the library",
   outlineTab: "Outline",
   searchTab: "Search",
   searchPlaceholder: "Search names and text",

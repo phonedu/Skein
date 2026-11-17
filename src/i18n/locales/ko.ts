@@ -520,6 +520,7 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   notesFootCount: "총 {n}개",
   notesFootNote: "Markdown이 전부입니다",
   treeTab: "파일",
+  phoneBackToLibrary: "라이브러리로 돌아가기",
   outlineTab: "개요",
   searchTab: "검색",
   searchPlaceholder: "파일 이름과 내용 검색",
