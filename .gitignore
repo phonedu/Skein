@@ -61,3 +61,7 @@ textus-plugins/
 .mimosa/
 # The agent session's local plans and scratch
 .zcode/
+
+# The Android Studio project `tauri android init` generates (fork: kept
+# untracked - regenerable, and it keeps B2 rebases clean)
+src-tauri/gen/
