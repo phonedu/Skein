@@ -1,6 +1,6 @@
 # 发布闸门：Skein 与上游的隔离
 
-本仓是 `CatVinci-Studio/Textus` 的 fork。日常所有改动（代码、基线文档、画板、
+本仓是 `CatVinci-Studio/Textus` 的 fork。日常所有改动（代码、skein 文档、画板、
 任务清单）都发布到自己的 fork `phonedu/Skein`；上游只在接受 pull request 的
 意义上存在，而且**只有当我说"这个能上上游"时才碰**。本文是这件事的唯一流程。
 
@@ -21,10 +21,9 @@
 | 推 `origin`（Skein，公开仓库） | 真实邮箱、手机号、任何密钥/token          |
 | 上游方向（PR 分支）            | 上表全部 + 私有路径 + 内部代号 + 中文内容 |
 
-私有路径：`docs/baseline/`、`docs/ryugi/`、`.ryugi/`、`.githooks/`。
-内部代号：`ryugi`、`skein`、`dsh`、`deepseek harness`、`baseline/`（链接形式，
-专门拦公共文档里指向私有文档的链接）。中文：上游的文档、注释、提交信息都是
-英文；豁免 `src/i18n/`、`e2e/`、`testdata`、`*.test.*`。
+私有路径：`docs/skein/`、`.ryugi/`、`.githooks/`。内部代号：`ryugi`、`skein`、
+`dsh`、`deepseek harness`。中文：上游的文档、注释、提交信息都是英文；豁免
+`src/i18n/`、`e2e/`、`testdata`、`*.test.*`。
 
 ## 闸门机制
 
@@ -46,6 +45,10 @@
   git 配置里的私人邮箱）一律拦下。
 - `.github/` 出现在上游范围只警告不拦（AGENTS.md 禁改 CI，
   且 fork 的 token 没有 workflow scope，带了也推不上去）。
+- 复活检测（两种模式都跑）：`CONFIG.absentPaths` 是 fork-clean 提交刻意删除的
+  上游文件清单（目录项连上游往后新增的同类文件也盖住），每次 push 核对它们
+  不得出现在当前树——哪次同步把死重带回来，push 直接红。处置 = 重新删除；
+  上游同类**新**文件把路径记进 absentPaths 再推。
 - 误报先例（都已修，遇到新的按同样思路改 CONFIG）：npm 版本串 `react@1.9.0`
   曾经被当邮箱（现在要求域名含字母）；`fixedShortcuts` 曾经撞上代号 `dsh`
   （现在纯词代号按词边界匹配）；git 对中文文件名的 quotepath 转义曾经让路径
@@ -53,39 +56,54 @@
 
 ## 上游 PR 的唯一流程
 
-**绝不从特性分支直接开 PR**——分支历史里混着私有提交（代码提交也会带上
-`docs/ryugi` 的规格改动）。只有干净分支重建这一条路：
+**不在本仓里开上游分支，也绝不从特性分支直接开 PR**——本仓历史混着私有提交，
+公共文件（AGENTS.md、docs/README.md、.gitignore 等）也与上游分叉。给上游贡献
+时，**另克隆一份上游仓库**（建议 `C:\Project\Textus-upstream`，需要时再克隆），
+全程在克隆里做；本仓只负责把净差异导出成补丁：
 
 ```bash
-git fetch upstream
-git switch -c pr/<主题> upstream/main
-
-# 只带公共路径的净差异；私有路径与 CI 一律排除
+# ① 本仓（C:/Project/Textus）里：导出净差异；私有路径与 CI 一律排除
 git diff upstream/main...<特性分支> -- . \
-  ':(exclude)docs/baseline' ':(exclude)docs/ryugi' ':(exclude).ryugi' \
+  ':(exclude)docs/skein' ':(exclude).ryugi' \
   ':(exclude).githooks' ':(exclude).github' \
-  | git apply
+  > C:/Project/pr-<主题>.patch
+
+# ② 上游克隆里：落地（地址见上方「拓扑」表）
+git clone <上游的 SSH 地址> C:/Project/Textus-upstream
+cd C:/Project/Textus-upstream
+git switch -c pr/<主题>
+git apply C:/Project/pr-<主题>.patch
 ```
 
 然后：
 
-1. 按逻辑拆成几个提交，**提交信息英文**（上游风格见 `git log upstream/main`）。
+1. 按逻辑拆成几个提交，**提交信息英文**（风格见克隆里的 `git log`）。
 2. 公共文件若引用了私有内容，把那几个 hunk 手工剥掉再提交——闸门会拦住
-   提醒（先例：`docs/README.md` 加过指向 `baseline/` 的链接；`.gitignore`、
+   提醒（先例：`docs/README.md` 加过指向私有文档的链接；`.gitignore`、
    `.prettierignore` 里的 `.ryugi/` 行同理）。
 3. 用户可见的行为变化补 `docs/releases/next/` 下的 release note（英文，
    新文件，不是改 `docs/releases/X.Y.Z.md`）。
-4. `node .githooks/gate.mjs upstream --range upstream/main..pr/<主题>` 全绿。
-5. `git push origin pr/<主题>`（推的是 fork；钩子会再扫一遍）。
-6. `gh pr create --repo CatVinci-Studio/Textus --base main
---head phonedu:pr/<主题> --title "..." --body-file ...`——英文描述，
-   bug 附**复现步骤**，PR 里说明验证过什么（`npm run check`、构建方式）。
+4. 克隆里没有 pre-push 钩子，**手动跑闸门**（借本仓的脚本；克隆里上游就是
+   `origin`）：
+   ```bash
+   node C:/Project/Textus/.githooks/gate.mjs upstream --range "origin/main..pr/<主题>"
+   ```
+5. 推到 fork 作为 PR head，再开 PR（fork 的 SSH 地址见「拓扑」表；闸门的
+   邮箱规则会把命令行里的 `git@…` 当邮箱拦下，所以这里写占位符）：
+   ```bash
+   git remote add fork <Skein 的 SSH 地址>   # 一次性
+   git push fork pr/<主题>
+   gh pr create --repo CatVinci-Studio/Textus --base main \
+     --head phonedu:pr/<主题> --title "..." --body-file ...
+   ```
+   英文描述，bug 附**复现步骤**，PR 里说明验证过什么（`npm run check`、
+   构建方式）。
 
 ## 永不上上游的清单
 
 - `base-ui-settings` 分支的全部内容：Base UI 设置页重建、界面改造、画板。
-- 已规划的后续功能改动（见 `docs/baseline/Textus-改造任务清单.md`）。
-- `docs/baseline/`、`docs/ryugi/`、`.ryugi/`、`.githooks/` 目录本身。
+- 已规划的后续功能改动（见 `docs/skein/05-状态/Textus-改造任务清单.md`）。
+- `docs/skein/`、`.ryugi/`、`.githooks/` 目录本身。
 
 上游只收：与本 fork 私有改造无关的 bug 修复与小改进，且按上面的流程重建。
 

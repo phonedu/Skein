@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // The publishing gate. Every push runs through here (.githooks/pre-push),
 // and the same checks are run by hand before an upstream pull request is
-// opened - the whole procedure lives in docs/ryugi/publishing-gate.md.
+// opened - the whole procedure lives in
+// docs/skein/01-纪律/publishing-gate.md.
 // This file belongs to the fork only and is on its own denylist
 // (CONFIG.privatePaths): it never reaches the upstream repository.
 //
@@ -36,12 +37,96 @@ const CONFIG = {
   // listed here is scanned as a fork (privacy only, the safe default).
   upstreamRemotes: ["upstream"],
   // Paths whose very presence in a range bars it from upstream.
-  privatePaths: ["docs/baseline/", "docs/ryugi/", ".ryugi/", ".githooks/"],
+  privatePaths: ["docs/skein/", ".ryugi/", ".githooks/"],
   // Substrings that never belong in upstream-bound content: the internal
-  // project names, and the "baseline/" link form, which catches links to
-  // the private docs from public files (docs/README.md did this once)
-  // without banning the English word "baseline" from a sentence.
-  blockedStrings: ["ryugi", "skein", "dsh", "deepseek harness", "baseline/"],
+  // project names. (The old "baseline/" link-form entry retired with the
+  // 2026-11-17 reorg: public docs no longer link the private tree at all.)
+  blockedStrings: ["ryugi", "skein", "dsh", "deepseek harness"],
+  // Paths the fork deletes on purpose - the fork-clean commit ("fork:
+  // drop upstream docs...") is the manifest's origin. Directory entries
+  // (trailing slash) cover anything upstream later adds there too. Every
+  // push re-checks the head tree: if a careless upstream sync or a stray
+  // restore brings one back, the push fails instead of the fork quietly
+  // re-growing the upstream weight it dropped. Fix: delete the paths
+  // again, and record a NEW upstream file of the same kind here.
+  absentPaths: [
+    "README.de.md",
+    "README.es.md",
+    "README.fr.md",
+    "README.ja.md",
+    "README.ko.md",
+    "README.pt.md",
+    "README.ru.md",
+    "README.zh.md",
+    "README.zh-Hant.md",
+    "ROADMAP.md",
+    "ROADMAP.zh.md",
+    "docs/archive/",
+    "docs/design/",
+    "docs/images/",
+    "docs/releases/later/",
+    "docs/releases/0.2.0.md",
+    "docs/releases/0.2.1.md",
+    "docs/releases/0.4.3.md",
+    "docs/releases/0.8.11.md",
+    "docs/releases/0.8.12.md",
+    "docs/releases/0.8.13.md",
+    "docs/releases/0.8.14.md",
+    "docs/releases/0.8.6.md",
+    "docs/releases/0.8.7.md",
+    "docs/releases/0.9.0.md",
+    "docs/releases/0.9.1.md",
+    "docs/releases/0.9.2.md",
+    "docs/releases/0.9.3.md",
+    "docs/releases/0.9.4.md",
+    "docs/releases/0.9.5.md",
+    "docs/releases/0.9.6.md",
+    "docs/releases/0.9.7.md",
+    "docs/releases/0.9.8.md",
+    "docs/releases/1.0.0.md",
+    "docs/releases/1.0.1.md",
+    "docs/releases/1.0.2.md",
+    "docs/releases/1.0.3.md",
+    "docs/releases/1.0.4.md",
+    "docs/releases/1.1.0.md",
+    "docs/releases/1.1.1.md",
+    "docs/releases/1.1.2.md",
+    "docs/releases/1.2.0.md",
+    "docs/releases/1.2.1.md",
+    "docs/releases/1.2.10.md",
+    "docs/releases/1.2.2.md",
+    "docs/releases/1.2.3.md",
+    "docs/releases/1.2.4.md",
+    "docs/releases/1.2.5.md",
+    "docs/releases/1.2.6.md",
+    "docs/releases/1.2.7.md",
+    "docs/releases/1.2.8.md",
+    "docs/releases/1.2.9.md",
+    "docs/releases/1.3.0-beta.1.md",
+    "docs/releases/1.3.0-beta.2.md",
+    "docs/releases/1.3.0-beta.3.md",
+    "docs/releases/1.3.0-beta.4.md",
+    "docs/releases/1.3.0-beta.5.md",
+    "docs/releases/1.3.0-beta.6.md",
+    "docs/releases/1.3.0-beta.7.md",
+    "docs/releases/1.3.0-beta.8.md",
+    "docs/releases/1.3.0.md",
+    "docs/releases/1.3.1.md",
+    "docs/releases/1.3.10.md",
+    "docs/releases/1.3.11.md",
+    "docs/releases/1.3.12.md",
+    "docs/releases/1.3.2.md",
+    "docs/releases/1.3.3.md",
+    "docs/releases/1.3.4.md",
+    "docs/releases/1.3.5.md",
+    "docs/releases/1.3.6.md",
+    "docs/releases/1.3.7.md",
+    "docs/releases/1.3.8.md",
+    "docs/releases/1.3.9.md",
+    "docs/releases/1.4.0.md",
+    "docs/releases/1.4.1.md",
+    "docs/releases/1.4.2.md",
+  ],
   // Paths that draw a warning, not a failure: a real CI change going
   // upstream would fail to push anyway (the fork's token has no workflow
   // scope), and AGENTS.md keeps CI changes out of contribution branches.
@@ -82,9 +167,10 @@ const CONFIG = {
     /\.test\.[cm]?[jt]sx?$/,
   ],
   // The ruling record - which ruling number, decided when, by which
-  // review - lives in docs/baseline/ and nowhere else. Code comments state
-  // the rule generically ("the design boards draw the page unframed"),
-  // never the record: scanned on added lines of code files in every mode.
+  // review - lives in docs/skein/ (02-方案/Textus-界面改造方案.md §4) and
+  // nowhere else. Code comments state the rule generically ("the design
+  // boards draw the page unframed"), never the record: scanned on added
+  // lines of code files in every mode.
   // (Pattern built from escapes so this source stays plain ASCII, the
   // same way cjkPattern above is.)
   rulingRecordPattern: new RegExp(
@@ -192,8 +278,8 @@ const isCjkExempt = (path) =>
   CONFIG.cjkExemptPaths.some((pattern) => pattern.test(path));
 
 // Pure-word codenames match on word boundaries: "dsh" must not fire on
-// "fixedShortcuts". Entries with punctuation (like "baseline/") keep
-// plain substring matching - the slash is the point there.
+// "fixedShortcuts". Every entry is a plain word today; should a punctuated
+// one join, keep it on plain substring matching (the slash is the point).
 const codewordMatchers = CONFIG.blockedStrings.map((word) => ({
   word,
   re: /^[\w ]+$/.test(word) ? new RegExp(`\\b${word}\\b`) : null,
@@ -248,7 +334,7 @@ const isCodeFile = (path) =>
   CONFIG.codeExts.some((ext) => path.toLowerCase().endsWith(ext));
 
 // A ruling's record (its number, its date, its review) belongs to
-// docs/baseline/, not to the code: a comment here states the rule itself
+// docs/skein/, not to the code: a comment here states the rule itself
 // ("the design boards draw the page unframed"), which outlives the record
 // and never goes stale against it.
 function rulingFindings(file, line) {
@@ -259,7 +345,7 @@ function rulingFindings(file, line) {
     {
       rule:
         "ruling record in code (state the rule generically; the record " +
-        "lives in docs/baseline)",
+        "lives in docs/skein)",
     },
   ];
 }
@@ -360,6 +446,34 @@ function scanIdentities(base, head, findings) {
   }
 }
 
+// The fork-clean commit deletes upstream files this fork does not carry;
+// CONFIG.absentPaths is its manifest (directory entries cover future
+// upstream additions in those places too). Checked against the head tree
+// on every push, in both modes.
+function absentFindings(head, findings) {
+  const tree = git("ls-tree", "-r", "--name-only", "-z", head)
+    .split("\0")
+    .filter(Boolean);
+  const manifestEntry = (path) => {
+    for (const absent of CONFIG.absentPaths) {
+      if (absent.endsWith("/") ? path.startsWith(absent) : path === absent) {
+        return absent;
+      }
+    }
+    return null;
+  };
+  for (const path of tree) {
+    const absent = manifestEntry(path);
+    if (absent) {
+      findings.push({
+        where: path,
+        rule: "deleted upstream path resurrected (re-apply the fork-clean deletion; record new upstream files of the kind in absentPaths)",
+        detail: `manifest entry: ${absent}`,
+      });
+    }
+  }
+}
+
 // Failures grouped by rule, so one noisy category cannot hide another.
 function report(findings) {
   const groups = new Map();
@@ -384,7 +498,9 @@ function report(findings) {
       );
     }
   }
-  console.error("The procedure for fixing this: docs/ryugi/publishing-gate.md");
+  console.error(
+    "The procedure for fixing this: docs/skein/01-纪律/publishing-gate.md",
+  );
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -435,6 +551,7 @@ if (mode[0] === "upstream") {
 scanDiff(contentBase, head, mode[0], findings);
 scanMessages(logArgs, mode[0], findings);
 scanIdentities(base, head, findings);
+absentFindings(head, findings);
 
 for (const warning of warnings) {
   console.error(`gate: WARNING ${warning}`);
