@@ -68,6 +68,7 @@ const phoneParts = lazyModule(
   () => import("../mobile/phone-parts"),
 );
 const DocumentList = lazyComponent(phoneParts, (m) => m.DocumentList);
+const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
 
 /**
  * One window: its tabs, the panels around them, and the prompts and notices
@@ -182,6 +183,7 @@ function App() {
             onToggleAgent={toggleAgentPanel}
             onToggleReadOnly={() => toggleReadOnly()}
           />
+          {!(phone && tabs.length === 0) && (
           <Sidebar
             open={sidebarShown}
             presence={sidebarPresence}
@@ -210,8 +212,19 @@ function App() {
             onSearchFocusHandled={clearSearchFocusRequest}
             t={t}
           />
+          )}
 
-          {
+          {phone && tabs.length === 0 ? (
+            <PhoneHome
+              t={t}
+              openFolder={openFolder}
+              activePath={activeTab.path}
+              onOpenFile={(path) => {
+                void openFile(path);
+              }}
+              onEntryMoved={entryMoved}
+            />
+          ) : (
             <DocumentIslands
               tabs={tabs}
               activeTabId={activeTabId}
@@ -240,7 +253,7 @@ function App() {
               lang={settings.language}
               t={t}
             />
-          }
+          )}
 
           <SettingsLayer opening={settingsOpening} {...settingsProps} />
           <SettingsDialogLayer opening={settingsOpening} {...settingsProps} />

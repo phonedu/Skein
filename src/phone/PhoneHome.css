@@ -1,0 +1,101 @@
+/* The phone's home (the library tree) - its own styles, not overrides:
+   this surface exists only on phones. Tokens carry the look. */
+.phone-home {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.ph-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px 12px 16px;
+}
+
+.ph-vault {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 14.5px;
+  font-weight: 650;
+  color: var(--ink);
+  max-width: 58%;
+}
+
+.ph-vault .vic {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(176, 83, 31, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a4682e;
+  flex: none;
+}
+
+.ph-vault .vic svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ph-vault .vname {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ph-acts {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+}
+
+.ph-ic {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.ph-ic svg {
+  width: 21px;
+  height: 21px;
+}
+
+.ph-tree {
+  flex: 1;
+  overflow: auto;
+  padding: 0 10px;
+}
+
+.ph-open {
+  display: block;
+  margin: 24px auto;
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  color: var(--ink-70);
+}
+
+/* The tree's rows at touch size on the phone's home. */
+.phone-home .tree-row {
+  min-height: 44px;
+}
