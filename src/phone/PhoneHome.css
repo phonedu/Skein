@@ -1,12 +1,17 @@
 /* The phone's home (the library tree) - its own styles, not overrides:
    this surface exists only on phones. Tokens carry the look. */
 .phone-home {
+  --phone-paper: var(--ui-bg);
+  --phone-ink: var(--ui-text);
+  --phone-muted: var(--ui-muted);
+  --phone-line: var(--ui-border);
+  --phone-fire: var(--ui-accent);
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--phone-paper);
+  color: var(--phone-ink);
   /* The page runs under the status bar (mobile/styles/base.css): the home's
      own top bar takes the inset, with no window bar above it. */
   padding-top: var(--safe-top, 0px);
@@ -16,21 +21,22 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 12px 12px 16px;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border-bottom: 1px solid color-mix(in srgb, var(--phone-ink) 8%, transparent);
 }
 
 .ph-vault {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 42px;
-  padding: 0 12px;
-  border-radius: 11px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
-  font-size: 14.5px;
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  border-radius: var(--shape-m);
+  border: 1px solid var(--phone-line);
+  background: color-mix(in srgb, var(--phone-paper) 70%, white);
+  font-size: var(--text-body);
   font-weight: 650;
-  color: var(--ink);
+  color: var(--phone-ink);
   max-width: 58%;
 }
 
@@ -38,11 +44,11 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: rgba(176, 83, 31, 0.1);
+  background: color-mix(in srgb, var(--phone-fire) 10%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a4682e;
+  color: var(--phone-fire);
   flex: none;
 }
 
@@ -72,7 +78,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ink);
+  color: var(--phone-ink);
 }
 
 .ph-ic svg {
@@ -80,10 +86,106 @@
   height: 21px;
 }
 
+.ph-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 46px;
+  margin: var(--space-3) var(--space-6) var(--space-3);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--phone-line);
+  border-radius: var(--shape-m);
+  background: color-mix(in srgb, var(--phone-paper) 76%, white);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--phone-ink) 5%, transparent);
+  color: var(--phone-muted);
+}
+
+.ph-search svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.ph-search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--phone-ink);
+  font: inherit;
+  font-size: var(--text-body);
+}
+
+.ph-search input::placeholder {
+  color: var(--phone-muted);
+  opacity: 0.72;
+}
+
 .ph-tree {
   flex: 1;
   overflow: auto;
-  padding: 0 10px;
+  padding: 0 var(--space-3);
+}
+
+.phone-home .tree-toolbar,
+.phone-home .tree-section-title {
+  display: none;
+}
+
+.phone-home .tree-row {
+  min-height: 50px;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--shape-m);
+}
+
+.phone-home .tree-row:hover {
+  background: none;
+}
+
+.phone-home .tree-row:active {
+  background: var(--ui-hover);
+}
+
+.phone-home .tree-row .tree-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--phone-muted);
+}
+
+.phone-home .tree-row:not(.tree-row-file) .tree-icon {
+  width: 30px;
+  height: 30px;
+  padding: var(--space-2);
+  border-radius: var(--shape-m);
+  background: color-mix(in srgb, var(--phone-fire) 9%, transparent);
+  color: var(--phone-fire);
+}
+
+.phone-home .tree-row .tree-label {
+  font-size: var(--text-body);
+}
+
+.phone-home .tree-row .tree-badge {
+  font-size: var(--text-caption);
+  color: var(--phone-muted);
+}
+
+.phone-home .recent-section {
+  border-bottom: 1px solid var(--phone-line);
+}
+
+.phone-home .recent-row {
+  min-height: 50px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-body);
+}
+
+/* The approved phone board uses the home indicator as the bottom rhythm; the
+   desktop notes-board fact strip would collide with the floating action. */
+.phone-home .view-foot {
+  display: none;
 }
 
 .ph-open {
@@ -91,14 +193,33 @@
   margin: 24px auto;
   height: 46px;
   padding: 0 18px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.7);
-  font-size: 15px;
-  color: var(--ink-70);
+  border-radius: var(--shape-m);
+  border: 1px solid var(--phone-line);
+  background: color-mix(in srgb, var(--phone-paper) 70%, white);
+  font-size: var(--text-body);
+  color: var(--phone-muted);
 }
 
-/* The tree's rows at touch size on the phone's home. */
-.phone-home .tree-row {
-  min-height: 44px;
+.ph-fab {
+  position: absolute;
+  right: var(--space-6);
+  bottom: calc(var(--space-8) + var(--space-4) + var(--safe-bottom, 0px));
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--phone-fire);
+  color: var(--phone-paper);
+  box-shadow:
+    0 var(--space-2) var(--space-8)
+      color-mix(in srgb, var(--phone-fire) 42%, transparent),
+    0 2px 6px color-mix(in srgb, var(--phone-ink) 30%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ph-fab svg {
+  width: 24px;
+  height: 24px;
 }

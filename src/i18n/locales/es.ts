@@ -697,6 +697,7 @@ para usar una.
   treeNameTaken: "Ya hay algo llamado «{name}» aquí.",
   treeActionFailed: "No se pudo: {reason}",
   shortcutSearchFiles: "Buscar",
+  phoneSearchPlaceholder: "Buscar notas y carpetas",
   menuDocuments: "Documentos",
   docListTitle: "Documentos",
   docListClose: "Cerrar",

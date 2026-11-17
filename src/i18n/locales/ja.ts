@@ -648,6 +648,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   treeNameTaken: "ここにはすでに「{name}」という名前のものがあります。",
   treeActionFailed: "できませんでした: {reason}",
   shortcutSearchFiles: "検索",
+  phoneSearchPlaceholder: "ノートとフォルダーを検索",
   menuDocuments: "書類",
   docListTitle: "書類",
   docListClose: "閉じる",

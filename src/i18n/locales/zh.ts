@@ -601,6 +601,7 @@ export default {
   treeNameTaken: "这里已经有名为“{name}”的文件或文件夹。",
   treeActionFailed: "操作失败：{reason}",
   shortcutSearchFiles: "搜索",
+  phoneSearchPlaceholder: "搜索笔记与文件夹",
   menuDocuments: "文档",
   docListTitle: "文档",
   docListClose: "关闭",

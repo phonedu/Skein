@@ -684,6 +684,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   treeNameTaken: "Já existe algo chamado “{name}” aqui.",
   treeActionFailed: "Não deu certo: {reason}",
   shortcutSearchFiles: "Pesquisar",
+  phoneSearchPlaceholder: "Pesquisar notas e pastas",
   menuDocuments: "Documentos",
   docListTitle: "Documentos",
   docListClose: "Fechar",

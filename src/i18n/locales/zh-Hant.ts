@@ -602,6 +602,7 @@ export default {
   treeNameTaken: "這裡已經有名為「{name}」的檔案或檔案夾。",
   treeActionFailed: "操作失敗：{reason}",
   shortcutSearchFiles: "搜尋",
+  phoneSearchPlaceholder: "搜尋筆記與資料夾",
   menuDocuments: "文件",
   docListTitle: "文件",
   docListClose: "關閉",

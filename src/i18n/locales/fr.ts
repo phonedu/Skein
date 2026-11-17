@@ -699,6 +699,7 @@ utiliser une.
   treeNameTaken: "Il y a déjà un élément nommé « {name} » ici.",
   treeActionFailed: "Impossible : {reason}",
   shortcutSearchFiles: "Rechercher",
+  phoneSearchPlaceholder: "Rechercher des notes et dossiers",
   menuDocuments: "Documents",
   docListTitle: "Documents",
   docListClose: "Fermer",

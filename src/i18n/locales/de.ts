@@ -676,6 +676,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   treeNameTaken: "Hier gibt es schon etwas namens „{name}“.",
   treeActionFailed: "Das hat nicht geklappt: {reason}",
   shortcutSearchFiles: "Suchen",
+  phoneSearchPlaceholder: "Notizen und Ordner durchsuchen",
   menuDocuments: "Dokumente",
   docListTitle: "Dokumente",
   docListClose: "Schließen",

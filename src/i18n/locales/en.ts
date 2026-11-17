@@ -661,6 +661,7 @@ type /name in a conversation to use one.
   treeNameTaken: "There is already something named “{name}” here.",
   treeActionFailed: "That didn’t work: {reason}",
   shortcutSearchFiles: "Search",
+  phoneSearchPlaceholder: "Search notes and folders",
   menuDocuments: "Documents",
   docListTitle: "Documents",
   docListClose: "Close",

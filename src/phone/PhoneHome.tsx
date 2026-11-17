@@ -1,7 +1,7 @@
 // The phone's home: the open vault's file tree as the first surface.
 // Slice 1 of the phone form (ruling 30's fork line): the tree, the vault
-// name, settings and new-document in the top bar. The vault switcher
-// sheet and the document actions sheet arrive in later slices.
+// name and settings in the top bar. New-document lives in the floating action
+// button so the bar stays quiet like the approved phone board.
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
@@ -64,23 +64,26 @@ export function PhoneHome({
               <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34 1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1z" />
             </svg>
           </button>
-          <button
-            type="button"
-            className="ph-ic"
-            aria-label={t.menuNewFile}
-            onClick={onNewFile}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
         </div>
+      </div>
+      <div className="ph-search" role="search">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          type="search"
+          readOnly
+          aria-label={t.phoneSearchPlaceholder}
+          placeholder={t.phoneSearchPlaceholder}
+        />
       </div>
       <div className="ph-tree">
         {openFolder.treeRoot ? (
@@ -105,6 +108,22 @@ export function PhoneHome({
           </button>
         )}
       </div>
+      <button
+        type="button"
+        className="ph-fab"
+        aria-label={t.menuNewFile}
+        onClick={onNewFile}
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </button>
     </div>
   );
 }

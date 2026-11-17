@@ -694,6 +694,7 @@ export default {
   treeNameTaken: "Здесь уже есть что-то с именем «{name}».",
   treeActionFailed: "Не получилось: {reason}",
   shortcutSearchFiles: "Поиск",
+  phoneSearchPlaceholder: "Поиск заметок и папок",
   menuDocuments: "Документы",
   docListTitle: "Документы",
   docListClose: "Закрыть",
