@@ -55,28 +55,9 @@ Writing plugins:
 | [plugins/](dev/plugins/README.md)                | The plugin guide, pages, permissions, versions, testing, publishing, and an AI skill           |
 | [plugins/reference.md](dev/plugins/reference.md) | The plugin API, every call and type (made from [textus.d.ts](dev/textus.d.ts))                 |
 
-## Design (`design/`)
-
-| Document                                         | What it covers                                                                          |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| [design-language.md](design/design-language.md)  | The design standard: tokens, colour, type, layout, shape, motion, components, themes, plugins |
-| [plugins.md](design/plugins.md)                  | The plugin system and the market: what is built, and why                                |
-| [ai-agent.md](design/ai-agent.md)                | One AI request from start to end: providers, the agent loop, tools, rules for every model |
-| [ai-concepts.md](design/ai-concepts.md)          | The AI concepts: project folder, style profile, library, writing rules, skills, priority |
-| [ai-proposals.md](design/ai-proposals.md)        | An AI edit's life from streaming to the document, and the three chat surfaces            |
-| [ai-paper.md](design/ai-paper.md)                | The long-form paper agent: research, outline, drafting, review                          |
-| [ai-eval.md](design/ai-eval.md)                  | Evaluating the AI features against real providers                                       |
-
 ## Other
 
-- [releases/](releases/) - release notes, one file per version, in the
-  outline of [releases/TEMPLATE.md](releases/TEMPLATE.md). The release workflow uses
-  them as the GitHub release's text. Unreleased notes are fragments in
-  [releases/next/](releases/next/README.md), one file per change.
-- [baseline/](baseline/) - the project's baseline documents (in Chinese): the
-  interface baseline, the redesign plan, the tool contract, the notes theory and
-  the agent research. [baseline/boards/](baseline/boards/README.md) holds the
-  design boards and the screenshots of the shipped interface, side by side.
-- [images/](images/) - README and App Store screenshots
-  (`npm run screenshots:readme` regenerates the README's).
-- [archive/](archive/) - records that are no longer updated (some in Chinese).
+- [releases/](releases/) - release notes: unreleased changes are fragments
+  in [releases/next/](releases/next/README.md), one file per change; the
+  release workflow builds them into a version's note
+  ([TEMPLATE.md](releases/TEMPLATE.md)).
