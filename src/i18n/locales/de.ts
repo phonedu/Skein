@@ -559,8 +559,14 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Noch keine wiederverwendbaren Assets - sie erscheinen, wenn sich eine Entscheidung festigt.",
   todayGroupConfirm: "Wartet auf dich",
   todayEmptyConfirm: "Nichts wartet auf deine Bestätigung.",
+  todayNoteCount: "{n} Notizen",
+  todayNoteMeta: "Notiz",
+  todayPickTitle: "Wähle eine Sache zum Anfangen",
+  todayFilterQueue: "Warteschlange filtern",
+  todayNoMatch: "Keine Notiz passt.",
   todayEmptyRecent: "Geöffnete Notizen stehen hier.",
-  todayStartHint: "Beginne mit einer Notiz: öffne einen Ordner oder schreibe los - KI und Assets kommen im Lauf dazu.",
+  todayStartHint:
+    "Beginne mit einer Notiz: öffne einen Ordner oder schreibe los - KI und Assets kommen im Lauf dazu.",
   todayGoNotes: "Zu den Notizen",
   todayRecentGroup: "Neueste Notizen",
   assetsEmpty:

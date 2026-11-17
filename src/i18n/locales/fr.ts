@@ -581,8 +581,14 @@ utiliser une.
     "Pas encore d'actifs réutilisables - ils apparaissent quand un jugement se fixe.",
   todayGroupConfirm: "En attente de vous",
   todayEmptyConfirm: "Rien n'attend votre confirmation.",
+  todayNoteCount: "{n} notes",
+  todayNoteMeta: "Note",
+  todayPickTitle: "Choisissez une chose pour commencer",
+  todayFilterQueue: "Filtrer la file",
+  todayNoMatch: "Aucune note ne correspond.",
   todayEmptyRecent: "Les notes ouvertes se listent ici.",
-  todayStartHint: "Commencez par une note : ouvrez un dossier ou écrivez directement ; l'IA et les actifs se branchent en chemin.",
+  todayStartHint:
+    "Commencez par une note : ouvrez un dossier ou écrivez directement ; l'IA et les actifs se branchent en chemin.",
   todayGoNotes: "Vers les notes",
   todayRecentGroup: "Notes récentes",
   assetsEmpty:

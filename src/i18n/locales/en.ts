@@ -551,8 +551,14 @@ type /name in a conversation to use one.
     "No reusable assets yet - they appear once a judgment settles.",
   todayGroupConfirm: "Waiting for you",
   todayEmptyConfirm: "Nothing is waiting for your confirm.",
+  todayNoteCount: "{n} notes",
+  todayNoteMeta: "Note",
+  todayPickTitle: "Pick one thing to start",
+  todayFilterQueue: "Filter the queue",
+  todayNoMatch: "No note matches.",
   todayEmptyRecent: "Notes you have opened list here.",
-  todayStartHint: "Start from one note: open a folder or just write - the AI and the assets hook in as you go.",
+  todayStartHint:
+    "Start from one note: open a folder or just write - the AI and the assets hook in as you go.",
   todayGoNotes: "Go to Notes",
   todayRecentGroup: "Recent notes",
   assetsEmpty:

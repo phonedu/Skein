@@ -2,7 +2,7 @@ import type { Strings } from "../i18n/strings";
 import { isWithin } from "./tree-root";
 
 /** The row's own name, whatever separators the path came in with. */
-const baseName = (path: string) =>
+export const baseName = (path: string) =>
   path
     .replace(/[\\/]+$/, "")
     .split(/[\\/]/)

@@ -236,6 +236,7 @@ function App() {
             <div className="main-pane">
               <TodayPage
                 t={t}
+                folder={openFolder.folder ?? openFolder.treeRoot ?? null}
                 onOpenFile={(path) => {
                   void openFile(path);
                   setTopView("notes");

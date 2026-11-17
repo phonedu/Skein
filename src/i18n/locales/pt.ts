@@ -569,8 +569,14 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "Ainda não há ativos reutilizáveis - aparecem quando um julamento se firma.",
   todayGroupConfirm: "Aguardando você",
   todayEmptyConfirm: "Nada aguarda sua confirmação.",
+  todayNoteCount: "{n} notas",
+  todayNoteMeta: "Nota",
+  todayPickTitle: "Escolha uma coisa para começar",
+  todayFilterQueue: "Filtrar a fila",
+  todayNoMatch: "Nenhuma nota corresponde.",
   todayEmptyRecent: "Notas abertas aparecem aqui.",
-  todayStartHint: "Comece por uma nota: abra uma pasta ou escreva logo - a IA e os ativos se conectam no caminho.",
+  todayStartHint:
+    "Comece por uma nota: abra uma pasta ou escreva logo - a IA e os ativos se conectam no caminho.",
   todayGoNotes: "Ir para notas",
   todayRecentGroup: "Notas recentes",
   assetsEmpty:

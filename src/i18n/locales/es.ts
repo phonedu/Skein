@@ -579,8 +579,14 @@ para usar una.
     "Aún no hay activos reutilizables - aparecen cuando se asienta un juicio.",
   todayGroupConfirm: "Esperando tu confirmación",
   todayEmptyConfirm: "Nada espera tu confirmación.",
+  todayNoteCount: "{n} notas",
+  todayNoteMeta: "Nota",
+  todayPickTitle: "Elige una cosa para empezar",
+  todayFilterQueue: "Filtrar la cola",
+  todayNoMatch: "Ninguna nota coincide.",
   todayEmptyRecent: "Las notas abiertas se listan aquí.",
-  todayStartHint: "Empieza con una nota: abre una carpeta o escribe directamente; la IA y los activos se conectan sobre la marcha.",
+  todayStartHint:
+    "Empieza con una nota: abre una carpeta o escribe directamente; la IA y los activos se conectan sobre la marcha.",
   todayGoNotes: "Ir a notas",
   todayRecentGroup: "Notas recientes",
   assetsEmpty:
