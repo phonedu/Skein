@@ -1,7 +1,7 @@
 /* The document page's top row on the phone - the same family as the home's
    (PhoneHome.css): the safe area's inset, 48px touches, the paper's look.
-   The back chevron leads home; the title takes the middle; Textus AI sits
-   at the end. */
+   The back chevron leads home; the title takes the middle; Textus AI and
+   the ⋯ action sheet button sit at the end. */
 .phone-editor-bar {
   flex: none;
   display: flex;
