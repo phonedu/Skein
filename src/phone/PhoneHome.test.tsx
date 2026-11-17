@@ -18,11 +18,62 @@ vi.mock("../files/FileTree", () => ({
 }));
 
 vi.mock("../platform/capabilities", () => ({
-  canOpenFolder: false,
+  canOpenFolder: true,
 }));
 
 vi.mock("../platform/menu-events", () => ({
   emitToThisWindow: vi.fn(),
+}));
+
+// Pick a stub Sheet so the test doesn't need the SettingsProvider or the
+// Presence transitions; the sheet's own file has its contract covered.
+vi.mock("../engine/controls/ActionSheet", async () => {
+  const { createElement } = await import("react");
+  type Item = {
+    label: string;
+    onSelect: () => void;
+    Icon?: unknown;
+    current?: boolean;
+    sub?: string;
+  };
+  return {
+    ActionSheet: ({
+      title,
+      items,
+      onClose,
+    }: {
+      title?: string;
+      items: (Item | "separator")[];
+      onClose: () => void;
+    }) =>
+      createElement(
+        "div",
+        { role: "menu", "aria-label": title },
+        items
+          .filter((it): it is Item => it !== "separator")
+          .map((item, i) =>
+            createElement(
+              "button",
+              {
+                key: i,
+                role: "menuitem",
+                "aria-label": item.label,
+                "aria-current": item.current ? "true" : undefined,
+                onClick: () => {
+                  onClose();
+                  item.onSelect();
+                },
+              },
+              item.label,
+            ),
+          ),
+      ),
+  };
+});
+
+vi.mock("../engine/motion/usePresence", () => ({
+  Presence: ({ show, children }: { show: boolean; children: unknown }) =>
+    show ? children : null,
 }));
 
 const openFolder = {
@@ -31,8 +82,12 @@ const openFolder = {
   revealed: null,
   setTreeRoot: vi.fn(),
   openFolder: vi.fn(),
+  openFolderDialog: vi.fn(),
   closeFolder: vi.fn(),
-} as never;
+};
+const openFolderProp = openFolder as unknown as Parameters<
+  typeof PhoneHome
+>[0]["openFolder"];
 
 describe("the phone library home", () => {
   afterEach(cleanup);
@@ -41,7 +96,7 @@ describe("the phone library home", () => {
     render(
       <PhoneHome
         t={en as Strings}
-        openFolder={openFolder}
+        openFolder={openFolderProp}
         activePath={null}
         onOpenFile={vi.fn()}
         onNewFile={vi.fn()}
@@ -60,7 +115,7 @@ describe("the phone library home", () => {
     render(
       <PhoneHome
         t={en as Strings}
-        openFolder={openFolder}
+        openFolder={openFolderProp}
         activePath={null}
         onOpenFile={vi.fn()}
         onNewFile={onNewFile}
@@ -70,6 +125,29 @@ describe("the phone library home", () => {
 
     fireEvent.click(screen.getByRole("button", { name: en.menuNewFile }));
     expect(onNewFile).toHaveBeenCalledOnce();
+  });
+
+  it("opens the library switcher sheet and can call the folder picker", () => {
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={openFolderProp}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+    // The chip opens the sheet.
+    fireEvent.click(screen.getByRole("button", { name: /notes/ }));
+    // The current library is ticked and the folder picker row is present.
+    const current = screen.getByRole("menuitem", { name: "notes" });
+    expect(current.getAttribute("aria-current")).toBe("true");
+    const openOther = screen.getByRole("menuitem", {
+      name: en.phoneVaultOpenOther,
+    });
+    fireEvent.click(openOther);
+    expect(openFolder.openFolderDialog).toHaveBeenCalledOnce();
   });
 
   it("uses the Android phone rhythm for search and library rows", () => {

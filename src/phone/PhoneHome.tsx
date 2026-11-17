@@ -1,13 +1,21 @@
 // The phone's home: the open vault's file tree as the first surface.
 // Slice 1 of the phone form (ruling 30's fork line): the tree, the vault
 // name and settings in the top bar. New-document lives in the floating action
-// button so the bar stays quiet like the approved phone board.
+// button so the bar stays quiet like the approved phone board. The vault
+// name opens the library-switcher sheet; recents will flow in later.
+import { useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
 import { FileTree } from "../files/FileTree";
 import { canOpenFolder } from "../platform/capabilities";
 import { emitToThisWindow } from "../platform/menu-events";
+import {
+  ActionSheet,
+  type ActionSheetItem,
+} from "../engine/controls/ActionSheet";
+import { Presence } from "../engine/motion/usePresence";
+import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
 import "./PhoneHome.css";
 
 const baseName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p;
@@ -29,10 +37,48 @@ export function PhoneHome({
   onEntryMoved: (from: string, to: string) => void;
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
+  // The sheet's rows: the current library (ticked), a separator, and the
+  // folder picker. Recents are added here once they reach the phone.
+  const vaultItems: (ActionSheetItem | "separator")[] = [
+    place
+      ? {
+          label: baseName(place),
+          sub: place,
+          Icon: VaultActionIcon,
+          current: true,
+          onSelect: () => {},
+        }
+      : {
+          label: t.phoneVaultNone,
+          Icon: VaultActionIcon,
+          onSelect: () => {},
+        },
+    ...(canOpenFolder
+      ? ([
+          "separator",
+          {
+            label: t.phoneVaultOpenOther,
+            Icon: OpenFolderActionIcon,
+            onSelect: () => {
+              void openFolder.openFolderDialog();
+            },
+          },
+        ] as (ActionSheetItem | "separator")[])
+      : []),
+  ];
+
   return (
     <div className="phone-home">
       <div className="ph-top">
-        <button type="button" className="ph-vault">
+        <button
+          type="button"
+          className="ph-vault"
+          aria-haspopup="menu"
+          aria-expanded={switcherOpen}
+          onClick={() => setSwitcherOpen(true)}
+        >
           <span className="vic">
             <svg
               viewBox="0 0 24 24"
@@ -45,6 +91,18 @@ export function PhoneHome({
             </svg>
           </span>
           <span className="vname">{place ? baseName(place) : t.treeTab}</span>
+          <svg
+            className="vchev"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M7 10l5 5 5-5" />
+          </svg>
         </button>
         <div className="ph-acts">
           <button
@@ -124,6 +182,15 @@ export function PhoneHome({
           <path d="M12 5v14M5 12h14" />
         </svg>
       </button>
+      <Presence show={switcherOpen}>
+        {switcherOpen && (
+          <ActionSheet
+            title={t.phoneVaultSwitcherTitle}
+            items={vaultItems}
+            onClose={() => setSwitcherOpen(false)}
+          />
+        )}
+      </Presence>
     </div>
   );
 }

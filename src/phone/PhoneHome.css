@@ -63,6 +63,13 @@
   text-overflow: ellipsis;
 }
 
+.ph-vault .vchev {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--phone-muted);
+}
+
 .ph-acts {
   margin-left: auto;
   display: flex;
