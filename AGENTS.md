@@ -6,6 +6,24 @@ few rules that have gone wrong before and must not again. The full rules
 are in [CONTRIBUTING.md](CONTRIBUTING.md) and the documents it links; if
 this file and they ever disagree, they win - and please tell us.
 
+## Fork note (Skein)
+
+This checkout is the **Skein fork** of Textus. It follows upstream by
+release tag; everything fork-specific lives under `docs/skein/`, whose
+[README](docs/skein/README.md) is the fork's document entry and its rules
+the ones to work by. Three things differ from the upstream guide below:
+
+- `docs/design/` (design-language.md included) and `docs/images/` are
+  dropped: upstream's design standard and UI screenshots are not this
+  fork's reference. The interface authority is the boards
+  (`docs/skein/04-boards/`) and the rulings of the fork's interface plan;
+  where the rules below cite design-language.md, read those instead.
+- Upstream contributions are never built from this checkout: clone
+  upstream fresh and prepare the branch there
+  ([the procedure](docs/skein/01-%E7%BA%AA%E5%BE%8B/publishing-gate.md)).
+- `docs/releases/` keeps only `next/` and the template: the historical
+  upstream release notes are not this fork's changelog.
+
 ## Where things are
 
 Textus is a Markdown editor for macOS, Windows, Linux, iPhone and iPad,

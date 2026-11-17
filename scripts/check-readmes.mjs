@@ -1,23 +1,19 @@
 #!/usr/bin/env node
-// Checks every README.<lang>.md still matches README.md's structure:
-// headings, code blocks, table rows, link targets and existing images.
+// Checks README.md's image and link targets still exist on disk.
+//
+// Fork change (2026-11-17, the fork-clean commit): the translated READMEs
+// and the ROADMAP files are dropped in this fork - upstream keeps its own,
+// this checkout is not their home. With no translations the structure
+// comparison is vacuous, so what remains is the reference README's own
+// existence check. When a future upstream sync re-adds a translation,
+// delete it again and record the path in gate.mjs's absentPaths.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const reference = "README.md";
-const translations = [
-  "README.zh.md",
-  "README.zh-Hant.md",
-  "README.ja.md",
-  "README.ko.md",
-  "README.es.md",
-  "README.fr.md",
-  "README.de.md",
-  "README.ru.md",
-  "README.pt.md",
-];
+const translations = [];
 
 function outline(file) {
   const text = readFileSync(join(root, file), "utf8");
