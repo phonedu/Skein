@@ -67,8 +67,18 @@
 
 :root[data-window-chrome="mobile"] .milkdown h1 {
   font-family: "Source Han Serif SC", "Noto Serif SC", Songti, serif;
-  font-size: var(--text-large-title);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   line-height: 1.25;
+  margin-block: var(--space-6) var(--space-4);
+}
+
+:root[data-window-chrome="mobile"] .milkdown h2 {
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  margin-block: var(--space-8) var(--space-3);
 }
 
 :root[data-window-chrome="mobile"]

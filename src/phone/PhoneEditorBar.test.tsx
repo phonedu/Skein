@@ -54,8 +54,9 @@ describe("the phone's editor bar", () => {
   it("keeps phone editor controls at the Android touch size", () => {
     expect(editorBarCss).toContain("width: 48px;");
     expect(editorBarCss).toContain("height: 48px;");
-    expect(editorBarCss).toContain("font-size: var(--text-body);");
+    expect(editorBarCss).toContain("font-size: var(--text-title);");
     expect(mobileEditorCss).toContain("padding-inline: var(--space-6);");
     expect(mobileEditorCss).toContain("line-height: 1.8;");
+    expect(mobileEditorCss).toContain("font-size: 32px;");
   });
 });
