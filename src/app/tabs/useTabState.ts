@@ -20,6 +20,7 @@ import {
   tabInUse,
   windowTabs,
 } from "../../engine/layout/store";
+import { isPhoneLayout } from "../../platform/phone-layout";
 
 export interface TabState {
   tabs: DocTab[];
@@ -39,9 +40,11 @@ export interface TabState {
   addStartTab: () => void;
 }
 
-// The window starts with one blank document; a split asked for with no
-// other tab to take gets a blank one in the view last chosen.
-startWindowTabs<DocTab>([makeBlankTab()], () => ({
+// The window starts with one blank document - none on a phone, whose empty
+// tab list is the library home (App.tsx renders PhoneHome there); a split
+// asked for with no other tab to take gets a blank one in the view last
+// chosen.
+startWindowTabs<DocTab>(isPhoneLayout() ? [] : [makeBlankTab()], () => ({
   ...makeBlankTab(),
   ...lastViewMode(),
 }));

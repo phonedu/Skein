@@ -170,48 +170,52 @@ function App() {
                 } as React.CSSProperties)
           }
         >
-          <WindowBar
-            menuChecks={menuChecks}
-            title={activeTitle}
-            dirty={activeDirty}
-            sidebarOpen={panelOpen}
-            sidebarShortcut={formatCombo(settings.shortcuts.toggleSidebar)}
-            onToggleSidebar={toggleSidebar}
-            showAgentToggle={aiFeatures(settings, tutorial.active).chat}
-            agentOpen={agentPanel.open}
-            agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
-            onToggleAgent={toggleAgentPanel}
-            onToggleReadOnly={() => toggleReadOnly()}
-          />
+          {/* The phone's library home has its own top bar (PhoneHome's): the
+             window bar's menu and agent toggle belong to a document. */}
           {!(phone && tabs.length === 0) && (
-          <Sidebar
-            open={sidebarShown}
-            presence={sidebarPresence}
-            closing={sidebarClosing}
-            mode={panelMode}
-            onModeChange={setPanelMode}
-            width={sidebarWidth}
-            openFolder={openFolder}
-            activePath={activeTab.path}
-            activeContent={activeTab.content}
-            activeTabId={activeTab.id}
-            onToggle={toggleSidebar}
-            onClose={() => setPanelOpen(false)}
-            onOpenFile={(path, how, line) => {
-              // A phone's page comes back with the file opened.
-              if (phone) setPanelOpen(false);
-              void openFile(path, {
-                ...(how === "beside"
-                  ? { where: "beside" }
-                  : { preview: how === "preview" }),
-                ...(line !== undefined ? { place: { line } } : {}),
-              });
-            }}
-            onEntryMoved={entryMoved}
-            searchFocusRequest={searchFocusRequest}
-            onSearchFocusHandled={clearSearchFocusRequest}
-            t={t}
-          />
+            <WindowBar
+              menuChecks={menuChecks}
+              title={activeTitle}
+              dirty={activeDirty}
+              sidebarOpen={panelOpen}
+              sidebarShortcut={formatCombo(settings.shortcuts.toggleSidebar)}
+              onToggleSidebar={toggleSidebar}
+              showAgentToggle={aiFeatures(settings, tutorial.active).chat}
+              agentOpen={agentPanel.open}
+              agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
+              onToggleAgent={toggleAgentPanel}
+              onToggleReadOnly={() => toggleReadOnly()}
+            />
+          )}
+          {!(phone && tabs.length === 0) && (
+            <Sidebar
+              open={sidebarShown}
+              presence={sidebarPresence}
+              closing={sidebarClosing}
+              mode={panelMode}
+              onModeChange={setPanelMode}
+              width={sidebarWidth}
+              openFolder={openFolder}
+              activePath={activeTab.path}
+              activeContent={activeTab.content}
+              activeTabId={activeTab.id}
+              onToggle={toggleSidebar}
+              onClose={() => setPanelOpen(false)}
+              onOpenFile={(path, how, line) => {
+                // A phone's page comes back with the file opened.
+                if (phone) setPanelOpen(false);
+                void openFile(path, {
+                  ...(how === "beside"
+                    ? { where: "beside" }
+                    : { preview: how === "preview" }),
+                  ...(line !== undefined ? { place: { line } } : {}),
+                });
+              }}
+              onEntryMoved={entryMoved}
+              searchFocusRequest={searchFocusRequest}
+              onSearchFocusHandled={clearSearchFocusRequest}
+              t={t}
+            />
           )}
 
           {phone && tabs.length === 0 ? (

@@ -80,9 +80,10 @@ export function useTabRemoval(opts: {
           ? makeStartTab()
           : null;
       const last = tabsRef.current.every((tb) => tb.id === id);
-      // The last one closes the window - none on iOS, where it simply stays
-      // - decided here, as the window's own state says, not in an updater.
-      if (last && !start) {
+      // The last one closes the window; a phone has no window to close and
+      // no start page - its empty tab list is the library home. Decided
+      // here, as the window's own state says, not in an updater.
+      if (last && !start && canUseWindows) {
         if (!canUseWindows) return;
         // Destroying the window skips the draft cleanup effect, so clear
         // the snapshot here or a discarded tab returns as a draft.
