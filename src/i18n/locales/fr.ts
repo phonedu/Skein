@@ -576,6 +576,7 @@ utiliser une.
   notesFootNote: "Markdown, c'est tout",
   treeTab: "Fichiers",
   phoneBackToLibrary: "Retour à la bibliothèque",
+  phoneBack: "Retour",
   outlineTab: "Plan",
   searchTab: "Rechercher",
   searchPlaceholder: "Rechercher noms et texte",

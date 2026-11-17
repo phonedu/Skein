@@ -18,8 +18,10 @@ import type { ShortcutCommand } from "../../settings/pages/types";
 import { SettingsDialog } from "./settings-dialog";
 import { SettingsNavColumn } from "./settings-nav-column";
 import { SettingsContent } from "./settings-content";
+import { SettingsPhone } from "./settings-phone";
 import { useSettingsDialogSearch } from "./settings-search";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
+import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
 import { PluginDetail } from "../../settings/pages/PluginDetail";
 import { AboutPage } from "../../settings/pages/AboutPage";
 import { pluginName, pluginRecord } from "../../plugins/store/plugin-records";
@@ -82,6 +84,7 @@ export function SettingsHost(props: {
   pluginCommands?: ShortcutCommand[];
 }) {
   const { t } = useSettings();
+  const phone = usePhoneLayout();
   const [pageId, setPageId] = useState(props.page);
   const [jump, setJump] = useState<SearchEntry | null>(props.jump ?? null);
   const content = useRef<HTMLDivElement>(null);
@@ -166,6 +169,30 @@ export function SettingsHost(props: {
   });
 
   useReveal(content, jump, () => setJump(null));
+
+  // A phone takes the page form - fullscreen, list first, the section
+  // pushed under a back row (settings-phone.tsx); the dialog is the
+  // pointer's shape.
+  if (phone) {
+    return (
+      <SettingsPhone
+        t={t}
+        pages={pages}
+        def={def}
+        initialPage={props.page}
+        jump={props.jump ?? null}
+        onClose={props.onClose}
+        marginAvailable={marginAvailable}
+        fixedShortcuts={props.fixedShortcuts}
+        pluginCommands={props.pluginCommands}
+        {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
+        {...(props.onFilesDeleted
+          ? { onFilesDeleted: props.onFilesDeleted }
+          : {})}
+        {...(props.docPath !== undefined ? { docPath: props.docPath } : {})}
+      />
+    );
+  }
 
   return (
     <SettingsDialog

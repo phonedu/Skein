@@ -1,0 +1,81 @@
+/* Settings as the phone's page: fullscreen over everything, the nav list
+   first, a pushed page under a back row for the section. Reuses the
+   dialog's surfaces and the nav column's rows, laid for a thumb. */
+.settings-phone {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  padding-top: var(--safe-top, 0px);
+}
+
+.settings-phone-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.settings-phone-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The row's touch: the phone's bars are 44 tall (PhoneEditorBar's). */
+.settings-phone-ic {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  border-radius: var(--shape-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ui-text);
+  flex: none;
+  cursor: pointer;
+}
+
+.settings-phone-ic svg {
+  width: 22px;
+  height: 22px;
+}
+
+.settings-phone-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--space-4) var(--space-5);
+}
+
+/* The list screen: the nav column's rows at the body's width. */
+.settings-phone .settings-nav {
+  width: 100%;
+}
+
+/* The pushed page arrives from the right, as a phone's page does. */
+.settings-phone-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: settings-phone-push 160ms ease-out;
+}
+
+@keyframes settings-phone-push {
+  from {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+}

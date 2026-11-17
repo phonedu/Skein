@@ -574,6 +574,7 @@ para usar una.
   notesFootNote: "Markdown lo es todo",
   treeTab: "Archivos",
   phoneBackToLibrary: "Volver a la biblioteca",
+  phoneBack: "Atrás",
   outlineTab: "Esquema",
   searchTab: "Buscar",
   searchPlaceholder: "Buscar nombres y texto",

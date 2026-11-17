@@ -495,6 +495,7 @@ export default {
   notesFootNote: "Markdown 就是全部",
   treeTab: "檔案",
   phoneBackToLibrary: "回到檔案庫",
+  phoneBack: "返回",
   outlineTab: "大綱",
   searchTab: "搜尋",
   searchPlaceholder: "搜尋檔名和內容",

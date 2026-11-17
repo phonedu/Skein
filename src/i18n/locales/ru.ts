@@ -576,6 +576,7 @@ export default {
   notesFootNote: "Markdown — это всё",
   treeTab: "Файлы",
   phoneBackToLibrary: "Вернуться в библиотеку",
+  phoneBack: "Назад",
   outlineTab: "Оглавление",
   searchTab: "Поиск",
   searchPlaceholder: "Поиск по именам и тексту",
