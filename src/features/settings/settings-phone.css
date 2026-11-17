@@ -1,34 +1,42 @@
-/* Settings as the phone's page: fullscreen over everything, the nav list
-   first, a pushed page under a back row for the section. Reuses the
-   dialog's surfaces and the nav column's rows, laid for a thumb. */
+/* Settings as the phone's page: fullscreen over everything, the list of
+   pages first, a pushed page under the same bar for the section. Laid as
+   Android's settings are - a centred top app bar, a search field, grouped
+   cards of 56px rows - in the paper and ink of the phone's home. */
 .settings-phone {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
   display: flex;
   flex-direction: column;
-  background: var(--ui-surface);
+  background: var(--ui-bg);
   color: var(--ui-text);
   padding-top: var(--safe-top, 0px);
 }
 
+.settings-phone *,
+.settings-phone *::before,
+.settings-phone *::after {
+  box-sizing: border-box;
+}
+
+/* The bar: back at the leading edge, the title centred over the equal empty
+   slot at the end, a hairline under it. */
 .settings-phone-top {
   flex: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
   align-items: center;
-  gap: var(--space-2);
   min-height: 64px;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-2);
   border-bottom: 1px solid var(--ui-border);
 }
 
 .settings-phone-title {
-  flex: 1;
-  min-width: 0;
   margin: 0;
-  font-size: var(--text-body);
+  text-align: center;
+  font-size: var(--text-title);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -39,49 +47,133 @@
   width: 48px;
   height: 48px;
   border: 0;
+  padding: 0;
   background: none;
-  border-radius: var(--shape-m);
+  border-radius: var(--shape-pill);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ui-text);
-  flex: none;
   cursor: pointer;
 }
 
-.settings-phone-ic svg {
-  width: 22px;
-  height: 22px;
+button.settings-phone-ic:active {
+  background: var(--ui-hover);
 }
 
 .settings-phone-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--space-2) var(--space-4) var(--space-6);
+  overscroll-behavior: contain;
+  padding: var(--space-4) var(--space-4)
+    calc(var(--space-8) + var(--safe-bottom, 0px));
 }
 
-/* The list screen: the nav column's rows at the body's width. */
-.settings-phone .settings-nav {
+/* The shared search field, fitted to the body's margins: the older mobile
+   sheet's side margins pushed it past the right edge. */
+.settings-phone .settings-nav-search {
+  padding: 0;
+}
+
+.settings-phone .settings-search {
   width: 100%;
-}
-
-.settings-phone .settings-nav {
-  gap: var(--space-1);
-}
-
-.settings-phone .settings-nav-row {
-  min-height: 56px;
+  height: 48px;
+  margin: 0;
   padding: 0 var(--space-4);
   border-radius: var(--shape-m);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  font-size: var(--text-body);
 }
 
-.settings-phone .settings-nav-group-head {
-  min-height: 40px;
+.settings-phone .settings-search .tx-search-input {
+  font-size: var(--text-body);
+}
+
+/* Sections: an optional caption over a card of rows. */
+.settings-phone-section {
+  margin-top: var(--space-6);
+}
+
+.settings-phone-section-title {
+  margin: 0 0 var(--space-2);
   padding: 0 var(--space-4);
+  font-size: var(--text-footnote);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   color: var(--ui-muted);
-  font-size: var(--text-caption);
-  letter-spacing: 0.04em;
+}
+
+.settings-phone-card {
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
+  background: var(--ui-surface);
+}
+
+.settings-phone-row {
+  position: relative;
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3) 0 var(--space-4);
+  border: 0;
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-phone-row:active {
+  background: var(--ui-hover);
+}
+
+/* The hairline between rows starts where the text does. */
+.settings-phone-row + .settings-phone-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-4);
+  right: 0;
+  border-top: 1px solid var(--ui-border);
+}
+
+.settings-phone-row-ic {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-text) 6%, transparent);
+  color: var(--ui-muted);
+  --icon-scale: 1.2;
+}
+
+.settings-phone-row-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.settings-phone-row-chev {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+@supports selector(:has(a)) {
+  .settings-phone-row:has(.settings-phone-row-ic)
+    + .settings-phone-row::before {
+    left: calc(var(--space-4) + 32px + var(--space-3));
+  }
 }
 
 /* The pushed page arrives from the right, as a phone's page does. */

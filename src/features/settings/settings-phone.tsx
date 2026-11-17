@@ -7,8 +7,9 @@ import type { Strings } from "../../i18n/strings";
 import type { FixedShortcutGroup } from "../../registry/fixed-shortcuts";
 import type { SettingsPageDef } from "../../settings/settings-pages";
 import type { SearchEntry } from "../../settings/settings-search";
-import { CloseIcon } from "../../engine/controls/icons";
-import { SettingsNavColumn } from "./settings-nav-column";
+import { ArrowLeft } from "lucide-react";
+import { lucide } from "../../engine/controls/icons";
+import { SettingsPhoneList } from "./settings-phone-list";
 import { SettingsContent } from "./settings-content";
 import { useSettingsDialogSearch } from "./settings-search";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
@@ -79,54 +80,27 @@ export function SettingsPhone(props: {
     <div className="settings-phone">
       {page === null ? (
         <>
-          <div className="settings-phone-top">
-            <h1 className="settings-phone-title">{t.settingsTitle}</h1>
-            <button
-              type="button"
-              className="settings-phone-ic"
-              aria-label={t.close}
-              onClick={props.onClose}
-            >
-              <CloseIcon />
-            </button>
-          </div>
+          <PhoneSettingsBar
+            title={t.settingsTitle}
+            backLabel={t.phoneBack}
+            onBack={props.onClose}
+          />
           <div className="settings-phone-body">
             {search.field}
             {search.searching ? (
               search.results
             ) : (
-              // Nothing is open under the list: no row reads as active.
-              <SettingsNavColumn
-                t={t}
-                pages={props.pages}
-                active=""
-                onOpen={setPageId}
-              />
+              <SettingsPhoneList t={t} pages={props.pages} onOpen={setPageId} />
             )}
           </div>
         </>
       ) : (
         <div className="settings-phone-page">
-          <div className="settings-phone-top">
-            <button
-              type="button"
-              className="settings-phone-ic"
-              aria-label={t.phoneBack}
-              onClick={() => setPageId(null)}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className="settings-phone-title">{page.label(t)}</h1>
-          </div>
+          <PhoneSettingsBar
+            title={page.label(t)}
+            backLabel={t.phoneBack}
+            onBack={() => setPageId(null)}
+          />
           <div className="settings-phone-body">
             <div
               ref={content}
@@ -155,6 +129,31 @@ export function SettingsPhone(props: {
         </div>
       )}
       {search.index}
+    </div>
+  );
+}
+
+const BackArrow = lucide(ArrowLeft, 22);
+
+/** Android's top app bar: the way back at the leading edge, as the editor's
+ *  bar has it, and the title centred over an equal empty slot at the end. */
+function PhoneSettingsBar(props: {
+  title: string;
+  backLabel: string;
+  onBack: () => void;
+}) {
+  return (
+    <div className="settings-phone-top">
+      <button
+        type="button"
+        className="settings-phone-ic"
+        aria-label={props.backLabel}
+        onClick={props.onBack}
+      >
+        <BackArrow className="settings-phone-arrow" />
+      </button>
+      <h1 className="settings-phone-title">{props.title}</h1>
+      <span className="settings-phone-ic" aria-hidden />
     </div>
   );
 }

@@ -89,9 +89,44 @@ describe("the phone's settings", () => {
     expect(screen.getAllByText(en.navAbout).length).toBeGreaterThan(0);
   });
 
-  it("uses a phone sized settings header and body rhythm", () => {
-    expect(settingsPhoneCss).toContain("width: 48px;");
-    expect(settingsPhoneCss).toContain("height: 48px;");
-    expect(settingsPhoneCss).toContain("padding: 0 var(--space-4)");
+  it("leads the bar with a back arrow and centres the title", () => {
+    const onClose = vi.fn();
+    render(
+      <SettingsProvider>
+        <SettingsHost
+          page="general"
+          jump={null}
+          onClose={onClose}
+          fixedShortcuts={[]}
+          pluginCommands={[]}
+        />
+      </SettingsProvider>,
+    );
+    const bar = document.querySelector(".settings-phone-top")!;
+    const back = bar.firstElementChild as HTMLElement;
+    expect(back.getAttribute("aria-label")).toBe(en.phoneBack);
+    expect(back.querySelector(".settings-phone-arrow")).toBeTruthy();
+    expect(bar.children[1].classList.contains("settings-phone-title")).toBe(
+      true,
+    );
+    fireEvent.click(back);
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("lists every page in sections, grouped pages in sight unfolded", () => {
+    host();
+    const sections = document.querySelectorAll(".settings-phone-section");
+    expect(sections.length).toBeGreaterThan(1);
+    expect(screen.getByText(en.navEditing)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: en.navEditText }));
+    expect(document.querySelector(".settings-content-host")).toBeTruthy();
+  });
+
+  it("keeps the search and the cards inside the page's margins", () => {
+    expect(settingsPhoneCss).toContain(".settings-phone .settings-search");
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-search \{[^}]*margin: 0;/,
+    );
+    expect(settingsPhoneCss).toContain("box-sizing: border-box;");
   });
 });

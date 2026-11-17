@@ -80,11 +80,11 @@
     flex: none;
   }
 
-  :root[data-window-chrome="mobile"] .settings-search {
+  :root[data-window-chrome="mobile"] .settings-panel .settings-search {
     margin: 8px 16px 0;
   }
 
-  :root[data-window-chrome="mobile"] .settings-nav {
+  :root[data-window-chrome="mobile"] .settings-panel .settings-nav {
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 0;
@@ -217,7 +217,7 @@
     font-size: var(--text-secondary);
   }
 
-  :root[data-window-chrome="mobile"] .settings-search {
+  :root[data-window-chrome="mobile"] .settings-panel .settings-search {
     height: 40px;
   }
 
