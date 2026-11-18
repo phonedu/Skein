@@ -149,7 +149,7 @@
   /* A 1px top highlight so the pill lifts off the paper, and a feather of
      shadow below it; same recipe as the Skein mockup. */
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 60%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ui-surface) 60%, transparent),
     0 1px 3px color-mix(in srgb, var(--phone-ink) 5%, transparent);
   color: var(--phone-muted);
 }

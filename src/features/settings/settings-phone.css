@@ -182,7 +182,7 @@ button.settings-phone-ic:active {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  animation: settings-phone-push 160ms ease-out;
+  animation: settings-phone-push var(--dur-base) var(--ease-out);
 }
 
 @keyframes settings-phone-push {

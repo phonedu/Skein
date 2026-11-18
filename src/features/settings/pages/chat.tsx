@@ -167,13 +167,14 @@ export function ChatPage({
               setSettings({ proxyType: e.target.value as ProxyType })
             }
           >
-            <option value="none">{t.proxyTypeNone}</option>
+            <option value="system">{t.proxyTypeSystem}</option>
+            <option value="direct">{t.proxyTypeNone}</option>
             <option value="http">HTTP</option>
             <option value="https">HTTPS</option>
             <option value="socks5">SOCKS5</option>
           </Select>
         </SettingRow>
-        {settings.proxyType !== "none" && (
+        {settings.proxyType !== "direct" && (
           <>
             <div className="settings-proxy-row">
               <input

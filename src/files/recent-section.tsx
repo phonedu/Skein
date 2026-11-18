@@ -1,5 +1,5 @@
 import type { Strings } from "../i18n/strings";
-import { isWithin } from "./tree-root";
+import { isWithin } from "../utils/path";
 
 /** The row's own name, whatever separators the path came in with. */
 export const baseName = (path: string) =>
