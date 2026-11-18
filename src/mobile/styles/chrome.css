@@ -453,3 +453,27 @@
 :root[data-window-chrome="mobile"] .tx-segment.is-icon {
   min-width: 48px;
 }
+
+/* ---- A notice: a floating word or two, not a field ---- */
+
+/* Only as wide as what it says, centred at the foot: the full-width bar
+   read as an input field rather than a passing word. */
+:root[data-window-chrome="mobile"] .notice-stack {
+  width: auto;
+  max-width: calc(100vw - 2 * var(--space-6));
+}
+
+:root[data-window-chrome="mobile"] .notice {
+  width: auto;
+  max-width: 100%;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--shape-pill);
+  justify-content: center;
+  text-align: center;
+}
+
+:root[data-window-chrome="mobile"] .notice-text {
+  flex: none;
+  justify-content: center;
+  text-align: center;
+}

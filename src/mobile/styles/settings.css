@@ -288,3 +288,12 @@
     border-top-width: 0.5px;
   }
 }
+
+/* The dialog's one field: the trough's quiet edge while busy, warming at
+   the accent when focused - not a full-strength ring. */
+:root[data-window-chrome="mobile"] .app-dialog-input:focus,
+:root[data-window-chrome="mobile"] .app-dialog-input:focus-visible {
+  border-color: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border));
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 12%, transparent);
+}
