@@ -57,9 +57,11 @@
   padding: 0 var(--space-3);
   /* A softer shoulder than shape-m, matching the mockup's 11px chip. */
   border-radius: 11px;
-  /* The chip's edge is barely there on the mockup: a deep-ink hairline
-     at 8% reads as a brown line on this paper; 3% is only a shade. */
-  border: 1px solid color-mix(in srgb, var(--phone-ink) 3%, transparent);
+  /* --ui-border is the theme's hairline (ui-text 16% mixed into ui-bg):
+     an opaque cool grey, not an ink-tinted translucent brown. The same
+     line the settings page uses for its cards and rows, so edges on the
+     phone read as one family. */
+  border: 1px solid var(--ui-border);
   background: color-mix(in srgb, var(--phone-paper) 70%, white);
   font-size: var(--text-body);
   font-weight: 650;
@@ -134,12 +136,12 @@
   min-height: 48px;
   margin: var(--space-3) var(--space-5) var(--space-3);
   padding: 0 var(--space-4);
-  /* The mockup's search has no edge: the paler fill and the 1px top
-     highlight lift it off the paper. A deep-ink border reads as a brown
-     ring on this background. */
-  border: 0;
+  /* The same cool hairline as the settings page and the vault chip:
+     an opaque mix, not an ink-tinted translucent one. A pale surface
+     fill underneath, so the pill reads as a trough in the paper. */
+  border: 1px solid var(--ui-border);
   border-radius: 14px;
-  background: color-mix(in srgb, var(--phone-paper) 80%, white);
+  background: var(--ui-surface);
   /* A 1px top highlight so the pill lifts off the paper, and a feather of
      shadow below it; same recipe as the Skein mockup. */
   box-shadow:
@@ -368,10 +370,10 @@
   border-radius: 50%;
   background: var(--phone-fire);
   color: var(--phone-paper);
-  box-shadow:
-    0 var(--space-2) var(--space-8)
-      color-mix(in srgb, var(--phone-fire) 42%, transparent),
-    0 2px 6px color-mix(in srgb, var(--phone-ink) 30%, transparent);
+  /* A tight shadow only: the earlier large fire-tinted halo stained the
+     paper around the FAB and made the button itself read as heavier and
+     dirtier than it is. The disc stands on its own. */
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--phone-ink) 24%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
