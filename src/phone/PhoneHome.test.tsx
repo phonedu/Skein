@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import en from "../i18n/locales/en";
@@ -40,6 +46,7 @@ vi.mock("../engine/controls/ActionSheet", async () => {
     label: string;
     onSelect: () => void;
     Icon?: unknown;
+    checked?: boolean;
     current?: boolean;
     sub?: string;
   };
@@ -66,6 +73,7 @@ vi.mock("../engine/controls/ActionSheet", async () => {
                 role: "menuitem",
                 "aria-label": item.label,
                 "aria-current": item.current ? "true" : undefined,
+                "aria-checked": item.checked ? "true" : undefined,
                 onClick: () => {
                   onClose();
                   item.onSelect();
@@ -143,6 +151,66 @@ describe("the phone library home", () => {
     expect((input as HTMLInputElement).value).toBe("");
   });
 
+  it("steps the floating action aside over an empty library", () => {
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={openFolderProp}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+
+    // Loaded, the tree reports its count; nothing there hides the +.
+    expect(screen.getByRole("button", { name: en.menuNewFile })).toBeTruthy();
+    const report = fileTreeProps.last?.["onRootCount"] as (n: number) => void;
+    act(() => report(0));
+    expect(screen.queryByRole("button", { name: en.menuNewFile })).toBeNull();
+    act(() => report(3));
+    expect(screen.getByRole("button", { name: en.menuNewFile })).toBeTruthy();
+  });
+
+  it("asks which new thing on a held +, and names a folder in place", () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <PhoneHome
+          t={en as Strings}
+          openFolder={openFolderProp}
+          activePath={null}
+          onOpenFile={vi.fn()}
+          onNewFile={vi.fn()}
+          onEntryMoved={vi.fn()}
+        />,
+      );
+
+      const fab = screen.getByRole("button", { name: en.menuNewFile });
+      fireEvent.touchStart(fab, {
+        touches: [{ clientX: 12, clientY: 12 }],
+      });
+      act(() => vi.advanceTimersByTime(500));
+      // The sheet's rows, and only then.
+      const folder = screen.getByRole("menuitem", {
+        name: en.treeNewFolder,
+      });
+      expect(
+        screen.getByRole("menuitem", { name: en.menuNewFile }),
+      ).toBeTruthy();
+      fireEvent.click(folder);
+      // Choosing a folder asks the tree for one named in place at the root.
+      const ask = fileTreeProps.last?.["draftRequest"] as {
+        kind: string;
+        seq: number;
+      } | null;
+      expect(ask?.kind).toBe("folder");
+      expect(ask?.seq).toBeGreaterThan(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("hands the tree the empty vault's state and the search's no-results", () => {
     render(
       <PhoneHome
@@ -195,7 +263,7 @@ describe("the phone library home", () => {
     fireEvent.click(screen.getByRole("button", { name: /notes/ }));
     // The current library is ticked and the folder picker row is present.
     const current = screen.getByRole("menuitem", { name: "notes" });
-    expect(current.getAttribute("aria-current")).toBe("true");
+    expect(current.getAttribute("aria-checked")).toBe("true");
     const openOther = screen.getByRole("menuitem", {
       name: en.phoneVaultOpenOther,
     });

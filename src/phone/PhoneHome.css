@@ -551,6 +551,11 @@
      paper around the FAB and made the button itself read as heavier and
      dirtier than it is. The disc stands on its own. */
   box-shadow: 0 2px 6px color-mix(in srgb, var(--phone-ink) 24%, transparent);
+  /* Held, the button asks which new thing; a held finger must not select
+     or call out anything meanwhile. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   display: flex;
   align-items: center;
   justify-content: center;

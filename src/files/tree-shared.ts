@@ -70,6 +70,10 @@ export interface TreeShared {
   /** What an empty name filter reads, instead of the empty state: the
    *  search found nothing, which is not the same as an empty vault. */
   noResults: string | null;
+  /** The root's own entry count as it loads; the phone home hides its
+   *  floating action over an empty library, the empty state carrying the
+   *  call. Null where nothing asks. */
+  onRootCount: ((count: number) => void) | null;
   /** A folder to bring into view: it and those above it open. */
   reveal: string | null;
 }

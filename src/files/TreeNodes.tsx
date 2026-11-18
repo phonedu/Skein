@@ -161,6 +161,12 @@ export const DirNode = memo(function DirNode({
           entry.is_dir || entry.name.toLocaleLowerCase().includes(filter),
       ) ?? null)
     : sorted;
+  // The root's count goes up as it loads (the phone's + steps aside when
+  // there is nothing yet: the empty state carries the call).
+  const reportCount = tree.onRootCount;
+  useEffect(() => {
+    if (depth === 0 && sorted) reportCount?.(sorted.length);
+  }, [depth, sorted, reportCount]);
   // Rows that must be drawn: the open document's, and the way to it.
   const onWay = onTheWay(activePath, tree.reveal);
 

@@ -25,6 +25,14 @@ import type { Strings } from "../i18n/strings";
 import { failureText, type TreeDraft } from "./tree-shared";
 import { updateLinksAfterMove } from "./move-links";
 import { pathItems } from "../clipboard/copy-path";
+import {
+  MarkdownFileIcon,
+  NewDocumentIcon,
+  NewFolderIcon,
+  RenameIcon,
+  ShareIcon,
+  TrashIcon,
+} from "../engine/controls/icons";
 import type { FileOpenHow } from "./tree-shared";
 
 /** A row's right-click menu, while it is open. */
@@ -108,12 +116,17 @@ export function useRowMenu(
       if (path !== root && !isDir)
         items.push(
           // Beside another document: drag it there.
-          { label: t.treeOpen, onSelect: () => onFileSelect(path) },
+          {
+            label: t.treeOpen,
+            onSelect: () => onFileSelect(path),
+            Icon: MarkdownFileIcon,
+          },
           ...(isMobileApp
             ? [
                 {
                   label: t.menuShare,
                   onSelect: () => void iosFiles.share(path).catch(() => {}),
+                  Icon: ShareIcon,
                 },
               ]
             : []),
@@ -128,10 +141,12 @@ export function useRowMenu(
         {
           label: t.treeNewDocument,
           onSelect: () => setDraft({ dir, kind: "document" }),
+          Icon: NewDocumentIcon,
         },
         {
           label: t.treeNewFolder,
           onSelect: () => setDraft({ dir, kind: "folder" }),
+          Icon: NewFolderIcon,
         },
       );
       items.push("separator", ...pathItems(t, path, root));
@@ -139,6 +154,7 @@ export function useRowMenu(
         items.push({
           label: t.treeRenameItem,
           onSelect: () => void rename(path),
+          Icon: RenameIcon,
         });
       // A phone deletes documents only: a folder's would be gone for good.
       if (path !== root && !(isMobileApp && isDir))
@@ -146,6 +162,7 @@ export function useRowMenu(
           label: isMobileApp ? t.docDelete : t.treeTrash,
           onSelect: () => void trash(path, isDir),
           danger: true,
+          Icon: TrashIcon,
         });
       const added = contributedContextItems("file/context", {
         path,

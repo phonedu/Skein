@@ -15,6 +15,7 @@ export function useTreeContexts(
     | "dropInto"
     | "emptyState"
     | "noResults"
+    | "onRootCount"
   > & {
     desktop: boolean;
     dropInto: string | null | undefined;
@@ -29,6 +30,7 @@ export function useTreeContexts(
      *  everywhere else. */
     emptyState?: TreeShared["emptyState"];
     noResults?: TreeShared["noResults"];
+    onRootCount?: TreeShared["onRootCount"];
   },
 ): { rowActions: TreeRowActions; shared: TreeShared } {
   const { desktop, onRowMenu, onRowHold, onRowPointerDown } = input;
@@ -78,6 +80,7 @@ export function useTreeContexts(
         : null,
       emptyState: input.emptyState ?? null,
       noResults: input.noResults ?? null,
+      onRootCount: input.onRootCount ?? null,
       reveal,
     }),
     [
@@ -98,6 +101,7 @@ export function useTreeContexts(
       newDocumentLabel,
       input.emptyState,
       input.noResults,
+      input.onRootCount,
       reveal,
     ],
   );

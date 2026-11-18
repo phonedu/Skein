@@ -14,6 +14,8 @@ import {
   ActionSheet,
   type ActionSheetItem,
 } from "../engine/controls/ActionSheet";
+import { NewDocumentIcon, NewFolderIcon } from "../engine/controls/icons";
+import { useLongPress } from "../utils/hooks/useLongPress";
 import { Presence } from "../engine/motion/usePresence";
 import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
 import "./PhoneHome.css";
@@ -39,6 +41,21 @@ export function PhoneHome({
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // The root's entry count, as the tree loads it: over an empty library the
+  // + steps aside, the empty state carrying the call (the user's rule).
+  const [treeCount, setTreeCount] = useState<number | null>(null);
+  const [draftRequest, setDraftRequest] = useState<{
+    kind: "document" | "folder";
+    seq: number;
+  } | null>(null);
+  const [newSheetOpen, setNewSheetOpen] = useState(false);
+  // A tap makes a note; a hold asks which (the user's rule).
+  const fabPress = useLongPress(() => setNewSheetOpen(true));
+  const startNew = (kind: "document" | "folder") => {
+    setNewSheetOpen(false);
+    if (kind === "document") return onNewFile();
+    setDraftRequest((ask) => ({ kind, seq: (ask?.seq ?? 0) + 1 }));
+  };
 
   // The sheet's rows: the current library (ticked), a separator, and the
   // folder picker. Recents are added here once they reach the phone.
@@ -48,7 +65,7 @@ export function PhoneHome({
           label: baseName(place),
           sub: place,
           Icon: VaultActionIcon,
-          current: true,
+          checked: true,
           onSelect: () => {},
         }
       : {
@@ -180,6 +197,8 @@ export function PhoneHome({
               start: onNewFile,
             }}
             noResults={t.phoneSearchNoResults}
+            onRootCount={setTreeCount}
+            draftRequest={draftRequest}
             onOpenAsFolder={canOpenFolder ? openFolder.openFolder : undefined}
             onFileSelect={onOpenFile}
             onCloseFolder={openFolder.closeFolder}
@@ -210,22 +229,47 @@ export function PhoneHome({
           </div>
         )}
       </div>
-      <button
-        type="button"
-        className="ph-fab"
-        aria-label={t.menuNewFile}
-        onClick={onNewFile}
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
+      {openFolder.treeRoot && treeCount !== 0 && (
+        <button
+          type="button"
+          className="ph-fab"
+          aria-label={t.menuNewFile}
+          onClick={() => {
+            if (fabPress.consumeClick()) return;
+            onNewFile();
+          }}
+          {...fabPress.handlers}
         >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </button>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
+      )}
+      <Presence show={newSheetOpen}>
+        {newSheetOpen && (
+          <ActionSheet
+            items={[
+              {
+                label: t.menuNewFile,
+                Icon: NewDocumentIcon,
+                onSelect: () => startNew("document"),
+              },
+              {
+                label: t.treeNewFolder,
+                Icon: NewFolderIcon,
+                onSelect: () => startNew("folder"),
+              },
+            ]}
+            onClose={() => setNewSheetOpen(false)}
+          />
+        )}
+      </Presence>
       <Presence show={switcherOpen}>
         {switcherOpen && (
           <ActionSheet

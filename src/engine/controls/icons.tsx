@@ -20,6 +20,7 @@ import {
   Clock,
   Code,
   Columns2,
+  Copy,
   Download,
   Ellipsis,
   Eye,
@@ -79,6 +80,7 @@ import {
   Telescope,
   TextQuote,
   Trash2,
+  Upload,
   Undo2,
   WandSparkles,
   X,
@@ -278,6 +280,11 @@ export function TableEditIcon({
 }
 
 export const TrashIcon = lucide(Trash2, 16);
+/** A row's own line end, in the phone's action sheets: share, copy a path,
+ *  rename. Drawn at the sheet icon capsule's size. */
+export const ShareIcon = lucide(Upload, 15);
+export const CopyIcon = lucide(Copy, 15);
+export const RenameIcon = lucide(PenLine, 15);
 /** A table's tools (its top-right toolbar). */
 export const TABLE_TOOL_ICONS = {
   left: lucide(AlignLeft, 14),

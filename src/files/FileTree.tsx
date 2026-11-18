@@ -1,5 +1,5 @@
 import { useLatestCallback } from "../utils/hooks/useLatest";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import {
   ChevronIcon,
   CloseIcon,
@@ -21,6 +21,7 @@ import { setUiState } from "../storage/ui-state";
 import {
   TreeContext,
   TreeRowActionsContext,
+  type TreeDraft,
   type TreeShared,
   type TreeSort,
 } from "./tree-shared";
@@ -56,6 +57,12 @@ interface FileTreeProps {
    *  two quiet states, null everywhere else. */
   emptyState?: TreeShared["emptyState"];
   noResults?: TreeShared["noResults"];
+  /** The root's entry count as it loads (the phone's + steps aside over
+   *  an empty library). */
+  onRootCount?: (count: number) => void;
+  /** A new entry to be named in place at the root, asked for elsewhere
+   *  (the phone's + sheet): each seq is one ask. */
+  draftRequest?: { kind: TreeDraft["kind"]; seq: number } | null;
   /** How it opens: a tab of its own unless `how` says to look (a click,
    *  the preview tab) or Open to the Side. */
   onFileSelect: (path: string, how?: FileOpenHow) => void;
@@ -80,6 +87,8 @@ export function FileTree({
   filter = "",
   emptyState = null,
   noResults = null,
+  onRootCount,
+  draftRequest = null,
   onFileSelect,
   onOpenAsFolder,
   onCloseFolder,
@@ -143,7 +152,17 @@ export function FileTree({
     filter,
     emptyState,
     noResults,
+    onRootCount,
   });
+
+  // A draft asked for from outside the tree (the phone's + sheet): one row
+  // at the root, its name typed in place.
+  const asked = useRef(0);
+  useEffect(() => {
+    if (!draftRequest || draftRequest.seq === asked.current) return;
+    asked.current = draftRequest.seq;
+    setDraft({ dir: root, kind: draftRequest.kind });
+  }, [draftRequest, root, setDraft]);
 
   const openSortMenu = (e: ReactMouseEvent<HTMLButtonElement>) => {
     const box = e.currentTarget.getBoundingClientRect();

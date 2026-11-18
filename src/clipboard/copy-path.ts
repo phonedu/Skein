@@ -1,5 +1,6 @@
 import type { Strings } from "../i18n/strings";
 import type { ContextMenuItem } from "../engine/controls/ContextMenu";
+import { CopyIcon } from "../engine/controls/icons";
 import { canRevealInFileManager } from "../platform/capabilities";
 import { exportDoc } from "../platform/ipc";
 import { relativePath } from "../utils/path";
@@ -11,7 +12,11 @@ export function copyPath(path: string): void {
 }
 
 function copyPathItem(t: Strings, path: string): ContextMenuItem {
-  return { label: t.menuCopyPath, onSelect: () => copyPath(path) };
+  return {
+    label: t.menuCopyPath,
+    onSelect: () => copyPath(path),
+    Icon: CopyIcon,
+  };
 }
 
 /** Where a file is, for a tab's and the file tree's menus: its path, its
@@ -33,6 +38,7 @@ export function pathItems(
           {
             label: t.menuCopyRelativePath,
             onSelect: () => copyPath(relativePath(folder, path)),
+            Icon: CopyIcon,
           },
         ]
       : []),

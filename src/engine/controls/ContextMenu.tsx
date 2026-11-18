@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  type ComponentType,
   type CSSProperties,
   type RefObject,
 } from "react";
@@ -29,6 +30,9 @@ export interface ContextMenuItem {
   accel?: string;
   /** The whole label on hover, where it is shortened (a recent file). */
   hint?: string;
+  /** The row's mark in a phone's action sheet (the panel ignores it;
+   *  the sheet draws it in a capsule). */
+  Icon?: ComponentType<{ className?: string }>;
 }
 
 /** Items shown beside the row when it is hovered or opened; a group in
