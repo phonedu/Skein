@@ -21,7 +21,8 @@
 .tx-group {
   padding: 2px 16px;
   background: var(--ui-subtle);
-  border: 1px solid color-mix(in srgb, var(--ui-border) 75%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-border) 75%, transparent);
   border-radius: var(--shape-m);
 }
 

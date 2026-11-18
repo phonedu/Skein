@@ -191,3 +191,93 @@ button.settings-phone-ic:active {
     opacity: 0;
   }
 }
+
+/* ---- A page under the list: its sections wear the list's own cards ---- */
+
+/* A caption over a card, as the home's sections read. */
+.settings-phone .settings-content-host > .settings-page-group {
+  margin: 0 0 var(--space-6);
+}
+
+.settings-phone .settings-content-host .settings-page-group-head {
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-4);
+}
+
+.settings-phone .settings-content-host .settings-page-group-title {
+  font-size: var(--text-footnote);
+  letter-spacing: 0.08em;
+}
+
+/* The rows' card: one frame, hairlines between rows inset to the text. */
+.settings-phone .settings-content-host .settings-page-group-body {
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
+  background: var(--ui-surface);
+}
+
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  > .settings-row {
+  position: relative;
+  min-height: 56px;
+  padding: var(--space-1) var(--space-4);
+  border-bottom: 0;
+}
+
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  > .settings-row
+  + .settings-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-4);
+  right: 0;
+  border-top: 1px solid var(--ui-border);
+}
+
+/* The legacy blocks a page still carries - Custom CSS, the theme sections -
+   join the same card language: paper, a hairline, the home's margins. */
+.settings-phone .settings-advanced {
+  margin: var(--space-6) 0 0;
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+}
+
+.settings-phone .settings-advanced > summary {
+  min-height: 56px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-body);
+}
+
+.settings-phone .settings-advanced-body > * {
+  padding-inline: var(--space-4);
+  border-top: 0;
+}
+
+.settings-phone .settings-content-host .settings-group {
+  margin-top: var(--space-6);
+}
+
+.settings-phone .settings-content-host .settings-group-head {
+  margin: 0 0 var(--space-2);
+  padding: 0 var(--space-4);
+}
+
+.settings-phone .settings-content-host .settings-group-title {
+  font-size: var(--text-footnote);
+  letter-spacing: 0.08em;
+}
+
+.settings-phone .settings-content-host .settings-group-body {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+}
+
+.settings-phone .settings-content-host .settings-group-body > .tx-list-note {
+  padding: var(--space-4);
+}

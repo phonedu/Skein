@@ -8,7 +8,8 @@
   gap: 8px;
   margin: 8px 0;
   padding: 8px 8px;
-  border: 1px solid color-mix(in srgb, var(--ui-danger) 30%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-danger) 30%, transparent);
   border-radius: var(--shape-m);
   background: color-mix(in srgb, var(--ui-danger) 7%, transparent);
   font-size: var(--text-body);

@@ -25,7 +25,8 @@
   width: clamp(70px, 25%, 124px);
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--ui-border) 75%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-border) 75%, transparent);
   border-radius: var(--shape-s);
   background: var(--ui-bg);
 }

@@ -218,7 +218,8 @@
   gap: 4px;
   font-size: var(--text-caption);
   color: var(--ui-text);
-  border: 1px solid color-mix(in srgb, var(--ui-accent) 30%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-accent) 30%, transparent);
   border-radius: var(--shape-pill);
   corner-shape: round;
   background: color-mix(in srgb, var(--ui-accent) 12%, transparent);

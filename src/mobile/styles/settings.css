@@ -91,7 +91,8 @@
     margin: 16px 16px 36px;
     padding: 0;
     overflow: hidden;
-    border: 1px solid color-mix(in srgb, var(--ui-border) 75%, transparent);
+    border: 1px solid transparent;
+    border-color: color-mix(in srgb, var(--ui-border) 75%, transparent);
     border-radius: var(--shape-m);
     background: var(--ui-subtle);
   }

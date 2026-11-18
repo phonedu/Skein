@@ -9,7 +9,8 @@
   gap: 12px;
   margin-bottom: 28px;
   padding: 12px;
-  border: 1px solid color-mix(in srgb, var(--ui-border) 75%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-border) 75%, transparent);
   border-radius: var(--shape-m);
 }
 

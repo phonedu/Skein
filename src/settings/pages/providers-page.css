@@ -39,7 +39,8 @@
 }
 .providers-page {
   padding: var(--space-3);
-  border: 1px solid color-mix(in srgb, var(--ui-border) 75%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-border) 75%, transparent);
   border-radius: var(--shape-m);
   background: var(--ui-subtle);
 }

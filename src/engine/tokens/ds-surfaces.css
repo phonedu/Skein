@@ -230,7 +230,8 @@ input[type="checkbox"].ui-check {
   flex-shrink: 0;
   width: var(--check-size);
   height: var(--check-size);
-  border: 1px solid color-mix(in srgb, var(--ui-muted) 55%, var(--ui-border));
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-muted) 55%, var(--ui-border));
   border-radius: var(--shape-xs);
   background: var(--ui-surface);
   cursor: pointer;

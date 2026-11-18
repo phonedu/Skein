@@ -165,7 +165,8 @@
   padding: 4px 12px;
   border-radius: var(--shape-pill);
   corner-shape: round;
-  border: 1px solid color-mix(in srgb, var(--ui-on-primary) 26%, transparent);
+  border: 1px solid transparent;
+  border-color: color-mix(in srgb, var(--ui-on-primary) 26%, transparent);
   background: transparent;
   color: var(--ui-on-primary);
   font-weight: 600;

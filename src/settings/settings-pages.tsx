@@ -8,14 +8,19 @@ import {
 } from "../platform/capabilities";
 import { lucide } from "../engine/controls/icons";
 import {
+  Brain,
+  Cpu,
+  Image,
   Info,
   Keyboard,
+  MessageSquare,
   Palette,
   PenLine,
   Puzzle,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
+  Type,
 } from "lucide-react";
 import type { SettingsPageProps } from "./pages/types";
 
@@ -66,11 +71,13 @@ const BUILT_IN: SettingsPageDef[] = [
     id: "edit-text",
     group: "edit",
     label: (t) => t.navEditText,
+    Icon: lucide(Type, NAV_ICON),
   },
   {
     id: "edit-img",
     group: "edit",
     label: (t) => t.navEditImages,
+    Icon: lucide(Image, NAV_ICON),
   },
   {
     id: "edit-export",
@@ -84,18 +91,21 @@ const BUILT_IN: SettingsPageDef[] = [
     group: "ai",
     available: ai,
     label: (t) => t.navProvidersModels,
+    Icon: lucide(Cpu, NAV_ICON),
   },
   {
     id: "chat",
     group: "ai",
     available: ai,
     label: (t) => t.navChatWriting,
+    Icon: lucide(MessageSquare, NAV_ICON),
   },
   {
     id: "memory",
     group: "ai",
     available: ai,
     label: (t) => t.navMemorySkills,
+    Icon: lucide(Brain, NAV_ICON),
   },
   // MCP servers and external agents run on the desktop only.
   {
