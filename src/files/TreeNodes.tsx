@@ -81,6 +81,7 @@ export const DirNode = memo(function DirNode({
   onFileSelect,
 }: DirNodeProps) {
   const tree = useTree();
+  const filter = tree.filter.trim().toLocaleLowerCase();
   const version = tree.versions[path] ?? 0;
   const listing = `${version}:${tree.stale[path] ?? 0}:${tree.refreshed}`;
   // The root is always open, and so is a folder on the way down to the open
@@ -112,6 +113,10 @@ export const DirNode = memo(function DirNode({
   }, [version, drafting]);
 
   useEffect(() => {
+    if (filter && !open) {
+      setOpen(true);
+      return;
+    }
     if (!open || loaded?.listing === listing) return;
     let cancelled = false;
     fs.listDir(path).then(
@@ -134,7 +139,7 @@ export const DirNode = memo(function DirNode({
     return () => {
       cancelled = true;
     };
-  }, [open, loaded, listing, path]);
+  }, [filter, open, loaded, listing, path]);
   // In the file manager's order for the UI language, not byte order
   // ("第2章" before "第10章"). Folders first.
   const { settings } = useSettings();
@@ -153,6 +158,12 @@ export const DirNode = memo(function DirNode({
           : 0) || compareEntries(collator, a, b),
     );
   }, [loaded, collator, tree.scope, tree.sort, tree.showHidden]);
+  const filtered = filter
+    ? (sorted?.filter(
+        (entry) =>
+          entry.is_dir || entry.name.toLocaleLowerCase().includes(filter),
+      ) ?? null)
+    : sorted;
   // Rows that must be drawn: the open document's, and the way to it.
   const onWay = onTheWay(activePath, tree.reveal);
 
@@ -197,7 +208,7 @@ export const DirNode = memo(function DirNode({
           {isMobileApp && <FolderCount path={path} />}
         </div>
       )}
-      {open && sorted && (
+      {open && filtered && (
         <div className="dir-children" role={depth > 0 ? "group" : "none"}>
           {drafting && loaded && (
             <DraftRow
@@ -213,7 +224,7 @@ export const DirNode = memo(function DirNode({
           )}
           {depth === 0 &&
             !loaded?.failed &&
-            sorted.length === 0 &&
+            filtered.length === 0 &&
             !drafting &&
             tree.newDocument && (
               // Empty: a button that makes the first document.
@@ -229,7 +240,7 @@ export const DirNode = memo(function DirNode({
             )}
           <TreeRowsInSight
             dir={path}
-            entries={sorted}
+            entries={filtered}
             needed={(entry) => onWay(entry.path)}
             row={(entry) =>
               entry.is_dir ? (

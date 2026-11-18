@@ -49,6 +49,8 @@ interface FileTreeProps {
    *  inside it, and the search covers all of it. */
   folder: string | null;
   activePath: string | null;
+  /** A phone-home name filter; empty keeps the normal tree. */
+  filter?: string;
   /** How it opens: a tab of its own unless `how` says to look (a click,
    *  the preview tab) or Open to the Side. */
   onFileSelect: (path: string, how?: FileOpenHow) => void;
@@ -70,6 +72,7 @@ export function FileTree({
   reveal = null,
   folder,
   activePath,
+  filter = "",
   onFileSelect,
   onOpenAsFolder,
   onCloseFolder,
@@ -129,6 +132,7 @@ export function FileTree({
     setDraft,
     root,
     reveal,
+    filter,
   });
 
   const openSortMenu = (e: ReactMouseEvent<HTMLButtonElement>) => {

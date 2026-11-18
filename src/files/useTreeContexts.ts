@@ -30,6 +30,7 @@ export function useTreeContexts(
   const {
     sort,
     scope,
+    filter,
     showHidden,
     versions,
     stale,
@@ -46,6 +47,7 @@ export function useTreeContexts(
     () => ({
       sort,
       scope,
+      filter,
       showHidden,
       versions,
       stale,
@@ -65,6 +67,7 @@ export function useTreeContexts(
     [
       sort,
       scope,
+      filter,
       showHidden,
       versions,
       stale,

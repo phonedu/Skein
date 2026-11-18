@@ -21,6 +21,8 @@ export type TreeSort = "name" | "modified";
 export interface TreeShared {
   sort: TreeSort;
   scope: SearchScope;
+  /** A phone-home name filter; empty keeps every entry. */
+  filter: string;
   /** Hidden files shown too: a dot's, or Windows marked hidden. */
   showHidden: boolean;
   /** Bumped per folder after something was made in it or moved in or out:

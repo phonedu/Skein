@@ -110,6 +110,26 @@ describe("the phone library home", () => {
     expect(screen.getByTestId("phone-file-tree")).toBeTruthy();
   });
 
+  it("lets the phone search field receive text", () => {
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={openFolderProp}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+
+    const input = screen.getByRole("searchbox", {
+      name: en.phoneSearchPlaceholder,
+    });
+    expect(input.hasAttribute("readonly")).toBe(false);
+    fireEvent.change(input, { target: { value: "guide" } });
+    expect((input as HTMLInputElement).value).toBe("guide");
+  });
+
   it("keeps the new-document control connected to the existing callback", () => {
     const onNewFile = vi.fn();
     render(

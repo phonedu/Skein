@@ -38,6 +38,7 @@ export function PhoneHome({
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // The sheet's rows: the current library (ticked), a separator, and the
   // folder picker. Recents are added here once they reach the phone.
@@ -138,7 +139,8 @@ export function PhoneHome({
         </svg>
         <input
           type="search"
-          readOnly
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           aria-label={t.phoneSearchPlaceholder}
           placeholder={t.phoneSearchPlaceholder}
         />
@@ -151,6 +153,7 @@ export function PhoneHome({
             reveal={openFolder.revealed}
             folder={openFolder.folder}
             activePath={activePath}
+            filter={searchQuery}
             onOpenAsFolder={canOpenFolder ? openFolder.openFolder : undefined}
             onFileSelect={onOpenFile}
             onCloseFolder={openFolder.closeFolder}
