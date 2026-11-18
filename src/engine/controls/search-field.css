@@ -14,9 +14,12 @@
 
 /* The ring is drawn on the field, inside its border, not around the bare
    input. */
+/* One ring for every field (the element's style guide, §8): the accent
+   softened into the border, with a feather of light, never a hard second
+   line of the accent. */
 .tx-search:focus-within {
-  border-color: var(--ui-accent);
-  box-shadow: inset 0 0 0 1px var(--ui-accent);
+  border-color: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 12%, transparent);
 }
 
 .tx-search-icon {

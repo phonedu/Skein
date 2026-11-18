@@ -578,3 +578,71 @@ button.settings-phone-ic:active {
   > .settings-row:first-child {
   background-image: none;
 }
+
+/* ---- The spec's rulings on the pages (A–I, 2026-11-18) ---- */
+
+/* B: a page whose first section is named after the page says it twice;
+   the card can start at the top instead. */
+:root[data-window-chrome="mobile"]
+  .settings-content-host[data-settings-page="look-basic"]
+  > .settings-page-group:first-child
+  > .settings-page-group-head,
+:root[data-window-chrome="mobile"]
+  .settings-content-host[data-settings-page="edit-img"]
+  > .settings-page-group:first-child
+  > .settings-page-group-head {
+  display: none;
+}
+
+/* D: a search result wears its page's mark, as the list's rows do. The
+   row's first-child rule must not stretch the chip (it carries more
+   pseudo-classes than this one, so this names the chip as the row's own
+   first child). */
+:root[data-window-chrome="mobile"]
+  .settings-phone
+  .settings-search-result
+  > .settings-search-ic:first-child {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-text) 6%, transparent);
+  color: var(--ui-muted);
+  --icon-scale: 1.2;
+}
+
+/* The result row is the icon and the words, one line, from the left. */
+.settings-phone .settings-search-result {
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.settings-phone .settings-search-result > .settings-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+/* I: the chosen provider is the list's selection, not its own grey. */
+.settings-phone .providers-item[aria-current="true"] {
+  background: var(--ui-selected);
+}
+
+/* F: the provider's details: the switch between sign-in and a key spans
+   its card, and the sign-in is a value-shaped action, not a heading. */
+.settings-phone .providers-detail .tx-segmented {
+  width: 100%;
+}
+
+.settings-phone .providers-detail .settings-inline-button {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-pill);
+  color: var(--ui-text);
+  font-size: var(--text-secondary);
+}

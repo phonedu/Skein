@@ -19,6 +19,7 @@ import {
   type SearchMatch,
 } from "./settings-search";
 import { isImeKeydown } from "../utils/ime";
+import { settingsPages } from "./settings-pages";
 
 // The Settings search box and the results that stand in for the page while
 // it holds a query. A combobox: ↑/↓ move, Enter goes to the row, Esc clears.
@@ -186,6 +187,12 @@ export function SettingsSearchResults({
   useEffect(() => {
     if (empty) announce(t.settingsSearchNoMatches);
   }, [empty, t.settingsSearchNoMatches]);
+  // Each group is a page: its mark is the list's (the style guide's D).
+  const icons = new Map(
+    settingsPages().flatMap((page) =>
+      page.Icon ? [[page.id, page.Icon]] : [],
+    ),
+  );
   let index = 0;
   return (
     <>
@@ -224,6 +231,15 @@ export function SettingsSearchResults({
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => onPick(match)}
                     >
+                      {icons.has(entry.page) &&
+                        (() => {
+                          const Icon = icons.get(entry.page)!;
+                          return (
+                            <span className="settings-search-ic" aria-hidden>
+                              <Icon />
+                            </span>
+                          );
+                        })()}
                       <div className="settings-row-text">
                         <div className="settings-row-label">{entry.label}</div>
                         {context && (

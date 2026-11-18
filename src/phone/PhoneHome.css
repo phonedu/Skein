@@ -302,6 +302,8 @@
 
 .phone-home .tree-row .tree-label {
   font-size: var(--text-body);
+  /* A name cut short ends a breath before the date, not against it. */
+  padding-right: var(--space-1);
 }
 
 /* The board marks the open document with the dot alone: the selection
@@ -431,7 +433,7 @@
 .phone-home .tree-empty-hint {
   margin-top: var(--space-2);
   max-width: 280px;
-  font-size: var(--text-body);
+  font-size: var(--text-secondary);
   line-height: 1.6;
   color: var(--phone-muted);
 }
@@ -505,7 +507,7 @@
 .ph-empty-hint {
   margin-top: var(--space-2);
   max-width: 280px;
-  font-size: var(--text-body);
+  font-size: var(--text-secondary);
   line-height: 1.6;
   color: var(--phone-muted);
 }

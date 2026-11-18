@@ -461,6 +461,9 @@
 :root[data-window-chrome="mobile"] .notice-stack {
   width: auto;
   max-width: calc(100vw - 2 * var(--space-6));
+  /* Over a sheet: a word about what was just tapped is no use behind it
+     (the style guide's ruling H). */
+  z-index: calc(var(--z-sheet) + 1);
 }
 
 :root[data-window-chrome="mobile"] .notice {
@@ -476,4 +479,40 @@
   flex: none;
   justify-content: center;
   text-align: center;
+}
+
+/* The find bar's field takes the same ring as every other trough. */
+:root[data-window-chrome="mobile"] .find-replace-field:focus-within {
+  border-color: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 12%, transparent);
+}
+
+/* The AI page's own words and call, in the style guide's terms: the
+   explanation at reading size, and the sign-in as the screen's one fire
+   action. */
+:root[data-window-chrome="mobile"]
+  .agent-panel-sign-in
+  .agent-panel-empty-text {
+  font-size: var(--text-secondary);
+}
+
+:root[data-window-chrome="mobile"] .agent-panel-body .agent-panel-sign-in-cta {
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
+  color: var(--ui-bg);
+}
+
+/* Send, once there are words: the composer's own fire action (the palette's
+   paper on its accent, as the library's + draws it). */
+:root[data-window-chrome="mobile"]
+  .agent-panel-body
+  .inline-chat-send:not(:disabled) {
+  border-color: var(--ui-accent);
+  background: var(--ui-accent);
+  color: var(--ui-bg);
+}
+
+/* The signed-in empty state's line reads at the same size as the sign-in's. */
+:root[data-window-chrome="mobile"] .agent-panel-body .agent-panel-empty-text {
+  font-size: var(--text-secondary);
 }
