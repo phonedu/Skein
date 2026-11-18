@@ -20,6 +20,7 @@ import {
 } from "./settings-search";
 import { isImeKeydown } from "../utils/ime";
 import { settingsPages } from "./settings-pages";
+import "./settings-search.css";
 
 // The Settings search box and the results that stand in for the page while
 // it holds a query. A combobox: ↑/↓ move, Enter goes to the row, Esc clears.
