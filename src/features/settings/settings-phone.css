@@ -538,12 +538,15 @@ button.settings-phone-ic:active {
 
 /* Results replace the list, outside the page host: their groups take the
    same captions, cards and inset hairlines by their own names. */
-.settings-phone .settings-phone-body > .settings-group {
+/* Between the search field and the first caption, and between one card and
+   the next caption, the same breath (a wrapper div sits between the body
+   and the sections, so this is not a direct-child rule; the root prefix
+   outranks the mobile sheet's own 28px between-group step). */
+:root[data-window-chrome="mobile"]
+  .settings-phone
+  .settings-phone-body
+  .settings-group {
   margin-top: var(--space-4);
-}
-
-.settings-phone .settings-phone-body > .settings-group:first-of-type {
-  margin-top: var(--space-2);
 }
 
 .settings-phone .settings-phone-body .settings-group-title {
