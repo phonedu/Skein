@@ -18,6 +18,13 @@
   animation: motion-fade-in var(--dur-base) var(--ease-standard);
 }
 
+/* On a phone the sheet sits over a FAB in a saturated accent (the home's
+   "new" button); a 30%-day veil leaks that colour. The stronger veil,
+   also used behind a picture, covers it without changing a dialog's. */
+:root[data-window-chrome="mobile"] .sheet-scrim::before {
+  background: var(--ui-overlay-strong);
+}
+
 .sheet {
   position: relative;
   animation: motion-sheet-in var(--dur-sheet) var(--ease-spring);
