@@ -239,6 +239,10 @@ export const EditorPane = memo(function EditorPane({
       onPointerDownCapture={
         isMobileApp
           ? (e) => {
+              // Portalled overlays (a sheet, a menu) reach this handler
+              // through the component tree although they sit outside the
+              // scroller: only a press on the editor's own paper is ours.
+              if (!e.currentTarget.contains(e.target as Node)) return;
               const target = e.target as HTMLElement;
               const prose = target.closest(
                 ".milkdown .ProseMirror",
