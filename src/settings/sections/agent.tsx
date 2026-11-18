@@ -5,16 +5,17 @@ import {
   formatContext,
   modelInfo,
   orderForPicker,
-  readFetchedModels,
+  useFetchedModels,
   writeFetchedModels,
 } from "../../ai/model-info";
 import { useCallback, useEffect, useState } from "react";
 import { useSettings } from "../../prefs/SettingsContext";
 import { localeOf, type Strings } from "../../i18n/strings";
-import { SIGN_IN_MODELS, type SignInModels } from "../agent-models";
+import { SIGN_IN_MODELS, type SignInModels } from "../../ai/sign-in-models";
 import { useProviderCatalog } from "../../ai/provider-catalog";
+import { useSignedIn } from "../../ai/provider-connection";
 import { writingProviderOf } from "../../prefs/settings-types";
-import { ai, auth } from "../../platform/ipc";
+import { ai } from "../../platform/ipc";
 import { Select } from "../../engine/controls/Select";
 import { SettingRow, VERBATIM_INPUT } from "./controls";
 import { explainError } from "../../utils/error-explain";
@@ -23,47 +24,18 @@ import { explainError } from "../../utils/error-explain";
 // writing instructions, skills and config folder. Those are files, so these
 // rows open them rather than embedding editors.
 
-/** Fired after a model list is fetched, so both pickers (writing and
- *  chat) pick up the new list from the cache at once. */
-const MODELS_FETCHED_EVENT = "textus-models-fetched";
-
 /** The provider's sign-in models while that sign-in is the active login: its
  *  token can't list models and only accepts its own presets. Null otherwise. */
 function useSignInModels(provider: string): SignInModels | null {
-  const models = SIGN_IN_MODELS[provider] ?? null;
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    if (!models) {
-      setActive(false);
-      return;
-    }
-    auth
-      .oauthStatus(provider)
-      .then((s) => {
-        if (!cancelled) setActive(s.configured);
-      })
-      .catch(() => {
-        if (!cancelled) setActive(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [provider, models]);
-  return active && models ? models : null;
+  const active = useSignedIn(provider);
+  return active ? (SIGN_IN_MODELS[provider] ?? null) : null;
 }
 
-/** The last list fetched for `provider`, remembered across restarts and
- *  refreshed whenever ModelListRow fetches a new one. */
-function useFetchedModels(provider: string) {
-  const [cached, setCached] = useState(() => readFetchedModels(provider));
-  useEffect(() => {
-    const reload = () => setCached(readFetchedModels(provider));
-    reload();
-    window.addEventListener(MODELS_FETCHED_EVENT, reload);
-    return () => window.removeEventListener(MODELS_FETCHED_EVENT, reload);
-  }, [provider]);
-  return { models: cached?.models ?? [], at: cached?.at ?? null };
+/** Whether a provider's model list is fetched here: not the custom
+ *  endpoint's (its panel lists them) nor a sign-in's fixed models. */
+export function useModelListShown(provider: string): boolean {
+  const signIn = useSignInModels(provider);
+  return provider !== "custom" && !signIn;
 }
 
 /// Model picker for writing (completion and grammar) or the chat. Seeded
@@ -226,15 +198,14 @@ export function ModelListRow({
 }) {
   const { settings } = useSettings();
   const provider = given ?? settings.aiProvider;
-  const signIn = useSignInModels(provider);
+  const shown = useModelListShown(provider);
   const { at } = useFetchedModels(provider);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   // A failed fetch belongs to the provider it was tried against.
   useEffect(() => setError(null), [provider]);
 
-  const canFetch = provider !== "custom" && !signIn;
-  if (!canFetch) return null;
+  if (!shown) return null;
 
   async function fetchModels() {
     setLoading(true);
@@ -242,7 +213,6 @@ export function ModelListRow({
     try {
       const list = await ai.fetchAgentModels(provider);
       writeFetchedModels(provider, list);
-      window.dispatchEvent(new Event(MODELS_FETCHED_EVENT));
     } catch (err) {
       setError(explainError(err, t));
     } finally {
@@ -332,7 +302,7 @@ export function AgentWorkspaceRootSection({ t }: { t: Strings }) {
             className="text-button settings-inline-button"
             onClick={() => setSettings({ agentWorkspaceRoot: "" })}
           >
-            {t.projectNoFolder}
+            {t.projectFollowSidebar}
           </button>
         )}
         <button

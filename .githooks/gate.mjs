@@ -126,6 +126,9 @@ const CONFIG = {
     "docs/releases/1.4.0.md",
     "docs/releases/1.4.1.md",
     "docs/releases/1.4.2.md",
+    "docs/releases/1.4.3.md",
+    "docs/releases/1.4.4.md",
+    "docs/releases/1.4.5.md",
   ],
   // Paths that draw a warning, not a failure: a real CI change going
   // upstream would fail to push anyway (the fork's token has no workflow

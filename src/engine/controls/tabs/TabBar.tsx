@@ -1,13 +1,15 @@
 import { listMove } from "../list-keys";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { Tooltip } from "../Tooltip";
 import { ContextMenu, type ContextMenuEntry } from "../ContextMenu";
 import { Presence } from "../../motion/usePresence";
-import { scrollBehavior } from "../../motion/motion";
 import { TabPill, type TabInfo } from "./TabPill";
 import { TabListButton, useTabFit } from "./TabList";
 import { INCOMING, useTabStrip } from "./useTabStrip";
-import type { Slot } from "./tab-strip";
+import { useTabSwipe } from "./useTabSwipe";
+import { stripSlots } from "./tab-strip";
+import { useRevealTab } from "./useRevealTab";
+import { isMobileApp } from "../../../platform/capabilities";
 
 interface TabBarProps {
   tabs: TabInfo[];
@@ -76,11 +78,16 @@ export function TabBar({
   } | null>(null);
 
   const ids = tabs.map((tab) => tab.id);
+  const shapes = tabs.map((tab) => ({
+    ...tab,
+    open: tab.id === activeTabId,
+  }));
   const fit = useTabFit(
     barRef,
     previewTab
-      ? [...tabs, { title: previewTab.title, dirty: previewTab.dirty }]
-      : tabs,
+      ? [...shapes, { title: previewTab.title, dirty: previewTab.dirty }]
+      : shapes,
+    isMobileApp,
   );
   // One tab too long for its row is cut short, not listed: a list of one
   // tells nothing.
@@ -94,18 +101,22 @@ export function TabBar({
     incomingX: previewTab?.x ?? null,
   });
 
+  useTabSwipe(barRef, ids, activeTabId, onActivate);
+
   // The open tab in view as it changes, and as the row narrows.
   const { x: slotX, w: slotW } = strip.slotOf(activeTabId) ?? {};
   const shownLength = fit && fit.available - (overflow ? fit.list : 0);
-  const smooth = useRef<string | null>(null);
-  useEffect(() => {
-    const bar = barRef.current;
-    if (!bar || slotX === undefined || slotW === undefined) return;
-    if (shownLength === null) return;
-    const slot = { x: slotX, w: slotW };
-    reveal(bar, slot, shownLength, smooth.current !== activeTabId);
-    smooth.current = activeTabId;
-  }, [activeTabId, slotX, slotW, shownLength]);
+  // What the reveal reads when the row resizes: the tab's place and the
+  // row's room as last laid out, not as they were when it began watching.
+  const slots = isMobileApp && fit ? stripSlots(fit.widths, fit.between) : [];
+  const last = slots[slots.length - 1];
+  useRevealTab(barRef, stripEl, activeTabId, {
+    slotX,
+    slotW,
+    shownLength,
+    edges: slots.length ? slots.map((slot) => slot.x) : null,
+    end: last ? last.x + last.w : 0,
+  });
 
   const pillOf = (id: string) =>
     stripEl.current?.querySelector<HTMLElement>(
@@ -205,7 +216,11 @@ export function TabBar({
           className="tab-bar-add"
           tabIndex={-1}
           aria-hidden="true"
-          onClick={onAdd}
+          onClick={(e) => {
+            // Not left holding the focus a tap gave it: Enter would add more.
+            e.currentTarget.blur();
+            onAdd();
+          }}
         >
           +
         </button>
@@ -220,19 +235,4 @@ export function TabBar({
       )}
     </div>
   );
-}
-
-/**
- * Scrolls the row alone (never the page) to bring `slot` into the part of
- * it that shows, `shown` long from where it is scrolled to.
- */
-function reveal(bar: HTMLElement, slot: Slot, shown: number, smooth: boolean) {
-  // Room either side of it, as much as there is.
-  const margin = Math.max(0, Math.min(12, (shown - slot.w) / 2));
-  const from = bar.scrollLeft;
-  const behavior = smooth ? scrollBehavior() : "auto";
-  if (slot.x < from + margin)
-    bar.scrollTo({ left: Math.max(0, slot.x - margin), behavior });
-  else if (slot.x + slot.w > from + shown - margin)
-    bar.scrollTo({ left: slot.x + slot.w - shown + margin, behavior });
 }

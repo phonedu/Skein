@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
+import { androidBridge } from "../platform/android-bridge";
+import { drafts } from "../platform/ipc";
 import { tabIsDirty, type DocTab, type HelpDoc } from "./doc-tabs";
 import type { PluginTabView } from "../plugins/app-bridge";
+import { writeTabOrder } from "./tab-order";
 
 /**
  * What a window has open, kept in its sessionStorage: a reload of the page
@@ -70,7 +73,13 @@ export function keptTabs(
   };
 }
 
-function store(): Storage | null {
+/** Android may make the page anew without a reload (a font or display
+ *  size changed), with an empty sessionStorage: the app's process keeps the
+ *  tabs instead, asked through its own commands (not the Android bridge,
+ *  which a web page opened in the app sees too). */
+const processKeeps = () => androidBridge() !== null;
+
+function session(): Storage | null {
   try {
     return window.sessionStorage;
   } catch {
@@ -81,7 +90,16 @@ function store(): Storage | null {
 /** Writes the tabs down; past the storage's quota, without their text,
  *  so at least the documents come back. */
 export function writeKeptTabs(kept: KeptTabs): void {
-  const storage = store();
+  writeKept(kept);
+  writeTabOrder(kept.tabs, kept.active);
+}
+
+function writeKept(kept: KeptTabs): void {
+  if (processKeeps()) {
+    void drafts.keepPageTabs(JSON.stringify(kept)).catch(() => {});
+    return;
+  }
+  const storage = session();
   if (!storage) return;
   try {
     storage.setItem(KEY, JSON.stringify(kept));
@@ -101,9 +119,11 @@ export function writeKeptTabs(kept: KeptTabs): void {
 }
 
 /** The tabs this page had before it was reloaded, or null for a new one. */
-export function readKeptTabs(): KeptTabs | null {
+export async function readKeptTabs(): Promise<KeptTabs | null> {
   try {
-    const raw = store()?.getItem(KEY);
+    const raw = processKeeps()
+      ? await drafts.keptPageTabs()
+      : session()?.getItem(KEY);
     if (!raw) return null;
     const kept = JSON.parse(raw) as KeptTabs;
     return Array.isArray(kept.tabs) && kept.tabs.length > 0 ? kept : null;
@@ -154,6 +174,17 @@ export function useKeepTabs(
     }, WRITE_MS);
     return () => clearTimeout(timer);
   }, [tabs, activeTabId, withText]);
+
+  // Written once the restore is done, too: a page reloaded before any tab
+  // changed would otherwise find nothing kept.
+  useEffect(
+    () =>
+      afterStartupRestore(() => {
+        const now = latest.current;
+        writeKeptTabs(keptTabs(now.liveTabs(), now.activeTabId, now.withText));
+      }),
+    [],
+  );
 
   useEffect(() => {
     const write = () => {

@@ -3,7 +3,6 @@ import {
   setPanelWidth,
   usePanelWidth,
 } from "../../../engine/frame/panel-width";
-import { chromeScale } from "../../../engine/tokens/chrome-scale";
 import {
   createContext,
   useCallback,
@@ -14,14 +13,11 @@ import {
   type ReactNode,
 } from "react";
 import { getUiState, setUiState } from "../../../storage/ui-state";
-import {
-  clampSidePanel,
-  sidePanelMax,
-  sidePanelMin,
-} from "../../../engine/controls/side-panel-width";
+import { useSidePanelWidth } from "../../../engine/controls/side-panel-width";
 import type { AgentPanelTab } from "./AgentPanelView";
 import "./agent-panel.css";
 import "../inline-chat.css";
+import { createSubscribers } from "../../../utils/store";
 
 /**
  * The docked Agent panel's frame: open, width and tab. The window's
@@ -55,12 +51,9 @@ const LIMITS = { min: AGENT_PANEL_MIN_WIDTH, max: AGENT_PANEL_MAX_WIDTH };
 
 // Whether the panel is open: one value, read by the frame and the panel.
 let openNow: boolean | null = null;
-const openListeners = new Set<() => void>();
+const subscribers = createSubscribers();
 const openSnapshot = () => (openNow ??= getUiState("agentPanelOpen") === true);
-const onOpenChange = (listener: () => void) => {
-  openListeners.add(listener);
-  return () => openListeners.delete(listener);
-};
+const onOpenChange = subscribers.subscribe;
 
 /** Whether the docked panel is open. */
 function useAgentPanelOpen(): boolean {
@@ -75,14 +68,13 @@ export function useAgentPanelState(windowWidth: number, beside: number) {
   // Only an iPad's or iPhone's docked panel is drawn at it; on the desktop
   // the AI is an island, which the islands' area sizes itself.
   const chosen = usePanelWidth(isIOSApp);
-  // Kept in the interface's size units, shown at its size now.
-  const scale = chromeScale();
-  const width = clampSidePanel(
-    chosen * scale,
+  // Kept in the interface's size units, shown at its size now; the islands
+  // beside it keep their room, as beside the sidebar.
+  const { width, min, max, toBase } = useSidePanelWidth(
+    chosen,
     windowWidth,
     LIMITS,
     beside,
-    scale,
   );
   const [tab, setTab] = useState<AgentPanelTab>("chat");
   const setOpen = useCallback(
@@ -90,7 +82,7 @@ export function useAgentPanelState(windowWidth: number, beside: number) {
       setUiState("agentPanelOpen", next);
       if (openNow !== next) {
         openNow = next;
-        for (const listener of openListeners) listener();
+        subscribers.publish();
       }
       // Whatever opens the panel - the shortcut, Ask AI, a restored chat,
       // "ask about this note" - wants the conversation.
@@ -100,19 +92,10 @@ export function useAgentPanelState(windowWidth: number, beside: number) {
   );
   // Remembered once a drag lets go, not on every frame of it.
   const setWidth = useCallback(
-    (next: number, persist = true) => {
-      const step = chromeScale();
-      const base = Math.round(
-        clampSidePanel(next, windowWidth, LIMITS, beside, step) / step,
-      );
-      setPanelWidth(base, persist);
-    },
-    [windowWidth, beside],
+    (next: number, persist = true) => setPanelWidth(toBase(next), persist),
+    [toBase],
   );
   const toggle = useCallback(() => setOpen(!open), [open, setOpen]);
-  // How far it may be dragged here, for its handle's keys and readers.
-  const min = Math.round(sidePanelMin(windowWidth, LIMITS, beside, scale));
-  const max = Math.round(sidePanelMax(windowWidth, LIMITS, beside, scale));
   return { open, setOpen, toggle, width, min, max, setWidth, tab, setTab };
 }
 

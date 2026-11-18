@@ -1,4 +1,5 @@
 import { splitHere } from "./split-here";
+import type { FormatBarSide } from "../../prefs/settings-values";
 import { PLUGIN_SETTINGS } from "../../registry/menu/plugin-menu";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useSyncExternalStore } from "react";
@@ -10,6 +11,7 @@ import {
   OPEN_AGENT_PANEL_EVENT,
   TRACK_CHANGES_EVENT,
   SHOW_SIDEBAR_TAB_EVENT,
+  sendAppEvent,
 } from "../../utils/events";
 import { menuIpc, windowIpc } from "../../platform/ipc";
 import { editInFocus } from "../../engine/controls/edit-in-focus";
@@ -36,6 +38,7 @@ import type { PandocSettings } from "../../export/pandoc-options";
 import type { DiagramEngine, Shortcuts } from "../../prefs/SettingsContext";
 import { closeSplit } from "../../engine/layout/store";
 import { pickIsland } from "../../engine/layout/island-numbers";
+import { afterComposition } from "../../utils/ime";
 import { islandKeyOf } from "./island-key";
 import { APP_ACTIONS, type AppActionHandlers } from "./app-actions";
 import { copyPath } from "../../clipboard/copy-path";
@@ -59,7 +62,8 @@ interface MenuBridgeHandlers extends AppActionHandlers {
   onCheckUpdates: () => void;
   /** Settings › Extensions › Plugins, at plugin `id`'s page if given. */
   onOpenPluginSettings: (id?: string) => void;
-  onToggleFormatBar: () => void;
+  /** View › Format Bar: put on an edge, or hidden (null). */
+  onFormatBar: (side: FormatBarSide | null) => void;
   /** Opens the sidebar on the tab with this id. */
   showSidebarTab: (id: string) => void;
   /** Opens Textus AI's panel; left open if it is. */
@@ -97,6 +101,18 @@ const exporters = lazyModule(
   "exporters",
   () => import("../../export/exporters"),
 );
+const pluginExport = lazyModule(
+  "plugin-export",
+  () => import("../../export/plugin-export"),
+);
+
+/** View › Format Bar's items: an edge, or hidden. */
+const FORMAT_BAR_PICKS: (FormatBarSide | null)[] = [
+  "top",
+  "left",
+  "right",
+  null,
+];
 
 /** Subscribes the frontend's handlers to the menu events from Rust. */
 export function useMenuBridge(handlers: MenuBridgeHandlers): void {
@@ -177,6 +193,14 @@ export function useMenuBridge(handlers: MenuBridgeHandlers): void {
         const tab = activeTabNow();
         if (tab) void exporters.load().then((m) => m.exportHtml(tab, h().t));
       }),
+      // Payload is the format's key, `<plugin id>#<format id>`.
+      listenToThisWindow<string>("menu-export-plugin", (event) => {
+        const tab = activeTabNow();
+        if (tab)
+          void pluginExport
+            .load()
+            .then((m) => m.exportViaPlugin(tab, event.payload, h().t));
+      }),
       // Payload is the pandoc writer name (docx, epub, ...) from the menu id.
       listenToThisWindow<string>("menu-export-pandoc", (event) => {
         const tab = activeTabNow();
@@ -193,13 +217,13 @@ export function useMenuBridge(handlers: MenuBridgeHandlers): void {
               ),
             );
       }),
-      listenToThisWindow("menu-toggle-format-bar", () =>
-        h().onToggleFormatBar(),
+      ...FORMAT_BAR_PICKS.map((side) =>
+        listenToThisWindow(`menu-format-bar-${side ?? "hidden"}`, () =>
+          h().onFormatBar(side),
+        ),
       ),
       listenToThisWindow("menu-track-changes", () =>
-        window.dispatchEvent(
-          new CustomEvent(TRACK_CHANGES_EVENT, { detail: "toggle" }),
-        ),
+        sendAppEvent(TRACK_CHANGES_EVENT, "toggle"),
       ),
       listenToThisWindow(OPEN_AGENT_PANEL_EVENT, () => h().onOpenAgentPanel()),
       listenToThisWindow("menu-toggle-read-only", () => h().onToggleReadOnly()),
@@ -213,23 +237,17 @@ export function useMenuBridge(handlers: MenuBridgeHandlers): void {
       listenToThisWindow("menu-undo", () => editInFocus("undo")),
       listenToThisWindow("menu-redo", () => editInFocus("redo")),
       listenToThisWindow("menu-copy-as-plain-text", () =>
-        window.dispatchEvent(
-          new CustomEvent(EDIT_ACTION_EVENT, { detail: "copy-as-plain-text" }),
-        ),
+        sendAppEvent(EDIT_ACTION_EVENT, "copy-as-plain-text"),
       ),
       listenToThisWindow("menu-paste-as-plain-text", () =>
-        window.dispatchEvent(
-          new CustomEvent(EDIT_ACTION_EVENT, { detail: "paste-as-plain-text" }),
-        ),
+        sendAppEvent(EDIT_ACTION_EVENT, "paste-as-plain-text"),
       ),
       listenToThisWindow("menu-replace", () =>
-        window.dispatchEvent(new CustomEvent(SHOW_REPLACE_EVENT)),
+        sendAppEvent(SHOW_REPLACE_EVENT),
       ),
-      listenToThisWindow("menu-find-next", () =>
-        window.dispatchEvent(new CustomEvent(FIND_NEXT_EVENT)),
-      ),
+      listenToThisWindow("menu-find-next", () => sendAppEvent(FIND_NEXT_EVENT)),
       listenToThisWindow("menu-insert-link", () =>
-        window.dispatchEvent(new CustomEvent(INSERT_LINK_EVENT)),
+        sendAppEvent(INSERT_LINK_EVENT),
       ),
       listenToThisWindow("menu-close-tab", () =>
         h().requestCloseTab(h().activeTabId),
@@ -241,14 +259,10 @@ export function useMenuBridge(handlers: MenuBridgeHandlers): void {
         // numbers up, the heading it sends is that island's key.
         const island = islandKeyOf(event.payload, h().shortcuts);
         if (island && pickIsland(island)) return;
-        window.dispatchEvent(
-          new CustomEvent(INSERT_BLOCK_EVENT, { detail: event.payload }),
-        );
+        afterComposition(() => sendAppEvent(INSERT_BLOCK_EVENT, event.payload));
       }),
       listenToThisWindow<string>("menu-toggle-mark", (event) => {
-        window.dispatchEvent(
-          new CustomEvent(TOGGLE_MARK_EVENT, { detail: event.payload }),
-        );
+        sendAppEvent(TOGGLE_MARK_EVENT, event.payload);
       }),
       listenToThisWindow("menu-help-community", () => h().openCommunity()),
       listenToThisWindow("menu-help-tutorials", () => h().openTutorials()),

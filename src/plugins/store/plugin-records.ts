@@ -3,8 +3,10 @@ import { matchesWords } from "../../utils/match-words";
 import type { Strings } from "../../i18n/strings";
 import type { Shortcuts } from "../../prefs/SettingsContext";
 import type { PluginOrigin } from "./files";
-import { localize, type Permission, type PluginManifest } from "./manifest";
+import { localize, type Permission } from "./manifest";
+import { type PluginManifest } from "./manifest-types";
 import { canRun, type PluginStatus } from "./lifecycle";
+import { createSubscribers } from "../../utils/store";
 
 /**
  * The plugins as the window draws them: one record per plugin, published to
@@ -31,7 +33,7 @@ export interface PluginsSnapshot {
 }
 
 let snapshot: PluginsSnapshot = { loaded: false, allOn: true, records: [] };
-const listeners = new Set<() => void>();
+const subscribers = createSubscribers();
 
 /** What the window tells the manager about itself. */
 interface WindowInfo {
@@ -68,7 +70,7 @@ export function windowInfo(): WindowInfo {
 
 export function publish(next: Partial<PluginsSnapshot>) {
   snapshot = { ...snapshot, ...next };
-  for (const listener of listeners) listener();
+  subscribers.publish();
 }
 
 export function update(id: string, change: Partial<PluginRecord>) {
@@ -79,10 +81,7 @@ export function update(id: string, change: Partial<PluginRecord>) {
   });
 }
 
-export function subscribePlugins(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribePlugins = subscribers.subscribe;
 
 /** The plugins running now - each on, every plugin switched on - with
  *  their manifests: what every contribution is read from. */

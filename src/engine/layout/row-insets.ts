@@ -1,8 +1,10 @@
 import { tokenPx } from "../tokens/token-px";
+import { createSubscribers } from "../../utils/store";
 import { shownIsland } from "./store";
 import { onAppearance } from "../tokens/appearance";
 import { useSyncExternalStore } from "react";
 import { scaledPx } from "../tokens/chrome-scale";
+import { isMobileApp } from "../../platform/capabilities";
 import { setStripOrigins } from "../controls/tabs/tab-strips";
 import {
   frameLayout,
@@ -15,6 +17,11 @@ const AIR = 8;
 /** Bare bar kept before the window's own controls, however many tabs:
  *  somewhere to grab the window by. */
 const GRIP = 62;
+
+/** The grip kept now: none on a phone or tablet, with no window to grab. */
+export function barGrip(): number {
+  return isMobileApp ? 0 : scaledPx(GRIP);
+}
 /** Room a row keeps for its tabs before any grip: one tab at its least
  *  (TabBar.css) and the row's + and list. */
 const ROOM = 132;
@@ -116,8 +123,11 @@ function measure(): BarObstacles {
 }
 
 let obstacles: BarObstacles | null = null;
-const listeners = new Set<() => void>();
-let stopWatching: (() => void) | null = null;
+const subscribers = createSubscribers(() => {
+  const stop = watch();
+  remeasure();
+  return stop;
+});
 
 /** Room between the bar's leading controls and the sidebar's name. */
 const TITLE_GAP = 16;
@@ -136,7 +146,7 @@ function remeasure() {
     "--bar-lead-clear",
     leadClearLength(next.leadEnd, scaledPx(TITLE_GAP)),
   );
-  for (const listener of listeners) listener();
+  subscribers.publish();
 }
 
 /** Measured again as the window, its bar's controls or the interface's
@@ -171,20 +181,7 @@ function watch(): () => void {
   };
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  if (!stopWatching) {
-    stopWatching = watch();
-    remeasure();
-  }
-  return () => {
-    listeners.delete(listener);
-    if (!listeners.size) {
-      stopWatching?.();
-      stopWatching = null;
-    }
-  };
-}
+const subscribe = subscribers.subscribe;
 
 const snapshot = () => obstacles;
 
@@ -222,7 +219,7 @@ function insetsFor(
     inBar ? statusStart : Infinity,
     air,
     Math.max(air, bar.corner),
-    scaledPx(GRIP),
+    barGrip(),
     scaledPx(ROOM),
   );
   const shown = island ? shownIsland(island.paneId) : null;

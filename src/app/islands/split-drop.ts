@@ -5,7 +5,7 @@ import {
   setSplitLayout,
   windowLayout,
   placeOnArrival,
-  ifRoom,
+  withRoom,
 } from "../../engine/layout/store";
 import { moveTab, splitOff, type SplitLayout } from "../../engine/layout/ops";
 import { paneById, paneWithTab } from "../../engine/layout/tree";
@@ -18,6 +18,8 @@ import {
 } from "../../engine/layout/drop-zones";
 import "./split-drop.css";
 import { transientStyle } from "../../engine/tokens/appearance";
+import type { NoRoom } from "../../engine/frame/frame-store";
+import { sayNoRoom } from "../menu/split-here";
 
 /**
  * The layout once `tabId` is dropped at `target`: on an island's edge, in a
@@ -25,25 +27,39 @@ import { transientStyle } from "../../engine/tokens/appearance";
  * them); in its middle, in that island. Undefined: the drop changes
  * nothing.
  */
-export function dropLayout(
+function dropLayout(
   now: SplitLayout,
   tabId: string,
   target: DropTarget,
 ): SplitLayout | null | undefined {
-  if (target.whole && target.zone !== "center")
-    return ifRoom(splitOff(now, tabId, null, target.zone)) ?? undefined;
+  return dropPlan(now, tabId, target).next;
+}
+
+/** dropLayout, and whether an edge's new island was refused for want of
+ *  room (withRoom): said when the tab is let go. */
+export function dropPlan(
+  now: SplitLayout,
+  tabId: string,
+  target: DropTarget,
+): { next: SplitLayout | null | undefined; noRoom: NoRoom } {
+  const none = { next: undefined, noRoom: false as const };
+  if (target.whole && target.zone !== "center") {
+    const { next, noRoom } = withRoom(splitOff(now, tabId, null, target.zone));
+    // No room beside them all: as on the edge of the island under it.
+    if (noRoom) return dropPlan(now, tabId, { ...target, whole: false });
+    return { next: next ?? undefined, noRoom };
+  }
   const pane = paneOf(now, target.tabId);
-  if (pane === null) return undefined;
+  if (pane === null) return none;
   const others = paneById(now.root, pane)?.tabs.some((id) => id !== tabId);
-  if (target.zone === "center")
-    return pane === paneOf(now, tabId) ? undefined : moveTab(now, tabId, pane);
+  const join =
+    pane === paneOf(now, tabId) ? undefined : moveTab(now, tabId, pane);
+  if (target.zone === "center") return { next: join, noRoom: false };
   // An island's only tab dropped on its own edge stays where it is.
-  if (!others) return undefined;
+  if (!others) return none;
   // No room for another island: it joins this one instead.
-  return (
-    ifRoom(splitOff(now, tabId, pane, target.zone)) ??
-    (pane === paneOf(now, tabId) ? undefined : moveTab(now, tabId, pane))
-  );
+  const { next, noRoom } = withRoom(splitOff(now, tabId, pane, target.zone));
+  return { next: next ?? join, noRoom };
 }
 
 /** Commits a layout dropLayout gave. */
@@ -61,8 +77,16 @@ export function splitForDrop(
   arriving = false,
 ): void {
   if (arriving)
-    placeOnArrival(tabId, (now) => dropLayout(now, tabId, target) ?? now);
-  else commitDrop(dropLayout(windowLayout(), tabId, target));
+    placeOnArrival(tabId, (now) => {
+      const { next, noRoom } = dropPlan(now, tabId, target);
+      sayNoRoom(noRoom);
+      return next ?? now;
+    });
+  else {
+    const { next, noRoom } = dropPlan(windowLayout(), tabId, target);
+    sayNoRoom(noRoom);
+    commitDrop(next);
+  }
 }
 
 /** The tab something on its way in stands as, in the preview of where it

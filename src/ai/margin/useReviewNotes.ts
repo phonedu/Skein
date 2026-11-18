@@ -1,71 +1,32 @@
 import { fill } from "../../i18n/fill";
 import { askInComposer } from "../chat/composer-asks";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import { editorViewCtx } from "@milkdown/kit/core";
 import { TextSelection } from "@milkdown/kit/prose/state";
-import type { EditorView } from "@milkdown/kit/prose/view";
 import type { EditorRunner } from "../../editor/useEditorRunner";
 import { revealPosition } from "../../editor/reveal-position";
-import {
-  numberNotes,
-  reviewNotesKey,
-  type ReviewNote,
-} from "./review-notes-plugin";
-import { commentCalls } from "../chat/comment-args";
-import { type MarginItem } from "./margin-layout";
+import { reviewNotesKey, type ReviewNote } from "./review-notes-plugin";
 import { setMarginAvailable } from "./margin-room";
 import { blockAt, holdBlock } from "../../engine/controls/hold-line";
 import type { AgentConversation } from "../chat/conversation/conversation-types";
 import type { AgentPanelFrame } from "../chat/panel/agent-panel";
 import { type usePendingEdits } from "../revision/usePendingEdits";
 import { locateTarget } from "../revision/pending-place";
-import {
-  pendingEditKey,
-  reviewChanges,
-  type HotSentence,
-  type PendingPreview,
-  type PendingSentence,
-} from "../revision/pending-types";
+import { pendingEditKey } from "../revision/pending-types";
 import type { RevisionDisplay } from "../../prefs/SettingsContext";
 import type { Strings } from "../../i18n/strings";
-import { useLatest } from "../../utils/hooks/useLatest";
 import { useNotesBar } from "./useNotesBar";
-import { useOpenedCard } from "./margin-layout";
-import { useOwnNotes } from "./useOwnNotes";
-import { useOwnRevisions } from "./useOwnRevisions";
-import { OWN_CHANGES, ownRevisionKey } from "./own-revision-plugin";
+import {
+  useConversationNotes,
+  useHotItem,
+  useLitItem,
+  useNoteCallbacks,
+  useNotes,
+  useOwnWork,
+} from "./useReviewNoteParts";
+import { OWN_CHANGES } from "./own-revision-plugin";
 import { duration } from "../../engine/motion/motion";
-import { addsTextOnly } from "../revision/revision-display";
-import { asDrawn, zoomedRectScale } from "../../engine/controls/zoomed-rects";
 import { noteOfAnchor } from "./review-notes-plugin";
-
-/** A proposal shown whole as a margin card's change: what it replaces and
- *  with what. Null for new text alone, which has no original. */
-function wholeChange(p: PendingPreview): PendingSentence | null {
-  const { action, anchor, text } = p.proposal;
-  // New text alone: nothing replaced, so no original.
-  if (addsTextOnly(p.proposal))
-    return {
-      from: p.from,
-      to: p.from,
-      before: "",
-      after: text ?? "",
-      take: null,
-    };
-  if (
-    action !== "replace" &&
-    action !== "replace_selection" &&
-    action !== "delete"
-  )
-    return null;
-  return {
-    from: p.strikeFrom ?? p.from,
-    to: p.strikeTo ?? p.to,
-    before: anchor ?? p.expectedText,
-    after: action === "delete" ? "" : (text ?? ""),
-    take: null,
-  };
-}
 
 /** Review notes, the AI's and the writer's own, until done or cleared; also
  *  the margin's revision cards, which share their hover. */
@@ -104,104 +65,17 @@ export function useReviewNotes({
   t: Strings;
   showAiNotice: (message: string | null) => void;
 }) {
-  const [notes, setNotes] = useState<ReviewNote[]>([]);
-  const notesRef = useLatest(notes);
+  const { notes, setNotes, notesRef } = useNotes();
   // Behind numbered badges (no room for a margin): the chat's note cards
   // then carry the same numbers.
   const [noMargin, setNoMargin] = useState(false);
-  const [hotNote, setHotNote] = useState<string | null>(null);
-  // The same, at once: two pointer events can land before a render.
-  const hotRef = useRef<string | null>(null);
-  const [openNote, setOpenNote] = useState<{
-    id: string;
-    x: number;
-    y: number;
-  } | null>(null);
-  const doneNotes = useRef(new Set<string>());
-  // Notes whose passage wasn't found, by what they were placed from.
-  const lostNotes = useRef(new Set<string>());
-  const [editorView, setEditorView] = useState<EditorView | null>(null);
-  useEffect(() => {
-    reviewNotesRef.current = {
-      onChange: setNotes,
-      onBadge: (id, el) => {
-        // In the text, so inside the document's zoom.
-        const r = asDrawn(el.getBoundingClientRect(), zoomedRectScale(el));
-        setOpenNote({ id, x: r.left, y: r.bottom + 6 });
-      },
-    };
-  }, [reviewNotesRef]);
-  const panelTurns = conversation.streaming?.turns;
-  const quickTurns = quickConversation.streaming?.turns;
-  // Each note still streaming in, once its passage and text are whole.
-  const panelDrafts = conversation.streaming?.comments;
-  const quickDrafts = quickConversation.streaming?.comments;
-  const comments = useMemo(
-    () =>
-      commentCalls([
-        ...conversation.history,
-        ...(panelTurns ?? []),
-        ...(panelDrafts ?? []),
-        ...quickConversation.history,
-        ...(quickTurns ?? []),
-        ...(quickDrafts ?? []),
-      ]),
-    [
-      conversation.history,
-      panelTurns,
-      panelDrafts,
-      quickConversation.history,
-      quickTurns,
-      quickDrafts,
-    ],
+  const { hotNote, hotRef, setNoteHot } = useHotItem();
+  const [openNote, setOpenNote] = useNoteCallbacks(reviewNotesRef, setNotes);
+  const { editorView, doneNotes } = useConversationNotes(
+    run,
+    conversation,
+    quickConversation,
   );
-  // What each note was placed from: a draft placed before its context
-  // came is placed again from the completed call when that differs.
-  const placedFrom = useRef(new Map<string, string>());
-  useEffect(() => {
-    run((ctx) => {
-      const view = ctx.get(editorViewCtx);
-      setEditorView(view);
-      const current = reviewNotesKey.getState(view.state)?.notes ?? [];
-      const wanted = comments.filter((c) => !doneNotes.current.has(c.id));
-      const from = (c: (typeof wanted)[number]) =>
-        [c.block ?? "", c.anchor, c.comment].join("\0");
-      // The writer's own notes aren't the conversation's to drop.
-      const keep = current.filter(
-        (n) =>
-          n.by === "me" ||
-          wanted.some(
-            (w) => w.id === n.id && placedFrom.current.get(n.id) === from(w),
-          ),
-      );
-      const added: Omit<ReviewNote, "num">[] = [];
-      for (const c of wanted) {
-        if (keep.some((n) => n.id === c.id) || lostNotes.current.has(from(c)))
-          continue;
-        placedFrom.current.set(c.id, from(c));
-        const range = locateTarget(ctx, view.state.doc, c);
-        if (!range || range.from >= range.to) {
-          lostNotes.current.add(from(c));
-          continue;
-        }
-        added.push({ id: c.id, ...range, comment: c.comment });
-      }
-      if (added.length === 0 && keep.length === current.length) return;
-      view.dispatch(
-        view.state.tr.setMeta(reviewNotesKey, {
-          type: "set",
-          notes: numberNotes(keep, added).sort((a, b) => a.from - b.from),
-        }),
-      );
-    });
-  }, [comments, run]);
-
-  // What the pointer is on - a margin card or its passage ("note:<id>",
-  // "rev:<callId>:<index>"): both light up together (`lit`, below).
-  function setNoteHot(key: string | null) {
-    hotRef.current = key;
-    setHotNote(key);
-  }
 
   /** The pointer moving over the document: lights up the note or pending
    *  sentence under it, together with its margin card. */
@@ -225,8 +99,7 @@ export function useReviewNotes({
   function doneNote(id: string) {
     doneNotes.current.add(id);
     setOpenNote(null);
-    hotRef.current = null;
-    setHotNote(null);
+    setNoteHot(null);
     run((ctx) => {
       const view = ctx.get(editorViewCtx);
       view.dispatch(
@@ -251,8 +124,7 @@ export function useReviewNotes({
     );
   }
 
-  const own = useOwnNotes({ run, filePath, notes, t });
-  const revisions = useOwnRevisions({ isActive, run, filePath, t });
+  const { own, revisions } = useOwnWork({ isActive, run, filePath, notes, t });
 
   const bar = useNotesBar({
     notes,
@@ -269,7 +141,7 @@ export function useReviewNotes({
   function askInPanel(text: string) {
     setOpenNote(null);
     agentPanel.setOpen(true);
-    askInComposer(text);
+    void askInComposer(text);
   }
 
   // No room for a margin: notes go behind badges and a rewrite's
@@ -336,109 +208,21 @@ export function useReviewNotes({
     });
   }
 
-  // The notes, then each pending sentence in the review bar's order.
-  const marginItems = useMemo<MarginItem[]>(() => {
-    const items: MarginItem[] = notes.map((note) => ({
-      kind: "note",
-      key: `note:${note.id}`,
-      note,
-    }));
-    const display = revisionDisplay;
-    pendingEdits.reviewStops.forEach((stop, i) => {
-      if (display === "inline") return;
-      const preview = pendingEdits.reviewed.find(
-        (p) => p.callId === stop.callId,
-      );
-      if (!preview) return;
-      const c =
-        stop.index < 0
-          ? wholeChange(preview)
-          : reviewChanges(preview)?.[stop.index];
-      if (!c) return;
-      items.push({
-        kind: "revision",
-        key: `rev:${stop.callId}:${stop.index}`,
-        callId: stop.callId,
-        index: stop.index,
-        num: i + 1,
-        from: c.from,
-        to: c.to,
-        after: c.after,
-        before: c.before,
-        shows: display === "final" ? "new" : "original",
-        take: c.take,
-        streaming: !!preview.streaming,
-      });
-    });
-    // The writer's own tracked changes, as the AI's: in the margin views a
-    // card shows what the text doesn't; inline, all is in the text.
-    if (display !== "inline")
-      (revisions.changes ?? []).forEach((c, i) =>
-        items.push({
-          kind: "revision",
-          key: `rev:${OWN_CHANGES}:${c.index}`,
-          callId: OWN_CHANGES,
-          index: c.index,
-          num: i + 1,
-          from: c.from,
-          to: c.to,
-          after: c.after,
-          before: c.before,
-          shows: display === "original" ? "original" : "new",
-          take: null,
-          streaming: false,
-        }),
-      );
-    return items;
-  }, [
-    notes,
-    pendingEdits.reviewStops,
-    pendingEdits.reviewed,
-    revisionDisplay,
-    revisions.changes,
-  ]);
-
   // A card's ✓ / ✕: the writer's own change, or the AI's sentence.
   function decide(callId: string, index: number, take: boolean | null) {
     if (callId === OWN_CHANGES) revisions.decide(index, take);
     else pendingEdits.decide(callId, index, take);
   }
 
-  // The item selected: whichever came last of a click or a bar's pointer.
-  const { focusedStop } = pendingEdits;
-  const pointed =
-    bar.focusedItem ??
-    (focusedStop ? `rev:${focusedStop.callId}:${focusedStop.index}` : null);
-  const [clicked, setClicked] = useOpenedCard<{
-    key: string;
-    over: string | null;
-  }>();
-  const focusedItem =
-    clicked && clicked.over === pointed ? clicked.key : pointed;
-  // Lit, card and passage both: what the pointer is on, else the selected
-  // one - it stays lit while it is read, not only while pointed at.
-  const lit = hotNote ?? focusedItem;
-  useEffect(() => {
-    const id = lit?.startsWith("note:") ? lit.slice(5) : null;
-    let sentence: HotSentence | null = null;
-    if (lit?.startsWith("rev:")) {
-      const [, callId, index] = lit.split(":");
-      sentence = { callId, index: Number(index) };
-    }
-    // Through the plugins, never a class written onto the text.
-    run((ctx) => {
-      const view = ctx.get(editorViewCtx);
-      view.dispatch(
-        view.state.tr
-          .setMeta(reviewNotesKey, { type: "hot", id })
-          .setMeta(pendingEditKey, { type: "hot", sentence })
-          .setMeta(ownRevisionKey, {
-            type: "hot",
-            index: sentence?.callId === OWN_CHANGES ? sentence.index : null,
-          }),
-      );
-    });
-  }, [lit, run]);
+  const { marginItems, focusedItem, lit, setClicked, pointed } = useLitItem({
+    run,
+    notes,
+    pendingEdits,
+    revisionDisplay,
+    ownChanges: revisions.changes,
+    barFocus: bar.focusedItem,
+    hotNote,
+  });
 
   // A card clicked: selected, and its passage brought into view and
   // pulsed, so the eye goes from the note to what it is about.

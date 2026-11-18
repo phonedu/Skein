@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { LayoutNode, Pane } from "../layout/tree";
 import { leastWidth, solveIslands, type IslandsInput } from "./solve";
-import { islandRule } from "./island-rules";
+import { DOC_MIN, islandRule } from "./island-rules";
 
 const pane = (id: string): Pane => ({
   kind: "pane",
@@ -165,7 +165,7 @@ describe("solveIslands", () => {
     const wide = solveIslands(measured(450)).islands;
     expect(wide.get("settings")!.sheet.w).toBe(450);
     expect(wide.get("doc")!.sheet.w).toBe(900 - 8 - 450);
-    expect(leastWidth(measured(450))).toBe(360 + 8 + 450);
+    expect(leastWidth(measured(450))).toBe(DOC_MIN + 8 + 450);
   });
 
   it("the least width: each island at its minimum, the gaps between", () => {
@@ -177,5 +177,25 @@ describe("solveIslands", () => {
     };
     expect(leastWidth(input(root))).toBe(360 + 8 + 320);
     expect(leastWidth(input(pane("one")))).toBe(360);
+    // The island under the bar's own buttons counts what it keeps there,
+    // as the solver gives it: else a split that can't fit is never folded.
+    const under = { ...input(root), endRoom: 500 };
+    expect(leastWidth(under)).toBe(360 + 8 + 500);
+    const stacked: LayoutNode = {
+      kind: "split",
+      direction: "row",
+      children: [
+        pane("doc"),
+        {
+          kind: "split",
+          direction: "column",
+          children: [pane("top"), pane("low")],
+          sizes: [0.5, 0.5],
+        },
+      ],
+      sizes: [0.5, 0.5],
+    };
+    expect(leastWidth({ ...input(stacked), endRoom: 500 })).toBe(360 + 8 + 500);
+    expect(leastWidth({ ...under, endRoom: 100 })).toBe(360 + 8 + 320);
   });
 });

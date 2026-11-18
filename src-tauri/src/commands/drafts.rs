@@ -69,14 +69,18 @@ static DRAFTS_CLAIMED: AtomicBool = AtomicBool::new(false);
 /// moved aside into `restoring/` (kept until the window says they are
 /// back, finish_draft_restore), and one a crash left there last time comes
 /// back too. One that can't be read goes to `unreadable/`, never deleted.
-/// Only the `main` window's first call gets anything (see DRAFTS_CLAIMED).
+/// Only the `main` window's first call gets anything (see DRAFTS_CLAIMED);
+/// on a phone, every page's.
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
 pub async fn take_draft_snapshots(
     app: AppHandle,
     window: tauri::Window,
 ) -> Result<Vec<DraftSnapshot>, String> {
-    if window.label() != "main" || DRAFTS_CLAIMED.swap(true, Ordering::SeqCst) {
+    // A phone has one window, and a new page there (Android recreating its
+    // activity) has lost the tabs those drafts belong to: offered again.
+    let claimed = cfg!(desktop) && DRAFTS_CLAIMED.swap(true, Ordering::SeqCst);
+    if window.label() != "main" || claimed {
         return Ok(Vec::new());
     }
     let dir = drafts_dir(&app)?;
@@ -156,4 +160,23 @@ pub async fn clear_draft_snapshot(app: AppHandle, tab_id: String) -> Result<(), 
 #[cfg_attr(test, specta::specta)]
 pub async fn clear_all_drafts(app: AppHandle) -> Result<(), String> {
     gone(fs::remove_dir_all(drafts_dir(&app)?).await)
+}
+
+/// The page's tabs as it last wrote them down, for as long as the process
+/// lives: Android makes the page anew without a reload (a font or display
+/// size changed), its own storage empty. Kept here, where only the app's own
+/// page can ask - not on the Android bridge, which every frame of the page
+/// sees, a web page opened in the app too.
+static PAGE_TABS: std::sync::Mutex<String> = std::sync::Mutex::new(String::new());
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub fn keep_page_tabs(text: String) {
+    *PAGE_TABS.lock().unwrap_or_else(|e| e.into_inner()) = text;
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub fn kept_page_tabs() -> String {
+    PAGE_TABS.lock().unwrap_or_else(|e| e.into_inner()).clone()
 }

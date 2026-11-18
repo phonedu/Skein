@@ -1,5 +1,7 @@
+import { useSyncExternalStore } from "react";
 import { LOCAL_KEYS, readLocalJson, writeLocal } from "../storage/local";
 import snapshot from "./models-snapshot.json";
+import { createSubscribers } from "../utils/store";
 
 /** What models.dev says about one model, from a bundled snapshot. Absent for
  *  models it doesn't list, which show as a bare id. */
@@ -53,6 +55,28 @@ export function writeFetchedModels(provider: string, models: string[]): void {
     LOCAL_KEYS.fetchedModels(provider),
     JSON.stringify({ models, at: Date.now() }),
   );
+  fetchedCount++;
+  fetched.publish();
+}
+
+// Every picker (Settings' writing and chat rows, the composer) reads the
+// new list at once.
+const fetched = createSubscribers();
+let fetchedCount = 0;
+const onFetched = fetched.subscribe;
+
+/** Draws again whenever a model list is fetched; read the lists with
+ *  {@link readFetchedModels}. */
+export function useModelsFetched(): number {
+  return useSyncExternalStore(onFetched, () => fetchedCount);
+}
+
+/** The last list fetched for `provider`, remembered across restarts, drawn
+ *  again whenever a new one is fetched. */
+export function useFetchedModels(provider: string) {
+  useModelsFetched();
+  const cached = readFetchedModels(provider);
+  return { models: cached?.models ?? [], at: cached?.at ?? null };
 }
 
 /** Fetched ids ordered for the picker: current models before deprecated

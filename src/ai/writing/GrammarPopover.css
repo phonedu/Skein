@@ -39,7 +39,8 @@
 }
 
 .grammar-kind-punctuation,
-.grammar-kind-rules {
+.grammar-kind-rules,
+.grammar-kind-plugin {
   background: color-mix(in srgb, var(--ui-accent) 12%, transparent);
   color: var(--ui-accent-text);
 }
@@ -71,7 +72,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.grammar-popover-nav button {
+.grammar-popover-nav .tx-icon-button {
   display: inline-grid;
   place-items: center;
   width: 22px;
@@ -85,13 +86,11 @@
   cursor: pointer;
 }
 
-.grammar-popover-nav button:hover {
-  background: var(--ui-hover);
-  color: var(--ui-text);
-}
-
-.grammar-popover-prev {
-  transform: rotate(180deg);
+@media (hover: hover) {
+  .grammar-popover-nav .tx-icon-button:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+  }
 }
 
 .grammar-popover-issue {
@@ -149,8 +148,10 @@
   cursor: pointer;
 }
 
-.grammar-popover-ignore:hover {
-  border-color: var(--ui-muted);
+@media (hover: hover) {
+  .grammar-popover-ignore:hover {
+    border-color: var(--ui-muted);
+  }
 }
 
 /* The phone's card (BottomCard): the fix large, the note under it. */

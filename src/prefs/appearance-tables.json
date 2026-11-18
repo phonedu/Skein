@@ -24,6 +24,7 @@
     "standard": 1.8,
     "relaxed": 2.05
   },
-  "contentThemes": ["paper", "slate", "forest", "aurora"],
-  "contentWidths": ["standard", "full"]
+  "contentThemes": ["paper", "slate", "forest", "prism"],
+  "contentWidths": ["standard", "full"],
+  "layouts": ["islands", "classic"]
 }

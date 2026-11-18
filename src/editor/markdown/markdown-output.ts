@@ -1,3 +1,4 @@
+import { allowHeaderOnlyTables } from "../tables/header-only-tables";
 import type { Ctx } from "@milkdown/kit/ctx";
 import { defaultValueCtx, remarkStringifyOptionsCtx } from "@milkdown/kit/core";
 import { codeBlockSchema, imageSchema } from "@milkdown/kit/preset/commonmark";
@@ -332,7 +333,28 @@ const closingHashGuard: Unsafe = {
 };
 
 /** Set up per serialization, before any node is written. */
+/** Nodes that hold phrasing, which mdast says always have `children`. */
+const PHRASING_PARENTS = new Set([
+  "paragraph",
+  "heading",
+  "tableCell",
+  "emphasis",
+  "strong",
+  "delete",
+  "link",
+  "linkReference",
+]);
+
+/** An empty paragraph or cell, built without `children`, gets an empty
+ *  list: the to-markdown extensions read its length. */
+function withChildren(node: { type: string; children?: unknown[] }): void {
+  if (PHRASING_PARENTS.has(node.type)) node.children ??= [];
+  for (const child of node.children ?? [])
+    withChildren(child as { type: string; children?: unknown[] });
+}
+
 const root: Handle = (node, parent, state, info) => {
+  withChildren(node);
   joinAdjacent(node as Phrasing);
   underscoresAtWordEdges(node as Phrasing);
   alternateNestedMarkers(node as Phrasing);
@@ -369,6 +391,7 @@ function documentBullet(markdown: string): "-" | "*" | "+" | null {
 export function configureMarkdownOutput(ctx: Ctx): void {
   configureImageNode(ctx);
   keepCodeFenceMeta(ctx);
+  allowHeaderOnlyTables(ctx);
   ctx.update(remarkGFMPlugin.options.key, (options) => ({
     ...options,
     stringLength: displayWidth,
@@ -380,7 +403,8 @@ export function configureMarkdownOutput(ctx: Ctx): void {
     typeof initial === "string" ? documentBreaks(initial) : "backslash";
   ctx.update(remarkStringifyOptionsCtx, (options) => ({
     ...options,
-    ...(bullet ? { bullet } : {}),
+    // A file with no list yet gets "-", as most write it.
+    bullet: bullet ?? "-",
     handlers: {
       ...options.handlers,
       root,

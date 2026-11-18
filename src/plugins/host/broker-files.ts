@@ -1,9 +1,28 @@
+import { isRecord } from "../../utils/is-record";
 import { notesRoot } from "../../files/link-style";
 import { setFileBadge } from "../contributions/file-badges";
 import { inOpenFolder } from "../may-open";
 import { fs, plugins as pluginsIpc, type StoreScope } from "../../platform/ipc";
-import { absoluteIn, basename, isInside, slashed } from "../../utils/path";
-import { ENTRY_TRASHED_EVENT, FILE_WRITTEN_EVENT } from "../../utils/events";
+import {
+  absoluteIn,
+  basename,
+  contentRelative,
+  dirname,
+  isWithin,
+  slashed,
+} from "../../utils/path";
+import { freeFilePath } from "../../document/autosave-untitled";
+import { updateProjectSettings } from "../../storage/project-settings";
+
+/** The folder conventions a plugin may set, each with what it may say. */
+const SETTABLE_CONVENTIONS: Record<string, readonly string[]> = {
+  linkStyle: ["markdown", "wiki"],
+};
+import {
+  ENTRY_TRASHED_EVENT,
+  FILE_WRITTEN_EVENT,
+  sendAppEvent,
+} from "../../utils/events";
 import { fromBase64, toBase64 } from "../store/files";
 import {
   beforePluginMove,
@@ -12,11 +31,7 @@ import {
   pluginMovedPath,
 } from "../app-bridge";
 import { globToRegExp, isDocumentPath } from "../workspace/glob";
-import {
-  parseFrontmatter,
-  withFrontmatter,
-  type Frontmatter,
-} from "../../utils/frontmatter";
+import { type Frontmatter } from "../../utils/frontmatter";
 import { linkRewrite } from "../../files/link-rewrite-lazy";
 import { blockIdAt } from "../../files/block-id";
 import { setWillExport } from "../contributions/will-export";
@@ -41,7 +56,7 @@ export async function written(
   // The window compares whole paths (an embed of the note); plugins hear
   // the path as it was given.
   const full = root ? absoluteIn(root, path) : path;
-  window.dispatchEvent(new CustomEvent(FILE_WRITTEN_EVENT, { detail: full }));
+  sendAppEvent(FILE_WRITTEN_EVENT, full);
   emitPluginEvent(change, { path });
 }
 
@@ -52,6 +67,10 @@ function placeRoot(p: PluginScope, scope: StoreScope): string | null {
   p.need("project.data");
   return p.folder();
 }
+
+/** A task line split around the character in its box (the index's
+ *  reading: a list marker, then `[c]`). */
+const TASK_BOX = /^(\s*(?:[-*+]|\d+[.)])\s+\[)[^\]](\][\s\S]*)$/;
 
 /** A token for the version of a document in a tab. */
 const TAB_TOKEN = "tab:";
@@ -111,6 +130,26 @@ export function fileHandlers(p: PluginScope) {
     },
     "files.conventions": ({ path }: Params) =>
       fs.folderConventions(within(p.root(), optionalStr(path))),
+    // How the open folder writes something, kept in its own settings
+    // (.textus/settings.json) as Settings' own card keeps it.
+    "files.setConvention": async ({ key, value }: Params) => {
+      const name = str(key, "key");
+      const says = Object.prototype.hasOwnProperty.call(
+        SETTABLE_CONVENTIONS,
+        name,
+      )
+        ? SETTABLE_CONVENTIONS[name]
+        : null;
+      if (!says)
+        throw new Error(`${name} isn't a convention a plugin can set.`);
+      // Kept in the folder's own settings file: only what Textus reads.
+      if (value != null && !says.includes(value as string))
+        throw new Error(`${name} is one of: ${says.join(", ")}.`);
+      await updateProjectSettings(p.root(), "conventions", (now) => ({
+        ...now,
+        [name]: value ?? undefined,
+      }));
+    },
     // The nearest vault's own file, even above the open folder: settings
     // other apps' plugins keep (bookmarks.json, a plugin's data.json).
     "files.appSettings": async ({ app, file, path }: Params) => {
@@ -171,14 +210,27 @@ export function fileHandlers(p: PluginScope) {
         write(),
       );
     },
-    "files.create": ({ path, text }: Params) => {
-      const target = str(path, "path");
-      return written(
+    // `unique`: never over a file - "Note 2.md", "Note 3.md" beside it, as
+    // the app names its own new files. Gives the path written.
+    "files.create": async ({ path, text, unique }: Params) => {
+      let target = str(path, "path");
+      if (unique === true) {
+        const root = write();
+        const full = absoluteIn(root, target);
+        const free = await freeFilePath(dirname(full), basename(full), (at) =>
+          pluginsIpc.fsStat(p.id, root, at).then(Boolean, () => false),
+        );
+        if (!free) throw new Error(`No free name for ${target}.`);
+        // As it was given: relative to the folder, or whole.
+        target = full === target ? free : relOf(root, free);
+      }
+      await written(
         target,
         pluginsIpc.fsCreate(p.id, write(), target, optionalStr(text) ?? ""),
         "fileCreate",
         write(),
       );
+      return target;
     },
     "files.processRead": ({ path }: Params) => {
       return readVersion(str(path, "path"));
@@ -205,9 +257,7 @@ export function fileHandlers(p: PluginScope) {
       const abs = (path: string) => absoluteIn(root, path);
       await beforePluginMove(abs(source));
       await pluginsIpc.fsRename(p.id, root, source, target);
-      window.dispatchEvent(
-        new CustomEvent(FILE_WRITTEN_EVENT, { detail: abs(source) }),
-      );
+      sendAppEvent(FILE_WRITTEN_EVENT, abs(source));
       await pluginMovedPath(abs(source), abs(target));
       if (updateLinks !== true) return;
       const [{ documents }, { files }, conventions, linkRoot] =
@@ -241,13 +291,9 @@ export function fileHandlers(p: PluginScope) {
       const root = write();
       await pluginsIpc.fsTrash(p.id, root, target);
       const full = absoluteIn(root, target);
-      window.dispatchEvent(
-        new CustomEvent(FILE_WRITTEN_EVENT, { detail: full }),
-      );
+      sendAppEvent(FILE_WRITTEN_EVENT, full);
       // Its tabs let go, as for a file trashed in the sidebar.
-      window.dispatchEvent(
-        new CustomEvent(ENTRY_TRASHED_EVENT, { detail: full }),
-      );
+      sendAppEvent(ENTRY_TRASHED_EVENT, full);
       emitPluginEvent("fileDelete", { path: target });
     },
     "files.createFolder": ({ path }: Params) =>
@@ -260,15 +306,33 @@ export function fileHandlers(p: PluginScope) {
         : new TextDecoder().decode(
             await pluginsIpc.fsRead(p.id, p.root(), target),
           );
-      return parseFrontmatter(text);
+      const { readFrontmatterFull } =
+        await import("../../utils/frontmatter-yaml");
+      return readFrontmatterFull(text);
     },
-    "files.frontmatterSet": ({ path, frontmatter }: Params) => {
+    "files.frontmatterSet": async ({ path, frontmatter }: Params) => {
       write();
-      if (!frontmatter || typeof frontmatter !== "object")
-        throw new Error("frontmatter is an object.");
+      if (!isRecord(frontmatter)) throw new Error("frontmatter is an object.");
+      const { writeFrontmatterFull } =
+        await import("../../utils/frontmatter-yaml");
       return change(str(path, "path"), (text) =>
-        withFrontmatter(text, frontmatter as Frontmatter),
+        writeFrontmatterFull(text, frontmatter as Frontmatter),
       );
+    },
+    // A task's box set to one character, on the line the index gave.
+    "files.setTask": async ({ path, line, status }: Params) => {
+      write();
+      const mark = str(status, "status");
+      if ([...mark].length !== 1 || mark === "]" || /[\r\n]/.test(mark))
+        throw new Error("status is one character.");
+      const at = typeof line === "number" ? line : -1;
+      return change(str(path, "path"), (text) => {
+        const lines = text.split("\n");
+        const task = TASK_BOX.exec(lines[at] ?? "");
+        if (!task) throw new Error(`No task on line ${at}.`);
+        lines[at] = task[1] + mark + task[2];
+        return lines.join("\n");
+      });
     },
     "files.willSave": ({ on }: Params) => {
       setWillSave(p.id, on === true, (request) =>
@@ -293,9 +357,13 @@ export function fileHandlers(p: PluginScope) {
         headers: (r.headers ?? undefined) as Record<string, string> | undefined,
         body: body ? toBase64(body) : undefined,
         bodyBase64: !!body,
+        cancelId: optionalStr(r.cancelId),
       });
       return { ...response, body: fromBase64(response.body) };
     },
+    // A fetch whose signal aborted: it stops where it is.
+    "net.cancel": ({ cancelId }: Params) =>
+      pluginsIpc.httpCancel(p.id, str(cancelId, "cancelId")),
     // Its own places: the project's is the open folder's, which Rust checks
     // project.data for.
     "store.get": ({ scope, key }: Params) =>
@@ -366,6 +434,8 @@ export function fileHandlers(p: PluginScope) {
 
 /** `path` in the folder `root`, `/`-separated. */
 function relOf(root: string, path: string): string {
+  if (root.startsWith("content://"))
+    return contentRelative(root, path) ?? basename(path);
   const r = slashed(root).replace(/\/$/, "");
   const full = slashed(path);
   return full.startsWith(`${r}/`) ? full.slice(r.length + 1) : basename(full);
@@ -388,7 +458,7 @@ export function openDocument(root: string, path: string) {
 function within(root: string, path: string | undefined): string {
   if (!path) return root;
   const full = absoluteIn(root, path);
-  if (full !== root && !isInside(full, root))
+  if (!isWithin(full, root))
     throw new Error(`${path} isn't in the open folder.`);
   return full;
 }

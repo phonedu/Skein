@@ -20,15 +20,23 @@ const API_PERMISSIONS: readonly {
       "editor.getPath",
       "editor.getText",
       "editor.getSelection",
+      "editor.getCursor",
       "editor.getBlocks",
       "editor.getOutline",
       "editor.registerHover",
       "editor.registerDecorations",
+      "editor.registerDiagnostics",
       "editor.registerOutline",
       "export.willExport",
+      "ai.registerInlineCompletion",
+      "ai.unregisterInlineCompletion",
     ],
     // Completions without it are left out, with no error to say so.
-    calls: ["editor.registerCompletion"],
+    calls: [
+      "editor.registerCompletion",
+      "export.onWillExport",
+      "ai.registerInlineCompletion",
+    ],
   },
   {
     permission: "editor.write",
@@ -37,12 +45,14 @@ const API_PERMISSIONS: readonly {
       "codeBlock.setSource",
       "editor.registerPasteHandler",
     ],
-    calls: ["editor.insertText", "editor.replaceSelection"],
+    // A code block's `block.setSource`.
+    calls: ["editor.insertText", "editor.replaceSelection", "setSource"],
   },
   { permission: "editor.propose", methods: ["editor.propose"] },
   {
     permission: "editor.input",
     methods: ["editor.captureKeys", "editor.exec"],
+    calls: ["keys.capture", "keys.exec"],
   },
   {
     permission: "files.read",
@@ -66,15 +76,25 @@ const API_PERMISSIONS: readonly {
       "metadata.tags",
       "metadata.tasks",
       "metadata.search",
+      "history.registerSource",
+      "history.unregisterSource",
+      "history.sources",
+      "history.versions",
+      "history.read",
+      "git.status",
+      "git.log",
+      "git.show",
     ],
     // Writing goes through the folder's root, which reading grants.
     calls: [
       "files.readText",
       "metadata.",
+      "history.",
       "files.writeText",
       "files.create",
       "files.process",
       "files.rename",
+      "files.frontmatter.",
     ],
   },
   {
@@ -89,11 +109,18 @@ const API_PERMISSIONS: readonly {
       "files.trash",
       "files.createFolder",
       "files.frontmatterSet",
+      "files.setTask",
+      "files.setConvention",
       "files.blockId",
       "files.willSave",
       "webview.writeFile",
     ],
-    calls: ["files.process"],
+    calls: [
+      "files.process",
+      "files.frontmatter.update",
+      "files.onWillSave",
+      "metadata.setTask",
+    ],
   },
   { permission: "project.data", methods: [], calls: ["storage.project"] },
   {
@@ -106,8 +133,14 @@ const API_PERMISSIONS: readonly {
     permission: "appearance",
     methods: ["appearance.setColors", "appearance.clear"],
   },
-  // Checked in Rust, when Textus AI calls the tool.
+  { permission: "git.commit", methods: ["git.commit"] },
+  // Checked when the window tells Rust the tools (contributions/ai-tools.ts).
   { permission: "ai.tools", methods: [], calls: ["ai.registerTool"] },
+  { permission: "ai.model", methods: ["ai.available", "ai.complete"] },
+  {
+    permission: "comments",
+    methods: ["comments.list", "comments.add", "comments.resolve"],
+  },
 ];
 
 const BY_METHOD = new Map<string, Permission[]>();
@@ -141,6 +174,15 @@ export function guarded<H extends Record<string, unknown>>(
     }),
   ) as H;
 }
+
+/** The table as a plugin's code names it, for tools outside the app
+ *  (docs/dev/plugin-permissions.json, which a test keeps the same). */
+export const PERMISSION_TABLE = API_PERMISSIONS.map(
+  ({ permission, methods, calls = [] }) => ({
+    permission,
+    calls: [...methods, ...calls],
+  }),
+);
 
 /** Every method the table names, for the test that holds it to the broker. */
 export const PERMISSION_METHODS: readonly string[] = [...BY_METHOD.keys()];

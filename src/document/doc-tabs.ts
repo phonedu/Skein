@@ -6,6 +6,7 @@ import { lazyModule } from "../lazy/lazy-module";
 import { fs } from "../platform/ipc";
 import { detectFormat, toEditorText, toFileText } from "./file-format";
 import type { PluginTabView } from "../plugins/app-bridge";
+import { chatTitle } from "../ai/chat/chat-title";
 
 // Every bundled guide, by file name. A language without its own copy gets
 // the English one.
@@ -94,8 +95,19 @@ export function namePageTabs(view: string, title: PageTitle): void {
 /** What a tab's name leaves out, on hover: an AI tab's conversation. */
 export function tabTip(tab: DocTab, t: Strings): string | undefined {
   if (tab.view?.kind === "page" && tab.view.view === "ai")
-    return tab.view.title ?? t.chatNewConversation;
+    return chatTitle(tab.view.title, t);
+  // An untitled document by its first line: drafts told apart.
+  if (!tab.path && !tab.view) return firstLine(tab.content);
   return undefined;
+}
+
+function firstLine(text: string): string | undefined {
+  const line = text
+    .split("\n")
+    .map((l) => l.replace(/^\s*(?:#+|>|[-*+]|\d+[.)])\s+/, "").trim())
+    .find(Boolean);
+  if (!line) return undefined;
+  return line.length > 40 ? `${line.slice(0, 39)}…` : line;
 }
 
 export function tabTitle(tab: DocTab, t: Strings): string {
@@ -150,6 +162,12 @@ export function makeBlankTab(): DocTab {
 
 export function tabIsDirty(tab: DocTab): boolean {
   return tab.content !== tab.savedContent;
+}
+
+/** The user's own unsaved draft: no file, plugin view, guide or Word
+ *  import behind it. */
+export function isPlainDraft(tab: DocTab): boolean {
+  return !tab.path && !tab.view && !tab.helpDoc && !tab.importedFrom;
 }
 
 /** A new Untitled tab nobody has written in, so opening something here
@@ -215,6 +233,11 @@ export async function statMtime(path: string): Promise<number | null> {
   }
 }
 
+/** Whether a file is on disk; one that can't be read counts as gone. */
+export async function fileExists(path: string): Promise<boolean> {
+  return (await statMtime(path)) !== null;
+}
+
 /** A document's text as the editor holds it: "\n" line breaks, no BOM. */
 export async function readDocText(path: string): Promise<string> {
   return toEditorText(await fs.readTextFile(path));
@@ -233,7 +256,18 @@ export async function writeDocFile(
   path: string,
   content: string,
 ): Promise<void> {
-  const existing = await fs.readTextFile(path).catch(() => null);
+  // Only a file that isn't there has no format to keep: one that can't be
+  // read just now (locked, not downloaded) is not written over as if new,
+  // in other line endings.
+  const existing = await fs.readTextFile(path).catch(async (error) => {
+    if (!(await fileExists(path))) return null;
+    // Readable, only not UTF-8 (a GBK text, a file Save As replaces): its
+    // line endings from its bytes.
+    const bytes = await fs.readBinaryFileBase64(path).catch(() => {
+      throw error;
+    });
+    return atob(bytes);
+  });
   const format =
     existing === null ? { crlf: false, bom: false } : detectFormat(existing);
   await fs.writeTextFile(path, toFileText(content, format));

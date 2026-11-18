@@ -1,6 +1,8 @@
 import { textParagraphs } from "../../editor/markdown/doc-blocks";
 import { useSyncExternalStore } from "react";
 import { ai } from "../../platform/ipc";
+import { showNotice } from "../../engine/controls/notices";
+import { currentStrings } from "../../i18n/current";
 import {
   getUiState,
   updateUiState,
@@ -8,6 +10,7 @@ import {
 } from "../../storage/ui-state";
 import type { EditProposal } from "../types";
 import { blockHunks } from "./block-hunks";
+import { createSubscribers } from "../../utils/store";
 
 /**
  * What Textus AI left in a file it didn't have open (aiChangeMode): a change
@@ -68,7 +71,17 @@ async function writeFileRevisions(
     (!value.incoming.length && !value.created && value.base === undefined);
   await ai
     .keptProposalsWrite(storeOf(path), null, empty ? null : value, [])
-    .catch(() => undefined);
+    .catch(notKept);
+}
+
+let toldNotKept = false;
+/** The waiting changes live only in the editor now: said once a session,
+ *  so the writer decides them before they go with it. */
+function notKept(error: unknown) {
+  console.error("[file-revisions] not kept:", error);
+  if (toldNotKept) return;
+  toldNotKept = true;
+  showNotice(currentStrings().revisionsNotKept, { tone: "warning" });
 }
 
 /** Each file's changes to its store, one after another: two at once read
@@ -94,10 +107,7 @@ export function updateFileRevisions(
     if (after !== undefined) await writeFileRevisions(path, after);
     await recount(path, after === undefined ? kept : after);
     // Told only of a change: its editor reads it again when told.
-    if (after !== undefined)
-      window.dispatchEvent(
-        new CustomEvent(FILE_REVISIONS_EVENT, { detail: path }),
-      );
+    if (after !== undefined) revisionsChanged.publish(path);
   });
   const settled = next.catch(() => undefined);
   queues.set(path, settled);
@@ -127,7 +137,7 @@ async function recount(path: string, kept: FileRevisions | null) {
  *  its editor told. */
 export async function revisionsArrived(path: string): Promise<void> {
   await proposalsKept(path);
-  window.dispatchEvent(new CustomEvent(FILE_REVISIONS_EVENT, { detail: path }));
+  revisionsChanged.publish(path);
 }
 
 /** The editor wrote its kept proposals: the count follows them. */
@@ -135,13 +145,14 @@ export function proposalsKept(path: string): Promise<void> {
   return updateFileRevisions(path, () => undefined);
 }
 
-/** Fired with a file's path when what Textus AI left in it changed. */
-export const FILE_REVISIONS_EVENT = "textus-file-revisions";
+/** Told a file's path when what Textus AI left in it changed. */
+const revisionsChanged = createSubscribers<[path: string]>();
+export const onFileRevisions = revisionsChanged.subscribe;
 
 // ---- Marks ----------------------------------------------------------
 
 let marks: Record<string, AiFileMark> = readMarks();
-const listeners = new Set<() => void>();
+const listeners = createSubscribers();
 
 function readMarks(): Record<string, AiFileMark> {
   const stored = getUiState("aiFileMarks");
@@ -170,18 +181,13 @@ function setAiFileMark(path: string, patch: AiFileMark): void {
     else delete all[path];
     return all;
   });
-  for (const listener of listeners) listener();
+  listeners.publish();
 }
 
 /** The marks now, outside React. */
 export const aiFileMarksNow = () => marks;
 
-export function onAiFileMarks(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
+export const onAiFileMarks = listeners.subscribe;
 
 export function useAiFileMarks(): Readonly<Record<string, AiFileMark>> {
   return useSyncExternalStore(onAiFileMarks, () => marks);

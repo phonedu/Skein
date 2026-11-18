@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { Node as ProseNode } from "@milkdown/kit/prose/model";
 import { TextSelection } from "@milkdown/kit/prose/state";
 import type { EditorView } from "@milkdown/kit/prose/view";
@@ -10,12 +10,6 @@ import { tocEntries } from "./toc-plugin";
 
 // A link holds its Markdown as text; the caret on it shows that source,
 // elsewhere decorations hide its syntax. Nothing about it is a document edit.
-
-// An undo scrolls the caret into view, measuring a Range jsdom can't.
-beforeAll(() => {
-  Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect ??= () => new DOMRect();
-});
 
 afterEach(closeViews);
 
@@ -130,6 +124,26 @@ describe("typing in a link", () => {
     expect(link.textContent).toBe("[b](u)");
     expect(t.view.state.doc.textContent).toBe("A y[b](u)x c");
     expect(t.markdown()).toBe("A y[b](u)x c");
+  });
+
+  it("typed after a destination with spaces goes in by the editor, the link kept", async () => {
+    const t = await open("A [b](my%20file.md) c");
+    const { pos, node } = firstLink(t.view.state.doc);
+    caret(t.view, pos + node.nodeSize - 1);
+    // What iOS's keyboard sends; left to the page, it was read back in pieces.
+    const space = new InputEvent("beforeinput", {
+      inputType: "insertText",
+      data: " ",
+      bubbles: true,
+      cancelable: true,
+    });
+    t.view.dom.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(true);
+    t.type("z");
+    expect(firstLink(t.view.state.doc).node.textContent).toBe(
+      "[b](my%20file.md)",
+    );
+    expect(t.markdown()).toBe("A [b](my%20file.md) z c");
   });
 
   it('"!" typed before it makes an image of it once the caret leaves', async () => {

@@ -153,8 +153,10 @@
   border-radius: var(--shape-s);
   transition: background-color var(--dur-fast) var(--ease-standard);
 }
-.settings-group-body > .theme-gallery-item:hover {
-  background: var(--ui-hover);
+@media (hover: hover) {
+  .settings-group-body > .theme-gallery-item:hover {
+    background: var(--ui-hover);
+  }
 }
 .settings-group-body > .theme-gallery-item > .theme-gallery-preview {
   width: 100%;
@@ -198,6 +200,10 @@
 }
 .theme-card-head > .theme-card-name {
   flex: 1 1 auto;
+}
+/* Inline, a name inside the button would run on uncut. */
+.theme-card-open > .theme-card-name {
+  display: block;
 }
 .theme-card-actions {
   display: flex;

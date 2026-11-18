@@ -94,7 +94,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
 `,
   projectOpenStyle: "文体プロファイルを開く",
   projectPickFolder: "フォルダーを選択…",
-  projectNoFolder: "フォルダーを使わない",
+  projectFollowSidebar: "サイドバーのフォルダーを使う",
   projectReveal: "ファイルマネージャーで表示",
   projectLearnStyle: "サンプルから文体を学習…",
   projectImportReferences: "参考資料を読み込む…",
@@ -116,6 +116,16 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   codeBlockEditSource: "ソースを編集",
   codeBlockDone: "編集を終了",
   codeBlockDelete: "ブロックを削除",
+  blockText: "本文",
+  blockCallout: "コールアウト",
+  blockHandleAdd: "下にブロックを追加",
+  blockHandleOptions: "ドラッグで移動、クリックでオプション",
+  blockTurnInto: "変換",
+  blockDuplicate: "複製",
+  blockHandlesLabel: "ブロックハンドル",
+  blockHandlesHelp:
+    "ポインタのあるブロックの左に ⋮⋮ を表示：ドラッグで移動、クリックで別の種類への変換・複製・削除。",
+  smoothCaretLabel: "なめらかなカーソル",
   menuBlockWide: "ワイド表示",
   menuBlockZoom: "表示サイズ",
   diagramViewerLabel: "図",
@@ -126,7 +136,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   pictureViewerTurnHint: "← → 画像を切り替え",
   diagramViewerClose: "閉じる",
   diagramViewerHint:
-    "スクロールかピンチで拡大縮小 · ドラッグで移動 · ダブルクリックで全体表示",
+    "ホイールかピンチで拡大縮小 · ドラッグかスワイプで移動 · ダブルクリックで全体表示",
   codeBlockLanguage: "コードの言語",
   codeBlockLanguageSearch: "言語を検索",
   announceAiWriting: `${AI_NAME} が書いています…`,
@@ -148,8 +158,10 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   revisionDisplayInline: "すべて本文に",
   revisionDisplayOriginal: "本文に元の文、修正は余白に",
   revisionDisplayFinal: "結果だけ、元の文は余白に",
+  splitNoRoomLow:
+    "これ以上分割できません：ウインドウの高さが足りません。キーボードを閉じるか、ウインドウを高くしてください。",
   splitNoRoom:
-    "分割する余裕がありません。ウィンドウを広げるか、サイドバーや分割を閉じてください",
+    "これ以上分割できません：ウインドウの幅が足りません。ウインドウを広げるか、分割を 1 つ閉じてください。",
   revisionDisplayNoRoom:
     "余白が足りません：サイドバーか AIパネルを閉じてください",
   proposalDeletedSentence: "元の文",
@@ -622,6 +634,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
     "プラグインストアには新しい Textus が必要です。Textus をアップデートしてください。",
   errorImageTooBig: "画像が空か、25 MB を超えています。",
   errorNoFolder: "先にフォルダを開いてください。",
+  errorPluginsNeedAllFiles:
+    "プラグインはこのフォルダを読めません：Textus にすべてのファイルへのアクセスが許可されていません。フォルダを開き直して「続ける」を選んでください。",
   errorPdfUnsupported: "このシステムでは PDF を書き出せません。",
   errorNoText: "読み取れるテキストがありません。",
   errorUnreadable: "このファイルは読み込めません。",
@@ -692,6 +706,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   outlineExpandAll: "すべて展開",
   outlineCollapseAll: "すべて折りたたむ",
   wordCount: { other: "{n} 文字" },
+  slipCount: { other: "{n} 件の問題" },
   wordCountDetail: "{characters} 文字（空白を除く） · {words} 語",
   alertNote: "メモ",
   alertTip: "ヒント",
@@ -719,7 +734,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   navTheme: "テーマ",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
-  navAbout: "について",
+  navAbout: "情報",
   navGuides: "使い方ガイド",
   aboutVersion: "バージョン {version}",
   aboutVersionBeta: "バージョン {version} · ベータ版",
@@ -728,6 +743,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   navShortcuts: "ショートカット",
   generalBasicsLabel: "基本設定",
   generalSystemLabel: "アプリ",
+  generalNetworkLabel: "ネットワーク",
   settingsFilesGroup: "ファイル",
   shortcutAiGroupLabel: "AIと執筆",
   shortcutEditorGroupLabel: "編集とナビゲーション",
@@ -744,6 +760,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   backToStableInstall: "{version} をインストール",
   backToStableNone: "今は戻れる安定版がありません。",
   aiCompletionLabel: "AI補完",
+  completionSourceLabel: "補完の提供元",
   completionToneLabel: "補完のトーン",
   completionTone_default: "文書に合わせる",
   completionTone_formal: "フォーマル",
@@ -822,7 +839,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   conventionsEu: "EU 機関",
   agentAttachFile:
     "ファイルを添付：文書、PDF、画像、コード、zip など、どんなファイルでも",
-  chatAttachmentTruncated: "（一部のみ）",
+  chatAttachmentTruncated: "（長文：分けて読みます）",
   chatAttachmentNoVision: `このプロバイダーは画像を読めません。「設定 › ${AI_NAME}」でプロバイダーを変更するか、文書を添付してください。`,
   aiGrammarLabel: "文法チェック",
   aiAskLabel: `${AI_NAME} チャット`,
@@ -843,9 +860,6 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   providerDropdownLabel: "プロバイダー",
   authDropdownLabel: "ログインと認証",
   insertTable: "表を挿入",
-  insertTableRowsLabel: "行数",
-  insertTableColumnsLabel: "列数",
-  insertTableConfirm: "挿入",
   alignLeft: "左揃え",
   alignCenter: "中央揃え",
   alignRight: "右揃え",
@@ -860,6 +874,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   deleteRow: "行を削除",
   deleteColumn: "列を削除",
   copyTable: "表をコピー",
+  tableSize: "行数と列数",
+  tableGridSize: "{rows} 行、{cols} 列",
+  tableGridLoses: "文字のあるセルは削除されます",
   deleteTable: "表を削除",
   tableToMarkdown: "Markdown の表に変換",
   tableToMarkdownMerged: "Markdown の表に変換（結合されたセルがあります）",
@@ -905,9 +922,14 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   modelListLabel: "モデル一覧",
   customTestConnection: "接続をテスト",
   customTestSuccess: "接続できました。",
+  customModelNotListed:
+    "接続できましたが、このエンドポイントのモデル一覧に「{model}」がありません。一覧から選んでください。",
   customSave: "保存",
   proxyLabel: "ネットワークプロキシ",
   proxyTypeNone: "なし（直接接続）",
+  proxyTypeSystem: "システムと同じ",
+  proxySystemHelp:
+    "システムのネットワーク設定のプロキシを使います。設定がなければ直接接続します。",
   proxyHostPlaceholder: "ホスト、例：127.0.0.1",
   proxyPortPlaceholder: "ポート",
   proxyUserPlaceholder: "ユーザー名（省略可）",
@@ -923,12 +945,23 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   agentSend: "送信",
   agentStop: "停止",
   agentRetry: "再試行",
+  agentForgotStart:
+    "会話が長くなったため、最初の方のメッセージはモデルに送られなくなりました。最初からやり直すには新しい会話を始めてください。",
+  revisionsNotKept:
+    "判断待ちの変更をディスクに保存できませんでした。文書を閉じる前に承認か却下をしてください。閉じると失われます。",
+  settingsNotSaved:
+    "設定とウィンドウの状態を今は保存できません。変更は Textus を閉じるまでの間だけ有効です。",
   agentNeedsFolder:
     "先にフォルダを開くか、書類を保存してください。エージェントはフォルダの中で作業します。",
   agentStopped: "{agent} が停止しました。",
   agentNoImages:
     "{agent} は画像を読めません。画像を外すか、別のエージェントを選んでください。",
   agentSignIn: "先に {agent} にサインインしてください。",
+  agentApproval: "承認",
+  agentAskFirst: "先に確認",
+  agentAskFirstHint: "変更やコマンドの前に毎回確認します。",
+  agentAllowAll: "すべて許可",
+  agentAllowAllHint: "変更とコマンドをすべて確認なしで実行します。",
   chatAgentsGroup: "エージェント",
   chatAgentPermission: "エージェントが続行の許可を求めています",
   chatAgentRunCommand: "コマンドを 1 つ実行",
@@ -1059,7 +1092,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   codeBlockCopied: "コピーしました",
   autoCloseMarksLabel: "** と ` を補完",
   autoCloseBracketsLabel: "()、[]、「」を補完",
-  plainTextMenuLabel: "右クリックメニューにプレーンテキストでコピー/ペースト",
+  plainTextMenuLabel: "コンテキストメニューにプレーンテキストでコピー/ペースト",
   pdfPageNumbersLabel: "書き出し時にページ番号を表示",
   docxTemplateLabel: "Word テンプレート",
   docxTemplateHelp:
@@ -1100,6 +1133,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   activityRail: "アクティビティバー",
   activityRailHide: "アクティビティバーを隠す",
   activityRailShow: "アクティビティバーを表示",
+  windowLayoutGroup: "ウィンドウのレイアウト",
+  classicLookNote:
+    "1.4 より前の見た目が好みなら、レイアウトを「クラシック」にし、アクティビティバーをオフ、タイトルバーの独立表示をオンにします。元に戻せば新しい見た目になります。",
   layoutLabel: "レイアウト",
   layoutIslands: "フローティング",
   layoutClassic: "クラシック",
@@ -1165,6 +1201,10 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   menuTable: "表",
   menuToggleSourceMode: "ソースモード",
   menuFormatBar: "書式バー",
+  menuFormatBarTop: "上",
+  menuFormatBarLeft: "左",
+  menuFormatBarRight: "右",
+  menuFormatBarHidden: "非表示",
   menuToggleTypewriterMode: "タイプライターモード",
   menuToggleSidebar: "サイドバー",
   menuZoomIn: "拡大",
@@ -1214,7 +1254,6 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   windowMaximize: "最大化",
   windowRestore: "元のサイズに戻す",
   windowClose: "閉じる",
-  chatWindowTitle: AI_NAME,
   chatWindowPin: "最前面に固定",
   chatWindowPinHint: "このウィンドウをエディターより前面に保つ",
   chatWindowUnpinHint: "最前面固定を解除",
@@ -1380,7 +1419,11 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   tutorialSettingsBody: "歯車にはテーマ、フォント、AI アカウントがあります。",
   tutorialEditorTitle: "見たまま書く",
   tutorialEditorBody:
-    "Markdown は入力したそばから書式になります：`# タイトル` や `- リスト` を試してみて。",
+    "Markdown は入力したそばから書式になります。順に試してみて：",
+  tutorialEditorHeading: "見出し：`# 計画`",
+  tutorialEditorList: "リスト：`- 牛乳`",
+  tutorialEditorNumbered: "番号付き：`1. 最初`",
+  tutorialEditorTask: "やること：`- [ ] 折り返し電話`",
   tutorialAiTitle: "Textus AI",
   tutorialAiBody: "右上のきらめきボタンをクリックして Textus AI を開きます。",
   tutorialAiBodyPhone:
@@ -1410,6 +1453,10 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   wordImportDismiss: "OK",
   openFileFailed:
     "{name} を開けません。テキスト文書ではなく、この種類のファイルを開けるプラグインもありません。",
+  openFileMuted:
+    "Textus だけでは {name} を開けません。開けるプラグインの提案をオフにしています。設定 › {page} で再表示できます。",
+  openFileGone:
+    "{name} を開けません。ファイルが見つかりません。移動、名前の変更、または削除された可能性があります。",
   wordImportFailed: "{name} を開けませんでした。",
   wordSaveRefused:
     "Markdown 文書を Word 文書に上書き保存することはできません。.md で終わる名前を選んでください。",
@@ -1449,7 +1496,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   missingImageChooseFailed: "選んだ画像を使えませんでした。",
   imageStorageGroupLabel: "画像",
   imageStorageLabel: "画像の保存先",
-  imageStorageLocal: "このコンピューター",
+  imageStorageLocal: "このデバイス",
   imageStorageRemote: "画像ホストにアップロード",
   imageFolderLabel: "フォルダー",
   imageFolderSubfolder: "サブフォルダー",
@@ -1527,7 +1574,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   themeNamePaper: "ペーパー",
   themeNameSlate: "スレート",
   themeNameForest: "フォレスト",
-  themeNameAurora: "オーロラ",
+  themeNamePrism: "プリズム",
   appearanceLabel: "外観",
   appearanceModeLabel: "ライト／ダーク",
   appearanceSystem: "システムに従う",
@@ -1637,7 +1684,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   navProvidersModels: "モデル設定",
   navMemorySkills: "Agent 機能",
   memoryGroup: "メモリー",
-  netGroup: "ウェブとプロキシ",
+  netGroup: "ウェブ検索",
   modelChoiceGroup: "モデルの選択",
   providersGroup: "プロバイダー",
   chooseFile: "ファイルを選択…",
@@ -1657,7 +1704,11 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   writingProviderLabel: "執筆支援のサービス",
   followChatProvider: "チャットと同じ",
   providerModelsGroup: "モデル",
-  providerKeysLocal: "キーはこのコンピュータにだけ保存されます。",
+  allFilesAccessAsk:
+    "次に Android が「すべてのファイルの管理」の許可を求めます。許可すると Textus はこのフォルダを直接開くので速く、ほかのアプリでの変更もすぐ反映されます。許可しなくてもフォルダは開けますが、少し遅くなります。",
+  allFilesAccessContinue: "続ける",
+  allFilesAccessNotNow: "今はしない",
+  providerKeysLocal: "キーはこのデバイスにだけ保存されます。",
   pluginsMore: "その他",
   pluginsSearch: "プラグインを検索",
   pluginUpdateNow: "更新",
@@ -1814,6 +1865,16 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   pluginPermAiTools: "Textus AI に独自のツールを提供する",
   pluginPermNotifications: "システム通知を表示する",
   pluginPermAppearance: "Textus と文書の色を変更する",
+  pluginPermGitCommit: "自分の Git で、開いているフォルダにコミットする",
+  pluginPermComments: "文書の余白のメモを読み、書き加える",
+  pluginPermAiModel:
+    "あなたの AI モデルを使う（AI サービスの使用量に含まれます）",
+  pluginAiAsk:
+    "{plugin} があなたの AI モデルを使おうとしています。送信する内容は AI サービスの使用量に含まれます。このプラグインは月に {limit} トークンまでです。",
+  pluginAiLimit:
+    "{plugin} は今月の AI トークン {limit} を使い切りました。さらに {limit} 許可しますか？",
+  pluginAiAllow: "許可",
+  pluginAiUsage: "今月の AI：{limit} トークン中 {used}",
   pluginPermAgents:
     "このコンピュータにインストールされた AI エージェントを実行する（ファイルの読み取りと変更ができます）",
   pluginPermBackground:
@@ -1821,6 +1882,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   pluginScheduleNotice:
     "{name} が予定を設定しました。Textus の実行中にだけ動きます。「{setting}」をオンにすると、すべてのウインドウを閉じていても動きます。",
   pluginPermNetwork: "{host} に接続する",
+  pluginPermHidden: "開いているフォルダの {path} を読む",
   pluginPermCommands: "{plugin} のコマンドを実行",
   pluginPermNetworkAny: "任意のウェブサイトに接続する",
   menuPlugins: "プラグイン",
@@ -1840,7 +1902,15 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   pluginKeysTaken:
     "{name} はキーボードを使えません：{holder} が使用中です。サイドバーのプラグイン一覧でどちらかをオフにしてください。",
   shortcutIndentListItem: "リスト項目をインデント",
+  shortcutFoldSection: "セクションを折りたたむ",
+  shortcutUnfoldSection: "セクションを展開",
   shortcutOutdentListItem: "リスト項目のインデントを戻す",
   pluginKeyTaken:
     "「{name}」：{key} は「{owner}」が使っているため、「{command}」には割り当てませんでした。設定 › ショートカット で別のキーを設定できます。",
+  gitTrustTitle: "このリポジトリ独自のプログラムを Git に実行させますか？",
+  gitTrustText:
+    "このフォルダの Git リポジトリは、お使いのコンピュータでプログラムを実行するように設定されています（{what}）。自分で作ったリポジトリではよくあることです。ほかの人から受け取ったフォルダの場合は、相手を信頼できるときだけ許可してください。",
+  gitTrustAllow: "このリポジトリを信頼",
+  gitTrustRefused:
+    "ここでは Git を使いません：このリポジトリは信頼されていません。",
 } satisfies Translation;

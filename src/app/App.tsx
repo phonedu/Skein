@@ -4,7 +4,7 @@ import { tabTitle } from "../document/doc-tabs";
 import { useWindowAi } from "./islands/useWindowAi";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
-import { CornerStack } from "../engine/controls/CornerToast";
+import { CornerStacks } from "../engine/controls/CornerToast";
 import { Suspense, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
@@ -96,6 +96,7 @@ function App() {
   const { panelMode, setPanelMode } = shell.panels;
   const { activeTab, activeTitle, activeDirty } = docs;
   const { openFolder, openFile, openFileDialog, handleChange } = docs;
+  const { searchFiles } = docs;
   const { searchFocusRequest, clearSearchFocusRequest } = docs;
   const { showTabBar, requestCloseTab, handleTabDetach, dragHoverPreview } =
     docs;
@@ -117,7 +118,7 @@ function App() {
 
   useWindowAi({
     tabs: shell.tabState,
-    workspaceRoot: settings.agentWorkspaceRoot || null,
+    settings,
     shown: agentPanel.open,
     setShown: agentPanel.setOpen,
   });
@@ -167,6 +168,12 @@ function App() {
           data-tabs={tabRow}
           // Its column open: the grid and the rail's edge follow the model.
           data-sidebar={sidebarShown ? "open" : undefined}
+          // A format bar down the right edge: the page's readouts clear it.
+          data-format-bar={
+            settings.formatBar && settings.formatBarSide === "right" && !phone
+              ? "right"
+              : undefined
+          }
           // The sidebar's dragged width; a phone's is its stylesheet's.
           style={
             phone
@@ -268,7 +275,7 @@ function App() {
               previewTab={dragHoverPreview}
               onChange={handleChange}
               typewriter={settings.typewriterMode}
-              formatBar={settings.formatBar}
+              formatBar={settings.formatBar ? settings.formatBarSide : null}
               tour={
                 tutorial.active && tutorial.tabId
                   ? {
@@ -335,23 +342,32 @@ function App() {
 
           {zenMode && <ZenExit onExit={() => setZenMode(false)} t={t} />}
 
-          <CornerStack corner="start">
-            <WordImportNotice
-              path={wordImported.path}
-              onDismiss={wordImported.dismiss}
-              t={t}
-            />
-            <DraftRestoredToast
-              count={draftsRestoredCount}
-              onDismiss={() => setDraftsRestoredCount(0)}
-              t={t}
-            />
-          </CornerStack>
-
-          <CornerStack corner="end">
-            <SuggestCard t={t} />
-            <ConventionsCard path={activeTab.path} settings={settings} t={t} />
-          </CornerStack>
+          <CornerStacks
+            start={
+              <>
+                <WordImportNotice
+                  path={wordImported.path}
+                  onDismiss={wordImported.dismiss}
+                  t={t}
+                />
+                <DraftRestoredToast
+                  count={draftsRestoredCount}
+                  onDismiss={() => setDraftsRestoredCount(0)}
+                  t={t}
+                />
+              </>
+            }
+            end={
+              <>
+                <SuggestCard t={t} />
+                <ConventionsCard
+                  path={activeTab.path}
+                  settings={settings}
+                  t={t}
+                />
+              </>
+            }
+          />
 
           <OnboardingLayers
             tutorial={tutorial}

@@ -165,6 +165,31 @@ fn compact_history_drops_whole_oldest_exchanges_over_budget() {
     assert!(matches!(&out[0], AgentTurn::User { text, .. } if text == "recent"));
 }
 
+#[test]
+fn a_conversation_that_loses_its_start_says_so() {
+    struct Told(std::sync::Mutex<Vec<String>>);
+    impl EventSink for Told {
+        fn send(&self, event: StreamEvent) {
+            let json = serde_json::to_value(&event).unwrap();
+            self.0
+                .lock()
+                .unwrap()
+                .push(json["type"].as_str().unwrap().into());
+        }
+    }
+    let told = Told(Default::default());
+    let short = vec![AgentTurn::user("hi"), AgentTurn::assistant("hello")];
+    compact_telling(short, &told);
+    assert!(told.0.lock().unwrap().is_empty());
+    let long = vec![
+        AgentTurn::user("y".repeat(HISTORY_BUDGET)),
+        AgentTurn::assistant("a1"),
+        AgentTurn::user("recent"),
+    ];
+    compact_telling(long, &told);
+    assert_eq!(*told.0.lock().unwrap(), ["forgot"]);
+}
+
 /// One exchange of `chars` characters: a question, a file read, a reply.
 fn exchange(n: usize, chars: usize) -> Vec<AgentTurn> {
     vec![
@@ -305,7 +330,7 @@ fn the_message_header_names_the_language_the_user_typed() {
 #[test]
 fn short_document_is_embedded_verbatim() {
     let doc = "# Title\n\nJust a short document.";
-    let section = document_section(&md(doc), true, None);
+    let section = document_section(&md(doc), context::Reading::least(true), None);
     // Whole, each block marked with its id.
     let blocks = md(doc).blocks;
     assert_eq!(
@@ -321,7 +346,7 @@ fn short_document_is_embedded_verbatim() {
 fn long_document_is_truncated_with_outline_and_excerpts() {
     let middle = "x".repeat(FULL_DOCUMENT_LIMIT + 1000);
     let doc = format!("# Start\n\nfirst-marker {middle} last-marker\n\n## End");
-    let section = document_section(&md(&doc), true, None);
+    let section = document_section(&md(&doc), context::Reading::least(true), None);
     assert!(section.contains("truncated"));
     assert!(section.contains("# Start"));
     assert!(section.contains("## End"));
@@ -336,17 +361,47 @@ fn long_document_is_truncated_with_outline_and_excerpts() {
 fn the_document_tools_are_for_a_document_shown_in_part() {
     // The document tools are taken out when the whole document is in the
     // message.
-    assert!(context::shown_whole("# Title\n\nOne paragraph.", true));
+    assert!(context::shown_whole(
+        "# Title\n\nOne paragraph.",
+        context::Reading::least(true)
+    ));
     assert!(!context::shown_whole(
         &"x".repeat(FULL_DOCUMENT_LIMIT + 1),
-        true
+        context::Reading::least(true)
+    ));
+}
+
+#[test]
+fn a_roomy_provider_takes_a_long_document_whole_a_gateway_or_local_one_in_part() {
+    let provider = |id: &str| {
+        crate::ai::catalog::PROVIDER_CATALOG
+            .iter()
+            .find(|p| p.id == id)
+            .unwrap()
+    };
+    let doc = "x".repeat(FULL_DOCUMENT_LIMIT * 2);
+    assert!(context::shown_whole(
+        &doc,
+        context::Reading::for_provider(true, provider("anthropic"))
+    ));
+    // A gateway may serve a model of 8k: in part, as a local server's.
+    for id in ["ollama", "openrouter", "groq", "qwen"] {
+        assert!(!context::shown_whole(
+            &doc,
+            context::Reading::for_provider(true, provider(id))
+        ));
+    }
+    let past = "x".repeat(context::ROOMY_DOCUMENT_LIMIT + 1);
+    assert!(!context::shown_whole(
+        &past,
+        context::Reading::for_provider(true, provider("anthropic"))
     ));
 }
 
 #[test]
 fn truncation_note_omits_tool_mention_without_tools() {
     let doc = "x".repeat(FULL_DOCUMENT_LIMIT + 1);
-    let section = document_section(&md(&doc), false, None);
+    let section = document_section(&md(&doc), context::Reading::least(false), None);
     assert!(!section.contains("search_document"));
 }
 
@@ -355,7 +410,7 @@ fn excerpts_are_char_boundary_safe_for_cjk() {
     // Every char here is multi-byte - a byte-index slice at a fixed
     // offset would panic mid-character.
     let doc = "中".repeat(FULL_DOCUMENT_LIMIT + 500);
-    let section = document_section(&md(&doc), true, None);
+    let section = document_section(&md(&doc), context::Reading::least(true), None);
     assert!(section.contains('中'));
 }
 
@@ -370,12 +425,12 @@ fn a_long_cjk_document_is_outlined_by_its_token_weight() {
     doc.push_str("## 目标\n\n用户正在改的段落。");
     let chars = doc.chars().count();
     assert!(chars > FULL_DOCUMENT_LIMIT / 3 && chars < FULL_DOCUMENT_LIMIT);
-    let with_tools = document_section(&md(&doc), true, Some("目标"));
+    let with_tools = document_section(&md(&doc), context::Reading::least(true), Some("目标"));
     assert!(with_tools.contains("truncated"));
     assert!(with_tools.contains("用户正在改的段落。"));
     assert!(with_tools.chars().count() < chars / 2);
     assert_eq!(
-        document_section(&md(&doc), false, None),
+        document_section(&md(&doc), context::Reading::least(false), None),
         format!(
             "---document---\n{}",
             doc_blocks::annotate(&md(&doc), 0, doc.len())
@@ -383,7 +438,9 @@ fn a_long_cjk_document_is_outlined_by_its_token_weight() {
     );
     // The same length of English is still sent whole.
     let english = "x".repeat(chars);
-    assert!(!document_section(&md(&english), true, None).contains("truncated"));
+    assert!(
+        !document_section(&md(&english), context::Reading::least(true), None).contains("truncated")
+    );
 }
 
 #[test]
@@ -396,7 +453,7 @@ fn a_long_document_still_carries_the_section_being_worked_on() {
         ));
     }
     doc.push_str("## Target\n\nThe paragraph the user is editing.\n\n## After\n\nmore");
-    let section = document_section(&md(&doc), true, Some("Target"));
+    let section = document_section(&md(&doc), context::Reading::least(true), Some("Target"));
     assert!(section.contains("truncated"));
     assert!(section.contains("The paragraph the user is editing."));
     // The section ends where the next heading of its level starts.
@@ -417,7 +474,10 @@ fn a_long_document_still_carries_the_section_being_worked_on() {
     assert!(focus.starts_with("## Target"));
     assert!(!focus.contains("## After"));
     assert_eq!(doc.lines().nth(line - 1), Some("## Target"));
-    assert!(!document_section(&md(&doc), true, None).contains("the section the user is working in"));
+    assert!(
+        !document_section(&md(&doc), context::Reading::least(true), None)
+            .contains("the section the user is working in")
+    );
 }
 
 #[test]
@@ -557,7 +617,7 @@ fn the_workspace_section_says_which_folder_and_why() {
     assert_eq!(chosen.root_source, RootSource::Chosen);
     let text = workspace_section(&chosen, "en");
     assert!(text.contains("chosen by the user") && text.contains("click the folder name"));
-    assert!(text.contains("Use no folder"));
+    assert!(text.contains("Use the sidebar's folder"));
     // Attached files are named wherever there are some.
     let with_files = AgentWorkspace {
         attached: true,
@@ -683,7 +743,7 @@ fn the_prompt_names_things_exactly_as_the_ui_does() {
     let en_ts = read("src/i18n/locales/en.ts");
     for label in [
         "Choose folder…",
-        "Use no folder",
+        "Use the sidebar's folder",
         "Learn my style from samples…",
         "Create style profile",
         "Open style profile",
@@ -1106,5 +1166,8 @@ fn only_a_mode_that_reads_the_document_is_told_to() {
     assert!(reads(AgentMode::Write) && reads(AgentMode::Review));
     assert!(!reads(AgentMode::Create));
     let doc = "# Title\n\n".to_string() + &"A long paragraph of words. ".repeat(4000);
-    assert!(!document_section(&md(&doc), false, None).contains("read_document"));
+    assert!(
+        !document_section(&md(&doc), context::Reading::least(false), None)
+            .contains("read_document")
+    );
 }

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  agentRootOnClose,
-  agentRootOnOpen,
-  isWithin,
-  nextTreeRoot,
-} from "./tree-root";
+import { isWithin } from "../utils/path";
+import { nextTreeRoot, rootAfterClose } from "./tree-root";
 
 const root = (
   current: string | null,
@@ -82,33 +78,16 @@ describe("isWithin", () => {
   });
 });
 
-describe("the AI's project folder when a folder opens", () => {
-  it("follows the folder while the AI has none of its own", () => {
-    expect(agentRootOnOpen("", "", "/notes")).toBe("/notes");
+describe("Close Folder", () => {
+  it("goes back to the document's folder", () => {
+    expect(rootAfterClose("/notes/a.md", "/home")).toBe("/notes");
   });
-
-  it("follows the next folder after one Open Folder set it", () => {
-    expect(agentRootOnOpen("/notes", "/notes", "/novel")).toBe("/novel");
-  });
-
-  it("leaves a folder the user chose for the AI", () => {
-    expect(agentRootOnOpen("/research", "", "/notes")).toBeNull();
-    expect(agentRootOnOpen("/research", "/old", "/notes")).toBeNull();
-  });
-
-  it("changes nothing when it already is the folder", () => {
-    expect(agentRootOnOpen("/notes", "", "/notes")).toBeNull();
-  });
-});
-
-describe("the AI's project folder when a folder closes", () => {
-  it("goes back to the default if this folder set it", () => {
-    expect(agentRootOnClose("/notes", "/notes", "/notes")).toBe("");
-  });
-
-  it("is left alone if the user chose it, or another folder set it", () => {
-    expect(agentRootOnClose("/research", "/notes", "/notes")).toBeNull();
-    expect(agentRootOnClose("/novel", "/novel", "/notes")).toBeNull();
-    expect(agentRootOnClose("", "", "/notes")).toBeNull();
+  it("never roots at an Android document's address", () => {
+    expect(
+      rootAfterClose(
+        "content://com.android.externalstorage.documents/tree/primary%3ANotes/document/primary%3ANotes%2Fa.md",
+        "/data/notes",
+      ),
+    ).toBe("/data/notes");
   });
 });

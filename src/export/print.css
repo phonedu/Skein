@@ -17,7 +17,7 @@
   .tab-bar,
   .window-bar,
   .tx-backdrop,
-  .corner-stack,
+  .corner-stacks,
   .pdf-export-overlay {
     display: none !important;
   }
@@ -32,6 +32,8 @@
   .heading-marker,
   .enclosure-delimiter,
   .code-block-header,
+  .block-toolbar,
+  .table-grip,
   .mermaid-zoom,
   .code-line-gutter,
   .color-swatch,
@@ -42,6 +44,8 @@
   .quick-ask-anchor,
   .pending-insert,
   .image-resize-handle,
+  .block-fold,
+  .block-folded-line,
   .frontmatter-block,
   .missing-image-card,
   .md-emoji-source,

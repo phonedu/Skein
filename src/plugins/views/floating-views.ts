@@ -1,3 +1,4 @@
+import { isRecord } from "../../utils/is-record";
 import { getUiState, updateUiState } from "../../storage/ui-state";
 import { atMedium } from "../../utils/at-medium";
 import { emitPluginEvent } from "../app-bridge";
@@ -9,7 +10,8 @@ import { contributedContextItems } from "../../registry/context-menu-items";
 import type {
   FloatingPlace,
   FloatingViewContribution,
-} from "../store/manifest";
+} from "../store/manifest-types";
+import { createSubscribers } from "../../utils/store";
 
 /**
  * Plugins' floating views that are open (contributes.floatingViews): where
@@ -56,6 +58,16 @@ export function floatingSize(view: FloatingView, chrome = 1): [number, number] {
   ];
 }
 
+/** Its size at scale 1, which its own window scales when resized: the
+ *  same as {@link floatingSize} at its scale. */
+export function floatingBase(view: FloatingView, chrome = 1) {
+  return {
+    width: atMedium(view.width) * chrome,
+    height: atMedium(view.height) * chrome,
+    scale: view.scale,
+  };
+}
+
 /** What a plugin hears when its view opens, closes, folds or moves. */
 export interface FloatingChange {
   view: string;
@@ -72,7 +84,7 @@ export interface FloatingChange {
 export type FloatingTouch = "poke" | "pet" | "moved";
 
 const open = new Map<string, FloatingView>();
-const listeners = new Set<() => void>();
+const subscribers = createSubscribers();
 let version = 0;
 
 type Saved = Pick<FloatingView, "place" | "x" | "y" | "folded"> & {
@@ -82,14 +94,12 @@ type Saved = Pick<FloatingView, "place" | "x" | "y" | "folded"> & {
 
 function saved(): Record<string, Saved> {
   const kept = getUiState("floatingViews");
-  return kept && typeof kept === "object"
-    ? (kept as Record<string, Saved>)
-    : {};
+  return isRecord(kept) ? (kept as Record<string, Saved>) : {};
 }
 
 function save(view: string, value: Saved) {
   updateUiState("floatingViews", (kept) => ({
-    ...(kept && typeof kept === "object" ? kept : {}),
+    ...(isRecord(kept) ? kept : {}),
     [view]: value,
   }));
 }
@@ -113,7 +123,7 @@ function changed(view: FloatingView, isOpen: boolean) {
   setFloatingCount(open.size);
   const { place, x, y, folded, scale } = view;
   save(view.view, { place, x, y, folded, scale, open: isOpen });
-  for (const listener of listeners) listener();
+  subscribers.publish();
   emitPluginEvent("floating", {
     plugin: view.plugin,
     view: view.view,
@@ -169,10 +179,7 @@ export function floatingMenuItems(view: Pick<FloatingView, "plugin" | "view">) {
   }).filter((item) => item.plugin === view.plugin);
 }
 
-export function subscribeFloating(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const subscribeFloating = subscribers.subscribe;
 
 export function floatingVersion(): number {
   return version;
@@ -251,7 +258,7 @@ export function closeFloatingOf(plugin: string) {
       open.delete(view.view);
       version++;
       setFloatingCount(open.size);
-      for (const listener of listeners) listener();
+      subscribers.publish();
     }
 }
 

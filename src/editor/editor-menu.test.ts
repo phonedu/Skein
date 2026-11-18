@@ -168,8 +168,8 @@ describe("the editor menu", () => {
       "-",
       // Obsidian's three: inline styles, the block, and what goes in.
       `${t.menuFormat} › ${t.toolbarBold} | ${t.toolbarItalic} | ${t.menuStrikethrough} | ${t.toolbarHighlight} | ${t.menuInlineCode} | - | ${t.menuClearFormatting}`,
-      `${t.menuParagraph} › ${[1, 2, 3].map((n) => t.menuHeadingTemplate.replace("{n}", String(n))).join(" | ")} | - | ${t.menuBulletList} | ${t.menuOrderedList} | ${t.menuTaskList} | ${t.menuBlockquote}`,
-      `${t.menuInsertGroup} › ${t.menuTable} | ${t.menuCodeBlock} | ${t.menuMathBlock} | ${t.menuDivider}`,
+      `${t.menuParagraph} › ${t.blockText} | ${[1, 2, 3].map((n) => t.menuHeadingTemplate.replace("{n}", String(n))).join(" | ")} | - | ${t.menuBulletList} | ${t.menuOrderedList} | ${t.menuTaskList} | ${t.menuBlockquote} | ${t.blockCallout} | ${t.menuCodeBlock}`,
+      `${t.menuInsertGroup} › ${t.menuMathBlock} | ${t.menuTable} | ${t.menuDivider}`,
       `${t.menuTextusAi} › Ask | Continue`,
     ]);
   });
@@ -276,6 +276,16 @@ describe("the editor menu", () => {
     );
     expect(inText).toContain(t.insertTable);
     expect(inText).not.toContain(t.menuBulletList);
+    // A tap only edits a link: its Open is here.
+    const link = { pos: 0, source: "[a](b.md)", href: "b.md", docPath: null };
+    expect(
+      labels(
+        buildPhoneMoreItems(editorAt(caretIn("text")).run, {
+          ...options(null),
+          link,
+        }),
+      ),
+    ).toContain(t.menuOpenLink);
 
     const onImage = labels(
       buildPhoneMoreItems(editorAt(imageSelected).run, options(imagePos)),

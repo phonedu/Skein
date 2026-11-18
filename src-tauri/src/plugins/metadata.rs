@@ -2,8 +2,7 @@
 //! matter, headings, links, tags and tasks, re-read only when a file's size or
 //! time changes. Built on the first request. Lines count from 0.
 
-use super::access::{in_folder, refused, require_not_app_data};
-use super::state;
+use super::access::{checked_root, in_folder};
 use crate::ai::doc_blocks::Document as DocBlocks;
 use regex::Regex;
 use serde::Serialize;
@@ -36,6 +35,8 @@ pub struct LinkMeta {
 pub struct TaskMeta {
     text: String,
     done: bool,
+    /// The character in its brackets: " ", "x", "-", "/" and the like.
+    status: String,
     due: Option<String>,
     tags: Vec<String>,
     line: u32,
@@ -232,6 +233,7 @@ pub fn parse_document(path: &str, rel: &str, text: &str) -> DocumentMeta {
                 tags: tags_in(&task_text),
                 text: task_text,
                 done: &t[1] != " ",
+                status: t[1].to_string(),
                 due,
                 line: line_no,
             });
@@ -313,7 +315,17 @@ fn modified_of(meta: &std::fs::Metadata) -> Option<u128> {
 /// the next generation. Answers a caller at `after` under the same lock,
 /// so another folder can't push this one out in between.
 fn refresh(index: &MetadataIndex, root: &Path, after: Option<u64>) -> MetadataAll {
-    let walk = crate::walk::walk(root, &crate::walk::LIMITS, crate::extract::is_markdown);
+    refresh_within(index, root, after, &crate::walk::LIMITS)
+}
+
+fn refresh_within(
+    index: &MetadataIndex,
+    root: &Path,
+    after: Option<u64>,
+    limits: &crate::walk::Limits,
+) -> MetadataAll {
+    let walk = crate::walk::walk(root, limits, crate::extract::is_markdown);
+    let cut_short = walk.truncated;
     let key = root.to_string_lossy().to_string();
     let mut all = index.0.lock().unwrap_or_else(|e| e.into_inner());
     if !all.contains_key(&key) && all.len() >= ROOTS_KEPT {
@@ -365,6 +377,9 @@ fn refresh(index: &MetadataIndex, root: &Path, after: Option<u64>) -> MetadataAl
         .docs
         .keys()
         .filter(|p| !present.contains(*p))
+        // A walk cut short (a slow drive, a huge folder) reached only part
+        // of the folder: what it missed is gone only if its file is.
+        .filter(|p| !cut_short || !Path::new(p).exists())
         .cloned()
         .collect();
     for path in gone {
@@ -411,16 +426,6 @@ fn since(known: &RootIndex, since: Option<u64>) -> MetadataAll {
         documents,
         gone,
     }
-}
-
-fn checked_root(app: &tauri::AppHandle, id: &str, root: &str) -> Result<(), String> {
-    if !state::read(app).allows(id, "files.read") {
-        return Err(refused(id, "files.read"));
-    }
-    if root.is_empty() || !Path::new(root).is_dir() {
-        return Err(crate::errors::error("noFolder"));
-    }
-    require_not_app_data(app, Path::new(root))
 }
 
 /// The folder's documents and what they hold (blocks left out): every one

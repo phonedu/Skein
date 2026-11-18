@@ -23,8 +23,8 @@ pub(crate) use build::*;
 #[cfg(target_os = "macos")]
 mod dock;
 mod plugins;
-pub use plugins::set_plugin_menu;
 pub(crate) use plugins::*;
+pub use plugins::{set_plugin_exports, set_plugin_menu};
 
 /// Menu ids of File > Open Recent entries carry their path: "recent:<path>".
 const RECENT_PREFIX: &str = "recent:";
@@ -155,24 +155,30 @@ pub fn set_menu_checks(app: AppHandle, checks: HashMap<String, bool>) {
 pub fn set_menu_accelerators(app: AppHandle, accelerators: HashMap<String, String>) {
     #[cfg(target_os = "macos")]
     {
-        let Some(state) = app.try_state::<MenuAccelerators>() else {
-            return;
-        };
-        {
-            let mut current = state.0.lock().unwrap();
-            if *current == accelerators {
-                return;
-            }
-            *current = accelerators;
+        if let Some(state) = app.try_state::<MenuAccelerators>() {
+            keep_and_rebuild(&app, &state.0, accelerators);
         }
-        let handle = app.clone();
-        let _ = app.run_on_main_thread(move || {
-            let labels = handle.state::<MenuLabels>().0.lock().unwrap().clone();
-            let _ = set_menu(&handle, &labels);
-        });
     }
     #[cfg(not(target_os = "macos"))]
     let _ = (app, accelerators);
+}
+
+/// Keeps `value` in `slot` and, when it changed, builds the menu bar again
+/// on the main thread with the labels it has.
+#[cfg(target_os = "macos")]
+pub(crate) fn keep_and_rebuild<T: PartialEq>(app: &AppHandle, slot: &Mutex<T>, value: T) {
+    {
+        let mut current = slot.lock().unwrap();
+        if *current == value {
+            return;
+        }
+        *current = value;
+    }
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        let labels = handle.state::<MenuLabels>().0.lock().unwrap().clone();
+        let _ = set_menu(&handle, &labels);
+    });
 }
 
 /// Runs a menu id exactly as clicking that native item would; the way in for
@@ -235,8 +241,7 @@ fn open_folder_in_sidebar(app_handle: &tauri::AppHandle, path: &str) {
     if focused_editor_window(app_handle).is_some() {
         emit_to_focused_payload(app_handle, "menu-open-recent-folder", path);
     } else {
-        *crate::PENDING_OPEN_FOLDER.lock().unwrap() = Some(path.to_string());
-        let _ = crate::editor_windows::open_new_window(app_handle);
+        crate::launch::open_folder_window(app_handle, path);
     }
 }
 
@@ -246,6 +251,7 @@ fn dispatch(app_handle: &tauri::AppHandle, id: &str) {
     let with_payload = [
         (PLUGIN_COMMAND_PREFIX, "menu-plugin-command"),
         (EXPORT_PANDOC_PREFIX, "menu-export-pandoc"),
+        (PLUGIN_EXPORT_PREFIX, "menu-export-plugin"),
         (INSERT_BLOCK_PREFIX, "menu-insert-block"),
         (TOGGLE_MARK_PREFIX, "menu-toggle-mark"),
     ];

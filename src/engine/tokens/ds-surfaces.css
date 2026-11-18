@@ -11,8 +11,10 @@
     color var(--dur-fast) var(--ease-standard);
 }
 
-:is(.tab-pill, .sidebar-tab):hover {
-  background: var(--ui-hover);
+@media (hover: hover) {
+  :is(.tab-pill, .sidebar-tab):hover {
+    background: var(--ui-hover);
+  }
 }
 
 :is(.tab-pill-active, .sidebar-tab-active) {
@@ -64,8 +66,10 @@
   font-size: var(--text-secondary);
 }
 
-:is(.settings-select, .inline-chat-mode, .paper-outline-kind):hover {
-  border-color: color-mix(in srgb, var(--ui-muted) 45%, var(--ui-border));
+@media (hover: hover) {
+  :is(.settings-select, .inline-chat-mode, .paper-outline-kind):hover {
+    border-color: color-mix(in srgb, var(--ui-muted) 45%, var(--ui-border));
+  }
 }
 
 /* Over the pointer cursor above, the one every disabled button has. */
@@ -125,7 +129,6 @@
 /* Rows in menus and lists: the highlight arrives in 80ms and leaves at
    once, so a pointer running down a list leaves no trail behind it. */
 :is(
-  .app-menu-item,
   .context-menu-item,
   .ui-select-option,
   .inline-chat-skill-item,
@@ -138,7 +141,6 @@
 }
 
 :is(
-  .app-menu-item,
   .context-menu-item,
   .ui-select-option,
   .inline-chat-skill-item,
@@ -150,12 +152,12 @@
 }
 
 /* Menus: one panel padding, one item size, one hover. */
-:is(.app-menu-list, .context-menu) {
+.context-menu {
   padding: 4px;
   font-size: var(--text-body);
 }
 
-:is(.app-menu-item, .context-menu-item) {
+.context-menu-item {
   width: 100%;
   padding: 4px 8px;
   border: none;
@@ -167,23 +169,18 @@
   cursor: pointer;
 }
 
-:is(.app-menu-item, .context-menu-item):not(:disabled):is(
-    :hover,
-    :focus-visible
-  ) {
+.context-menu-item:not(:disabled):is(:hover, :focus-visible) {
   background: var(--ui-hover);
   outline: none;
 }
 
 /* On its way to an open submenu, the pointer lights no row it crosses. */
-:is(
-    .app-menu-list[data-aiming] > .app-menu-row > .app-menu-item,
-    .context-menu[data-aiming] > .context-menu-item
-  ):hover:not([aria-expanded="true"], :focus-visible) {
+.context-menu[data-aiming]
+  > .context-menu-item:hover:not([aria-expanded="true"], :focus-visible) {
   background: transparent;
 }
 
-:is(.app-menu-separator, .context-menu-separator) {
+.context-menu-separator {
   height: 1px;
   margin: 4px 8px;
   background: var(--ui-border);
@@ -215,35 +212,24 @@
 :is(
   .settings-text-input,
   .settings-code-input,
-  .image-name-input-row input,
-  .insert-table-fields input
+  .image-name-input-row input
 ):focus-visible {
   outline: none;
   border-color: var(--ui-accent);
 }
 
-/* Number fields type their number; the native spin arrows were the one
-   square, grey control left in the dialogs. */
-.insert-table-fields input {
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-
-.insert-table-fields input::-webkit-inner-spin-button,
-.insert-table-fields input::-webkit-outer-spin-button {
-  appearance: none;
-  -webkit-appearance: none;
-  margin: 0;
-}
-
 /* Checkboxes: drawn, so they match the buttons rather than the platform. */
 input[type="checkbox"].ui-check {
+  /* Its size, for a row that centres it on its first line:
+     margin-top: calc((1lh - var(--check-size)) / 2). */
+  --check-size: 16px;
+  /* The row's font, so its 1lh is the row's line, not a control's. */
+  font: inherit;
   appearance: none;
   -webkit-appearance: none;
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  margin: 0;
+  width: var(--check-size);
+  height: var(--check-size);
   border: 1px solid color-mix(in srgb, var(--ui-muted) 55%, var(--ui-border));
   border-radius: var(--shape-xs);
   background: var(--ui-surface);
@@ -251,6 +237,11 @@ input[type="checkbox"].ui-check {
   transition:
     background-color var(--dur-fast) var(--ease-standard),
     border-color var(--dur-fast) var(--ease-standard);
+}
+
+/* No specificity: a row's own margin for it wins. */
+:where(input[type="checkbox"].ui-check) {
+  margin: 0;
 }
 
 input[type="checkbox"].ui-check:checked {
@@ -278,8 +269,10 @@ input[type="checkbox"].ui-check:checked {
   background: color-mix(in srgb, var(--ui-muted) 35%, transparent) padding-box;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: color-mix(in srgb, var(--ui-muted) 55%, transparent);
+@media (hover: hover) {
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--ui-muted) 55%, transparent);
+  }
 }
 
 ::-webkit-scrollbar-corner {

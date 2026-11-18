@@ -1,4 +1,3 @@
-import { whenReadable } from "../contributions/when";
 import { DIAGRAM_LANGUAGES } from "../../editor/diagram-languages";
 import type {
   CompletionContribution,
@@ -7,12 +6,13 @@ import type {
   HoverContribution,
   FloatingPlace,
   MenuId,
-  SettingContribution,
-  SettingType,
   SuggestKind,
   ViewType,
-} from "./manifest";
-import { ManifestError, list, object, text, type Json } from "./manifest-json";
+} from "./manifest-types";
+import { ManifestError, list, object, text } from "./manifest-json";
+import { parseDocumentTypes } from "./manifest-documents";
+import { parseSnippets, parseWalkthroughs } from "./manifest-guides";
+import { number, parseSetting } from "./manifest-settings";
 
 /** Where a plugin's menu items may go. */
 export const MENU_IDS: readonly MenuId[] = [
@@ -85,93 +85,6 @@ export function parseMain(value: unknown): string[] | undefined {
   if (value === undefined) return undefined;
   const files = typeof value === "string" ? [value] : list(value, "main");
   return files.map((f, i) => text(f, `main[${i}]`));
-}
-
-const SETTING_TYPES: readonly SettingType[] = [
-  "boolean",
-  "string",
-  "number",
-  "enum",
-  "color",
-  "list",
-  "button",
-];
-
-/** What a setting's default must be, by its type. */
-function checkDefault(s: Json, type: SettingType, at: string): void {
-  const fallback = s.default;
-  const ok =
-    type === "button"
-      ? fallback === undefined
-      : type === "list"
-        ? Array.isArray(fallback) &&
-          fallback.every((v) => typeof v === "string")
-        : type === "color"
-          ? typeof fallback === "string" && /^#[0-9a-f]{6}$/i.test(fallback)
-          : typeof fallback === (type === "enum" ? "string" : type);
-  if (ok) return;
-  const expected = {
-    button: "left out",
-    list: "a list of strings",
-    color: 'a colour like "#3366ff"',
-    enum: "a string",
-  }[type as string];
-  throw new ManifestError(`${at}.default must be ${expected ?? `a ${type}`}.`);
-}
-
-function number(value: unknown, what: string): number | undefined {
-  if (value === undefined) return undefined;
-  if (typeof value !== "number")
-    throw new ManifestError(`${what} must be a number.`);
-  return value;
-}
-
-function parseSetting(raw: unknown, at: string): SettingContribution {
-  const s = object(raw, at);
-  const type = s.type as SettingType;
-  if (!SETTING_TYPES.includes(type))
-    throw new ManifestError(
-      `${at}.type must be one of ${SETTING_TYPES.join(", ")}.`,
-    );
-  checkDefault(s, type, at);
-  const when = text(s.when, `${at}.when`, true) || undefined;
-  if (when && !whenReadable(when))
-    throw new ManifestError(
-      `${at}.when must be a when clause: "key", "!key", "key == value", joined with && or ||.`,
-    );
-  const min = number(s.min, `${at}.min`);
-  const max = number(s.max, `${at}.max`);
-  const options =
-    type === "enum"
-      ? list(s.options, `${at}.options`).map((o, i) => {
-          const opt = object(o, `${at}.options[${i}]`);
-          return {
-            value: text(opt.value, `${at}.options[${i}].value`),
-            label: text(opt.label, `${at}.options[${i}].label`),
-          };
-        })
-      : undefined;
-  if (options && !options.some((o) => o.value === s.default))
-    throw new ManifestError(`${at}.default must be one of its options.`);
-  if (
-    typeof s.default === "number" &&
-    ((min !== undefined && s.default < min) ||
-      (max !== undefined && s.default > max))
-  )
-    throw new ManifestError(`${at}.default must be within min and max.`);
-  return {
-    key: text(s.key, `${at}.key`),
-    type,
-    default: s.default as SettingContribution["default"],
-    title: text(s.title, `${at}.title`),
-    description: text(s.description, `${at}.description`, true) || undefined,
-    group: text(s.group, `${at}.group`, true) || undefined,
-    when,
-    options,
-    ...(type === "string" && s.multiline === true ? { multiline: true } : {}),
-    ...(type === "number" ? { min, max } : {}),
-    ...(type === "button" ? { command: text(s.command, `${at}.command`) } : {}),
-  };
 }
 
 /** A command's `runs`: one of Textus's own commands ("textus.…") and
@@ -311,14 +224,6 @@ export function parseContributes(raw: unknown, id: string): Contributes {
     c.settingsPage === undefined
       ? null
       : object(c.settingsPage, "contributes.settingsPage");
-  const themes = list(c.themes, "contributes.themes").map((x, i) => {
-    const o = object(x, `contributes.themes[${i}]`);
-    return {
-      id: ownId(o.id, id, `contributes.themes[${i}].id`),
-      label: text(o.label, `contributes.themes[${i}].label`),
-      path: text(o.path, `contributes.themes[${i}].path`),
-    };
-  });
   const aiTools = list(c.aiTools, "contributes.aiTools").map((x, i) => {
     const o = object(x, `contributes.aiTools[${i}]`);
     const name = text(o.name, `contributes.aiTools[${i}].name`);
@@ -463,6 +368,12 @@ export function parseContributes(raw: unknown, id: string): Contributes {
       ),
       setup: text(o.setup, `${at}.setup`, true) || undefined,
       provider: text(o.provider, `${at}.provider`, true) || undefined,
+      askMode: text(o.askMode, `${at}.askMode`, true) || undefined,
+      // "" says the agent signs in by itself: no sign-in step offered.
+      signIn:
+        o.signIn === undefined || o.signIn === ""
+          ? (o.signIn as "" | undefined)
+          : text(o.signIn, `${at}.signIn`),
     };
   });
   const hovers = known(
@@ -471,7 +382,15 @@ export function parseContributes(raw: unknown, id: string): Contributes {
     ),
     HOVER_KINDS,
   );
+  if (c.blockMenu !== undefined && typeof c.blockMenu !== "boolean")
+    throw new ManifestError("contributes.blockMenu is true or false.");
   return {
+    blockMenu: c.blockMenu === true,
+    snippets: parseSnippets(c),
+    walkthroughs: parseWalkthroughs(
+      c,
+      commands.map((x) => x.command),
+    ),
     aiTools,
     completions,
     embeds,
@@ -487,11 +406,11 @@ export function parseContributes(raw: unknown, id: string): Contributes {
     sidebarTabs,
     views,
     customEditors,
+    documentTypes: parseDocumentTypes(c),
     settings,
     settingsPage: page && {
       title: text(page.title, "contributes.settingsPage.title"),
     },
-    themes,
     suggestFor,
   };
 }

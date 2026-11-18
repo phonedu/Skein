@@ -42,6 +42,13 @@ class UrlArgs {
 }
 
 @InvokeArg
+class AccessArgs {
+  lateinit var url: String
+  /** False: only tells whether it would ask (the page explains first). */
+  var ask: Boolean = true
+}
+
+@InvokeArg
 class WriteArgs {
   lateinit var url: String
   lateinit var text: String
@@ -55,6 +62,18 @@ class ShareArgs {
 @InvokeArg
 class CreateArgs {
   lateinit var name: String
+}
+
+@InvokeArg
+class EntryArgs {
+  lateinit var url: String
+  /** The new entry's or the new name. */
+  var name: String = ""
+  /** A folder, not a document (new entries). */
+  var folder: Boolean = false
+  /** Its folder now and the one it moves into (a move). */
+  var from: String = ""
+  var into: String = ""
 }
 
 private const val GRANT =
@@ -186,6 +205,43 @@ class TextusFilesPlugin(private val activity: Activity) : Plugin(activity) {
     JSObject().put("entries", entries)
   }
 
+  // ---- The tree's New, Rename and Delete in a picked folder
+
+  private fun changing(invoke: Invoke, change: (EntryArgs) -> Uri?) {
+    try {
+      val url = change(invoke.parseArgs(EntryArgs::class.java)) ?: error("Not allowed here")
+      invoke.resolve(JSObject().put("url", url.toString()))
+    } catch (e: Exception) {
+      invoke.reject(e.message ?: "Not allowed here")
+    }
+  }
+
+  /** A new document or folder in the folder `url`; its URL. */
+  @Command
+  fun createEntry(invoke: Invoke) = changing(invoke) { args ->
+    val mime = if (args.folder) DocumentsContract.Document.MIME_TYPE_DIR else "text/markdown"
+    DocumentsContract.createDocument(resolver, Uri.parse(args.url), mime, args.name)
+  }
+
+  /** `url` under a new name in its folder; its URL now. */
+  @Command
+  fun renameEntry(invoke: Invoke) = changing(invoke) { args ->
+    DocumentsContract.renameDocument(resolver, Uri.parse(args.url), args.name)
+  }
+
+  /** `url` from its folder `from` into the folder `into`; its URL there. */
+  @Command
+  fun moveEntry(invoke: Invoke) = changing(invoke) { args ->
+    DocumentsContract.moveDocument(
+      resolver, Uri.parse(args.url), Uri.parse(args.from), Uri.parse(args.into))
+  }
+
+  @Command
+  fun deleteEntry(invoke: Invoke) = changing(invoke) { args ->
+    val url = Uri.parse(args.url)
+    if (DocumentsContract.deleteDocument(resolver, url)) url else null
+  }
+
   // ---- Remembered items and folders
 
   @Command
@@ -203,9 +259,12 @@ class TextusFilesPlugin(private val activity: Activity) : Plugin(activity) {
    *  else its URL, whose grant already holds for the whole process. */
   @Command
   fun beginAccess(invoke: Invoke) {
-    val url = invoke.parseArgs(UrlArgs::class.java).url
+    val args = invoke.parseArgs(AccessArgs::class.java)
+    val url = args.url
+    val asks = plainPath(url) != null && !hasAllFiles()
+    if (!args.ask) return answerAccess(invoke, asks)
     when {
-      plainPath(url) == null || hasAllFiles() -> answerAccess(invoke)
+      !asks -> answerAccess(invoke)
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ->
         // Some builds (Go, TV) have no such screen: the URL, then.
         try {
@@ -228,14 +287,14 @@ class TextusFilesPlugin(private val activity: Activity) : Plugin(activity) {
   @PermissionCallback
   fun storageAnswered(invoke: Invoke) = answerAccess(invoke)
 
-  private fun answerAccess(invoke: Invoke) {
+  private fun answerAccess(invoke: Invoke, asks: Boolean = false) {
     val url = invoke.parseArgs(UrlArgs::class.java).url
     // Writable too: before Android 11 a memory card's folder reads but won't
     // take a write, where its URL would.
     val path = plainPath(url)?.takeIf {
       hasAllFiles() && File(it).isDirectory && File(it).canWrite()
     }
-    invoke.resolve(JSObject().put("path", path ?: url))
+    invoke.resolve(JSObject().put("path", path ?: url).put("asks", asks))
   }
 
   private fun hasAllFiles(): Boolean =

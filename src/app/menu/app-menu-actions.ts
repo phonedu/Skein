@@ -1,6 +1,6 @@
 import { thisWindow } from "../../platform/this-window";
 import { editInFocus } from "../../engine/controls/edit-in-focus";
-import { EDIT_ACTION_EVENT } from "../../utils/events";
+import { EDIT_ACTION_EVENT, sendAppEvent } from "../../utils/events";
 import type {
   LocalMenuAction,
   MenuAction,
@@ -19,6 +19,14 @@ export function runMenuAction(action: MenuAction): void {
     });
 }
 
+/** Whether `action` opens a field to type in (Find, Replace). */
+export function opensField(action: MenuAction): boolean {
+  return (
+    "native" in action &&
+    (action.native === "find-replace" || action.native === "replace")
+  );
+}
+
 /** Items with no native id to fire (predefined items in the native menu),
  *  run on this side instead. */
 export function runLocalMenuAction(action: LocalMenuAction): void {
@@ -34,5 +42,5 @@ export function runLocalMenuAction(action: LocalMenuAction): void {
     })();
     return;
   }
-  window.dispatchEvent(new CustomEvent(EDIT_ACTION_EVENT, { detail: action }));
+  sendAppEvent(EDIT_ACTION_EVENT, action);
 }

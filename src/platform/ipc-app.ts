@@ -1,4 +1,5 @@
-import { Update } from "@tauri-apps/plugin-updater";
+import type { Update } from "@tauri-apps/plugin-updater";
+import { lazyModule } from "../lazy/lazy-module";
 import type { UpdateChannel } from "./update-channel";
 import type {
   ChatHandoff,
@@ -66,6 +67,9 @@ export const windowIpc = {
   /** One file in a window of its own, tab mode or not. */
   openPathInNewWindow: (path: string) =>
     desktopActionCommand("open_path_in_new_window", path),
+  /** A folder in a window of its own (⌘/Ctrl-click on a recent folder). */
+  openFolderInNewWindow: (path: string) =>
+    desktopActionCommand("open_folder_in_new_window", path),
   /** What this window was opened with: a session's window (its documents,
    *  islands, folder) or files handed over; asks once (window-session.ts). */
   takePendingWindow: () => command("take_pending_window"),
@@ -162,6 +166,9 @@ export const menuIpc = {
   setPluginMenu: (
     items: { command: string; label: string; group?: string }[],
   ) => desktopQueryCommand("set_plugin_menu", undefined, items),
+  /** File › Export's plugin formats, in the native menu bar. */
+  setPluginExports: (items: { key: string; label: string }[]) =>
+    desktopQueryCommand("set_plugin_exports", undefined, items),
   /** The plugin commands the background tray icon lists. */
   setTrayPluginItems: (items: { command: string; label: string }[]) =>
     desktopQueryCommand("set_tray_plugin_items", undefined, items),
@@ -383,6 +390,12 @@ export const distribution = {
 /** What the updater plugin's `Update` is made from. */
 type UpdateMetadata = ConstructorParameters<typeof Update>[0];
 
+/** The updater plugin: an update is looked for after startup. */
+const updaterPlugin = lazyModule(
+  "updater",
+  () => import("@tauri-apps/plugin-updater"),
+);
+
 export const updater = {
   /** The plugin's `check()` on `channel`'s endpoints. `backToStable` offers
    *  a beta install the newest stable release, only when the user asks. */
@@ -396,7 +409,9 @@ export const updater = {
       channel,
       backToStable,
     )) as UpdateMetadata | null;
-    return metadata ? new Update(metadata) : null;
+    if (!metadata) return null;
+    const { Update } = await updaterPlugin.load();
+    return new Update(metadata);
   },
   /** Right before the relaunch that applies an update, so the new process
    *  is the running Textus. */

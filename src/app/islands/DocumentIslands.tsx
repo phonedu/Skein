@@ -1,4 +1,5 @@
-import { isPanelPane } from "./panel-pane";
+import type { FormatBarSide } from "../../prefs/settings-values";
+import { isWindowPanel } from "./panel-pane";
 import { Island } from "../../engine/layout/Island";
 import { IslandArea, type IslandContent } from "../../engine/layout/IslandArea";
 import { useChangedFiles } from "../../ai/chat/file-changes";
@@ -29,11 +30,7 @@ import { tabMenuItems } from "../tabs/tab-menu-items";
 import { FormatBar } from "../FormatBar";
 import { useIslands } from "../../engine/layout/useIslands";
 import { panesOf, type Pane } from "../../engine/layout/tree";
-import {
-  focusPane,
-  reorderInPane,
-  windowTabs,
-} from "../../engine/layout/store";
+import { focusPane, reorderInPane } from "../../engine/layout/store";
 import { useTabsInBar } from "./tabs-in-bar";
 import { pullTab } from "./tab-pull";
 import { addFromTabRow, newConversation } from "./ai-tabs";
@@ -102,8 +99,8 @@ export function DocumentIslands({
    *  then (App's data-tabs). */
   onChange: (tabId: string, markdown: string) => void;
   typewriter: boolean;
-  /** View › Format Bar is on. */
-  formatBar: boolean;
+  /** View › Format Bar: the edge it is on, or null when hidden. */
+  formatBar: FormatBarSide | null;
   /** The tour's practice tab, its AI and the AI panel mode its lesson
    *  needs, while the tour runs; else null. */
   tour: { tabId: string; ai: TourAi; mode: AgentMode | null } | null;
@@ -144,15 +141,8 @@ export function DocumentIslands({
     onToggleReadOnly,
     t,
   });
-  // The window's tabs as they are now: a tab arriving is checked for room
-  // before this renders it.
-  const isPanel = (p: Pane) =>
-    isPanelPane(
-      p,
-      (id) => windowTabs<DocTab>().find((tab) => tab.id === id)?.view,
-    );
   // A document opened from a panel's island goes apart from its pages.
-  useDocumentsApart(tabs, isPanel);
+  useDocumentsApart(tabs, isWindowPanel);
   const tabBar = (
     list: DocTab[],
     active: string,
@@ -283,7 +273,9 @@ export function DocumentIslands({
           // foot, over the keyboard while typing (format-bar.css).
           above={(tab) =>
             (formatBar || phone) &&
-            formatsShown(tab) && <FormatBar t={t} tabId={tab.id} />
+            formatsShown(tab) && (
+              <FormatBar t={t} tabId={tab.id} side={formatBar ?? "top"} />
+            )
           }
           t={t}
         />
@@ -297,7 +289,7 @@ export function DocumentIslands({
       rows={tabsInBar}
       plain={islandsPlain(zen, panes.length)}
       // A panel's island holds pages only (the AI, Settings, a plugin's).
-      isPanel={isPanel}
+      isPanel={isWindowPanel}
       content={documents}
       t={t}
     />

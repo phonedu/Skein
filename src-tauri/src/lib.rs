@@ -37,10 +37,13 @@ mod net;
 mod plugins;
 mod schedule;
 mod settings;
+mod spawn;
 #[cfg(desktop)]
 mod tab_drag;
+#[cfg(target_os = "macos")]
+mod trackpad;
 mod walk;
-#[cfg(windows)]
+#[cfg(any(windows, test))]
 mod webview_memory;
 mod window_frame;
 mod window_guard;
@@ -91,6 +94,11 @@ fn desktop_builder(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri:
             let app = window.app_handle();
             #[cfg(windows)]
             webview_memory::follow_minimized(window, event);
+            // Windows switched dark or light: "system" windows take its colour.
+            #[cfg(windows)]
+            if matches!(event, tauri::WindowEvent::ThemeChanged(_)) {
+                settings::apply_window_backgrounds(app);
+            }
             if matches!(event, tauri::WindowEvent::Focused(true)) {
                 editor_windows::note_focused(window.label());
             }
@@ -139,6 +147,8 @@ fn desktop_setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     crate::editor_windows::detect_wayland();
     #[cfg(target_os = "macos")]
     crate::editor_windows::watch_fullscreen(app.handle());
+    #[cfg(target_os = "macos")]
+    crate::trackpad::watch_trackpad(app.handle());
     #[cfg(target_os = "macos")]
     crate::commands::traffic_lights::watch();
     // Plugins' jobs and notifications: before the links, one of which may be
@@ -252,6 +262,7 @@ pub fn run() {
             tauri::async_runtime::spawn(plugins::moved_skills::install_moved_skills(
                 app.handle().clone(),
             ));
+            plugins::document_types::refresh(app.handle());
             memory_level::watch(app.handle().clone());
             crate::editor_windows::build_main_window(app)?;
             #[cfg(desktop)]

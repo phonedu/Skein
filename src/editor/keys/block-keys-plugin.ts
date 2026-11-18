@@ -78,13 +78,14 @@ export const newlineInCode: Command = (state, dispatch) => {
   return true;
 };
 
-/** Mod+Enter in a quote (or GitHub alert): continue below it. Code blocks
- *  and tables inside the quote keep their own exit. */
-export const leaveBlockquote: Command = (state, dispatch) => {
+/** Mod+Enter in a table or a quote (or GitHub alert): continue below the
+ *  innermost one. A code block keeps its own exit. */
+export const leaveBlock: Command = (state, dispatch) => {
   const { $from } = state.selection;
-  if ($from.parent.type.spec.code || isInTable(state)) return false;
+  if ($from.parent.type.spec.code) return false;
+  const leaving = isInTable(state) ? "table" : "blockquote";
   for (let d = $from.depth; d > 0; d--) {
-    if ($from.node(d).type.name !== "blockquote") continue;
+    if ($from.node(d).type.name !== leaving) continue;
     if (dispatch)
       dispatch(landAfter(state.tr, $from.after(d)).scrollIntoView());
     return true;
@@ -316,27 +317,36 @@ export function spacesAfterCaret(state: EditorState): Transaction | null {
 }
 
 /**
- * Enter on an empty task nested in a task list moves it up a level and keeps
- * it a task; splitListItem alone made it a plain bullet.
+ * Enter in a task: the new item is a task left to do, as the item it split
+ * from was ticked or not. An empty task nested in a task list moves up a
+ * level and stays a task; splitListItem alone made it a plain bullet.
  */
-const liftEmptyNestedTask: Command = (state, dispatch) => {
-  const { $from, empty } = state.selection;
+const splitTask: Command = (state, dispatch) => {
+  const { $from } = state.selection;
   const item = state.schema.nodes.list_item;
-  if (!empty || !item || $from.depth < 4 || $from.parent.content.size > 0)
-    return false;
-  const own = $from.node(-1);
-  const outer = $from.node(-3);
-  if (own.type !== item || outer.type !== item) return false;
-  if (own.attrs.checked == null || outer.attrs.checked == null) return false;
+  const own = $from.depth >= 2 ? $from.node(-1) : null;
+  if (!item || own?.type !== item || own.attrs.checked == null) return false;
+  if ($from.parent.type.name !== "paragraph") return false;
   return splitListItem(item)(
     state,
     dispatch &&
       ((tr) => {
         const $to = tr.selection.$from;
-        const lifted = $to.node(-1);
-        if (lifted?.type === item && lifted.attrs.checked == null)
-          tr.setNodeMarkup($to.before(-1), undefined, {
-            ...lifted.attrs,
+        const into = $to.depth >= 2 ? $to.node(-1) : null;
+        if (into?.type !== item) return dispatch(tr);
+        const at = $to.before(-1);
+        // At the text's start the empty item goes above, the task stays.
+        const above =
+          $from.parentOffset === 0 &&
+          $from.parent.content.size &&
+          $from.index(-1) === 0;
+        const made = above ? tr.doc.resolve(at).nodeBefore : into;
+        const madeAt = above && made ? at - made.nodeSize : at;
+        if (above)
+          tr.setNodeMarkup(at, undefined, { ...into.attrs, ...own.attrs });
+        if (made?.type === item && made.attrs.checked !== false)
+          tr.setNodeMarkup(madeAt, undefined, {
+            ...made.attrs,
             checked: false,
           });
         dispatch(tr);
@@ -371,10 +381,10 @@ const onEnter: Command[] = [
   enterInTable,
   pipeRowToTable,
   leaveTextBlockOnEmptyLastLine,
-  liftEmptyNestedTask,
+  splitTask,
   newlineInCode,
 ];
-const onModEnter: Command[] = [leaveBlockquote];
+const onModEnter: Command[] = [leaveBlock];
 const onShiftEnter: Command[] = [
   shiftEnterWithoutBreak,
   lineBreakInTableCell,

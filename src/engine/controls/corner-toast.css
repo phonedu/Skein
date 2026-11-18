@@ -1,30 +1,66 @@
-/* A window corner's toasts: stacked, newest nearest the edge. */
-.corner-stack {
+/* The window's foot, after the rail (never over its buttons) and short of
+   the window's end. Its two corners share it: side by side while both
+   fit, the end's above the start's when they don't. */
+.corner-stacks {
+  --corner-from: calc(var(--safe-left, 0px) + var(--rail-width, 0px) + 18px);
   position: fixed;
-  bottom: 18px;
+  bottom: calc(18px + var(--safe-bottom, 0px));
+  left: var(--corner-from);
+  right: calc(18px + var(--safe-right, 0px));
   z-index: var(--z-toast);
+  display: flex;
+  flex-wrap: wrap-reverse;
+  /* Reversed, the line's start is its foot: the stacks stand on it. */
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+/* A corner's toasts: stacked, newest nearest the edge. */
+.corner-stack {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: calc(100vw - 36px);
-}
-
-.corner-stack[data-corner="end"] {
-  right: 18px;
-  align-items: flex-end;
-}
-
-/* After the rail, never over its buttons, nor past the window's end. */
-.corner-stack[data-corner="start"] {
-  --corner-from: calc(var(--rail-width, 0px) + 18px);
-  left: var(--corner-from);
-  max-width: calc(100vw - var(--corner-from) - 18px);
+  max-width: 100%;
   align-items: flex-start;
 }
 
+.corner-stack > * {
+  pointer-events: auto;
+}
+
+.corner-stack[data-corner="end"] {
+  margin-left: auto;
+  align-items: flex-end;
+}
+
 /* A phone's rail lies under the page while it is shut. */
-:root[data-window-chrome="mobile"] .corner-stack[data-corner="start"] {
-  --corner-from: 18px;
+:root[data-window-chrome="mobile"]
+  .app-shell:not([data-sidebar="open"])
+  .corner-stacks {
+  --corner-from: calc(var(--safe-left, 0px) + 18px);
+}
+
+/* While a touch keyboard is up they step aside: anywhere they stood they
+   would cover the line being written or the format bar. They come back
+   when it goes. */
+.keyboard-up .corner-stacks {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+
+/* A phone keeps them at its foot, off the page's first lines; with Quick
+   Ask's composer there, they come down under the tab row. */
+:root[data-window-chrome="mobile"].has-quick-ask-dock .corner-stacks {
+  top: calc(var(--safe-top, 0px) + var(--header-height, 44px) + 8px);
+  bottom: auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+:root[data-window-chrome="mobile"].has-quick-ask-dock .corner-stack {
+  flex-direction: column-reverse;
 }
 
 /* One line until opened: what it says, then its buttons and ×. */
@@ -47,7 +83,9 @@
 .corner-toast .corner-toast-summary {
   display: flex;
   flex: 1 1 0;
-  min-width: 0;
+  /* Room for its words first: short of it, the buttons take the next line
+     (a long language's, on a phone). */
+  min-width: min(12em, 100%);
   min-height: 0;
   align-items: center;
   justify-content: flex-start;
@@ -72,11 +110,16 @@
   white-space: normal;
 }
 
+/* Too many for the card's width (a phone, long words), its buttons wrap
+   inside it rather than run past its edge. */
 .corner-toast-actions {
   display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
+  max-width: 100%;
 }
 
 .corner-toast-secondary {
@@ -107,12 +150,18 @@
    buttons go under the details. */
 @media (max-width: 480px) {
   .corner-stack .corner-toast {
-    width: calc(100vw - 36px);
+    width: calc(100vw - var(--corner-from) - 18px);
     padding: 8px 12px 8px 8px;
   }
 
   .corner-toast-actions {
     gap: 8px;
+  }
+
+  /* × stays on the first line, by the words; the buttons take the next. */
+  .corner-toast:has(> .corner-toast-close) .corner-toast-actions {
+    order: 1;
+    flex-basis: 100%;
   }
 
   .corner-toast[data-open] .corner-toast-actions {

@@ -36,14 +36,6 @@
   background: transparent;
 }
 
-/* A block that reads as part of the page (a database's table): no box. */
-.plugin-code-block-plain {
-  border-color: transparent;
-  border-radius: 0;
-  background: transparent;
-  overflow: visible;
-}
-
 .plugin-code-block .plugin-code-block-frame,
 .plugin-code-block .plugin-webview-frame {
   display: block;
@@ -71,6 +63,22 @@
   color: var(--text-muted);
   font: 12px var(--font-mono);
   cursor: pointer;
+  /* Interface-sized, as the block's page is: the page keeps its
+     --block-source-room clear for it at any zoom. */
+  zoom: calc(1 / var(--content-zoom, 1));
+}
+
+/* A finger has no hover: over a drawing the button would cover it for
+   good, so it shows once the block is tapped (plugins/views/pressed-blocks.ts). */
+@media (hover: none) {
+  .plugin-code-block .plugin-code-edit {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .plugin-code-block:is([data-pressed], :focus-within) .plugin-code-edit {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .plugin-code-block .plugin-webview-problem {
@@ -82,6 +90,8 @@
    beside Copy and Select All, in their look but in the text's colour. */
 .plugin-code-source-open .code-block-actions {
   opacity: 1;
+}
+.plugin-code-source-open .code-block-actions > * {
   pointer-events: auto;
 }
 .code-block-actions .plugin-code-done {

@@ -6,7 +6,8 @@
 //!
 //! Mirrors `parseManifest` in `src/plugins/store/manifest.ts`; change both.
 //! What a plugin adds to the interface (`contributes`) is left to the window,
-//! which checks it before drawing any of it.
+//! which checks it before drawing any of it (`invalidInWindow` in the shared
+//! cases).
 
 use super::require_id;
 use serde_json::{Map, Value};
@@ -27,13 +28,17 @@ static LISTS: std::sync::LazyLock<Lists> = std::sync::LazyLock::new(|| {
 const REQUIRED_SETTINGS: &[&str] = &["runInBackground"];
 
 /// Whether `value` is a permission a plugin may name: one of the plain ones,
-/// or `network:` and `*`, a host, `*.` a domain, each maybe with `:port`.
+/// `commands:` a plugin, `hidden:` a hidden file to read, or `network:` and
+/// `*`, a host, `*.` a domain, each maybe with `:port`.
 pub fn is_permission(value: &str) -> bool {
     if LISTS.plain.iter().any(|p| p == value) {
         return true;
     }
     if let Some(plugin) = value.strip_prefix("commands:") {
         return super::require_id(plugin).is_ok();
+    }
+    if let Some(path) = value.strip_prefix("hidden:") {
+        return super::access::paths::hidden_file_path(path);
     }
     let Some(host) = value.strip_prefix("network:") else {
         return false;
@@ -201,7 +206,7 @@ pub fn check(manifest: &str) -> Result<(), String> {
             .is_some_and(|e| !e.is_empty());
         let reads = list(m.get("permissions"), "permissions")?
             .iter()
-            .any(|p| p.as_str() == Some("files.read"));
+            .any(|p| matches!(p.as_str(), Some("files.read" | "files.write")));
         if embeds && !reads {
             return Err("contributes.embeds needs files.read.".into());
         }
@@ -324,6 +329,8 @@ mod tests {
             "contributes.embeds needs files.read."
         );
         assert!(embeds(r#"["files.read"]"#).is_ok());
+        // Writing includes reading, as everywhere else.
+        assert!(embeds(r#"["files.write"]"#).is_ok());
     }
 
     #[test]

@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 import { type DirEntryInfo } from "./bindings/files";
 import { isIOSApp, isMobileApp } from "./capabilities";
-import { nameContentUrl } from "../utils/path";
+import { basename, nameContentUrl } from "../utils/path";
 import { documentsDir, insideDocuments } from "./documents-path";
 
 /**
@@ -32,6 +32,15 @@ function named<T extends { url: string | null; name?: string }>(item: T): T {
 const call = <T>(command: string, args?: Record<string, unknown>) =>
   invoke<T>(`plugin:textus-files|${command}`, args ? { args } : undefined);
 
+async function entry(
+  command: string,
+  args: Record<string, unknown>,
+): Promise<string> {
+  const { url } = await call<{ url: string }>(command, args);
+  named({ url, name: String(args.name ?? "") });
+  return url;
+}
+
 /** A pick from the app's own Documents folder as its plain path, or the
  *  same file opens twice, once per spelling. */
 async function inDocuments(url: string | null): Promise<string | null> {
@@ -56,12 +65,25 @@ export const iosFiles = {
     (await call<{ text: string }>("read_text", { url })).text,
   /** A tap felt under the finger, as something lifts. Never fails. */
   haptic: (): void => void call<void>("haptic").catch(() => {}),
+  /** The window dark, light or the system's ("system"): the keyboard
+   *  follows it. Never fails. */
+  appearance: (mode: string): void =>
+    void call<void>("appearance", { mode }).catch(() => {}),
   /** The share sheet for a saved document, by path or picked URL. */
   share: (path: string): Promise<void> => call<void>("share", { path }),
   readBase64: async (url: string): Promise<string> =>
     (await call<{ data: string }>("read_data", { url })).data,
   writeText: (url: string, text: string): Promise<void> =>
     call<void>("write_text", { url, text }),
+  /** The tree's New, Rename and Delete in an Android picked folder; the
+   *  entry's URL. */
+  createEntry: (folder: string, name: string, isFolder: boolean) =>
+    entry("create_entry", { url: folder, name, folder: isFolder }),
+  renameEntry: (url: string, name: string) =>
+    entry("rename_entry", { url, name }),
+  deleteEntry: (url: string) => entry("delete_entry", { url }),
+  moveEntry: (url: string, from: string, into: string) =>
+    entry("move_entry", { url, from, into, name: basename(url) }),
   listFolder: async (url: string): Promise<DirEntryInfo[]> =>
     (
       await call<{
@@ -89,7 +111,24 @@ export const iosFiles = {
   /** Picks a folder for the project and opens it: its plain path, or null. */
   pickProjectFolder: async (): Promise<string | null> => {
     const url = named(await call<Picked>("pick_folder")).url;
-    return url ? iosFiles.beginAccess(url) : null;
+    if (!url) return null;
+    // Android: whether it would open Settings for access to all files,
+    // which then shows unexplained; the URL serves if the user declines.
+    const first = await call<{ path: string; asks?: boolean }>("begin_access", {
+      url,
+      ask: false,
+    });
+    if (!first.asks) return first.path;
+    const [{ showConfirm }, { currentStrings }] = await Promise.all([
+      import("../engine/controls/app-dialog"),
+      import("../i18n/current"),
+    ]);
+    const t = currentStrings();
+    const go = await showConfirm(t.allFilesAccessAsk, {
+      okLabel: t.allFilesAccessContinue,
+      cancelLabel: t.allFilesAccessNotNow,
+    });
+    return go ? iosFiles.beginAccess(url) : first.path;
   },
 };
 

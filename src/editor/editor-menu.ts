@@ -1,20 +1,11 @@
-import { fill } from "../i18n/fill";
-import { commandsCtx, editorViewCtx, type CmdKey } from "@milkdown/kit/core";
-import {
-  wrapInBulletListCommand,
-  wrapInOrderedListCommand,
-  wrapInBlockquoteCommand,
-  createCodeBlockCommand,
-  wrapInHeadingCommand,
-} from "@milkdown/kit/preset/commonmark";
-import { insertTableCommand } from "@milkdown/kit/preset/gfm";
+import { editorViewCtx } from "@milkdown/kit/core";
 import { NodeSelection } from "@milkdown/kit/prose/state";
 import type {
   ContextMenuEntry,
   ContextMenuItem,
 } from "../engine/controls/ContextMenu";
 import { contributedMenuItems } from "./editor-menu-items";
-import { linkMenuItems, menuLinkAt, type MenuLink } from "./editor-menu-links";
+import { linkForMenu, linkMenuItems, type MenuLink } from "./editor-menu-links";
 import { imageLocation, type ImageLocation } from "./images/missing-image";
 import { embedFileAt } from "./images/obsidian-embed-preview";
 import { openDiagramViewer } from "./diagram-zoom";
@@ -24,7 +15,8 @@ import {
   type DrawnBlockActions,
 } from "./drawn-block-actions";
 import type { EditorRunner } from "./useEditorRunner";
-import { convertList } from "./keys/block-toggles";
+import { applyBlockKind } from "./blocks/block-kinds";
+import { BLOCK_KINDS, menuKinds } from "./blocks/block-kind-list";
 import { clearSpans } from "./marks/span-commands";
 import {
   BOLD,
@@ -34,7 +26,6 @@ import {
   toggleCodeSpan,
   toggleFormat,
 } from "./keys/format-shortcut-plugin";
-import { INSERT_BLOCK_EVENT } from "../utils/events";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import type { Strings } from "../i18n/strings";
 import {
@@ -51,28 +42,6 @@ import {
 } from "./editor-menu-images";
 // The editor commands behind the right-click, Format and Edit menus, and
 // the right-click menu itself.
-
-// CmdKey<any>: the preset command keys vary in payload type (some
-// unknown, some undefined) and all are called here without a payload.
-export function runCommand(run: EditorRunner, key: CmdKey<any>) {
-  run((ctx) => {
-    ctx.get(commandsCtx).call(key);
-    ctx.get(editorViewCtx).focus();
-  });
-}
-
-export function insertTable(run: EditorRunner, rows: number, cols: number) {
-  run((ctx) => {
-    ctx.get(commandsCtx).call(insertTableCommand.key, { row: rows, col: cols });
-  });
-}
-
-export function insertHeading(run: EditorRunner, level: number) {
-  run((ctx) => {
-    ctx.get(commandsCtx).call(wrapInHeadingCommand.key, level);
-    ctx.get(editorViewCtx).focus();
-  });
-}
 
 /** What a right-click landed on, for the menu's image items. */
 interface ContextMenuTarget {
@@ -121,7 +90,7 @@ export function contextMenuTarget(
         // Not representable in the DOM right now.
       }
 
-      const link = menuLinkAt(view, e.target, docPath);
+      const link = linkForMenu(view, e.target, docPath, !coords);
       if (link) return { ...none, link };
       const target =
         e.target instanceof Element ? e.target.closest(".image-view") : null;
@@ -159,6 +128,8 @@ export function contextMenuTarget(
 
 export interface ContextMenuOptions {
   t: Strings;
+  /** What plugins worked out as the menu opened (their own providers). */
+  lateItems?: ContextMenuItem[];
   /** From contextMenuTarget: the image right-clicked, if any. */
   imagePos: number | null;
   imageLocation?: ImageLocation | null;
@@ -262,7 +233,10 @@ export function buildContextMenuItems(
     [...format, ...grouped(t.menuTextusAi, options.aiItems)],
     grouped(
       t.menuPlugins,
-      contributedMenuItems({ selectedText: selectedText(run) }),
+      [
+        ...contributedMenuItems({ selectedText: selectedText(run) }),
+        ...(options.lateItems ?? []),
+      ],
       2,
     ),
   );
@@ -318,11 +292,12 @@ export function buildPhoneMoreItems(
 ): ContextMenuEntry[] {
   const { t, imagePos } = options;
   // The phone has no Edit menu to offer the plain text.
+  // Offered, not working, with nothing selected.
+  const disabled = run((c) => c.get(editorViewCtx).state.selection.empty);
+  const plain = options.copyAsPlainText;
   const clipboard: ContextMenuEntry[] = [
-    { label: t.cut, onSelect: () => options.copyOrCut(true) },
-    ...(options.copyAsPlainText
-      ? [{ label: t.copyAsPlainText, onSelect: options.copyAsPlainText }]
-      : []),
+    { label: t.cut, disabled, onSelect: () => options.copyOrCut(true) },
+    ...(plain ? [{ label: t.copyAsPlainText, disabled, onSelect: plain }] : []),
   ];
   if (inTable(run)) {
     return [
@@ -333,7 +308,11 @@ export function buildPhoneMoreItems(
     ];
   }
   if (imagePos !== null) return [...clipboard, ...generalItems(options)];
+  // A tap only edits a link: here it opens.
+  const link = options.link ? linkMenuItems(run, t, options.link) : [];
   return [
+    ...link,
+    ...(link.length ? ["separator" as const] : []),
     { label: t.insertTable, onSelect: options.openTableDialog },
     "separator",
     ...clipboard,
@@ -350,7 +329,7 @@ function joinGroups(...groups: ContextMenuEntry[][]): ContextMenuEntry[] {
     );
 }
 
-function selectedText(run: EditorRunner): string {
+export function selectedText(run: EditorRunner): string {
   return (
     run((ctx) => {
       const { state } = ctx.get(editorViewCtx);
@@ -376,21 +355,6 @@ function generalItems(options: ContextMenuOptions): ContextMenuEntry[] {
   ];
 }
 
-/** A list from the Format or Insert menu: the block wrapped in one, or a
- *  list of the other kind changed over. */
-export function insertList(
-  run: EditorRunner,
-  kind: "bullet_list" | "ordered_list",
-): void {
-  if (run((ctx) => convertList(ctx.get(editorViewCtx), kind))) return;
-  runCommand(
-    run,
-    kind === "bullet_list"
-      ? wrapInBulletListCommand.key
-      : wrapInOrderedListCommand.key,
-  );
-}
-
 /** The inline styles, then (outside a table) the block the caret is in
  *  made a heading, list or quote, and blocks put in: Obsidian's Format,
  *  Paragraph and Insert. */
@@ -407,9 +371,6 @@ function formatGroups(
       act(view);
       view.focus();
     });
-  // As the Format menu inserts them.
-  const insertBlock = (kind: string) => () =>
-    window.dispatchEvent(new CustomEvent(INSERT_BLOCK_EVENT, { detail: kind }));
   const format: ContextMenuEntry = {
     label: t.menuFormat,
     items: [
@@ -436,42 +397,25 @@ function formatGroups(
     ],
   };
   if (!blocks) return [format];
+  const item = (kind: (typeof BLOCK_KINDS)[number]) => ({
+    label: kind.label(t),
+    onSelect: () => applyBlockKind(run, kind.id, options.openTableDialog),
+  });
+  const kinds = menuKinds();
   return [
     format,
     {
       label: t.menuParagraph,
-      items: [
-        ...[1, 2, 3].map((level) => ({
-          label: fill(t.menuHeadingTemplate, { n: String(level) }),
-          onSelect: () => insertHeading(run, level),
-        })),
-        "separator",
-        {
-          label: t.menuBulletList,
-          onSelect: () => insertList(run, "bullet_list"),
-        },
-        {
-          label: t.menuOrderedList,
-          onSelect: () => insertList(run, "ordered_list"),
-        },
-        { label: t.menuTaskList, onSelect: insertBlock("task-list") },
-        {
-          label: t.menuBlockquote,
-          onSelect: () => runCommand(run, wrapInBlockquoteCommand.key),
-        },
-      ],
+      // The text and headings, then the blocks that hold it.
+      items: kinds
+        .filter((k) => k.turns)
+        .flatMap((k) =>
+          k.id === "h3" ? [item(k), "separator" as const] : [item(k)],
+        ),
     },
     {
       label: t.menuInsertGroup,
-      items: [
-        { label: t.menuTable, onSelect: options.openTableDialog },
-        {
-          label: t.menuCodeBlock,
-          onSelect: () => runCommand(run, createCodeBlockCommand.key),
-        },
-        { label: t.menuMathBlock, onSelect: insertBlock("math-block") },
-        { label: t.menuDivider, onSelect: insertBlock("rule") },
-      ],
+      items: kinds.filter((k) => !k.turns).map(item),
     },
   ];
 }

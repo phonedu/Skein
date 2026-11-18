@@ -1,7 +1,9 @@
 import {
   paneBeside,
+  paneById,
   paneWithTab,
   panesOf,
+  type LayoutNode,
   type Path,
   type SplitDirection,
 } from "./tree";
@@ -18,8 +20,14 @@ import {
   type SplitLayout,
   type SplitRequest,
 } from "./ops";
-import { layoutFits } from "../frame/frame-store";
+import {
+  askGiveWay,
+  layoutFits,
+  refusal,
+  type NoRoom,
+} from "../frame/frame-store";
 import { resolveSplit } from "./resolve";
+import { createSubscribers } from "../../utils/store";
 
 /**
  * The window's model, its one owner: the tabs it has, the one in use, and
@@ -40,6 +48,8 @@ interface TabRecord {
 
 let records: readonly TabRecord[] = [];
 let active = "";
+/** Tabs in use before, the latest last: a closed one's place goes back. */
+let shown: string[] = [];
 /** The document in front: the tab in use when it is a document, else the
  *  one last in use - with a conversation or a page in front, the document
  *  the AI reads and writes. */
@@ -51,18 +61,9 @@ let layout: SplitLayout = oneIsland([], null);
 let request: SplitRequest | null = null;
 let preview: SplitLayout | null = null;
 const arriving = new Map<string, Arrival>();
-const listeners = new Set<() => void>();
-
-function publish() {
-  for (const listener of listeners) listener();
-}
-
-export function subscribeSplit(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
+const split = createSubscribers();
+const publish = split.publish;
+export const subscribeSplit = split.subscribe;
 
 /** The window's first tabs, and how it makes a blank one; once. */
 export function startWindowTabs<T extends TabRecord>(
@@ -99,6 +100,7 @@ export function setWindowTabs<T extends TabRecord>(
 /** Tab `id` in use: in front of its island, that island in use. */
 export function activateTab(id: string): void {
   if (id === active) return;
+  if (active) shown = [...shown.filter((t) => t !== active), active].slice(-32);
   active = id;
   change();
 }
@@ -145,17 +147,40 @@ export function paneOf(current: SplitLayout, tabId: string): string | null {
 }
 
 /** `next`, a layout a split asked for, when its islands fit the window at
- *  their least; null when they don't. Every split a person or a plugin
+ *  their least - the panels' islands folded and the sidebar aside if need
+ *  be; null when even so they don't. Every split a person or a plugin
  *  asks for goes through it; a panel folded for room coming back doesn't. */
 export function ifRoom(next: SplitLayout | null): SplitLayout | null {
+  return withRoom(next).next;
+}
+
+/** ifRoom, and whether `next` was refused for want of room - said to the
+ *  person (sayNoRoom) - rather than there being nothing to do. */
+export function withRoom(next: SplitLayout | null): {
+  next: SplitLayout | null;
+  noRoom: NoRoom;
+} {
+  if (!next) return { next: null, noRoom: false };
+  const { noRoom } = refusal(next.root, made(next.root));
+  return { next: noRoom ? null : next, noRoom };
+}
+
+/** `next`, a panel's island (the AI's, a plugin's page) opening beside,
+ *  when it fits the window as it is; null and it joins an island instead,
+ *  nothing put away for it. */
+export function ifFits(next: SplitLayout | null): SplitLayout | null {
   return next && layoutFits(next.root) ? next : null;
 }
 
+/** The islands `root` has that the window's layout doesn't, as they are:
+ *  new ones, and those whose tabs changed. */
+const made = (root: LayoutNode) => madeSince(layout.root, root);
+
 /** Splits the pane in use (or the window) this way, a document of its
  *  tabs, or a blank one, going into the new pane - when the islands, the
- *  new one too, fit the window at their least; false when they don't and
- *  nothing changed. */
-export function splitEditor(direction: SplitDirection): boolean {
+ *  new one too, fit the window at their least once the panels and the
+ *  sidebar give way: false. Else why not, nothing changed. */
+export function splitEditor(direction: SplitDirection): NoRoom {
   const next = resolveSplit(
     layout,
     { direction },
@@ -164,10 +189,11 @@ export function splitEditor(direction: SplitDirection): boolean {
     () => undefined,
   );
   const root = "blank" in next ? next.blank.root : next.root;
-  if (!layoutFits(root)) return false;
+  const { noRoom } = refusal(root, made(root));
+  if (noRoom) return noRoom;
   request = { direction };
   change();
-  return true;
+  return false;
 }
 
 /** A layout an operation (ops.ts) gave back: null, one pane left,
@@ -182,44 +208,70 @@ export function reorderInPane(id: string, tabId: string, index: number): void {
   commit(reorderTab(layout, id, tabId, index));
 }
 
+/** A pane's tabs put in the order `ids` gives them, at once (those it
+ *  doesn't name after them): a restored window's order. */
+export function setTabOrder(id: string, ids: readonly string[]): void {
+  let next: SplitLayout | null = layout;
+  ids.forEach((tabId, i) => {
+    next = next && reorderTab(next, id, tabId, i);
+  });
+  if (next && next !== layout) commit(next);
+}
+
 /** The pane a tab opened next joins. */
 export function focusPane(id: string): void {
   setSplitLayout(focusOn(layout, id));
 }
 
-/**
- * `layout` with `tabId` beside `from`: in the island to its right (or
- * below, on `bottom`) if there is one, else in a new island there - beside
- * the whole window, taking `share` of it, when it is unsplit. Null when
- * there is nothing to do.
- */
+/** Opening `tabId` beside `from`: into the island to its right (or below,
+ *  on `bottom`) if there is one, else a new island there - beside the
+ *  whole window, taking `share` of it, when it is unsplit. */
+function besidePlan(
+  layout: SplitLayout,
+  tabId: string,
+  from: string | null,
+  side: "right" | "bottom",
+  share: number,
+): { into: SplitLayout | null } | { split: SplitLayout | null } | null {
+  if (!from || from === tabId) return null;
+  const home = paneWithTab(layout.root, from);
+  if (!home) return null;
+  if (!isSplit(layout))
+    return { split: splitOff(layout, tabId, null, side, share) };
+  const next = paneBeside(layout.root, home.id, side);
+  return next
+    ? { into: moveTab(layout, tabId, next.id) }
+    : { split: splitOff(layout, tabId, home.id, side) };
+}
+
+/** `layout` with `tabId` beside `from` (besidePlan), a new island only
+ *  when there is room for it (withRoom); `next` null when there is
+ *  nothing to do. */
 export function besideLayout(
   layout: SplitLayout,
   tabId: string,
   from: string | null,
   side: "right" | "bottom" = "right",
   share = 0.5,
-): SplitLayout | null {
-  if (!from || from === tabId) return null;
-  const home = paneWithTab(layout.root, from);
-  if (!home) return null;
-  if (!isSplit(layout))
-    return ifRoom(splitOff(layout, tabId, null, side, share));
-  const next = paneBeside(layout.root, home.id, side);
-  return next
-    ? moveTab(layout, tabId, next.id)
-    : ifRoom(splitOff(layout, tabId, home.id, side));
+): { next: SplitLayout | null; noRoom: NoRoom } {
+  const plan = besidePlan(layout, tabId, from, side, share);
+  if (!plan) return { next: null, noRoom: false };
+  return "into" in plan
+    ? { next: plan.into, noRoom: false }
+    : withRoom(plan.split);
 }
 
-/** Shows `tabId` beside `from` (besideLayout), both tabs of the window. */
+/** Shows `tabId` beside `from` (besideLayout), both tabs of the window;
+ *  why not when the window has no room for it, else false. */
 export function openBeside(
   tabId: string,
   from: string | null,
   side: "right" | "bottom" = "right",
   share = 0.5,
-): void {
-  const next = besideLayout(layout, tabId, from, side, share);
+): NoRoom {
+  const { next, noRoom } = besideLayout(layout, tabId, from, side, share);
   if (next) setSplitLayout(next);
+  return noRoom;
 }
 
 /** Where a tab goes as it arrives (Arrival): asked for before it is
@@ -272,10 +324,32 @@ export function setSplitLayout(next: SplitLayout | null): void {
   change();
 }
 
-/** Settles the model after any change, then tells its readers. */
+let islandCount = 1;
+
+/** Settles the model after any change, then tells its readers. A new
+ *  island in too little room - a split, a drop, the AI or a plugin's page
+ *  beside - has the panels and the sidebar give way, as ifRoom counted on. */
 function change() {
   settle();
+  const count = panesOf(layout.root).length;
+  if (count > islandCount && !layoutFits(layout.root))
+    askGiveWay(madeSince(published, layout.root));
+  islandCount = count;
+  published = layout.root;
   publish();
+}
+
+/** The layout as the window was last told it. */
+let published: LayoutNode = layout.root;
+
+/** The islands `root` has that `was` doesn't, as they are. */
+function madeSince(was: LayoutNode, root: LayoutNode): ReadonlySet<string> {
+  const tabs = new Map(panesOf(was).map((p) => [p.id, p.tabs.join()]));
+  return new Set(
+    panesOf(root)
+      .filter((p) => tabs.get(p.id) !== p.tabs.join())
+      .map((p) => p.id),
+  );
 }
 
 /** The layout as the tabs now stand (resolve.ts): a tab opened joins the
@@ -285,8 +359,14 @@ function change() {
  *  islands'. */
 function settle() {
   const ids = records.map((tab) => tab.id);
-  const resolved = resolveSplit(layout, request, ids, active, (id) =>
-    arriving.get(id),
+  shown = shown.filter((id) => ids.includes(id));
+  const resolved = resolveSplit(
+    layout,
+    request,
+    ids,
+    active,
+    (id) => arriving.get(id),
+    shown,
   );
   if (resolved && "blank" in resolved) {
     layout = resolved.blank;
@@ -318,7 +398,12 @@ export function documentInFront(): string {
  *  away together): the first island's front tab, else the last - never
  *  none, or keys and zoom have nowhere to go. */
 function fallback(ids: readonly string[]): string {
-  const fronts = panesOf(layout.root).map((p) => p.front);
+  // The island it was in first, which shows the tab shown before it.
+  const panes = panesOf(layout.root);
+  const fronts = [
+    paneById(layout.root, layout.focus)?.front,
+    ...panes.map((p) => p.front),
+  ];
   return fronts.find((f) => f && ids.includes(f)) ?? ids[ids.length - 1] ?? "";
 }
 
@@ -339,9 +424,11 @@ function inIslandOrder(
 export function resetWindowModelForTests(): void {
   records = [];
   active = "";
+  shown = [];
   documentId = "";
   blankTab = null;
   layout = oneIsland([], null);
+  islandCount = 1;
   request = null;
   preview = null;
   arriving.clear();

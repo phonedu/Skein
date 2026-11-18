@@ -102,7 +102,7 @@ para usar una.
 `,
   projectOpenStyle: "Abrir perfil de estilo",
   projectPickFolder: "Elegir carpeta…",
-  projectNoFolder: "No usar ninguna carpeta",
+  projectFollowSidebar: "Usar la carpeta de la barra lateral",
   projectReveal: "Mostrar en el gestor de archivos",
   projectLearnStyle: "Aprender mi estilo a partir de muestras…",
   projectImportReferences: "Importar referencias…",
@@ -128,6 +128,16 @@ para usar una.
   codeBlockEditSource: "Editar el código",
   codeBlockDone: "Terminar de editar",
   codeBlockDelete: "Eliminar el bloque",
+  blockText: "Texto",
+  blockCallout: "Aviso",
+  blockHandleAdd: "Añadir un bloque debajo",
+  blockHandleOptions: "Arrastra para mover, haz clic para ver opciones",
+  blockTurnInto: "Convertir en",
+  blockDuplicate: "Duplicar",
+  blockHandlesLabel: "Asas de bloque",
+  blockHandlesHelp:
+    "⋮⋮ junto al bloque bajo el puntero: arrástralo para mover el bloque, o haz clic para convertirlo, duplicarlo o eliminarlo.",
+  smoothCaretLabel: "Cursor suave",
   menuBlockWide: "Vista ancha",
   menuBlockZoom: "Tamaño",
   diagramViewerLabel: "Diagrama",
@@ -138,7 +148,7 @@ para usar una.
   pictureViewerTurnHint: "← → otras imágenes",
   diagramViewerClose: "Cerrar",
   diagramViewerHint:
-    "Desplaza o pellizca para hacer zoom · arrastra para mover · doble clic para ajustar",
+    "Rueda o pellizca para hacer zoom · arrastra o desliza para mover · doble clic para ajustar",
   codeBlockLanguage: "Lenguaje del código",
   codeBlockLanguageSearch: "Buscar lenguaje",
   announceAiWriting: `${AI_NAME} está escribiendo…`,
@@ -172,8 +182,10 @@ para usar una.
   revisionDisplayInline: "Todo en el texto",
   revisionDisplayOriginal: "Original en el texto, cambios en el margen",
   revisionDisplayFinal: "Solo el resultado, original en el margen",
+  splitNoRoomLow:
+    "No hay espacio para otra división: la ventana es demasiado baja. Oculta el teclado o haz la ventana más alta.",
   splitNoRoom:
-    "No hay espacio para dividir: ensancha la ventana o cierra la barra lateral o una división",
+    "No cabe otra división: la ventana es demasiado estrecha. Ensánchala o cierra una división.",
   revisionDisplayNoRoom:
     "No hay espacio: cierra la barra lateral o el panel de IA",
   proposalDeletedSentence: "Original",
@@ -666,6 +678,8 @@ para usar una.
     "La tienda de plugins necesita una versión más reciente de Textus. Actualiza Textus para verla.",
   errorImageTooBig: "La imagen está vacía o supera los 25 MB.",
   errorNoFolder: "Abre primero una carpeta.",
+  errorPluginsNeedAllFiles:
+    "Los plugins no pueden leer esta carpeta: Textus no tiene acceso a todos los archivos. Vuelve a abrir la carpeta y elige «Continuar».",
   errorPdfUnsupported:
     "La exportación a PDF no está disponible en este sistema.",
   errorNoText: "No tiene texto legible.",
@@ -749,6 +763,11 @@ para usar una.
     many: "{n} palabras",
     other: "{n} palabras",
   },
+  slipCount: {
+    one: "{n} problema",
+    many: "{n} problemas",
+    other: "{n} problemas",
+  },
   wordCountDetail: "{words} palabras · {characters} caracteres (sin espacios)",
   alertNote: "Nota",
   alertTip: "Consejo",
@@ -785,6 +804,7 @@ para usar una.
   navShortcuts: "Atajos de teclado",
   generalBasicsLabel: "Opciones básicas",
   generalSystemLabel: "Aplicación",
+  generalNetworkLabel: "Red",
   settingsFilesGroup: "Archivos",
   shortcutAiGroupLabel: "IA y escritura",
   shortcutEditorGroupLabel: "Editor y navegación",
@@ -801,6 +821,7 @@ para usar una.
   backToStableInstall: "Instalar {version}",
   backToStableNone: "Ahora mismo no hay una versión estable a la que volver.",
   aiCompletionLabel: "Autocompletado con IA",
+  completionSourceLabel: "Sugerencias de",
   completionToneLabel: "Tono del autocompletado",
   completionTone_default: "Según el documento",
   completionTone_formal: "Formal",
@@ -879,7 +900,7 @@ para usar una.
   conventionsEu: "Instituciones de la UE",
   agentAttachFile:
     "Adjuntar archivos: documentos, PDF, imágenes, código, un zip… cualquier archivo",
-  chatAttachmentTruncated: "(recortado)",
+  chatAttachmentTruncated: "(largo: se lee por partes)",
   chatAttachmentNoVision: `Este proveedor no puede leer imágenes. Cambia de proveedor en Ajustes › ${AI_NAME} o adjunta un documento.`,
   aiGrammarLabel: "Revisión gramatical",
   aiAskLabel: `Chat de ${AI_NAME}`,
@@ -900,9 +921,6 @@ para usar una.
   providerDropdownLabel: "Proveedor",
   authDropdownLabel: "Acceso y credenciales",
   insertTable: "Insertar tabla",
-  insertTableRowsLabel: "Filas",
-  insertTableColumnsLabel: "Columnas",
-  insertTableConfirm: "Insertar",
   alignLeft: "Alinear a la izquierda",
   alignCenter: "Centrar",
   alignRight: "Alinear a la derecha",
@@ -917,6 +935,9 @@ para usar una.
   deleteRow: "Eliminar fila",
   deleteColumn: "Eliminar columna",
   copyTable: "Copiar tabla",
+  tableSize: "Filas y columnas",
+  tableGridSize: "{rows} filas, {cols} columnas",
+  tableGridLoses: "Se eliminarán las celdas con texto",
   deleteTable: "Eliminar tabla",
   tableToMarkdown: "Convertir en tabla Markdown",
   tableToMarkdownMerged:
@@ -964,9 +985,14 @@ para usar una.
   modelListLabel: "Lista de modelos",
   customTestConnection: "Probar conexión",
   customTestSuccess: "La conexión funciona.",
+  customModelNotListed:
+    "Conectado, pero este endpoint no ofrece el modelo «{model}». Elige uno de su lista.",
   customSave: "Guardar",
   proxyLabel: "Proxy de red",
   proxyTypeNone: "Ninguno (directo)",
+  proxyTypeSystem: "Igual que el sistema",
+  proxySystemHelp:
+    "Usa el proxy de la configuración de red del sistema; directo si no hay ninguno.",
   proxyHostPlaceholder: "Host, p. ej., 127.0.0.1",
   proxyPortPlaceholder: "Puerto",
   proxyUserPlaceholder: "Usuario (opcional)",
@@ -983,12 +1009,23 @@ para usar una.
   agentSend: "Enviar",
   agentStop: "Detener",
   agentRetry: "Reintentar",
+  agentForgotStart:
+    "Esta conversación es larga: sus primeros mensajes ya no se envían al modelo. Empieza una conversación nueva para comenzar de cero.",
+  revisionsNotKept:
+    "Los cambios pendientes de tu decisión no se pudieron guardar en el disco. Acéptalos o recházalos antes de cerrar el documento, o se perderán.",
+  settingsNotSaved:
+    "Ahora no se pueden guardar los ajustes ni el estado de la ventana: lo que cambies dura hasta que cierres Textus.",
   agentNeedsFolder:
     "Abre primero una carpeta o guarda el documento: el agente trabaja en una carpeta.",
   agentStopped: "{agent} se ha detenido.",
   agentNoImages:
     "{agent} no puede leer imágenes. Quita la imagen o elige otro agente.",
   agentSignIn: "Inicia sesión primero en {agent}.",
+  agentApproval: "Aprobación",
+  agentAskFirst: "Preguntar antes",
+  agentAskFirstHint: "Pregunta antes de cada cambio o comando.",
+  agentAllowAll: "Permitir todo",
+  agentAllowAllHint: "Ejecuta cada cambio y comando sin preguntar.",
   chatAgentsGroup: "Agentes",
   chatAgentPermission: "El agente pide permiso para seguir",
   chatAgentRunCommand: "Ejecutar un comando",
@@ -1187,6 +1224,9 @@ para usar una.
   activityRail: "Barra de actividad",
   activityRailHide: "Ocultar la barra de actividad",
   activityRailShow: "Mostrar la barra de actividad",
+  windowLayoutGroup: "Diseño de la ventana",
+  classicLookNote:
+    "¿Prefieres cómo era Textus antes de la 1.4? Elige Clásico, oculta la barra de actividad y muestra la barra de título en su propia fila. Vuelve a cambiarlos para el aspecto nuevo.",
   layoutLabel: "Diseño",
   layoutIslands: "Islas flotantes",
   layoutClassic: "Clásico",
@@ -1252,6 +1292,10 @@ para usar una.
   menuTable: "Tabla",
   menuToggleSourceMode: "Modo código fuente",
   menuFormatBar: "Barra de formato",
+  menuFormatBarTop: "Arriba",
+  menuFormatBarLeft: "Izquierda",
+  menuFormatBarRight: "Derecha",
+  menuFormatBarHidden: "Oculta",
   menuToggleTypewriterMode: "Modo máquina de escribir",
   menuToggleSidebar: "Barra lateral",
   menuZoomIn: "Ampliar",
@@ -1301,7 +1345,6 @@ para usar una.
   windowMaximize: "Maximizar",
   windowRestore: "Restaurar",
   windowClose: "Cerrar",
-  chatWindowTitle: AI_NAME,
   chatWindowPin: "Mantener en primer plano",
   chatWindowPinHint: "Mantener esta ventana por encima del editor",
   chatWindowUnpinHint: "Dejar de mantener esta ventana por encima del editor",
@@ -1322,7 +1365,7 @@ para usar una.
   proposalRelocate: "Pedir a la IA que rehaga este cambio",
   diffShow: "Mostrar diferencias",
   diffCollapse: "Mostrar menos",
-  chatPendingSummary: "Cambios por revisar: {n}",
+  chatPendingSummary: "Cambios por revisar:\u00a0{n}",
   chatPendingReveal: "Mostrar en el documento",
   quickAskPosition: "{i} / {n}",
   quickAskPrevEdit: "Cambio anterior",
@@ -1479,7 +1522,11 @@ para usar una.
     "El engranaje guarda el tema, las fuentes y tus cuentas de IA.",
   tutorialEditorTitle: "Escribe tal como se ve",
   tutorialEditorBody:
-    "El Markdown se convierte en formato al escribir: prueba `# Un título` o `- una lista`.",
+    "El Markdown se convierte en formato al escribir. Prueba cada uno:",
+  tutorialEditorHeading: "Un título: `# Planes`",
+  tutorialEditorList: "Una lista: `- leche`",
+  tutorialEditorNumbered: "Numerada: `1. primero`",
+  tutorialEditorTask: "Una tarea: `- [ ] devolver la llamada`",
   tutorialAiTitle: "Textus AI",
   tutorialAiBody:
     "Haz clic en los destellos de arriba a la derecha para abrir Textus AI.",
@@ -1512,6 +1559,10 @@ para usar una.
   wordImportDismiss: "Entendido",
   openFileFailed:
     "No se puede abrir {name}: no es un documento de texto y ningún complemento abre archivos de este tipo.",
+  openFileMuted:
+    "Textus no puede abrir {name} por sí solo. Desactivaste la sugerencia del plugin que lo abre; Ajustes › {page} la vuelve a mostrar.",
+  openFileGone:
+    "No se puede abrir {name}: ya no está ahí. Puede que se haya movido, renombrado o eliminado.",
   wordImportFailed: "No se pudo abrir {name}.",
   wordSaveRefused:
     "Un documento Markdown no se puede guardar sobre un documento de Word. Elige un nombre que termine en .md.",
@@ -1550,7 +1601,7 @@ para usar una.
   missingImageChooseFailed: "No se pudo usar la imagen elegida.",
   imageStorageGroupLabel: "Imágenes",
   imageStorageLabel: "Ubicación de las imágenes",
-  imageStorageLocal: "En este equipo",
+  imageStorageLocal: "En este dispositivo",
   imageStorageRemote: "Subir a un servidor de imágenes",
   imageFolderLabel: "Carpeta",
   imageFolderSubfolder: "Subcarpeta",
@@ -1628,7 +1679,7 @@ para usar una.
   themeNamePaper: "Papel",
   themeNameSlate: "Pizarra",
   themeNameForest: "Bosque",
-  themeNameAurora: "Aurora",
+  themeNamePrism: "Prisma",
   appearanceLabel: "Aspecto",
   appearanceModeLabel: "Claro u oscuro",
   appearanceSystem: "Según el sistema",
@@ -1749,7 +1800,7 @@ para usar una.
   navProvidersModels: "Modelos",
   navMemorySkills: "Agente",
   memoryGroup: "Memoria",
-  netGroup: "Web y proxy",
+  netGroup: "Búsqueda web",
   modelChoiceGroup: "Elección de modelo",
   providersGroup: "Proveedores",
   chooseFile: "Elegir archivo…",
@@ -1769,7 +1820,11 @@ para usar una.
   writingProviderLabel: "Proveedor de escritura",
   followChatProvider: "Igual que el chat",
   providerModelsGroup: "Modelos",
-  providerKeysLocal: "Las claves se quedan en este equipo.",
+  allFilesAccessAsk:
+    "Android te pedirá ahora que permitas a Textus administrar todos los archivos. Con ese permiso, Textus abre esta carpeta directamente: más rápido, y los cambios de otras apps aparecen al instante. Sin él, la carpeta se abre igual, algo más lenta.",
+  allFilesAccessContinue: "Continuar",
+  allFilesAccessNotNow: "Ahora no",
+  providerKeysLocal: "Las claves se quedan en este dispositivo.",
   pluginsMore: "Más",
   pluginsSearch: "Buscar plugins",
   pluginUpdateNow: "Actualizar",
@@ -1863,7 +1918,7 @@ para usar una.
   conventionsDecline: "Mantener el actual",
   pluginCardSystemApp: "Abrir con la app del sistema",
   pluginCardNever: "No volver a sugerir",
-  pluginCardsMuted: "Sugerencias de plugins desactivadas: {n}",
+  pluginCardsMuted: "Sugerencias de plugins desactivadas:\u00a0{n}",
   pluginCardsRestore: "Mostrar de nuevo",
   pluginCardsRestoreAll: "Mostrar de nuevo las sugerencias de plugins ocultas",
   pluginScreenshot: "{name} en uso",
@@ -1931,6 +1986,16 @@ para usar una.
   pluginPermAiTools: "Dar a Textus AI herramientas propias para usar",
   pluginPermNotifications: "Mostrar notificaciones del sistema",
   pluginPermAppearance: "Cambiar los colores de Textus y de tus documentos",
+  pluginPermGitCommit: "Hacer commits de Git en la carpeta abierta con tu Git",
+  pluginPermComments: "Leer y dejar notas en el margen de tus documentos",
+  pluginPermAiModel:
+    "Usar tu modelo de IA (cuenta para el uso de tu servicio de IA)",
+  pluginAiAsk:
+    "{plugin} quiere usar tu modelo de IA. Lo que envía cuenta para el uso de tu servicio de IA, hasta {limit} tokens al mes para este plugin.",
+  pluginAiLimit:
+    "{plugin} ha usado sus {limit} tokens de IA de este mes. ¿Permitir {limit} más?",
+  pluginAiAllow: "Permitir",
+  pluginAiUsage: "IA este mes: {used} de {limit} tokens",
   pluginPermAgents:
     "Ejecutar un agente de IA instalado en este ordenador (puede leer y cambiar archivos)",
   pluginPermBackground:
@@ -1938,6 +2003,7 @@ para usar una.
   pluginScheduleNotice:
     "{name} programó una tarea. Solo se ejecuta mientras Textus está abierto: activa «{setting}» para que también se ejecute con todas las ventanas cerradas.",
   pluginPermNetwork: "Conectarse a {host}",
+  pluginPermHidden: "Leer {path} en la carpeta abierta",
   pluginPermCommands: "Ejecutar los comandos de {plugin}",
   pluginPermNetworkAny: "Conectarse a cualquier sitio web",
   menuPlugins: "Complementos",
@@ -1957,7 +2023,15 @@ para usar una.
   pluginKeysTaken:
     "{name} no puede usar el teclado: lo tiene {holder}. Desactiva uno de ellos en la lista de plugins de la barra lateral.",
   shortcutIndentListItem: "Aumentar sangría del elemento",
+  shortcutFoldSection: "Plegar sección",
+  shortcutUnfoldSection: "Desplegar sección",
   shortcutOutdentListItem: "Reducir sangría del elemento",
   pluginKeyTaken:
     "{name}: {key} ya es de «{owner}», así que no se asignó a «{command}». Elige otro en Ajustes › Atajos de teclado.",
+  gitTrustTitle:
+    "¿Permitir que Git ejecute los programas propios de este repositorio?",
+  gitTrustText:
+    "El repositorio Git de esta carpeta está configurado para ejecutar programas en tu ordenador ({what}). Es habitual en un repositorio que has preparado tú. Si la carpeta viene de otra persona, permítelo solo si confías en ella.",
+  gitTrustAllow: "Confiar en este repositorio",
+  gitTrustRefused: "Aquí no se usa Git: el repositorio no es de confianza.",
 } satisfies Translation;

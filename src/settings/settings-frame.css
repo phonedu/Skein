@@ -129,8 +129,10 @@
   hyphens: auto;
 }
 
-.settings-nav-item:hover {
-  background: var(--ui-hover);
+@media (hover: hover) {
+  .settings-nav-item:hover {
+    background: var(--ui-hover);
+  }
 }
 
 .settings-nav-item-active {
@@ -200,6 +202,16 @@
   align-items: center;
   gap: 4px;
   margin-bottom: 8px;
+}
+
+/* A line under a group's list, about the group as a whole. */
+.settings-group-note {
+  margin: 8px 0 0;
+  padding-left: 4px;
+  max-width: 560px;
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+  line-height: 1.45;
 }
 
 .settings-group + .settings-group {

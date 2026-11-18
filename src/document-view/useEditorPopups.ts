@@ -1,4 +1,5 @@
 import { type KeyboardEvent, type MouseEvent, useRef, useState } from "react";
+import { heldByFinger } from "../utils/gesture";
 import { editorViewCtx } from "@milkdown/kit/core";
 import { contextMenuTarget } from "../editor/editor-menu";
 import { usePopupDismiss } from "./usePopupDismiss";
@@ -73,7 +74,7 @@ export function useEditorPopups({
   tour: TourAi | null;
   t: Strings;
 }) {
-  const { run, inlineChat } = setup;
+  const { run, inlineChat, tabId } = setup;
   const [menu, setMenu] = useState<EditorMenuState>(null);
   const [tableDialogOpen, setTableDialogOpen] = useState(false);
 
@@ -88,7 +89,10 @@ export function useEditorPopups({
     else if (Date.now() - lastTouchRef.current < 800)
       requestAnimationFrame(onGrammarCaret);
   };
-  const findReplace = useFindReplace(pmFind(run));
+  const findReplace = useFindReplace(pmFind(run), {
+    tabId,
+    ready: run(() => true) === true,
+  });
   useTextusAiOff(run, settings.textusAi, {
     quickAsk: inlineChat.hide,
     grammarCard: grammar.hide,
@@ -146,7 +150,8 @@ export function useEditorPopups({
   }
 
   function onContextMenu(e: MouseEvent) {
-    if (!ownsMenu(e.target)) return;
+    // A finger held on a word selects it, with the system's handles.
+    if (!ownsMenu(e.target) || heldByFinger(e.nativeEvent)) return;
     e.preventDefault();
     // A key that still arrives as a contextmenu event (no mouse button).
     if (e.button !== 2) {

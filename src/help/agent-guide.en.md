@@ -127,7 +127,7 @@ The folder menu creates `.textus/` and its files for you the first time you ask 
 - Typing `@` in the chat input attaches one of its files to your message.
 - Its `.textus/` folder holds the folder's style profile, library, writing instructions and skills.
 
-Right-click the empty paper of an AI tab and choose **Memory**: its top row shows the folder's name; click it for the **folder menu**. When your reference material doesn't live next to the draft, use **Choose folder…** there (or **Settings › Textus AI › Agent › Folder**). The folder you choose is used for every document — unsaved drafts included — until you pick **Use no folder**.
+Right-click the empty paper of an AI tab and choose **Memory**: its top row shows the folder's name; click it for the **folder menu**. When your reference material doesn't live next to the draft, use **Choose folder…** there (or **Settings › Textus AI › Agent › Folder**). The folder you choose is used for every document — unsaved drafts included — until you pick **Use the sidebar's folder**; with none chosen, the AI uses the folder open in the sidebar.
 
 > [!TIP]
 > Your draft is in `thesis/drafts/` and your interview notes in `thesis/research/`? Choose `thesis/` as the folder, and Textus AI can read `research/interviews.md` while you work on `drafts/chapter-2.md`.
@@ -292,7 +292,7 @@ Pick **Research** in the mode button and send a topic instead of a request: Text
 
 Turn on the **Web search** button next to the input, and Textus AI looks things up when a request needs facts that are current or that it isn't sure of. It can also read a page whose address you paste.
 
-- **Who searches**: models that search by themselves — OpenAI, Claude, Grok, OpenRouter, Groq, Qwen and Zhipu GLM — use their own search. For any other model (DeepSeek, Gemini, Mistral, Kimi, local models, custom endpoints), Textus does the searching, on the **Search service** chosen in **Settings › Textus AI › Writing assist › Web and proxy**: **Automatic** uses a DeepSeek, Zhipu or Kimi key you already saved for chat; or pick Bocha, Tavily, Brave Search or Exa and paste its key, or SearXNG and enter the address of your own server. The row says where your searches go. With nothing to search with, the button shows a red dot.
+- **Who searches**: models that search by themselves — OpenAI, Claude, Grok, OpenRouter, Groq, Qwen and Zhipu GLM — use their own search. For any other model (DeepSeek, Gemini, Mistral, Kimi, local models, custom endpoints), Textus does the searching, on the **Search service** chosen in **Settings › Textus AI › Writing assist › Web search**: **Automatic** uses a DeepSeek, Zhipu or Kimi key you already saved for chat; or pick Bocha, Tavily, Brave Search or Exa and paste its key, or SearXNG and enter the address of your own server. The row says where your searches go. With nothing to search with, the button shows a red dot.
 - **Sources**: the reply cites what it found as [1], [2], and lists those pages under it; click one to open it in your browser. The numbers stay the same for the whole conversation.
 - **Sources as footnotes**: when a proposal draws on the web, its card has **Add sources as footnotes**. Ticked, accepting it adds Markdown footnotes for its sources at the end of the document; unticked, the text goes in without them. The card remembers your last choice.
 - **Pages are read, not obeyed**: what a page says never instructs Textus AI, and it still only proposes edits. Textus reads pages from the public web only, never from your computer or local network.

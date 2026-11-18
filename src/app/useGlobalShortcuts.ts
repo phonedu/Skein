@@ -24,10 +24,17 @@ import {
   SHOW_REPLACE_EVENT,
   FIND_NEXT_EVENT,
   INSERT_BLOCK_EVENT,
+  sendAppEvent,
 } from "../utils/events";
 import { actionForCombo, type AppActionHandlers } from "./menu/app-actions";
 import { pickIsland } from "../engine/layout/island-numbers";
-import { isImeKeydown } from "../utils/ime";
+import { afterComposition, isImeKeydown } from "../utils/ime";
+
+/** The sidebar tabs a key of their own shows, by the shortcut's name. */
+const SIDEBAR_KEYS = [
+  ["showFiles", "tree"],
+  ["showOutline", "outline"],
+] as const;
 
 /** The heading shortcuts, by the block kind they apply. */
 const HEADING_KINDS: [HeadingAction, string][] = [
@@ -69,7 +76,10 @@ const NEW_TAB_TOO = "mod+t";
 
 /** Edit › Replace… and Find Next where the page sees keys first; a Mac's
  *  menu items take them before. */
-export const FIND_KEYS: Record<string, string> = {
+export const FIND_KEYS: Record<
+  string,
+  typeof SHOW_REPLACE_EVENT | typeof FIND_NEXT_EVENT
+> = {
   "mod+alt+f": SHOW_REPLACE_EVENT,
   "mod+g": FIND_NEXT_EVENT,
 };
@@ -86,6 +96,8 @@ export function useGlobalShortcuts(opts: {
   actions: AppActionHandlers;
   /** Opens the sidebar on its Files tab with the search box focused. */
   searchFiles: () => void;
+  /** A sidebar tab's own key: that tab, or the sidebar away (#687). */
+  showSidebarTab: (id: string) => void;
 }): void {
   const {
     tabsRef,
@@ -95,6 +107,7 @@ export function useGlobalShortcuts(opts: {
     requestCloseTab,
     actions,
     searchFiles,
+    showSidebarTab,
   } = opts;
   const { settings } = useSettings();
   // Read when a key runs one: a new object each render would resubscribe.
@@ -159,7 +172,7 @@ export function useGlobalShortcuts(opts: {
       const findEvent = FIND_KEYS[combo];
       if (findEvent) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent(findEvent));
+        sendAppEvent(findEvent);
         return;
       }
 
@@ -201,9 +214,7 @@ export function useGlobalShortcuts(opts: {
       }
       if (heading) {
         e.preventDefault();
-        window.dispatchEvent(
-          new CustomEvent(INSERT_BLOCK_EVENT, { detail: heading[1] }),
-        );
+        afterComposition(() => sendAppEvent(INSERT_BLOCK_EVENT, heading[1]));
         return;
       }
       // An action a menu item runs too, as that item does.
@@ -215,16 +226,20 @@ export function useGlobalShortcuts(opts: {
       }
       if (combo === shortcuts.triggerCompletion) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent(TRIGGER_COMPLETION_EVENT));
+        sendAppEvent(TRIGGER_COMPLETION_EVENT);
       } else if (combo === shortcuts.triggerGrammarCheck) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent(TRIGGER_GRAMMAR_CHECK_EVENT));
+        sendAppEvent(TRIGGER_GRAMMAR_CHECK_EVENT);
       } else if (combo === shortcuts.toggleFloatingChat) {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent(TOGGLE_FLOATING_CHAT_EVENT));
+        sendAppEvent(TOGGLE_FLOATING_CHAT_EVENT);
       } else if (canOpenFolder && combo === shortcuts.searchFiles) {
         e.preventDefault();
         searchFiles();
+      } else if (SIDEBAR_KEYS.some(([key]) => combo === shortcuts[key])) {
+        e.preventDefault();
+        const [, tab] = SIDEBAR_KEYS.find(([key]) => combo === shortcuts[key])!;
+        showSidebarTab(tab);
       } else {
         // A command added from outside, on a combo the app hasn't taken.
         const command = commandForCombo(combo, settings.commandShortcuts);
@@ -250,5 +265,6 @@ export function useGlobalShortcuts(opts: {
     settings,
     actionsNow,
     searchFiles,
+    showSidebarTab,
   ]);
 }

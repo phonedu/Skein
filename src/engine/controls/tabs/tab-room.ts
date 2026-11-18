@@ -21,6 +21,9 @@ export interface PillMeasures {
   /** Between its parts. */
   gap: number;
   close: number;
+  /** An unopened tab's × takes its room too (not without a pointer, where
+   *  it shows only on the open tab). */
+  closeIdle: boolean;
   dot: number;
   lock: number;
   /** Its count of waiting revisions with one digit, and each more digit. */
@@ -29,6 +32,8 @@ export interface PillMeasures {
   min: number;
   max: number;
   shrink: boolean;
+  /** The least of a name a squeezed tab shows: four letters' width. */
+  fewest: number;
   /** What its `width` leaves out of its box (its padding and borders
    *  where it is sized by its content box). */
   outside: number;
@@ -51,6 +56,7 @@ export interface TabShape {
   preview?: boolean;
   readOnly?: boolean;
   waiting?: number;
+  open?: boolean;
 }
 
 const px = (value: string) => parseFloat(value) || 0;
@@ -105,17 +111,26 @@ function measurePill(strip: HTMLElement, pill: HTMLElement): PillMeasures {
     px(style.borderLeftWidth) +
     px(style.borderRightWidth);
   const outside = style.boxSizing === "border-box" ? 0 : pad;
-  const close = probe.querySelector(".tab-pill-close");
+  // Shown: without a pointer an unopened tab hides it, and the open tab's
+  // name would lose its room. Whether it does, read on the probe unopened.
+  const close = probe.querySelector<HTMLElement>(".tab-pill-close");
+  const active = probe.classList.contains("tab-pill-active");
+  probe.classList.remove("tab-pill-active");
+  const closeIdle = !!close && getComputedStyle(close).display !== "none";
+  probe.classList.toggle("tab-pill-active", active);
+  close?.style.setProperty("display", "flex", "important");
   const font = fontOf(title);
   const drawn = title.getBoundingClientRect().width;
   const measured = textWidth(title.textContent ?? "", font) ?? 0;
+  const textFix = drawn > 0 && measured > 0 ? Math.max(1, drawn / measured) : 1;
   const measures: PillMeasures = {
     font,
-    textFix: drawn > 0 && measured > 0 ? Math.max(1, drawn / measured) : 1,
+    textFix,
     pad,
     gap: px(style.columnGap),
     // Not its margin: the free room it is pushed to the end with.
     close: close ? laidOut(close) - px(getComputedStyle(close).marginLeft) : 0,
+    closeIdle,
     dot: laidOut(dot),
     lock: laidOut(lock),
     waiting: laidOut(waiting),
@@ -123,6 +138,7 @@ function measurePill(strip: HTMLElement, pill: HTMLElement): PillMeasures {
     min: px(style.minWidth) + outside,
     max: style.maxWidth === "none" ? Infinity : px(style.maxWidth) + outside,
     shrink: style.flexShrink !== "0",
+    fewest: Math.ceil((textWidth("0000", font) ?? 0) * textFix),
     outside,
   };
   probe.remove();
@@ -165,6 +181,13 @@ export function readTabRoom(
   };
 }
 
+/** What a row's tab measures hold for: its kind and the interface's scale,
+ *  which a narrow window's step changes with no other sign. */
+export function measuresKey(bar: HTMLElement): string {
+  const scale = getComputedStyle(bar).getPropertyValue("--chrome-scale");
+  return `${bar.className}|${scale.trim()}`;
+}
+
 export function sameRoom(a: TabRoom | null, b: TabRoom | null): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
@@ -188,6 +211,9 @@ export function fitTabs(tabs: readonly TabShape[], room: TabRoom): TabFit {
           pill.digit * (String(tab.waiting).length - 1) +
           pill.gap
         : 0),
+    // Its × hidden till it opens, an unopened tab's name has that room.
+    spare: tab.open || pill.closeIdle ? 0 : pill.close + pill.gap,
+    open: tab.open,
   }));
   const fit = tabWidths(
     parts,

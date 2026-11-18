@@ -28,6 +28,7 @@ import { Presence } from "../../engine/motion/usePresence";
 import { IconButton } from "../../engine/controls/IconButton";
 import { CloseIcon, PlusIcon } from "../../engine/controls/icons";
 import type { Strings } from "../../i18n/strings";
+import { chatTitle, chatTitles } from "../../ai/chat/chat-title";
 
 const NONE: string[] = [];
 
@@ -70,9 +71,9 @@ export function AgentTabs({
   const live = useLive(scope);
   const history = useChatHistory();
   const panel = useAgentPanel();
-  const titles = new Map(history.map((entry) => [entry.id, entry.title]));
+  const titles = chatTitles(history);
   const ids = open.length ? open : live ? [live] : [DRAFT];
-  const title = (id: string) => titles.get(id) || t.chatNewConversation;
+  const title = (id: string) => chatTitle(titles.get(id), t);
   const show = (id: string) => {
     panel.setTab("chat");
     if (scope) setLiveConversation(scope, id);
@@ -149,11 +150,15 @@ export function AgentIslandTools({
     if (!island) return;
     const onMenu = (e: MouseEvent) => {
       const target = e.target as Element;
-      if (
-        target.closest(OWN_MENUS) ||
-        (getSelection()?.toString() ?? "") !== ""
-      )
-        return;
+      // Text selected here and pressed on keeps the system's menu (Copy);
+      // a selection elsewhere - the document's - is no reason to.
+      const selection = getSelection();
+      const onSelected =
+        !!selection &&
+        !selection.isCollapsed &&
+        island.contains(selection.anchorNode) &&
+        selection.containsNode(target, true);
+      if (target.closest(OWN_MENUS) || onSelected) return;
       e.preventDefault();
       setMenu({ x: e.clientX, y: e.clientY });
     };

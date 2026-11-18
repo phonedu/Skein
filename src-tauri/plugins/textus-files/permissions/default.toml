@@ -10,8 +10,13 @@ permissions = [
   "allow-read-data",
   "allow-write-text",
   "allow-list-folder",
+  "allow-create-entry",
+  "allow-rename-entry",
+  "allow-move-entry",
+  "allow-delete-entry",
   "allow-remembered",
   "allow-begin-access",
   "allow-share",
   "allow-haptic",
+  "allow-appearance",
 ]

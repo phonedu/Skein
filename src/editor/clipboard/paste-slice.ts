@@ -1,3 +1,5 @@
+import { TableMap } from "@milkdown/kit/prose/tables";
+import { Selection, type Transaction } from "@milkdown/kit/prose/state";
 import {
   Fragment,
   Slice,
@@ -70,6 +72,11 @@ export function fillTable(
     grid.push(cells);
   });
   let width = grid[0].length;
+  // A new cell takes its column's alignment, as the table keeps it: else
+  // it is set after, as an undo step of its own.
+  const aligned = (col: number) => ({
+    alignment: grid[0][col]?.attrs.alignment ?? null,
+  });
   pasted.forEach((row, _, r) => {
     const at = top + r;
     if (at >= grid.length) {
@@ -78,7 +85,10 @@ export function fillTable(
     }
     row.forEach((cell, __, c) => {
       const type = at === 0 ? header : body;
-      grid[at][left + c] = type.create(grid[at][left + c]?.attrs, cell.content);
+      grid[at][left + c] = type.create(
+        grid[at][left + c]?.attrs ?? aligned(left + c),
+        cell.content,
+      );
       width = Math.max(width, left + c + 1);
     });
   });
@@ -86,9 +96,25 @@ export function fillTable(
     const type = r === 0 ? header : body;
     const full = Array.from(
       { length: width },
-      (_, c) => cells[c] ?? type.createAndFill()!,
+      (_, c) => cells[c] ?? type.createAndFill(aligned(c))!,
     );
     return rowTypes[r].create(null, full);
   });
   return table.type.create(table.attrs, rows);
+}
+
+/** The table at `pos` filled with `pasted` from row `top`, column `left`
+ *  on (fillTable), the caret kept in that cell. */
+export function fillTableAt(
+  tr: Transaction,
+  pos: number,
+  top: number,
+  left: number,
+  pasted: Node,
+): Transaction {
+  const table = tr.doc.nodeAt(pos)!;
+  const filled = fillTable(table, top, left, pasted);
+  tr.replaceWith(pos, pos + table.nodeSize, filled);
+  const cell = pos + 1 + TableMap.get(filled).positionAt(top, left, filled);
+  return tr.setSelection(Selection.near(tr.doc.resolve(cell + 1)));
 }

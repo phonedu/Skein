@@ -41,15 +41,20 @@ import {
   strikethroughInputRule,
   strikethroughKeymap,
   toggleStrikethroughCommand,
+  tableCellSchema,
+  tableEditingPlugin,
+  tableHeaderSchema,
 } from "@milkdown/kit/preset/gfm";
 import { editorViewCtx } from "@milkdown/kit/core";
+import type { Node as ProseNode } from "@milkdown/kit/prose/model";
 import {
   InputRule,
   textblockTypeInputRule,
   wrappingInputRule,
 } from "@milkdown/kit/prose/inputrules";
-import { $inputRule } from "@milkdown/kit/utils";
+import { $inputRule, type $NodeSchema } from "@milkdown/kit/utils";
 import { isLinuxPlatform } from "../../platform/os";
+import { tableEditingInTables } from "../tables/table-editing";
 
 // The stock commonmark/gfm presets minus what Textus replaces or must avoid:
 // - bold/italic/strike/inline code marks: md_span nodes instead;
@@ -153,6 +158,49 @@ const excludedGfmSet = new Set<unknown>(excludedGfmPieces);
 export const commonmarkWithoutMarks = (commonmark as unknown[]).filter(
   (piece) => !excludedCommonmarkSet.has(piece),
 ) as typeof commonmark;
-export const gfmWithoutStrikethrough = (gfm as unknown[]).filter(
-  (piece) => !excludedGfmSet.has(piece),
-) as typeof gfm;
+// Table editing in its place, its selection tidying kept inside tables.
+export const gfmWithoutStrikethrough = (gfm as unknown[])
+  .filter((piece) => !excludedGfmSet.has(piece))
+  .map((piece) =>
+    piece === tableEditingPlugin ? tableEditingInTables : piece,
+  ) as typeof gfm;
+
+/** A new cell has no alignment, as one read from `| --- |`: Milkdown's
+ *  "left" saved every new table as `| :--- |`. */
+const unaligned = <T extends string>(schema: $NodeSchema<T>) =>
+  schema.extendSchema((prev) => (ctx) => {
+    const spec = prev(ctx);
+    return {
+      ...spec,
+      attrs: {
+        ...spec.attrs,
+        alignment: {
+          default: null,
+          validate: "string|null",
+        },
+      },
+      // No alignment, no text-align: one would read back as "left".
+      toDOM: (node: ProseNode) => {
+        const out = spec.toDOM!(node) as [string, Record<string, string>, 0];
+        if (node.attrs.alignment != null || !out[1]?.style) return out;
+        const attrs = { ...out[1] };
+        const style = attrs.style.replace(/text-align:\s*left;?\s*/, "");
+        if (style) attrs.style = style;
+        else delete attrs.style;
+        return [out[0], attrs, 0];
+      },
+      parseDOM: spec.parseDOM?.map((rule) => ({
+        ...rule,
+        getAttrs: (dom: HTMLElement) => {
+          const attrs = rule.getAttrs?.(dom);
+          if (attrs === false) return false;
+          return { ...attrs, alignment: dom.style.textAlign || null };
+        },
+      })),
+    };
+  });
+
+export const unalignedTableCells = [
+  unaligned(tableCellSchema),
+  unaligned(tableHeaderSchema),
+].flat();

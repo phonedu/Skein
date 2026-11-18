@@ -1,11 +1,13 @@
 import { getUiState, setUiState } from "../../storage/ui-state";
 import { loadSettings } from "../../prefs/settings-store";
+import { externalAgent } from "../../plugins/contributions/agents";
 import {
   askingValue,
   modeOption,
   readOptions,
   type AgentOption,
 } from "./agent-mode";
+import { createSubscribers } from "../../utils/store";
 
 /**
  * What each external agent offers, as last heard from it: the options it
@@ -28,7 +30,7 @@ interface AgentOffer {
 
 const NONE: AgentOffer = { options: [], commands: [] };
 let offers: Map<string, AgentOffer> | null = null;
-const listeners = new Set<() => void>();
+let listeners = createSubscribers();
 
 function readCommands(raw: unknown): AgentCommand[] {
   if (!Array.isArray(raw)) return [];
@@ -87,19 +89,26 @@ function hear(agent: string, next: Partial<AgentOffer>): void {
       ]),
     ),
   );
-  for (const listener of listeners) listener();
+  listeners.publish();
 }
 
 export const offerOf = (agent: string): AgentOffer => all().get(agent) ?? NONE;
 
 export function subscribeOffers(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+  return listeners.subscribe(listener);
 }
 
 /** Options as the agent sent them (`configOptions`), now in force. */
+/** The mode marked with the value its plugin says asks first. */
+function withAsking(options: AgentOption[], asking?: string): AgentOption[] {
+  const mode = modeOption(options);
+  return asking && mode
+    ? options.map((o) => (o === mode ? { ...o, asking } : o))
+    : options;
+}
+
 export function heardOptions(agent: string, raw: unknown): AgentOption[] {
-  const options = readOptions(raw);
+  const options = withAsking(readOptions(raw), externalAgent(agent)?.askMode);
   hear(agent, { options });
   return options;
 }
@@ -121,8 +130,9 @@ const chosenFor = (agent: string): Record<string, string> =>
   loadSettings().agentOptions[agent] ?? {};
 
 /** The value `option` should have: the user's choice while the agent still
- *  offers it, else, for the mode, the one that asks first. */
-export function wanted(
+ *  offers it, else, for the mode, the one that asks first, and for an
+ *  allow-all switch of its own (Copilot's), off. */
+function wanted(
   option: AgentOption,
   options: readonly AgentOption[],
   chosen: Record<string, string>,
@@ -130,17 +140,45 @@ export function wanted(
   const choice = chosen[option.id];
   if (choice !== undefined && option.choices.some((c) => c.value === choice))
     return choice;
+  if (option.category === "permissions")
+    return option.choices.some((c) => c.value === "off") ? "off" : null;
   return option.category === "mode" || option.id === "mode"
     ? askingValue(options)
     : null;
 }
 
 /** The options whose value in force isn't the one wanted, with it. */
+/** Values an agent turned down, `option=value` by agent: never sent to it
+ *  again this run, or each new message would be refused anew. */
+const refusals = new Map<string, Set<string>>();
+
+/** That `agent` turned `value` of option `id` down. */
+export function noteRefused(agent: string, id: string, value: string): void {
+  const set = refusals.get(agent) ?? new Set<string>();
+  set.add(`${id}=${value}`);
+  refusals.set(agent, set);
+}
+
+const wasRefused = (agent: string, id: string, value: string) =>
+  refusals.get(agent)?.has(`${id}=${value}`) ?? false;
+
+/** What `option` should be for `agent`: the choice wanted, unless the
+ *  agent turned it down - then null, and what it runs in stands. */
+export function wantedNow(
+  agent: string,
+  option: AgentOption,
+  options: readonly AgentOption[],
+  chosen: Record<string, string>,
+): string | null {
+  const value = wanted(option, options, chosen);
+  return value !== null && wasRefused(agent, option.id, value) ? null : value;
+}
+
 export function choicesToSend(agent: string): [string, string][] {
   const { options } = offerOf(agent);
   const chosen = chosenFor(agent);
   return options.flatMap((o): [string, string][] => {
-    const value = wanted(o, options, chosen);
+    const value = wantedNow(agent, o, options, chosen);
     return value !== null && value !== o.current ? [[o.id, value]] : [];
   });
 }
@@ -168,20 +206,27 @@ export async function applyChoices(
     if (!next) return;
     done.add(next.id);
     const value = wanted(next, options, chosen)!;
-    // A model or effort the agent turns down is skipped; the mode isn't:
-    // the session never runs in one that doesn't ask unless chosen.
+    // A model or effort the agent turns down is skipped; a mode falls back
+    // to the one that asks (Gemini refuses Auto Edit in a folder it doesn't
+    // trust), and the session never runs in one that doesn't ask unless
+    // chosen.
     const isMode = next.id === modeOption(options)?.id;
     let answer: { configOptions?: unknown } | null;
+    let sent = value;
     try {
       answer = (await set(next.id, value)) as typeof answer;
     } catch (err) {
-      if (isMode) throw err;
-      continue;
+      noteRefused(agent, next.id, value);
+      if (!isMode) continue;
+      const asking = askingValue(options);
+      if (asking === null || asking === value) throw err;
+      sent = asking;
+      answer = (await set(next.id, asking)) as typeof answer;
     }
     if (answer?.configOptions)
       options = heardOptions(agent, answer.configOptions);
     else {
-      heardValue(agent, next.id, value);
+      heardValue(agent, next.id, sent);
       options = offerOf(agent).options;
     }
   }
@@ -190,5 +235,6 @@ export async function applyChoices(
 /** Forgets what was heard, for tests. */
 export function resetOffersForTests(): void {
   offers = null;
-  listeners.clear();
+  listeners = createSubscribers();
+  refusals.clear();
 }

@@ -1,4 +1,5 @@
 import { contentZoom, watchContentZoom } from "../../engine/zoom/tab-zoom";
+import { FRAME_PRESS } from "./pressed-blocks";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { connectFrame, sandboxedFrame, webviewDocument } from "../host/frames";
 import { disposeWebview, resolveWebview, webviewMessage } from "../manager";
@@ -14,7 +15,9 @@ import {
 import { grantedHosts } from "../store/permissions";
 import type { CodeBlockSeen } from "../manager";
 import { windowInfo } from "../store/plugin-records";
-import { watchTheme, webviewThemeCss, windowIsDark } from "./theme-vars";
+import { useSettingsIfAny } from "../../prefs/SettingsContext";
+import { watchTheme, webviewThemeCss } from "./theme-vars";
+import { windowIsDark } from "../../engine/tokens/appearance";
 import { pageMenuEntries } from "./webview-menu";
 import { openPageLink } from "./page-links";
 import {
@@ -24,6 +27,7 @@ import {
 import { passZoomGesture, passZoomWheel } from "./frame-zoom";
 import { createPortal } from "react-dom";
 import { PluginProblem } from "./PluginProblem";
+import { logPluginMessage } from "../store/plugin-log";
 import {
   ContextMenu,
   type ContextMenuEntry,
@@ -107,6 +111,8 @@ export function PluginWebview({
   zoom?: number;
 }) {
   const html = useSyncExternalStore(subscribeWebviews, () => webviewHtml(id));
+  // The page is made again in a new language, its strings and `lang` too.
+  const language = useSettingsIfAny()?.settings.language;
   const boxRef = useRef<HTMLDivElement>(null);
   const closeMenuRef = useRef<(() => void) | null>(null);
   // A menu the page asked for, drawn by the app over the page.
@@ -201,6 +207,15 @@ export function PluginWebview({
             : false,
         clipboardRead: () => (pickedNow("paste") ? clipboardText() : ""),
         menuClose: () => closeMenuRef.current?.(),
+        pressed: () =>
+          frame.dispatchEvent(new CustomEvent(FRAME_PRESS, { bubbles: true })),
+        // The page's errors and console, in the plugin's log in Settings.
+        log: ({ level, message }: { level: unknown; message: unknown }) =>
+          logPluginMessage(
+            current.plugin,
+            level === "error" || level === "warn" ? level : "info",
+            `(page) ${String(message ?? "")}`,
+          ),
         openLink: openPageLink,
         // Told on as a right-click on the frame, for the menu around it.
         contextMenu: ({ x, y }: { x: unknown; y: unknown }) => {
@@ -256,15 +271,22 @@ export function PluginWebview({
         dark: windowIsDark(),
       }),
     );
+    // Out of sight (its tab behind another, its panel closed) the page is
+    // told, to keep what it would lose if let go.
+    const sight = new IntersectionObserver(([entry]) =>
+      endpoint?.notify("visible", { visible: entry.isIntersecting }),
+    );
+    sight.observe(box);
     box.replaceChildren(frame);
     return () => {
+      sight.disconnect();
       stopTheme();
       stopZoom();
       disconnect();
       webviewConnected(id, null);
       frame.remove();
     };
-  }, [id, html, fitHeight, ownZoom, tellZoom, interfaceSize]);
+  }, [id, html, fitHeight, ownZoom, tellZoom, interfaceSize, language]);
 
   return (
     <>

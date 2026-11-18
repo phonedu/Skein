@@ -14,7 +14,7 @@ interface CornerToastAction {
  * The one card in a window corner that tells or offers something without
  * stopping the user: an update, a plugin suggestion, drafts brought back.
  * One line, its buttons, an optional × and, with `details`, a line that
- * opens to say more. Never takes the focus. Placed in a CornerStack.
+ * opens to say more. Never takes the focus. Placed in CornerStacks.
  */
 export function CornerToast({
   show,
@@ -86,19 +86,19 @@ export function CornerToast({
                 {action.label}
               </button>
             ))}
-            {close && (
-              <Tooltip text={close.label}>
-                <button
-                  type="button"
-                  className="tx-icon-button corner-toast-close"
-                  aria-label={close.label}
-                  onClick={close.onSelect}
-                >
-                  <CloseIcon />
-                </button>
-              </Tooltip>
-            )}
           </div>
+          {close && (
+            <Tooltip text={close.label}>
+              <button
+                type="button"
+                className="tx-icon-button corner-toast-close"
+                aria-label={close.label}
+                onClick={close.onSelect}
+              >
+                <CloseIcon />
+              </button>
+            </Tooltip>
+          )}
           {open && details && (
             <div className="corner-toast-more" id={moreId}>
               {details}
@@ -110,17 +110,23 @@ export function CornerToast({
   );
 }
 
-/** A window corner's toasts, stacked so none covers another. */
-export function CornerStack({
-  corner,
-  children,
+/** The window's foot: each corner's toasts stacked so none covers another,
+ *  the two corners side by side while they fit, else one above the other. */
+export function CornerStacks({
+  start,
+  end,
 }: {
-  corner: "start" | "end";
-  children: ReactNode;
+  start: ReactNode;
+  end: ReactNode;
 }) {
   return (
-    <div className="corner-stack" data-corner={corner}>
-      {children}
+    <div className="corner-stacks">
+      <div className="corner-stack" data-corner="start">
+        {start}
+      </div>
+      <div className="corner-stack" data-corner="end">
+        {end}
+      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import type { ImageHost } from "../prefs/SettingsContext";
 import type * as Generated from "./bindings/files";
 import { isIOSApp, isMobileApp } from "./capabilities";
 import { iosFiles, isScopedUrl, newDocumentPath } from "./ios-files";
+import { parentDir } from "../utils/path";
 import { scopedFolder } from "./scoped-folder";
 import { command, desktopActionCommand, desktopQueryCommand } from "./ipc-call";
 
@@ -60,19 +61,32 @@ export const fs = {
   listDir: (path: string): Promise<DirEntryInfo[]> =>
     isScopedUrl(path) ? iosFiles.listFolder(path) : command("list_dir", path),
   /** The sidebar tree's New Document, New Folder and drag-to-move. Each
-   *  returns the new path and refuses a taken name. Desktop only. */
-  createDocument: (dir: string, name: string) =>
-    desktopActionCommand("tree_create_document", dir, name),
-  createFolder: (dir: string, name: string) =>
-    desktopActionCommand("tree_create_folder", dir, name),
-  moveEntry: (path: string, into: string) =>
-    desktopActionCommand("tree_move_entry", path, into),
+   *  returns the new path and refuses a taken name. */
+  createDocument: (dir: string, name: string): Promise<string> =>
+    isScopedUrl(dir) && !isIOSApp
+      ? iosFiles.createEntry(dir, name, false)
+      : command("tree_create_document", dir, name),
+  createFolder: (dir: string, name: string): Promise<string> =>
+    isScopedUrl(dir) && !isIOSApp
+      ? iosFiles.createEntry(dir, name, true)
+      : command("tree_create_folder", dir, name),
+  moveEntry: (path: string, into: string): Promise<string> => {
+    const from = isScopedUrl(path) && !isIOSApp ? parentDir(path) : null;
+    return from
+      ? iosFiles.moveEntry(path, from, into)
+      : command("tree_move_entry", path, into);
+  },
   /** A new name in the same folder; returns the new path. */
-  renameEntry: (path: string, name: string) =>
-    desktopActionCommand("tree_rename_entry", path, name),
-  /** To the system's Trash, never deleted; refuses the tree's own root. */
-  trashEntry: (path: string, root: string) =>
-    desktopActionCommand("tree_trash_entry", path, root),
+  renameEntry: (path: string, name: string): Promise<string> =>
+    isScopedUrl(path) && !isIOSApp
+      ? iosFiles.renameEntry(path, name)
+      : command("tree_rename_entry", path, name),
+  /** To the system's Trash; refuses the tree's own root. A phone has none:
+   *  there a document is deleted (the tree asks first), a folder never. */
+  trashEntry: (path: string, root: string): Promise<void> =>
+    isScopedUrl(path) && !isIOSApp
+      ? iosFiles.deleteEntry(path).then(() => {})
+      : command("tree_trash_entry", path, root),
   /** File > Open Folder…'s picker. Rejects with "TOO_BROAD" for the home
    *  folder or a drive root. A phone's is the system's folder picker. */
   pickOpenFolder: (): Promise<string | null> =>
@@ -169,6 +183,9 @@ export const fs = {
     folder: string,
     sourceDocPath: string | null,
   ) => command("migrate_draft_images", docPath, srcs, folder, sourceDocPath),
+  /** A file's bytes as base64, at a path the user picked (an export). */
+  writeBase64File: (path: string, data: string): Promise<void> =>
+    command("write_base64_file", path, data),
   writeTextFile: (path: string, contents: string): Promise<void> =>
     isScopedUrl(path)
       ? iosFiles.writeText(path, contents)
@@ -258,6 +275,9 @@ export const drafts = {
   finishDraftRestore: () => command("finish_draft_restore"),
   clearDraftSnapshot: (tabId: string) => command("clear_draft_snapshot", tabId),
   clearAllDrafts: () => command("clear_all_drafts"),
+  /** The page's tabs, kept by the app's process (reload-tabs.ts). */
+  keepPageTabs: (text: string) => command("keep_page_tabs", text),
+  keptPageTabs: () => command("kept_page_tabs"),
 };
 
 /** A document's undo history kept beside the app's data while its editor

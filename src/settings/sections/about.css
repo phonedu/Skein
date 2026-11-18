@@ -78,7 +78,9 @@
   cursor: pointer;
 }
 
-.settings-about-links > button:hover,
-.settings-about-sponsor:hover {
-  color: var(--ui-text);
+@media (hover: hover) {
+  .settings-about-links > button:hover,
+  .settings-about-sponsor:hover {
+    color: var(--ui-text);
+  }
 }

@@ -49,19 +49,25 @@ export function useFitSteps(
 export function useFitItems(
   el: RefObject<HTMLElement | null>,
   more: string,
+  /** A column: fitted to its height. */
+  column = false,
 ): void {
   useLayoutEffect(() => {
     const row = el.current;
     if (!row) return;
+    const fits = () =>
+      column
+        ? row.scrollHeight <= row.clientHeight
+        : row.scrollWidth <= row.clientWidth;
     const fit = () => {
       const items = [...row.querySelectorAll<HTMLElement>("[data-fit-item]")];
       const button = row.querySelector<HTMLElement>(more);
       for (const item of items) item.removeAttribute("data-fit-hidden");
       button?.setAttribute("data-fit-hidden", "");
-      if (row.scrollWidth <= row.clientWidth) return;
+      if (fits()) return;
       button?.removeAttribute("data-fit-hidden");
       for (let i = items.length - 1; i >= 0; i--) {
-        if (row.scrollWidth <= row.clientWidth) return;
+        if (fits()) return;
         items[i].setAttribute("data-fit-hidden", "");
       }
     };
@@ -73,5 +79,42 @@ export function useFitItems(
       resized.disconnect();
       restyled();
     };
-  }, [el, more]);
+  }, [el, more, column]);
+}
+
+/**
+ * A row of a name and a control: `data-stacked` on it while the name (its
+ * `name` element), squeezed beside the control, would run past `lines`
+ * lines, so the stylesheet can put the control under it instead. Read
+ * again as its container resizes or the interface restyles.
+ */
+export function useStackWhenTall(
+  el: RefObject<HTMLElement | null>,
+  name: string,
+  lines = 2,
+): void {
+  useLayoutEffect(() => {
+    const row = el.current;
+    if (!row) return;
+    const fit = () => {
+      row.removeAttribute("data-stacked");
+      const label = row.querySelector<HTMLElement>(name);
+      const control = row.lastElementChild as HTMLElement | null;
+      if (!label || !control || control.contains(label)) return;
+      const style = getComputedStyle(label);
+      const line =
+        parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.3;
+      const beside = control.offsetTop < label.offsetTop + label.offsetHeight;
+      if (beside && label.offsetHeight > line * (lines + 0.5))
+        row.setAttribute("data-stacked", "");
+    };
+    fit();
+    const resized = new ResizeObserver(fit);
+    resized.observe(row.offsetParent ?? row);
+    const restyled = onAppearance(fit);
+    return () => {
+      resized.disconnect();
+      restyled();
+    };
+  }, [el, name, lines]);
 }

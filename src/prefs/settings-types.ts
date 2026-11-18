@@ -12,6 +12,7 @@ import {
   type EmbedDisplay,
   type ViewMode,
   type ProxyType,
+  type FormatBarSide,
   type UiTextScale,
   type DocTextSize,
   type DocLineSpacing,
@@ -101,6 +102,9 @@ export interface Settings {
   revisionDisplay: RevisionDisplay;
   /// Tone preset for inline completion suggestions.
   completionTone: CompletionTone;
+  /// Where inline completion comes from: "textus" (Textus AI) or a
+  /// plugin's source, `<plugin id>#<its id>`.
+  completionSource: string;
   /// "automatic", or a profile such as "zh-Hans-CN/fiction" the AI and the
   /// checks follow for that language. A project's style profile overrides it.
   writingConventions: string;
@@ -142,8 +146,8 @@ export interface Settings {
   /// is read and it bounds the agent's file tools, so setting it lets the
   /// agent reach material that doesn't live next to the draft.
   agentWorkspaceRoot: string;
-  /// Proxy all AI provider requests route through ("none" or an empty host
-  /// means direct). Handed to Rust as a URL.
+  /// Where every request the app makes goes (settings/app.rs): the
+  /// system's proxy, direct, or the host and port below.
   proxyType: ProxyType;
   proxyHost: string;
   proxyPort: string;
@@ -158,6 +162,7 @@ export interface Settings {
   /** formatBar has been turned on once for a profile from before it was
    *  on by default (settings-normalise.ts). */
   formatBarOnce: boolean;
+  formatBarSide: FormatBarSide;
   /** Every document zoomed together, not each tab its own (documents
    *  only: Settings, plugin pages and the AI aren't zoomed). */
   zoomTogether: boolean;
@@ -170,6 +175,10 @@ export interface Settings {
   firstLineIndent: boolean;
   /** A gray "type / to insert" on the empty line the caret is on. */
   emptyLineHint: boolean;
+  /** ⋮⋮ beside the block under the pointer. */
+  blockHandles: boolean;
+  /** The caret glides to where it goes (computers only). */
+  smoothCaret: boolean;
   /** How an image on a line of its own sits. Display only: the file is
    *  not changed. */
   imageAlign: ImageAlign;
@@ -311,6 +320,7 @@ export const DEFAULT_SETTINGS: Settings = {
   agentOptions: {},
   revisionDisplay: "final",
   completionTone: "default",
+  completionSource: "textus",
   writingConventions: "automatic",
   aiChangeMode: "revision",
   imageModelProvider: "chat",
@@ -326,7 +336,7 @@ export const DEFAULT_SETTINGS: Settings = {
   plugins: {},
   pinAgentWindow: false,
   agentWorkspaceRoot: "",
-  proxyType: "none",
+  proxyType: "system",
   proxyHost: "",
   proxyPort: "",
   proxyUsername: "",
@@ -334,12 +344,15 @@ export const DEFAULT_SETTINGS: Settings = {
   typewriterMode: false,
   formatBar: true,
   formatBarOnce: true,
+  formatBarSide: "top",
   zoomTogether: false,
   viewMode: "rich",
   zenMode: false,
   contentWidth: "auto",
   firstLineIndent: false,
   emptyLineHint: false,
+  blockHandles: true,
+  smoothCaret: false,
   imageAlign: "center",
   menuBarShown: false,
   titleRowShown: false,

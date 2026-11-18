@@ -1,3 +1,5 @@
+import { createSubscribers } from "../../utils/store";
+
 /**
  * The one watch on the window's look: the root's attributes (theme, scale,
  * platform, layout marks) and the stylesheets in <head> - a theme applied,
@@ -5,8 +7,7 @@
  * Everything that reads computed tokens hears it from here, once per
  * change, instead of watching the page itself.
  */
-const listeners = new Set<() => void>();
-let stop: (() => void) | null = null;
+const subscribers = createSubscribers(start);
 
 /** Marks a style that only shows an interaction (a drag's room): changes
  *  to it are no change of look. */
@@ -26,9 +27,7 @@ const transient = (node: Node | null): boolean =>
     : node?.parentElement?.closest(`[${TRANSIENT}]`));
 
 function start(): () => void {
-  const changed = () => {
-    for (const listener of [...listeners]) listener();
-  };
+  const changed = subscribers.publish;
   const headChanged = (records: MutationRecord[]) => {
     // Inside a transient style, or one added or removed: no change of look.
     const look = records.some(
@@ -64,13 +63,21 @@ function start(): () => void {
  *  the function that stops. The watch runs while anyone listens. */
 export function onAppearance(listener: () => void): () => void {
   if (typeof MutationObserver !== "function") return () => {};
-  listeners.add(listener);
-  stop ??= start();
-  return () => {
-    listeners.delete(listener);
-    if (listeners.size === 0) {
-      stop?.();
-      stop = null;
-    }
-  };
+  return subscribers.subscribe(listener);
+}
+
+/** Whether the app shows its dark appearance: the explicit choice, else the
+ *  system's. */
+export function appearanceIsDark(): boolean {
+  // A one-design imported theme shows its light page in either appearance.
+  if (document.documentElement.hasAttribute("data-light-page")) return false;
+  const chosen = document.documentElement.getAttribute("data-theme");
+  if (chosen === "dark") return true;
+  if (chosen === "light") return false;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+}
+
+/** Whether the window shows its dark appearance now. */
+export function windowIsDark(): boolean {
+  return getComputedStyle(document.documentElement).colorScheme === "dark";
 }

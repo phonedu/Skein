@@ -4,11 +4,14 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  font-size: var(--text-secondary);
+  /* The sidebar's list size, as the file tree beside it; a tab's list is
+     read as a page. */
+  font-size: var(--text-list);
   color: var(--ui-text);
 }
 
 .plugin-list-tab {
+  font-size: var(--text-secondary);
   max-width: 836px;
   width: 100%;
   margin: 0 auto;
@@ -42,11 +45,35 @@
   -webkit-user-select: none;
 }
 
+/* Items of several lines (a clip, a note: a label and a detail under it)
+   kept apart by a hairline, short of the row's rounded ends. */
+.plugin-list-entry:has(> .plugin-list-row.has-detail)
+  + .plugin-list-entry
+  > .plugin-list-row.has-detail {
+  position: relative;
+  margin-top: 1px;
+}
+.plugin-list-entry:has(> .plugin-list-row.has-detail)
+  + .plugin-list-entry
+  > .plugin-list-row.has-detail::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  inset-inline: var(--space-2);
+  border-top: 1px solid var(--ui-border);
+  pointer-events: none;
+}
+.plugin-list-row.has-detail {
+  padding-block: var(--space-2);
+}
+
 /* Under the pointer; the keyboard's row only while the keys move it (the
    list or its filter focused from the keyboard), so the row the pointer
    left last doesn't stay lit. */
-.plugin-list-row:hover {
-  background: var(--ui-hover);
+@media (hover: hover) {
+  .plugin-list-row:hover {
+    background: var(--ui-hover);
+  }
 }
 
 .plugin-list-rows:focus-visible .plugin-list-row.is-active {
@@ -78,8 +105,14 @@
   transform: rotate(90deg);
 }
 
+/* On the label's first line, however tall its text. */
 .plugin-list-check {
   margin-top: 2px;
+}
+@supports (height: 1lh) {
+  .plugin-list-check {
+    margin-top: calc((1lh - var(--check-size)) / 2);
+  }
 }
 
 .plugin-list-icon {
@@ -115,7 +148,7 @@
 }
 
 .plugin-list-description {
-  flex: 1 1 8em;
+  flex: 1 1 auto;
   color: var(--ui-muted);
 }
 
@@ -129,10 +162,4 @@
 /* Where the next page of rows starts drawing as it scrolls into view. */
 .plugin-list-more {
   height: 1px;
-}
-
-/* A row another is being dragged onto. */
-.plugin-list-row.is-drop {
-  outline: 2px solid var(--ui-accent);
-  outline-offset: -2px;
 }

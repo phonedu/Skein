@@ -166,6 +166,10 @@ test("Zen shows the tab in use alone, and the split comes back after", async ({
   await aiButton(page).click();
   await expect(islands(page)).toHaveCount(2);
   await page.locator(".ProseMirror").first().click();
+  // The document's island is the one in use before Zen picks it.
+  await expect(
+    page.locator('[data-active-tab="true"] .ProseMirror'),
+  ).toHaveCount(1);
   await emit(page, "menu-toggle-zen-mode");
   await expect(islands(page)).toHaveCount(1);
   await expect(page.locator(".ai-tab:visible")).toHaveCount(0);
@@ -525,4 +529,83 @@ test("Memory opens from the tab's right-click and closes with its × or Esc", as
   await fromMenu();
   await page.keyboard.press("Escape");
   await expect(memory).toHaveCount(0);
+  // Words selected in the document beside it don't keep the menu away.
+  const editor = page.locator(".ProseMirror").first();
+  await editor.click();
+  await page.keyboard.type("Some words");
+  await page.keyboard.press("ControlOrMeta+a");
+  await fromMenu();
+});
+
+test.describe("on a phone", () => {
+  test.use({
+    userAgent:
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+    viewport: { width: 402, height: 874 },
+    hasTouch: true,
+    isMobile: true,
+  });
+
+  test("the AI button brings the AI's tab forward from behind a document, and only then closes it, the documents kept", async ({
+    page,
+  }) => {
+    await openApp(page);
+    await aiButton(page).click();
+    await page.locator(".tab-bar-add").first().click();
+    await expect(tabs(page)).toHaveCount(3);
+    // A document in front, the AI's tab behind it.
+    await tabs(page).first().click();
+    await aiButton(page).click();
+    await expect(
+      page.locator(".tab-pill.active, .tab-pill[aria-selected=true]"),
+    ).toHaveText(/Textus AI/);
+    await expect(tabs(page)).toHaveCount(3);
+    await aiButton(page).click();
+    await expect(tabs(page)).toHaveCount(2);
+  });
+});
+
+async function aiFolderAsked(page: Page, settings: Record<string, unknown>) {
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    w.__devFs = { "/proj/a.md": "# A\n" };
+    w.__devPickFolder = "/proj";
+    w.__devInvokeResults = { load_agent_workspace: null };
+  });
+  await page.setViewportSize({ width: 1200, height: 760 });
+  await openApp(page, { settings: { menuBarShown: false, ...settings } });
+  await emit(page, "menu-open-folder");
+  await expect(page.locator(".tree-row").first()).toBeVisible();
+  await aiButton(page).click();
+  const box = (await page.locator(".ai-tab").boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {
+    button: "right",
+  });
+  await page.getByRole("menuitem", { name: "记忆" }).click();
+  return () =>
+    page.evaluate(() => {
+      const calls = (
+        window as unknown as {
+          __devInvokeCalls?: { cmd: string; rootOverride?: unknown }[];
+        }
+      ).__devInvokeCalls;
+      return calls?.filter((c) => c.cmd === "load_agent_workspace").at(-1)
+        ?.rootOverride;
+    });
+}
+
+test("the AI's folder is the one open in the sidebar, none once it closes", async ({
+  page,
+}) => {
+  const lastRoot = await aiFolderAsked(page, {});
+  await expect.poll(lastRoot).toBe("/proj");
+  await emit(page, "menu-close-folder");
+  await expect.poll(lastRoot).toBeNull();
+});
+
+test("a folder picked for the AI wins over the sidebar's", async ({ page }) => {
+  const lastRoot = await aiFolderAsked(page, {
+    agentWorkspaceRoot: "/research",
+  });
+  await expect.poll(lastRoot).toBe("/research");
 });

@@ -1,3 +1,4 @@
+import { appearanceIsDark } from "../engine/tokens/appearance";
 import { headingIndex, headingSlug } from "../editor/markdown/link-target";
 import { dirname, hasUrlScheme, relativePath } from "../utils/path";
 import { imageMimeForPath } from "../editor/images/pasted-files";
@@ -63,15 +64,19 @@ export const EDITOR_CHROME_SELECTOR = [
   `.${EMOJI_SOURCE_CLASS}`,
   ".enclosure-delimiter",
   ".code-block-header",
+  ".block-toolbar",
   ".mermaid-zoom",
   ".code-line-gutter",
   `.${COLOR_SWATCH_CLASS}`,
   ".table-add-row-btn",
   ".table-add-col-btn",
+  ".table-grip",
   ".ghost-text",
   ".quick-ask-anchor",
   ".pending-insert",
   ".image-resize-handle",
+  ".block-fold",
+  ".block-folded-line",
   // Front matter is metadata for tools, not part of the page.
   ".frontmatter-block",
   // A missing image's card: the page keeps the image as written.
@@ -229,6 +234,15 @@ export function cloneEditorContent(
   clone
     .querySelectorAll(EDITOR_MARK_SELECTOR)
     .forEach((el) => el.replaceWith(...el.childNodes));
+  // Folding is how the writer views the page; the reader gets all of it.
+  clone
+    .querySelectorAll(
+      ".block-foldable[data-folded], :is(h1, h2, h3, h4, h5, h6)[data-folded]",
+    )
+    .forEach((el) => el.removeAttribute("data-folded"));
+  clone
+    .querySelectorAll(".heading-folded-away")
+    .forEach((el) => el.classList.remove("heading-folded-away"));
   placeDrawnPictures(clone);
   // Without its card, a missing image is the <img> it always was.
   clone
@@ -365,12 +379,7 @@ export function buildStandaloneHtml(
   const root = document.documentElement;
   // Pin the exported appearance, or a reader's dark mode restyles the text
   // while diagrams keep their rendered colours.
-  const dataTheme = light
-    ? "light"
-    : (root.getAttribute("data-theme") ??
-      (window.matchMedia?.("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"));
+  const dataTheme = light || !appearanceIsDark() ? "light" : "dark";
   const contentTheme = root.getAttribute("data-content-theme");
   // An imported theme switches Textus's own ornaments off; the export must too.
   const userTheme = root.hasAttribute("data-user-theme");

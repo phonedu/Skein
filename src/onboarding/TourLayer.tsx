@@ -1,6 +1,6 @@
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -31,6 +31,22 @@ function scrimPath(
   holes: (Box | null)[],
 ) {
   return `M0 0H${view.width}V${view.height}H0Z` + holes.map(holePath).join("");
+}
+
+/** Whether two boxes share any of their area. */
+const overlap = (a: Box, b: Box) =>
+  a.left < b.left + b.width &&
+  b.left < a.left + a.width &&
+  a.top < b.top + b.height &&
+  b.top < a.top + a.height;
+
+/** `beside` cut back to start past `lit`'s right edge, when `lit` sits at
+ *  its left; null when that leaves nothing. */
+function pastRight(beside: Box, lit: Box): Box | null {
+  const left = lit.left + lit.width;
+  const right = beside.left + beside.width;
+  if (lit.left > beside.left || left >= right) return null;
+  return { ...beside, left, width: right - left };
 }
 
 /** The smallest box holding both. */
@@ -65,14 +81,21 @@ function useTourView(
   onEscape: () => void,
 ) {
   const [view, setView] = useState(viewNow);
-  const [cardSize, setCardSize] = useState({ width: 320, height: 160 });
-  useEffect(() => {
+  // Measured before the first paint, so no guess is ever drawn.
+  const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
+  useLayoutEffect(() => {
     const el = card.current;
     if (!el) return;
     const measure = () => {
       setView(viewNow());
-      setCardSize({ width: el.offsetWidth, height: el.offsetHeight });
+      // Its own width, not one a step narrowed it to (or it would widen
+      // and narrow again, back and forth).
+      setCardSize((was) => ({
+        width: el.style.width ? was.width : el.offsetWidth,
+        height: el.offsetHeight,
+      }));
     };
+    measure();
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     window.addEventListener("resize", measure);
@@ -127,11 +150,21 @@ export function TourLayer({
   const ring = useRef<HTMLDivElement>(null);
   const { view, cardSize } = useTourView(card, onEscape);
 
-  // The lit part and what it opened (the sidebar) light as one, one ring.
+  // The ring round the part the step is about, and only it; what that part
+  // opened (the sidebar) stays undimmed beside it, cut back where the two
+  // meet, or joined into one hole when it can't be.
   const lit = box && holeAround(box, view);
-  const hole = lit && besideBox ? union(lit, besideBox) : lit;
+  const meet = !!lit && !!besideBox && overlap(lit, besideBox);
+  const trimmed = lit && besideBox && meet ? pastRight(besideBox, lit) : null;
+  const joined = meet && !trimmed;
+  const hole = lit && joined ? union(lit, besideBox!) : lit;
+  const besideHole =
+    lit && besideBox && !joined ? (trimmed ?? besideBox) : null;
   const draw = useCallback((frame: TourFrame) => {
-    path.current?.setAttribute("d", scrimPath(viewNow(), [frame.hole]));
+    path.current?.setAttribute(
+      "d",
+      scrimPath(viewNow(), [frame.hole, frame.beside ?? null]),
+    );
     const ringEl = ring.current;
     if (ringEl) {
       ringEl.hidden = !frame.hole;
@@ -142,12 +175,25 @@ export function TourLayer({
         ringEl.style.height = `${height}px`;
       }
     }
-    if (card.current)
+    if (card.current) {
       card.current.style.transform = `translate(${frame.card.left}px, ${frame.card.top}px)`;
+      // Narrowed to stay beside the hole when it can't go round it.
+      card.current.style.width = frame.card.width
+        ? `${frame.card.width}px`
+        : "";
+    }
   }, []);
   // The card beside it all, level with the part the step is about.
-  const anchor = lit && hole ? across(lit, hole) : hole;
-  useGlide({ hole, card: placeCard(anchor, cardSize, view, phone) }, draw);
+  const all = hole && besideHole ? union(hole, besideHole) : hole;
+  const anchor = lit && all ? across(lit, all) : all;
+  useGlide(
+    {
+      hole,
+      beside: besideHole,
+      card: placeCard(anchor, cardSize, view, phone, all),
+    },
+    draw,
+  );
 
   return (
     <div className="tour-layer">

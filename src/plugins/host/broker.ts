@@ -1,9 +1,13 @@
 import { ownError } from "../../utils/error-text";
+import { commentHandlers } from "./broker-comments";
+import { onNotesChanged } from "../../ai/margin/notes-by-path";
+import { readableRoot } from "./scoped-root";
 import type { QuickPickItem } from "../../engine/controls/quick-pick-queue";
 import { logPluginError, logPluginMessage } from "../store/plugin-log";
 import type { Strings } from "../../i18n/strings";
 import {
   getWindowAccess,
+  emitPluginEvent,
   onPluginEvent,
   type PluginEventMap,
   type PluginTabInfo,
@@ -11,19 +15,21 @@ import {
 import { connectFrame, hostsContainer, sandboxedFrame } from "./frames";
 import { hostDocument } from "./host-document";
 import { readPluginFile, type PluginOrigin } from "../store/files";
-import {
-  localize,
-  type Permission,
-  type PluginManifest,
-} from "../store/manifest";
+import { localize, type Permission } from "../store/manifest";
+import { type PluginManifest } from "../store/manifest-types";
+import { aiModelHandlers, stopPluginAi } from "./broker-ai";
+import { exportFormatHandlers, stopPluginExport } from "./broker-export";
 import { fileHandlers } from "./broker-files";
 import { layoutHandlers, seenBy } from "./broker-layout";
 import { editorHandlers, stopPluginEditor } from "./broker-editor";
+import { historyHandlers, stopPluginHistory } from "./broker-history";
 import { metadataHandlers } from "./broker-metadata";
+import { gitHandlers } from "./broker-git";
 import { stopPluginUi, uiHandlers } from "./broker-ui";
 import { viewHandlers } from "./broker-views";
 import { scheduleHandlers } from "./broker-schedule";
 import { appearanceHandlers } from "./broker-appearance";
+import { textHandlers } from "./broker-text";
 import { forgetPluginColors } from "../../theme/plugin-colors";
 import { currentAppState } from "../background/app-state";
 import { forgetListViews } from "../contributions/list-views";
@@ -32,6 +38,8 @@ import { forgetWillExport } from "../contributions/will-export";
 import { forgetWillSave } from "../contributions/will-save";
 import { unwatchMetadata, watchMetadata } from "../workspace/metadata-cache";
 import { str, type Params, type PluginScope } from "./broker-scope";
+import { inOpenFolder } from "../may-open";
+import { absoluteIn } from "../../utils/path";
 import type { Endpoint, Handlers } from "./rpc";
 import { guarded } from "../api-permissions";
 import { grants } from "../grants";
@@ -123,6 +131,33 @@ export function withTimeout<T>(
   });
 }
 
+/** Events about one file (or a move), told only to a plugin that can read
+ *  it: in the window's folder, not in a hidden folder of it. */
+const FILE_EVENTS = new Set<keyof PluginEventMap>([
+  "didSave",
+  "fileCreate",
+  "fileChange",
+  "fileChangeOnDisk",
+  "comments",
+  "fileRename",
+  "fileDelete",
+]);
+
+// Margin notes are written by the editor or a plugin; plugins hear of both.
+onNotesChanged((path) => emitPluginEvent("comments", { path }));
+
+/** Whether the files a file event is about are ones plugins read. */
+export function fileEventReadable(data: unknown, root: string | null): boolean {
+  if (!root || typeof data !== "object" || data === null) return false;
+  const paths = ["path", "from", "to"]
+    .map((key) => (data as Record<string, unknown>)[key])
+    .filter((path): path is string => typeof path === "string");
+  return paths.some((path) => inOpenFolder(root, absoluteIn(root, path)));
+}
+
+/** The events that keep a plugin's `textus.env` current. */
+const ENV_EVENTS = ["language", "theme", "appState"] as const;
+
 /** The events a plugin can listen to, and the permission each needs.
  *  `settings` and `editorKey` are told to one plugin only. */
 const PLUGIN_EVENT_NEEDS: Record<keyof PluginEventMap, Permission | null> = {
@@ -138,6 +173,8 @@ const PLUGIN_EVENT_NEEDS: Record<keyof PluginEventMap, Permission | null> = {
   conventions: "files.read",
   fileCreate: "files.read",
   fileChange: "files.read",
+  fileChangeOnDisk: "files.read",
+  comments: "comments",
   fileRename: "files.read",
   fileDelete: "files.read",
   metadata: "files.read",
@@ -169,7 +206,15 @@ export class PluginHost {
   constructor(
     readonly info: PluginRuntimeInfo,
     private readonly deps: BrokerDeps,
-  ) {}
+  ) {
+    // What `textus.env` holds follows the window whether or not the plugin
+    // listens: it is told these as they change, from the start.
+    for (const name of ENV_EVENTS)
+      this.subscriptions.set(
+        name,
+        onPluginEvent(name, (data) => this.event(name, data)),
+      );
+  }
 
   get id(): string {
     return this.info.manifest.id;
@@ -231,6 +276,9 @@ export class PluginHost {
     this.subscriptions.clear();
     stopPluginUi(this.id);
     stopPluginEditor(this.id);
+    stopPluginHistory(this.id);
+    stopPluginAi(this.id);
+    stopPluginExport(this.id);
     forgetListViews(this.id);
     forgetEmbeds(this.id);
     forgetWillSave(this.id);
@@ -328,7 +376,7 @@ export class PluginHost {
         this.need("files.read");
         const root = getWindowAccess()?.rootPath();
         if (!root) throw new Error(ownError("noFolder"));
-        return root;
+        return readableRoot(root);
       },
       ownWebview: (id) => {
         const record = webview(id);
@@ -378,14 +426,23 @@ export class PluginHost {
               ? onPluginEvent(event, (data) => {
                   if (data.plugin === this.id) this.event(event, data);
                 })
-              : event === "activeTab"
-                ? onPluginEvent(event, (data) =>
-                    this.event(
-                      event,
-                      seenBy(this.id, this.info.granted, data as PluginTabInfo),
-                    ),
-                  )
-                : onPluginEvent(event, (data) => this.event(event, data)),
+              : FILE_EVENTS.has(event)
+                ? onPluginEvent(event, (data) => {
+                    const root = getWindowAccess()?.rootPath() ?? null;
+                    if (fileEventReadable(data, root)) this.event(event, data);
+                  })
+                : event === "activeTab"
+                  ? onPluginEvent(event, (data) =>
+                      this.event(
+                        event,
+                        seenBy(
+                          this.id,
+                          this.info.granted,
+                          data as PluginTabInfo,
+                        ),
+                      ),
+                    )
+                  : onPluginEvent(event, (data) => this.event(event, data)),
         );
       },
       "plugin.readFile": ({ path }: Params) =>
@@ -414,8 +471,14 @@ export class PluginHost {
       ...editorHandlers(scope),
       ...fileHandlers(scope),
       ...metadataHandlers(scope),
+      ...gitHandlers(scope),
       ...scheduleHandlers(scope),
       ...appearanceHandlers(scope),
+      ...textHandlers(),
+      ...historyHandlers(scope),
+      ...aiModelHandlers(scope),
+      ...commentHandlers(scope),
+      ...exportFormatHandlers(scope),
     };
   }
 }

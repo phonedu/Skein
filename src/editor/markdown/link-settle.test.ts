@@ -1,15 +1,13 @@
 // @vitest-environment jsdom
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import type { EditorView } from "@milkdown/kit/prose/view";
+import { undo } from "@milkdown/kit/prose/history";
 import { closeViews, openView } from "../editor-view-kit";
+import { pickedText } from "../completion/completion-plugin";
 
 // Typed text that reads as a link becomes one once the caret is past it,
 // as GFM would read the file on reopening; the Markdown stays as typed.
 
-beforeAll(() => {
-  Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList;
-  Range.prototype.getBoundingClientRect ??= () => new DOMRect();
-});
 afterEach(closeViews);
 
 const links = (view: EditorView) => {
@@ -27,25 +25,29 @@ const typed = async (text: string) => {
 };
 
 describe("a link typed out", () => {
-  it("is a link once the caret has gone past a bare URL", async () => {
-    const t = await typed("see https://x.org then");
-    expect(links(t.view)).toEqual(["https://x.org"]);
-    expect(t.markdown()).toBe("see https://x.org then");
-  });
-
   it("keeps the text typed against it in the URL, as GFM reads it", async () => {
     const t = await typed("see https://x.org中文 then");
     expect(links(t.view)).toEqual(["https://x.org中文"]);
   });
 
-  it("is still text while the caret is in it", async () => {
-    const t = await typed("see https://x.org");
+  it("is undone apart from the URL typed before it", async () => {
+    const t = await typed("see https://x.org ");
+    undo(t.view.state, t.view.dispatch);
     expect(links(t.view)).toEqual([]);
+    expect(t.view.state.doc.textContent).toBe("see https://x.org ");
   });
+});
 
-  it("settles [text](url) written out in full", async () => {
-    const t = await typed("a [b](c) d");
-    expect(links(t.view)).toEqual(["[b](c)"]);
-    expect(t.markdown()).toBe("a [b](c) d");
+describe("a link picked from the [[ list", () => {
+  it("goes in one undo step, back to what was typed", async () => {
+    const t = await typed("see [[Ov");
+    const to = t.view.state.selection.to;
+    t.view.dispatch(
+      pickedText(t.view.state, "[Over story](Over%20story.md)", to - 4, to),
+    );
+    expect(links(t.view)).toEqual(["[Over story](Over%20story.md)"]);
+    undo(t.view.state, t.view.dispatch);
+    expect(t.markdown()).toMatch(/^see \\?\[\\?\[Ov/);
+    expect(links(t.view)).toEqual([]);
   });
 });

@@ -1,20 +1,18 @@
-import {
-  type Editor,
-  defaultValueCtx,
-  editorViewOptionsCtx,
-  rootCtx,
-} from "@milkdown/kit/core";
+import { type Editor, editorViewOptionsCtx, rootCtx } from "@milkdown/kit/core";
 import type { Ctx, MilkdownPlugin } from "@milkdown/kit/ctx";
 import { orderedListAttr } from "@milkdown/kit/preset/commonmark";
-import { history } from "@milkdown/kit/plugin/history";
+import { historyOpened, openedFromCtx, openWith } from "./opened-from";
+import type { TabLeft } from "./tab-left";
 import { clipboard } from "@milkdown/kit/plugin/clipboard";
-import { listener } from "@milkdown/kit/plugin/listener";
+import { listener } from "./editor-listener";
 import { $remark } from "@milkdown/kit/utils";
+import { createRemarkVerbatim, keepFor } from "./markdown/verbatim";
 import remarkCjkFriendly from "remark-cjk-friendly";
 import remarkCjkFriendlyGfmStrikethrough from "remark-cjk-friendly-gfm-strikethrough";
 import {
   commonmarkWithoutMarks,
   gfmWithoutStrikethrough,
+  unalignedTableCells,
   headingInputRule,
   orderedListInputRule,
   ruleInputRule,
@@ -35,6 +33,7 @@ import {
   remarkTocPlugin,
   tocSchema,
 } from "./markdown/toc-plugin";
+import { createHeadingFoldPlugin } from "./fold/heading-fold";
 import { rawHtmlSchema } from "./html/raw-html-schema";
 import { remarkHtmlImages } from "./images/image-html";
 import { createRawHtmlPreviewPlugin } from "./html/raw-html-preview-plugin";
@@ -60,6 +59,7 @@ import { formatShortcutPlugin } from "./keys/format-shortcut-plugin";
 import { selectAllKeyPlugin } from "./keys/select-all";
 import { enclosurePlugin } from "./marks/enclosure";
 import { linuxImeEnterPlugin } from "./keys/linux-ime-enter-plugin";
+import { iosEnterBeforeBlockPlugin } from "./keys/ios-enter-before-block-plugin";
 import { compositionPruneGuardPlugin } from "./keys/composition-prune-guard-plugin";
 import { configureMarkdownOutput } from "./markdown/markdown-output";
 import { openedParseRecorder } from "./markdown/source-preserving";
@@ -82,10 +82,10 @@ import { mathAutopairPlugin } from "./math/math-autopair-plugin";
 import { createMathPreviewPlugin } from "./math/math-preview-plugin";
 import { headingMarkerPlugin } from "./marks/heading-marker-plugin";
 import { macNavigationPlugin } from "./keys/mac-navigation-plugin";
-import { dragAutoscrollPlugin } from "./keys/drag-autoscroll-plugin";
 import { editorExtensions } from "./extension-points";
-import { marginClickPlugin } from "./keys/margin-click-plugin";
-import { noRevealPlugin, pointerHoldPlugin } from "./pointer-hold";
+import { noRevealPlugin } from "./pointer-hold";
+import { pointerPlugins } from "./pointer-plugins";
+import { createBlockHandlesPlugin } from "./blocks/block-handles-plugin";
 import {
   cjkTaskInputPlugin,
   remarkEmptyTaskItems,
@@ -94,14 +94,21 @@ import {
 import { syntaxHighlightPlugin } from "./code/syntax-highlight-plugin";
 import { createCodeBlockView } from "./code/code-block-language-view";
 import { createCodeLineNumbersPlugin } from "./code/code-line-numbers-plugin";
+import { tableCaretPlugin } from "./tables/table-caret";
+import { tableGrowth } from "./tables/table-growth";
+import { keyboardCaretPlugin } from "./keyboard-caret-plugin";
+import { scrollOptions } from "./editor-scroll";
+import { tableKeys, tableRowPaste } from "./tables/table-keys";
+import { clickBelowEnd } from "./click-below-end";
 import {
   tableColumnFreeze,
   tableColumnResizing,
-  tableHoverView,
+  createTableView,
 } from "./tables/table-hover-view";
 import { createMermaidPreviewPlugin } from "./mermaid-plugin";
 import { blockKeysPlugin } from "./keys/block-keys-plugin";
 import { listBackspacePlugin } from "./keys/list-backspace-plugin";
+import { joinListsPlugin } from "./keys/join-lists-plugin";
 import { blockJoinPlugin } from "./keys/block-join-plugin";
 import { inlineSourcePlugin } from "./keys/inline-source-plugin";
 import { wikilinkRevealPlugin } from "./markdown/wikilink-reveal";
@@ -144,7 +151,6 @@ import { createUndoFilePlugin } from "./undo-file";
 import { createMissingLinksPlugin } from "./markdown/missing-links";
 import { createTypewriterPlugin } from "./modes/typewriter-plugin";
 import { zenFocusPlugin } from "./modes/zen-focus-plugin";
-import { keyboardRevealPlugin } from "./keys/keyboard-reveal-plugin";
 import { createPlaceholderPlugin } from "./placeholder-plugin";
 import { findReplacePlugin } from "./find/find-replace-plugin";
 import {
@@ -166,24 +172,16 @@ export function configureEditorRoot(
   root: HTMLElement,
   initialValue: string,
   label: () => string,
+  /** What the tab's last editor left: this one opens as that was. */
+  from: TabLeft | null = null,
 ): void {
   ctx.set(rootCtx, root);
-  ctx.set(defaultValueCtx, initialValue);
+  openWith(ctx, initialValue, from);
   // Typora-compatible themes style their content under `#write`.
   ctx.set(
     editorViewOptionsCtx,
     withLazyBlockViews(ctx, {
-      // A line the caret is brought to stays below where the page's text
-      // starts, clear of the format bar over it.
-      scrollMargin: {
-        get top() {
-          const page = root.closest(".editor-content");
-          return page ? parseFloat(getComputedStyle(page).paddingTop) || 5 : 5;
-        },
-        right: 5,
-        bottom: 5,
-        left: 5,
-      },
+      ...scrollOptions(root),
       attributes: () => ({
         id: "write",
         role: "textbox",
@@ -253,11 +251,16 @@ export function withEditorCore(
       .use(editing(createCompletionPlugin(() => docPath.current)))
       .use(editing(editorExtensions().keyInput))
       .use(editing(macNavigationPlugin))
-      // Before the margin's clicks: held before they move the selection.
-      .use(editing(pointerHoldPlugin))
-      .use(editing(dragAutoscrollPlugin))
-      .use(editing(marginClickPlugin))
+      .use(editing(pointerPlugins(settings)))
+      // A preview has no handles, but its fold carets come by a block's
+      // start as the editor's do.
+      .use(
+        options.preview
+          ? createBlockHandlesPlugin({ enabled: () => false })
+          : [],
+      )
       .use(editing(linuxImeEnterPlugin))
+      .use(editing(iosEnterBeforeBlockPlugin))
       .use(editing(compositionPruneGuardPlugin))
       // Commonmark/GFM with bold/italic/strike marks stripped: those are nodes.
       .use(commonmarkWithoutMarks)
@@ -275,9 +278,12 @@ export function withEditorCore(
           return { label: t.tocLabel, empty: t.tocEmpty };
         }),
       )
+      .use(createHeadingFoldPlugin(() => docPath.current))
       // Ahead of gfm's table keys.
       .use(editing(tableEdgeArrowPlugin))
+      .use(editing([tableKeys, tableRowPaste, clickBelowEnd]))
       .use(gfmWithoutStrikethrough)
+      .use(unalignedTableCells)
 
       // Before anything else can misread its "---" lines as setext headings.
       .use(remarkFrontmatterPlugin)
@@ -286,6 +292,9 @@ export function withEditorCore(
       // Raw HTML parses to real text so it stays editable; common tags render
       // while the cursor is elsewhere.
       .use(rawHtmlSchema)
+      // A document type's own syntax (MDX's imports, {expressions}, JSX),
+      // read as raw source before anything else takes its text apart.
+      .use(createRemarkVerbatim(keepFor(docPath.current)))
       .use(remarkHtmlImages)
       .use(createRawHtmlPreviewPlugin({ docPath: () => docPath.current }))
       .use(htmlAlignPlugin)
@@ -400,7 +409,10 @@ export function withEditorCore(
           enabled: () => settings.current.codeLineNumbers,
         }),
       )
-      .use(tableHoverView)
+      .use(createTableView(() => resolveStrings(settings.current.language)))
+      .use(tableCaretPlugin)
+      .use(editing(tableGrowth))
+      .use(keyboardCaretPlugin)
       // Before the resize plugin: its press holds every column first.
       .use(editing(tableColumnFreeze))
       .use(editing(tableColumnResizing))
@@ -413,7 +425,8 @@ export function withEditorCore(
 
       // handlePaste props run in registration order: images first, then a lone
       // URL, then markdown source, then milkdown's own clipboard plugin.
-      .use(editing(history))
+      .use(openedFromCtx)
+      .use(editing(historyOpened))
       .use(editing(disk ? createUndoFilePlugin(() => docPath.current) : []))
       .use(editing(ownUndoStepPlugin))
       .use(editing(changeSourcePlugin))
@@ -455,6 +468,7 @@ export function withEditorCore(
       .use(editing(moveBlockPlugin))
       .use(editing(escapeTrailingBlockPlugin))
       .use(editing(listBackspacePlugin))
+      .use(joinListsPlugin)
       .use(editing(blockJoinPlugin))
       .use(editing(inlineSourcePlugin))
       .use(editing(findReplacePlugin))
@@ -462,7 +476,6 @@ export function withEditorCore(
       .use(lazyBlocksPlugin)
       .use(readOnlyPlugin)
       .use(editing(zenFocusPlugin))
-      .use(editing(keyboardRevealPlugin))
       .use(
         editing(
           createTypewriterPlugin({

@@ -6,9 +6,12 @@ import {
   openBeside,
   reorderInPane,
   resetWindowModelForTests,
+  setTabOrder,
+  subscribeSplit,
   setSplitLayout,
   setWindowTabs,
   splitLayout,
+  tabInUse,
 } from "./store";
 import { pairLayout } from "./ops";
 import { pane, panesOf, type Branch } from "./tree";
@@ -32,6 +35,16 @@ describe("a pane's own tabs", () => {
     start([["a"], ["b", "c", "d"]]);
     reorderInPane(ids()[1], "d", 0);
     expect(tabs()[1]).toEqual(["d", "b", "c"]);
+  });
+
+  it("takes a restored window's order at once, the tabs it doesn't name after them", () => {
+    start([["x"], ["a", "b", "c", "d"]]);
+    let told = 0;
+    const stop = subscribeSplit(() => told++);
+    setTabOrder(ids()[1], ["c", "a", "d"]);
+    expect(tabs()[1]).toEqual(["c", "a", "d", "b"]);
+    expect(told).toBe(1);
+    stop();
   });
 });
 
@@ -108,5 +121,13 @@ describe("the document in front", () => {
     expect(documentInFront()).toBe("b");
     setWindowTabs((now) => now.filter((tab) => tab.id !== "b"));
     expect(documentInFront()).toBe("a");
+  });
+
+  it("closing the tab in use goes back to the one in use before it, not the first", () => {
+    setWindowTabs(() => [{ id: "ai", view: {} }, { id: "a" }, { id: "b" }]);
+    activateTab("a");
+    activateTab("b");
+    setWindowTabs((now) => now.filter((tab) => tab.id !== "b"));
+    expect(tabInUse()).toBe("a");
   });
 });

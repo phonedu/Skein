@@ -7,7 +7,8 @@ import {
   unlistenAll,
 } from "../../platform/events";
 import { webviewMessage } from "../manager";
-import { watchTheme, webviewThemeCss, windowIsDark } from "./theme-vars";
+import { watchTheme, webviewThemeCss } from "./theme-vars";
+import { windowIsDark } from "../../engine/tokens/appearance";
 import { windowInfo } from "../store/plugin-records";
 import { useResolvedWebview, webviewPage } from "./PluginWebview";
 import {
@@ -21,6 +22,7 @@ import {
 import {
   closeFloating,
   floatingMenuItems,
+  floatingBase,
   floatingSize,
   moveFloating,
   touchFloating,
@@ -98,11 +100,7 @@ export function DesktopFloating({ view }: { view: FloatingView }) {
         ...page,
         icon: view.icon,
         menu: floatingMenuItems(view).map((item) => item.label),
-        size: {
-          width: view.width * chrome,
-          height: view.height * chrome,
-          scale: view.scale,
-        },
+        size: floatingBase(view, chrome),
         init: {
           state: webviewState(current.key) ?? null,
           language: windowInfo().language(),

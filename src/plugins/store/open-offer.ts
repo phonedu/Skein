@@ -12,7 +12,8 @@ import {
 } from "./catalog";
 import { pluginMayRun, pluginRecord, pluginsSnapshot } from "./plugin-records";
 import { setPluginEnabled } from "../plugin-switches";
-import { matchesFilename, type SuggestKind } from "./manifest";
+import { matchesFilename } from "./manifest";
+import { type SuggestKind } from "./manifest-types";
 import { SUGGEST_KINDS } from "./manifest-parse";
 import { pluginOffer } from "./offer-plugin";
 import { showPluginCard, type CardRequest } from "./plugin-card";
@@ -63,12 +64,13 @@ export async function takeUp(
 
 /** Suggests the plugin that opens `path` on the card: "on" when it is on
  *  now, so the file can be opened with it; "system" when the user chose
- *  the system's app; "declined" for Later or ×; "none" when no official
- *  plugin opens it. */
+ *  the system's app; "declined" for Later or ×; "muted" when the user
+ *  asked not to be offered it again; "dropped" when a later tap's card took
+ *  its place; "none" when no official plugin opens it. */
 export async function offerPluginToOpen(
   path: string,
   t: Strings,
-): Promise<"on" | "system" | "declined" | "none"> {
+): Promise<"on" | "system" | "declined" | "muted" | "dropped" | "none"> {
   await loadCatalog().catch(() => {});
   const catalog = catalogSnapshot();
   if (catalog.status !== "ready") return "none";
@@ -86,6 +88,8 @@ export async function offerPluginToOpen(
   };
   const answer = await showPluginCard(request);
   if (answer === "system") return "system";
+  if (answer === "muted") return "muted";
+  if (answer === "superseded") return "dropped";
   if (answer !== "install") return "declined";
   return (await takeUp(request, t)) ? "on" : "declined";
 }

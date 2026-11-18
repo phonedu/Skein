@@ -8,9 +8,17 @@ const resolveSplit = (
     Parameters<typeof resolveWith>[2],
     Parameters<typeof resolveWith>[3],
     Parameters<typeof resolveWith>[4]?,
+    Parameters<typeof resolveWith>[5]?,
   ]
 ) =>
-  resolveWith(args[0], args[1], args[2], args[3], args[4] ?? (() => undefined));
+  resolveWith(
+    args[0],
+    args[1],
+    args[2],
+    args[3],
+    args[4] ?? (() => undefined),
+    args[5],
+  );
 import { besideLayout } from "./store";
 import { type SplitLayout } from "./ops";
 import { oneIsland, pairLayout } from "./ops";
@@ -88,7 +96,7 @@ describe("resolveSplit", () => {
     // in the update it arrives in; unsplit, it splits the window.
     const beside = (id: string) =>
       id === "n"
-        ? (now: SplitLayout) => besideLayout(now, "n", "a")
+        ? (now: SplitLayout) => besideLayout(now, "n", "a").next
         : undefined;
     const first = split([["a"], ["b"]], ["a", "b"], 0);
     expect(look(resolveSplit(first, null, ["a", "b", "n"], "n"))).toMatchObject(
@@ -120,5 +128,16 @@ describe("resolveSplit", () => {
       tabs: [["a"], ["b"]],
       fronts: ["a", "b"],
     });
+  });
+
+  it("shows the tab shown before, else the neighbour, when the one shown closes", () => {
+    const one = oneIsland(["ai", "x", "y", "z"], "y");
+    const closed = ["ai", "x", "z"];
+    expect(look(resolveSplit(one, null, closed, "y"))).toMatchObject({
+      fronts: ["z"],
+    });
+    expect(
+      look(resolveSplit(one, null, closed, "y", () => undefined, ["z", "x"])),
+    ).toMatchObject({ fronts: ["x"] });
   });
 });

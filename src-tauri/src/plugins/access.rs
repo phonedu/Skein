@@ -1,27 +1,22 @@
 //! What a running plugin may reach, each checked against `state.json`: its own
 //! files, the file its custom editor opened, the open folder (with `files.*`),
-//! granted network hosts, and its own storage. Bytes go back as raw IPC responses.
+//! granted network hosts (http.rs), and its own storage. Bytes go back as raw IPC responses.
 
 use super::state::{self, PluginsState};
 use super::{plugins_root, require_id};
 use crate::app_dirs::AppDirs;
-use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use serde::Serialize;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 use tauri::ipc::Response;
 use tauri::Manager;
 
 /// The most a read hands over at once.
 pub(super) const MAX_READ_BYTES: u64 = 256 * 1024 * 1024;
-/// The most a response from the network may be.
-const MAX_HTTP_BYTES: usize = 32 * 1024 * 1024;
-
 pub(crate) fn refused(id: &str, permission: &str) -> String {
     format!("{id} was not granted {permission}.")
 }
 
-fn running(state: &PluginsState, id: &str) -> Result<(), String> {
+pub(super) fn running(state: &PluginsState, id: &str) -> Result<(), String> {
     require_id(id)?;
     if state.runs(id) {
         Ok(())
@@ -41,16 +36,35 @@ pub(super) fn granted_path(
     root: &str,
     path: &str,
 ) -> Result<PathBuf, String> {
-    if !state::read(app).allows(id, permission) {
+    let path = folder_path(&state::read(app), id, permission, root, path)?;
+    require_not_app_data(app, &path)?;
+    Ok(path)
+}
+
+/// [`granted_path`] but for the app's own data: granted, in the folder,
+/// nothing hidden but what every plugin reads and the hidden files this
+/// one was granted by name (`hidden:<path>`), those only to read.
+pub(super) fn folder_path(
+    state: &PluginsState,
+    id: &str,
+    permission: &str,
+    root: &str,
+    path: &str,
+) -> Result<PathBuf, String> {
+    if !state.allows(id, permission) {
         return Err(refused(id, permission));
     }
-    let path = if permission == "files.read" && paths::read_only_hidden(root, path) {
+    let open_hidden = |rel: &str| {
+        paths::read_only_hidden("", rel)
+            || (paths::hidden_file_path(rel) && state.allows(id, &format!("hidden:{rel}")))
+    };
+    let path = if permission == "files.read" && open_hidden(&paths::relative(root, path)) {
         let resolved = inside(Path::new(root), Path::new(path))?;
         // A link there leads to what plugins may read anyway, never to
         // another hidden file (.env).
         let base = std::fs::canonicalize(root).map_err(|e| e.to_string())?;
         let rel = resolved.strip_prefix(&base).unwrap_or(&resolved);
-        if paths::read_only_hidden("", &rel.to_string_lossy()) {
+        if open_hidden(&rel.to_string_lossy().replace('\\', "/")) {
             resolved
         } else {
             plugin_path(Path::new(root), &resolved, id)?
@@ -58,8 +72,20 @@ pub(super) fn granted_path(
     } else {
         plugin_path(Path::new(root), Path::new(path), id)?
     };
-    require_not_app_data(app, &path)?;
     Ok(path)
+}
+
+/// A folder a plugin reads: it holds `files.read` (the app's own AI tools
+/// ask as `textus`, which no plugin is), the folder is there, and it is
+/// not one of the app's own.
+pub(super) fn checked_root(app: &tauri::AppHandle, id: &str, root: &str) -> Result<(), String> {
+    if id != super::app_tools::APP && !state::read(app).allows(id, "files.read") {
+        return Err(refused(id, "files.read"));
+    }
+    if root.is_empty() || !Path::new(root).is_dir() {
+        return Err(crate::errors::error("noFolder"));
+    }
+    require_not_app_data(app, Path::new(root))
 }
 
 pub(super) fn require_not_app_data(app: &tauri::AppHandle, path: &Path) -> Result<(), String> {
@@ -326,7 +352,7 @@ fn is_this_computer(host: &str) -> bool {
 
 /// Whether the plugin may fetch `url`: a granted host over HTTPS, or plain HTTP
 /// to this computer (Zotero's local API).
-fn url_allowed(granted: &[String], url: &reqwest::Url) -> bool {
+pub(super) fn url_allowed(granted: &[String], url: &reqwest::Url) -> bool {
     let Some(host) = url.host_str() else {
         return false;
     };
@@ -338,110 +364,8 @@ fn url_allowed(granted: &[String], url: &reqwest::Url) -> bool {
     scheme_ok && host_allowed(granted, host, url.port_or_known_default())
 }
 
-#[derive(Deserialize)]
-#[cfg_attr(test, derive(specta::Type))]
-#[serde(rename_all = "camelCase")]
-pub struct HttpRequest {
-    url: String,
-    #[serde(default)]
-    method: Option<String>,
-    #[serde(default)]
-    headers: BTreeMap<String, String>,
-    /// Text, or base64 with `body_base64`.
-    #[serde(default)]
-    body: Option<String>,
-    #[serde(default)]
-    body_base64: bool,
-}
-
-#[derive(Serialize)]
-#[cfg_attr(test, derive(specta::Type))]
-#[serde(rename_all = "camelCase")]
-pub struct HttpResponse {
-    status: u16,
-    headers: BTreeMap<String, String>,
-    /// The body, base64.
-    body: String,
-}
-
-#[tauri::command]
-#[cfg_attr(test, specta::specta)]
-pub async fn plugin_http(
-    app: tauri::AppHandle,
-    id: String,
-    request: HttpRequest,
-) -> Result<HttpResponse, String> {
-    use base64::{engine::general_purpose::STANDARD, Engine};
-    let state = state::read(&app);
-    running(&state, &id)?;
-    let granted = state
-        .plugins
-        .get(&id)
-        .map(|p| p.granted.clone())
-        .unwrap_or_default();
-    let url = reqwest::Url::parse(&request.url).map_err(|e| e.to_string())?;
-    if !url_allowed(&granted, &url) {
-        return Err(refused(
-            &id,
-            &format!("network:{}", url.host_str().unwrap_or("")),
-        ));
-    }
-    // A redirect must stay within what was granted too.
-    let redirect_grants = granted.clone();
-    let client = crate::net::public_client(Duration::from_secs(10), Duration::from_secs(60))?
-        .redirect(reqwest::redirect::Policy::custom(move |attempt| {
-            if attempt.previous().len() > 5 || !url_allowed(&redirect_grants, attempt.url()) {
-                attempt.stop()
-            } else {
-                attempt.follow()
-            }
-        }))
-        .build()
-        .map_err(|e| e.to_string())?;
-    let method = reqwest::Method::from_bytes(
-        request
-            .method
-            .as_deref()
-            .unwrap_or("GET")
-            .to_ascii_uppercase()
-            .as_bytes(),
-    )
-    .map_err(|e| e.to_string())?;
-    let mut builder = client.request(method, url);
-    for (name, value) in &request.headers {
-        // The plugin is not the user's browser: no cookies of theirs.
-        if name.eq_ignore_ascii_case("cookie") {
-            continue;
-        }
-        builder = builder.header(name, value);
-    }
-    if let Some(body) = request.body {
-        builder = builder.body(if request.body_base64 {
-            STANDARD.decode(body).map_err(|e| e.to_string())?
-        } else {
-            body.into_bytes()
-        });
-    }
-    let response = builder.send().await.map_err(|e| e.to_string())?;
-    let status = response.status().as_u16();
-    let headers = response
-        .headers()
-        .iter()
-        .filter(|(name, _)| name.as_str() != "set-cookie")
-        .filter_map(|(name, value)| Some((name.to_string(), value.to_str().ok()?.to_string())))
-        .collect();
-    let body = crate::net::read_limited(response, MAX_HTTP_BYTES)
-        .await?
-        .ok_or_else(|| "The response is too big.".to_string())?;
-    Ok(HttpResponse {
-        status,
-        headers,
-        body: STANDARD.encode(body),
-    })
-}
-
-mod paths;
-pub(crate) use paths::{hidden_part, in_folder, inside, plugin_path};
+pub(crate) mod paths;
+pub(crate) use paths::{hidden_part, in_folder, inside, not_plugin_file, plugin_path};
 
 #[cfg(test)]
 mod tests;

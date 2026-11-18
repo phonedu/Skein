@@ -3,8 +3,7 @@
 A plugin draws what Textus can't draw for it - a board, a chart, a
 calendar - in a page of its own: a webview. This is how pages work, what
 they get from Textus, and the few rules that keep them looking like
-Textus. The design standard behind them is
-[design-language.md](../../design/design-language.md) §15.
+Textus.
 
 ## Webviews
 
@@ -34,16 +33,26 @@ textus.views.registerWebview("jane.board.view", {
 
 - `textus-resource:<path>` names one of the plugin's files
   (`webview.asWebviewUri(path)` writes the same).
+- The page is in the UI's language: Textus sets `<html lang>` (a
+  `lang="{{lang}}"` left in the page takes it too) and makes the page again
+  with the new strings when the language changes (Textus 1.4.3). Before
+  1.4.3 a plugin replaced `{{lang}}` and set `webview.html` again on
+  `env.onDidChangeLanguage` itself.
 - A webview shows pictures (`<img>`, CSS) and frames from the HTTPS hosts
   its plugin's `network:` permissions name, and nothing else from the
   network. For data, and for storage, it asks its plugin with
   `postMessage`. `api.getState()` / `api.setState(value)` keep a little
   state while Textus runs.
+- A page out of sight (its tab behind another, its panel closed) may be
+  let go to save memory, and is built again from its HTML when shown. It
+  is told first: `api.onDidChangeVisibility(visible => …)` (1.7) runs as it
+  goes out of sight, the moment to `setState` what it should come back to
+  (a scroll, a zoom, a filter not yet applied). Writing to the plugin's
+  storage belongs there too, not on a timer the page may not live to run.
 - From 1.3.13 a page may go full screen (`element.requestFullscreen()`);
   Esc leaves it.
 - The theme's colours and sizes are CSS variables that follow the theme
-  and dark mode, the same ones Textus draws with
-  ([design-language.md](../../design/design-language.md)): the interface's
+  and dark mode, the same ones Textus draws with: the interface's
   colours `--ui-bg`, `--ui-surface`, `--ui-subtle`, `--ui-text`,
   `--ui-muted`, `--ui-accent` (`--ui-accent-text` for words), `--ui-border`, `--ui-hover`,
   `--ui-selected`, `--ui-danger`; the document's `--doc-bg`, `--doc-text`,
@@ -106,6 +115,10 @@ Textus's own official plugins share one small helper for this
 its own row (tabs, columns) while the others make way, and `drag.sortable`
 moves it between lists with a lifted copy under the pointer
 (`tx-drag-ghost`; `tx-drag-source` marks where it will land).
+A table's row or column takes the editor tables' look: `tx-table-grip` with
+`tx-table-grip-row` or `tx-table-grip-col` is the pill to pull it by, `tx-cell-lifted`
+marks the pulled cells, and `tx-making-room` on the table lets the others
+slide aside (Textus 1.4.3).
 
 ## Floating views
 

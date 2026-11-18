@@ -1,5 +1,9 @@
 import { pluginString } from "./plugin-string";
-import webviewRuntime from "./runtime/webview.js?raw";
+import { WEBVIEW_RUNTIME as webviewRuntime } from "./webview-runtime";
+import pageKitRuntime from "./runtime/page-kit.js?raw";
+import pageToolsRuntime from "./runtime/page-tools.js?raw";
+import { TEXT_RUNTIME as textRuntime } from "./text-runtime";
+import tooltipCss from "../../engine/controls/Tooltip.css?inline";
 import componentsCss from "../../engine/controls/components.css?inline";
 import iconMasksCss from "../../engine/controls/icon-masks.css?inline";
 import controlsCss from "../../engine/controls/controls.css?inline";
@@ -22,8 +26,10 @@ const SHARED_CSS = [
   paneCss,
   progressCss,
   bubbleCss,
+  tooltipCss,
 ].join("\n");
 import { createEndpoint, type Endpoint, type Handlers } from "./rpc";
+import { escapeHtml } from "../../utils/html";
 
 /**
  * The sandboxed frames a plugin runs in: its hidden host and its webviews.
@@ -101,7 +107,7 @@ export function webviewDocument(
     `<style id="textus-ui">${inElement(pluginUiCss, "style")}</style>`,
     `<style id="textus-shared">${inElement(SHARED_CSS, "style")}</style>`,
     `<script type="application/json" id="textus-locale">${inElement(locale, "script")}</script>`,
-    `<script>${inElement(`${RPC_SOURCE}\n${webviewRuntime}`, "script")}</script>`,
+    `<script>${inElement(`${RPC_SOURCE}\n${textRuntime}\n${webviewRuntime}\n${pageKitRuntime}\n${pageToolsRuntime}`, "script")}</script>`,
   ].join("\n");
   const theme = options.dark ? "dark" : "light";
   // Into the plugin's own <head> if it has one, so its <meta> and styles
@@ -127,12 +133,16 @@ export function webviewDocument(
     options.floating ? " data-floating" : "",
     options.sidebar ? " data-sidebar" : "",
   ].join("");
-  return page.replace(/<html(\s[^>]*)?>/i, (tag) =>
-    tag.replace(
+  // The UI's language as the page's, for its hyphens, quotes and voice: a
+  // `lang` the page left as "{{lang}}" (or none) takes it.
+  const lang = ` lang="${escapeHtml(options.language)}"`;
+  return page.replace(/<html(\s[^>]*)?>/i, (tag) => {
+    const named = tag.replace(/\slang="\{\{lang\}\}"/i, "");
+    return named.replace(
       />$/,
-      `${/data-theme=/i.test(tag) ? "" : ` data-theme="${theme}"`}${platformAttrs}>`,
-    ),
-  );
+      `${/\slang=/i.test(named) ? "" : lang}${/data-theme=/i.test(named) ? "" : ` data-theme="${theme}"`}${platformAttrs}>`,
+    );
+  });
 }
 
 /** Stands in the runtimes' `ready` for the key of the frame they run in. */

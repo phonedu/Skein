@@ -96,7 +96,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
 `,
   projectOpenStyle: "Stilprofil öffnen",
   projectPickFolder: "Ordner wählen…",
-  projectNoFolder: "Keinen Ordner verwenden",
+  projectFollowSidebar: "Ordner der Seitenleiste verwenden",
   projectReveal: "Im Dateimanager anzeigen",
   projectLearnStyle: "Meinen Stil aus Textproben lernen…",
   projectImportReferences: "Quellen importieren…",
@@ -118,6 +118,16 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   codeBlockEditSource: "Quelltext bearbeiten",
   codeBlockDone: "Bearbeitung beenden",
   codeBlockDelete: "Block löschen",
+  blockText: "Text",
+  blockCallout: "Hinweis",
+  blockHandleAdd: "Block darunter einfügen",
+  blockHandleOptions: "Ziehen zum Verschieben, Klicken für Optionen",
+  blockTurnInto: "Umwandeln in",
+  blockDuplicate: "Duplizieren",
+  blockHandlesLabel: "Block-Griffe",
+  blockHandlesHelp:
+    "⋮⋮ neben dem Block unter dem Zeiger: ziehen, um den Block zu verschieben, oder klicken, um ihn umzuwandeln, zu duplizieren oder zu löschen.",
+  smoothCaretLabel: "Fließender Cursor",
   menuBlockWide: "Breit anzeigen",
   menuBlockZoom: "Größe",
   diagramViewerLabel: "Diagramm",
@@ -128,7 +138,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   pictureViewerTurnHint: "← → weitere Bilder",
   diagramViewerClose: "Schließen",
   diagramViewerHint:
-    "Scrollen oder Zwei-Finger-Zoom · ziehen zum Verschieben · Doppelklick zum Einpassen",
+    "Mausrad oder Zwei-Finger-Zoom · ziehen oder wischen zum Verschieben · Doppelklick zum Einpassen",
   codeBlockLanguage: "Sprache des Codes",
   codeBlockLanguageSearch: "Sprache suchen",
   announceAiWriting: `${AI_NAME} schreibt…`,
@@ -159,8 +169,10 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   revisionDisplayInline: "Alles im Text",
   revisionDisplayOriginal: "Original im Text, Änderungen am Rand",
   revisionDisplayFinal: "Nur das Ergebnis, Original am Rand",
+  splitNoRoomLow:
+    "Kein Platz für eine weitere Teilung: Das Fenster ist zu niedrig. Blende die Tastatur aus oder mach das Fenster höher.",
   splitNoRoom:
-    "Zu wenig Platz zum Teilen – Fenster verbreitern oder Seitenleiste bzw. eine Teilung schließen",
+    "Kein Platz für eine weitere Teilung: Das Fenster ist zu schmal. Verbreitern Sie es oder schließen Sie eine Teilung.",
   revisionDisplayNoRoom:
     "Nicht genug Platz - schließ die Seitenleiste oder den KI-Bereich",
   proposalDeletedSentence: "Original",
@@ -648,6 +660,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Der Plugin-Store braucht eine neuere Textus-Version. Aktualisiere Textus, um ihn zu sehen.",
   errorImageTooBig: "Das Bild ist leer oder größer als 25 MB.",
   errorNoFolder: "Öffne zuerst einen Ordner.",
+  errorPluginsNeedAllFiles:
+    "Plugins können diesen Ordner nicht lesen: Textus hat keinen Zugriff auf alle Dateien. Öffne den Ordner erneut und wähle „Weiter“.",
   errorPdfUnsupported: "PDF-Export ist auf diesem System nicht verfügbar.",
   errorNoText: "Es enthält keinen lesbaren Text.",
   errorUnreadable: "Diese Datei kann nicht gelesen werden.",
@@ -720,6 +734,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   outlineExpandAll: "Alle aufklappen",
   outlineCollapseAll: "Alle zuklappen",
   wordCount: { one: "{n} Wort", other: "{n} Wörter" },
+  slipCount: { one: "{n} Problem", other: "{n} Probleme" },
   wordCountDetail: "{words} Wörter · {characters} Zeichen (ohne Leerzeichen)",
   alertNote: "Hinweis",
   alertTip: "Tipp",
@@ -756,6 +771,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   navShortcuts: "Tastenkürzel",
   generalBasicsLabel: "Grundeinstellungen",
   generalSystemLabel: "Anwendung",
+  generalNetworkLabel: "Netzwerk",
   settingsFilesGroup: "Dateien",
   shortcutAiGroupLabel: "KI & Schreiben",
   shortcutEditorGroupLabel: "Editor & Navigation",
@@ -773,6 +789,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   backToStableNone:
     "Gerade gibt es keine stabile Version, zu der du zurückkannst.",
   aiCompletionLabel: "KI-Vervollständigung",
+  completionSourceLabel: "Vorschläge von",
   completionToneLabel: "Tonfall der Vervollständigung",
   completionTone_default: "Passend zum Dokument",
   completionTone_formal: "Förmlich",
@@ -852,7 +869,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   conventionsEu: "EU-Institutionen",
   agentAttachFile:
     "Dateien anhängen: Dokumente, PDFs, Bilder, Code, ein Zip – jede Datei",
-  chatAttachmentTruncated: "(gekürzt)",
+  chatAttachmentTruncated: "(lang: in Teilen gelesen)",
   chatAttachmentNoVision: `Dieser Anbieter kann keine Bilder lesen. Wechsle den Anbieter unter Einstellungen › ${AI_NAME} oder hänge stattdessen ein Dokument an.`,
   aiGrammarLabel: "Grammatikprüfung",
   aiAskLabel: `Chat mit ${AI_NAME}`,
@@ -873,9 +890,6 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   providerDropdownLabel: "Anbieter",
   authDropdownLabel: "Anmeldung & Zugangsdaten",
   insertTable: "Tabelle einfügen",
-  insertTableRowsLabel: "Zeilen",
-  insertTableColumnsLabel: "Spalten",
-  insertTableConfirm: "Einfügen",
   alignLeft: "Linksbündig",
   alignCenter: "Zentriert",
   alignRight: "Rechtsbündig",
@@ -890,6 +904,9 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   deleteRow: "Zeile löschen",
   deleteColumn: "Spalte löschen",
   copyTable: "Tabelle kopieren",
+  tableSize: "Zeilen und Spalten",
+  tableGridSize: "{rows} Zeilen, {cols} Spalten",
+  tableGridLoses: "Zellen mit Text werden entfernt",
   deleteTable: "Tabelle löschen",
   tableToMarkdown: "In Markdown-Tabelle umwandeln",
   tableToMarkdownMerged:
@@ -939,9 +956,14 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   modelListLabel: "Modellliste",
   customTestConnection: "Verbindung testen",
   customTestSuccess: "Verbindung funktioniert.",
+  customModelNotListed:
+    "Verbunden, aber dieser Endpunkt führt das Modell „{model}“ nicht. Wählen Sie eines aus seiner Liste.",
   customSave: "Speichern",
   proxyLabel: "Netzwerk-Proxy",
   proxyTypeNone: "Keiner (direkt)",
+  proxyTypeSystem: "Wie im System",
+  proxySystemHelp:
+    "Nutzt den Proxy aus den Netzwerkeinstellungen des Systems; ohne Proxy direkt.",
   proxyHostPlaceholder: "Host, z. B. 127.0.0.1",
   proxyPortPlaceholder: "Port",
   proxyUserPlaceholder: "Benutzername (optional)",
@@ -958,12 +980,23 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   agentSend: "Senden",
   agentStop: "Stoppen",
   agentRetry: "Erneut versuchen",
+  agentForgotStart:
+    "Dieses Gespräch ist lang: Seine ersten Nachrichten gehen nicht mehr an das Modell. Für einen Neuanfang ein neues Gespräch beginnen.",
+  revisionsNotKept:
+    "Änderungen, die auf Ihre Entscheidung warten, konnten nicht gespeichert werden. Nehmen Sie sie an oder lehnen Sie sie ab, bevor Sie das Dokument schließen, sonst gehen sie verloren.",
+  settingsNotSaved:
+    "Einstellungen und Fensterzustand können gerade nicht gespeichert werden: Änderungen gelten nur, bis Textus beendet wird.",
   agentNeedsFolder:
     "Öffne zuerst einen Ordner oder speichere das Dokument: Der Agent arbeitet in einem Ordner.",
   agentStopped: "{agent} wurde beendet.",
   agentNoImages:
     "{agent} kann keine Bilder lesen. Entferne das Bild oder wähle einen anderen Agenten.",
   agentSignIn: "Melde dich zuerst bei {agent} an.",
+  agentApproval: "Freigabe",
+  agentAskFirst: "Erst fragen",
+  agentAskFirstHint: "Fragt vor jeder Änderung und jedem Befehl.",
+  agentAllowAll: "Alles erlauben",
+  agentAllowAllHint: "Führt alle Änderungen und Befehle ohne Nachfrage aus.",
   chatAgentsGroup: "Agenten",
   chatAgentPermission: "Der Agent bittet, weiterzumachen",
   chatAgentRunCommand: "Einen Befehl ausführen",
@@ -1152,6 +1185,9 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   activityRail: "Aktivitätsleiste",
   activityRailHide: "Aktivitätsleiste ausblenden",
   activityRailShow: "Aktivitätsleiste einblenden",
+  windowLayoutGroup: "Fensterlayout",
+  classicLookNote:
+    "Lieber wie Textus vor 1.4 aussah? Wähle „Klassisch“, schalte die Aktivitätsleiste aus und die eigene Zeile der Titelleiste ein. Zurückgestellt gilt wieder das neue Aussehen.",
   layoutLabel: "Layout",
   layoutIslands: "Schwebende Inseln",
   layoutClassic: "Klassisch",
@@ -1217,6 +1253,10 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   menuTable: "Tabelle",
   menuToggleSourceMode: "Quellcodemodus",
   menuFormatBar: "Formatleiste",
+  menuFormatBarTop: "Oben",
+  menuFormatBarLeft: "Links",
+  menuFormatBarRight: "Rechts",
+  menuFormatBarHidden: "Ausgeblendet",
   menuToggleTypewriterMode: "Schreibmaschinenmodus",
   menuToggleSidebar: "Seitenleiste",
   menuZoomIn: "Vergrößern",
@@ -1266,7 +1306,6 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   windowMaximize: "Maximieren",
   windowRestore: "Wiederherstellen",
   windowClose: "Schließen",
-  chatWindowTitle: AI_NAME,
   chatWindowPin: "Immer im Vordergrund",
   chatWindowPinHint: "Dieses Fenster über dem Editor halten",
   chatWindowUnpinHint: "Dieses Fenster nicht mehr über dem Editor halten",
@@ -1287,7 +1326,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   proposalRelocate: "Änderung neu anfordern",
   diffShow: "Unterschiede anzeigen",
   diffCollapse: "Weniger anzeigen",
-  chatPendingSummary: "Offene Änderungen: {n}",
+  chatPendingSummary: "Offene Änderungen:\u00a0{n}",
   chatPendingReveal: "Im Dokument anzeigen",
   quickAskPosition: "{i} / {n}",
   quickAskPrevEdit: "Vorherige Änderung",
@@ -1442,7 +1481,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Im Zahnrad sind Design, Schriften und deine KI-Konten.",
   tutorialEditorTitle: "Schreiben, wie es aussieht",
   tutorialEditorBody:
-    "Markdown wird beim Tippen zur Formatierung: probiere `# Ein Titel` oder `- eine Liste`.",
+    "Markdown wird beim Tippen zur Formatierung. Probiere alle aus:",
+  tutorialEditorHeading: "Titel: `# Pläne`",
+  tutorialEditorList: "Liste: `- Milch`",
+  tutorialEditorNumbered: "Nummeriert: `1. zuerst`",
+  tutorialEditorTask: "Aufgabe: `- [ ] zurückrufen`",
   tutorialAiTitle: "Textus AI",
   tutorialAiBody: "Klicke oben rechts auf das Funkeln, um Textus AI zu öffnen.",
   tutorialAiBodyPhone:
@@ -1474,6 +1517,10 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   wordImportDismiss: "Verstanden",
   openFileFailed:
     "{name} lässt sich nicht öffnen: Es ist kein Textdokument, und kein Plugin öffnet solche Dateien.",
+  openFileMuted:
+    "Textus kann {name} nicht selbst öffnen. Den Vorschlag des Plugins, das sie öffnet, hast du ausgeblendet; unter Einstellungen › {page} erscheint er wieder.",
+  openFileGone:
+    "{name} lässt sich nicht öffnen: Die Datei ist nicht mehr da. Sie wurde vielleicht verschoben, umbenannt oder gelöscht.",
   wordImportFailed: "{name} konnte nicht geöffnet werden.",
   wordSaveRefused:
     "Ein Markdown-Dokument kann nicht über ein Word-Dokument gespeichert werden. Wähle einen Namen, der auf .md endet.",
@@ -1515,7 +1562,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Das ausgewählte Bild konnte nicht verwendet werden.",
   imageStorageGroupLabel: "Bilder",
   imageStorageLabel: "Bildspeicherort",
-  imageStorageLocal: "Auf diesem Computer",
+  imageStorageLocal: "Auf diesem Gerät",
   imageStorageRemote: "Zu einem Bildhoster hochladen",
   imageFolderLabel: "Ordner",
   imageFolderSubfolder: "Unterordner",
@@ -1594,10 +1641,10 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   themeNamePaper: "Papier",
   themeNameSlate: "Schiefer",
   themeNameForest: "Wald",
-  themeNameAurora: "Polarlicht",
+  themeNamePrism: "Prisma",
   appearanceLabel: "Erscheinungsbild",
   appearanceModeLabel: "Hell oder dunkel",
-  appearanceSystem: "Systemeinstellung",
+  appearanceSystem: "System",
   appearanceLight: "Hell",
   appearanceDark: "Dunkel",
   pdfPreparing: "PDF wird vorbereitet…",
@@ -1711,7 +1758,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   navProvidersModels: "Modelle",
   navMemorySkills: "Agent",
   memoryGroup: "Gedächtnis",
-  netGroup: "Web und Proxy",
+  netGroup: "Websuche",
   modelChoiceGroup: "Modellwahl",
   providersGroup: "Anbieter",
   chooseFile: "Datei wählen…",
@@ -1731,7 +1778,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   writingProviderLabel: "Anbieter fürs Schreiben",
   followChatProvider: "Wie im Chat",
   providerModelsGroup: "Modelle",
-  providerKeysLocal: "Schlüssel bleiben auf diesem Computer.",
+  allFilesAccessAsk:
+    "Android fragt jetzt, ob Textus alle Dateien verwalten darf. Mit dieser Erlaubnis öffnet Textus den Ordner direkt: schneller, und Änderungen aus anderen Apps erscheinen sofort. Ohne sie öffnet sich der Ordner trotzdem, nur etwas langsamer.",
+  allFilesAccessContinue: "Weiter",
+  allFilesAccessNotNow: "Nicht jetzt",
+  providerKeysLocal: "Schlüssel bleiben auf diesem Gerät.",
   pluginsMore: "Mehr",
   pluginsSearch: "Plugins suchen",
   pluginUpdateNow: "Aktualisieren",
@@ -1823,7 +1874,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   conventionsDecline: "Aktuelle behalten",
   pluginCardSystemApp: "Mit System-App öffnen",
   pluginCardNever: "Nicht mehr vorschlagen",
-  pluginCardsMuted: "Ausgeblendete Plugin-Vorschläge: {n}",
+  pluginCardsMuted: "Ausgeblendete Plugin-Vorschläge:\u00a0{n}",
   pluginCardsRestore: "Wieder zeigen",
   pluginCardsRestoreAll: "Ausgeblendete Plugin-Vorschläge wieder zeigen",
   pluginScreenshot: "{name} bei der Arbeit",
@@ -1891,6 +1942,16 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   pluginPermAiTools: "Textus AI eigene Werkzeuge geben",
   pluginPermNotifications: "Systemmitteilungen anzeigen",
   pluginPermAppearance: "Die Farben von Textus und Ihren Dokumenten ändern",
+  pluginPermGitCommit: "Mit Ihrem Git Commits im geöffneten Ordner erstellen",
+  pluginPermComments: "Notizen am Rand Ihrer Dokumente lesen und hinzufügen",
+  pluginPermAiModel:
+    "Ihr KI-Modell verwenden (zählt zur Nutzung Ihres KI-Dienstes)",
+  pluginAiAsk:
+    "{plugin} möchte Ihr KI-Modell verwenden. Was es sendet, zählt zur Nutzung Ihres KI-Dienstes, bis zu {limit} Tokens im Monat für dieses Plugin.",
+  pluginAiLimit:
+    "{plugin} hat seine {limit} KI-Tokens für diesen Monat verbraucht. Weitere {limit} erlauben?",
+  pluginAiAllow: "Erlauben",
+  pluginAiUsage: "KI diesen Monat: {used} von {limit} Tokens",
   pluginPermAgents:
     "Einen auf diesem Computer installierten KI-Agenten ausführen (er kann Dateien lesen und ändern)",
   pluginPermBackground:
@@ -1898,6 +1959,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   pluginScheduleNotice:
     "{name} hat etwas geplant. Es läuft nur, solange Textus läuft: schalte „{setting}“ ein, damit es auch bei geschlossenen Fenstern läuft.",
   pluginPermNetwork: "Mit {host} verbinden",
+  pluginPermHidden: "{path} im geöffneten Ordner lesen",
   pluginPermCommands: "Befehle von {plugin} ausführen",
   pluginPermNetworkAny: "Mit beliebigen Websites verbinden",
   menuPlugins: "Plugins",
@@ -1917,7 +1979,15 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   pluginKeysTaken:
     "{name} kann die Tastatur nicht übernehmen: {holder} hat sie. Schalte eines davon in der Plugin-Liste der Seitenleiste aus.",
   shortcutIndentListItem: "Listenelement einrücken",
+  shortcutFoldSection: "Abschnitt einklappen",
+  shortcutUnfoldSection: "Abschnitt ausklappen",
   shortcutOutdentListItem: "Listenelement ausrücken",
   pluginKeyTaken:
     "{name}: {key} gehört zu „{owner}“ und wurde „{command}“ daher nicht zugewiesen. Lege unter Einstellungen › Tastenkürzel eine andere Taste fest.",
+  gitTrustTitle: "Darf Git die eigenen Programme dieses Repositorys ausführen?",
+  gitTrustText:
+    "Das Git-Repository dieses Ordners ist so eingerichtet, dass es Programme auf deinem Computer ausführt ({what}). Bei einem selbst eingerichteten Repository ist das üblich. Stammt der Ordner von jemand anderem, erlaube es nur, wenn du dieser Person vertraust.",
+  gitTrustAllow: "Diesem Repository vertrauen",
+  gitTrustRefused:
+    "Git wird hier nicht verwendet: Dem Repository wird nicht vertraut.",
 } satisfies Translation;

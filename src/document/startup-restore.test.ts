@@ -26,6 +26,7 @@ vi.mock("../platform/ipc", () => ({
   fs: {
     fileMtimeMs: async (path: string) => (ipc.gone.has(path) ? null : 1),
   },
+  session: { addRecentFile: async () => {} },
   drafts: {
     takeDraftSnapshots: ipc.takeDraftSnapshots,
     saveDraftSnapshot: ipc.saveDraftSnapshot,
@@ -53,6 +54,15 @@ vi.mock("../platform/capabilities", async (importOriginal) => ({
   },
 }));
 vi.mock("./ios-recents", () => ({ lastIOSDocument }));
+// A database plugin opens .base files.
+vi.mock("../plugins/manager", () => ({ loadPlugins: async () => {} }));
+vi.mock("../plugins/store/plugin-lookup", () => ({
+  customEditorFor: (path: string) =>
+    path.endsWith(".base")
+      ? { plugin: "db", viewType: "db.table", title: "all.base" }
+      : null,
+  customEditorForContent: () => null,
+}));
 vi.mock("./doc-tabs", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./doc-tabs")>()),
   readDocFromDisk: vi.fn(async (path: string) => ({
@@ -79,12 +89,14 @@ async function restore(
   inModel = false,
   /** Done while the session's documents are read. */
   meanwhile?: (tabs: DocTab[]) => DocTab[],
+  /** Tabs the window already has before the initial one (the AI's). */
+  before: DocTab[] = [],
 ) {
   // `drained` is module state (one drain per window): a fresh module each.
   vi.resetModules();
   const { useStartupRestore } = await import("./startup-restore");
   const model = await import("../engine/layout/store");
-  let local: DocTab[] = [{ ...INITIAL }];
+  let local: DocTab[] = [...before, { ...INITIAL }];
   if (inModel)
     model.startWindowTabs(local, () => ({ ...INITIAL, id: "blank" }));
   const held = {
@@ -209,6 +221,27 @@ describe("startup restore into the initial tab", () => {
       7,
     );
     expect(ipc.clearDraftSnapshot).toHaveBeenCalledWith("old-pdf");
+
+    // A draft whose new copy can't be written keeps its old one.
+    ipc.clearDraftSnapshot.mockClear();
+    ipc.saveDraftSnapshot.mockRejectedValueOnce(new Error("disk full"));
+    const { moveDrafts } = await import("./startup-restore");
+    await moveDrafts(
+      [
+        {
+          id: "old-a",
+          path: null,
+          text: { content: "a", savedContent: "", diskMtime: null },
+        },
+        {
+          id: "old-b",
+          path: null,
+          text: { content: "b", savedContent: "", diskMtime: null },
+        },
+      ],
+      (i) => `new-${i}`,
+    );
+    expect(ipc.clearDraftSnapshot.mock.calls).toEqual([["old-b"]]);
   });
 
   it("but not over a document opened at launch", async () => {
@@ -273,6 +306,29 @@ describe("startup restore into the initial tab", () => {
     ]);
   });
 
+  it("brings a draft that was in front back in front, the files behind it", async () => {
+    localStorage.setItem(
+      "textus-tab-order",
+      JSON.stringify({ keys: ["path:/docs/a.md", "id:d1"], active: "id:d1" }),
+    );
+    ipc.takeDraftSnapshots.mockResolvedValue([
+      { tabId: "d1", path: null, content: "draft text", diskMtime: null },
+    ]);
+    ipc.takePendingWindow.mockResolvedValue({
+      paths: ["/docs/a.md"],
+      layout: { tree: { paths: ["/docs/a.md"], front: "/docs/a.md" } },
+    });
+    await restore(true, false, true);
+    const model = await import("../engine/layout/store");
+    await waitFor(() =>
+      expect(
+        model.windowTabs<DocTab>().find((tab) => tab.id === model.tabInUse())
+          ?.content,
+      ).toBe("draft text"),
+    );
+    localStorage.removeItem("textus-tab-order");
+  });
+
   it("keeps that order in the window's own model, which orders by island", async () => {
     ipc.takePendingWindow.mockResolvedValue({
       paths: ["/docs/a.md", "/docs/b.md", "/docs/c.md"],
@@ -289,6 +345,26 @@ describe("startup restore into the initial tab", () => {
       "/docs/a.md",
       "/docs/b.md",
       "/docs/c.md",
+    ]);
+  });
+
+  it("a reloaded page keeps the tab in front at its place in the row", async () => {
+    sessionStorage.setItem(
+      "textus-reload-tabs",
+      JSON.stringify({
+        active: 2,
+        tabs: ["/docs/a.md", "/docs/b.md", "/docs/c.md", "/docs/d.md"].map(
+          (path, i) => ({ id: `old-${i}`, path }),
+        ),
+      }),
+    );
+    const { tabs } = await restore(true, false, true);
+    await waitFor(() => expect(tabs()).toHaveLength(4));
+    expect(tabs().map((tab) => tab.path)).toEqual([
+      "/docs/a.md",
+      "/docs/b.md",
+      "/docs/c.md",
+      "/docs/d.md",
     ]);
   });
 
@@ -377,6 +453,38 @@ describe("startup restore into the initial tab", () => {
     ]);
   });
 
+  it("on a phone ended in the background: its saved documents, drafts and the AI's tab in their order, the one in front in front", async () => {
+    Object.assign(platform, {
+      canUseWindows: false,
+      hasAppMenu: false,
+      isIOSApp: true,
+    });
+    lastIOSDocument.mockResolvedValue("/docs/b.md");
+    localStorage.setItem(
+      "textus-tab-order",
+      JSON.stringify({
+        keys: ["path:/docs/a.md", "view:ai", "id:old-d", "path:/docs/b.md"],
+        active: "path:/docs/a.md",
+      }),
+    );
+    ipc.takeDraftSnapshots.mockResolvedValue([
+      { tabId: "old-d", path: null, content: "draft d" },
+    ]);
+    const ai = {
+      ...INITIAL,
+      id: "ai",
+      view: { plugin: "textus", view: "ai", kind: "page" as const },
+    };
+    const { tabs } = await restore(true, false, true, undefined, [ai]);
+    await waitFor(() =>
+      expect(
+        tabs().map((tab) => tab.path ?? tab.view?.view ?? tab.content),
+      ).toEqual(["/docs/a.md", "ai", "draft d", "/docs/b.md"]),
+    );
+    expect(tabs()[0].id).toBe("initial");
+    localStorage.clear();
+  });
+
   it("and for that document's recovered edits, which take the initial tab's place", async () => {
     Object.assign(platform, {
       canUseWindows: false,
@@ -454,5 +562,75 @@ describe("startup restore into the initial tab", () => {
       expect.objectContaining({ id: "initial", content: "draft a" }),
       expect.objectContaining({ content: "draft b", path: null }),
     ]);
+  });
+
+  // Android ended the app in the background: no window session, only the
+  // drafts and the order its tabs were in.
+  it("brings the drafts back in their tabs' order, the front one in front, kept once", async () => {
+    localStorage.setItem(
+      "textus-tab-order",
+      JSON.stringify({ ids: ["old-b", "old-c", "old-a"], active: "old-c" }),
+    );
+    ipc.takeDraftSnapshots.mockResolvedValue(
+      ["a", "b", "c"].map((x) => ({
+        tabId: `old-${x}`,
+        path: null,
+        content: `draft ${x}`,
+      })),
+    );
+    // The AI's tab first in the row: the drafts keep their order after it.
+    const ai = { ...INITIAL, id: "ai", content: "ai" };
+    const { tabs } = await restore(true, false, true, undefined, [ai]);
+    await waitFor(() =>
+      expect(tabs().map((tab) => tab.content)).toEqual([
+        "ai",
+        "draft b",
+        "draft c",
+        "draft a",
+      ]),
+    );
+    expect(tabs()[2].id).toBe("initial");
+    // c's draft, kept again under the tab it came in as, goes once it is
+    // kept under the initial one: the next launch finds it once.
+    await waitFor(() => expect(ipc.clearDraftSnapshot).toHaveBeenCalled());
+    const resavedAs = (
+      ipc.saveDraftSnapshot.mock.calls as unknown as [string, unknown, string][]
+    )
+      .filter((call) => call[2] === "draft c")
+      .map((call) => call[0]);
+    expect(resavedAs).toContain("initial");
+    expect(ipc.clearDraftSnapshot).toHaveBeenCalledWith(
+      resavedAs.find((id) => id !== "initial"),
+    );
+    localStorage.clear();
+  });
+  it("and a file a plugin showed in front comes back in front, the plugin's tab again", async () => {
+    Object.assign(platform, {
+      canUseWindows: false,
+      hasAppMenu: false,
+      isIOSApp: true,
+    });
+    const last = lastIOSDocument.getMockImplementation();
+    lastIOSDocument.mockResolvedValue(null);
+    localStorage.setItem(
+      "textus-tab-order",
+      JSON.stringify({
+        keys: ["path:/docs/a.md", "path:/docs/all.base"],
+        active: "path:/docs/all.base",
+      }),
+    );
+    const { tabs } = await restore();
+    await waitFor(() =>
+      expect(tabs().find((tab) => tab.id === "initial")).toMatchObject({
+        path: null,
+        view: { plugin: "db", kind: "editor", resource: "/docs/all.base" },
+      }),
+    );
+    expect(tabs().map((tab) => tab.path ?? tab.view?.resource)).toEqual([
+      "/docs/a.md",
+      "/docs/all.base",
+    ]);
+    localStorage.clear();
+    lastIOSDocument.mockImplementation(last ?? (async () => null));
   });
 });

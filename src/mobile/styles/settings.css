@@ -180,13 +180,15 @@
 
   /* A short name gives its room to the control beside it, so a picker
      with a long value stays on the row instead of dropping under it. */
-  :root[data-window-chrome="mobile"] .settings-row > *:first-child {
+  :root[data-window-chrome="mobile"]
+    .settings-row:not([data-stacked])
+    > *:first-child {
     flex-basis: 96px;
-    /* A long single word ("Erscheinungsbild") breaks inside its own room
-       instead of running on under the control beside it. */
-    overflow-wrap: anywhere;
-    -webkit-hyphens: auto;
-    hyphens: auto;
+    /* As narrow as its longest word, so the control goes under it rather
+       than squeezing it letter by letter; a word wider than the row still
+       breaks. No hyphens, which would cut file names ("agen-t.md"). */
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   /* Stacked (Custom CSS), that basis would be a height: a gap under the name. */
@@ -197,8 +199,6 @@
   :root[data-window-chrome="mobile"]
     :is(
       .settings-row-label,
-      .provider-disclosure-label,
-      .combobox-trigger,
       button.settings-link-row,
       .settings-advanced > summary
     ) {

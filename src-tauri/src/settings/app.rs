@@ -4,6 +4,7 @@
 
 use super::*;
 use crate::app_dirs::AppDirs;
+use aicompat::http::Route;
 
 /// Loads every store into app state, before any window is built (their boot
 /// scripts are made from it).
@@ -19,8 +20,9 @@ pub fn init(app: &AppHandle) {
 
 /// The settings' proxy, for every request the app makes: read here, at
 /// launch and on each change, so a request made before any window (a
-/// scheduled job in background mode) goes through it too. An unreadable one
-/// is left out: requests go direct.
+/// scheduled job in background mode) goes through it too. Unless set, or
+/// set to direct, requests follow the system's proxy; an unreadable one
+/// follows the system too.
 pub(crate) fn proxy_changed(settings: &Value) {
     let text = |key: &str| {
         settings
@@ -38,7 +40,13 @@ pub(crate) fn proxy_changed(settings: &Value) {
         .unwrap_or("")
         .to_string();
     let user = text("proxyUsername");
-    let proxy = (!host.is_empty() && !kind.is_empty() && kind != "none").then(|| {
+    let manual = matches!(kind.as_str(), "http" | "https" | "socks5");
+    let route = if kind == "direct" {
+        Route::Direct
+    } else if !manual || host.is_empty() {
+        // "system", and "none", which before 1.4.5 was the default.
+        Route::System
+    } else {
         let mut url = format!("{kind}://{host}");
         if !port.is_empty() {
             url.push_str(&format!(":{port}"));
@@ -55,22 +63,22 @@ pub(crate) fn proxy_changed(settings: &Value) {
                 url = parsed.to_string();
             }
         }
-        url
-    });
-    if aicompat::http::set_proxy(proxy).is_err() {
-        let _ = aicompat::http::set_proxy(None);
+        Route::Via(url)
+    };
+    if aicompat::http::set_route(route).is_err() {
+        let _ = aicompat::http::set_route(Route::System);
     }
 }
 
 /// The appearance setting changed: brings the native side in line so what a
 /// window shows around its page matches. macOS sets the app's appearance, Linux
-/// the windows' backgrounds.
+/// and Windows the windows' backgrounds.
 pub(crate) fn theme_changed(app: &AppHandle) {
     #[cfg(target_os = "macos")]
     apply_app_theme(app);
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", windows))]
     apply_window_backgrounds(app);
-    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+    #[cfg(not(any(target_os = "macos", target_os = "linux", windows)))]
     let _ = app;
 }
 
@@ -252,8 +260,8 @@ pub(crate) fn user_theme_css(app: &AppHandle, settings: &Value) -> Value {
 }
 
 /// Adds the boot script and the navigation guard to a webview that shows the
-/// app, and on Linux builds the window in a pinned appearance's background.
-/// Other webviews go without.
+/// app, and on Linux and Windows builds the window in the appearance's
+/// background. Other webviews go without.
 pub fn with_boot<'a, R: tauri::Runtime, M: Manager<R>>(
     builder: tauri::WebviewWindowBuilder<'a, R, M>,
     app: &AppHandle,
@@ -261,10 +269,10 @@ pub fn with_boot<'a, R: tauri::Runtime, M: Manager<R>>(
 ) -> tauri::WebviewWindowBuilder<'a, R, M> {
     let builder =
         crate::window_guard::guard(builder.initialization_script(boot_script(app, label)));
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", windows))]
     let builder = match app
         .try_state::<Stores>()
-        .and_then(|stores| pinned_background(&stores.settings.snapshot().0))
+        .and_then(|stores| window_background(&stores.settings.snapshot().0, system_dark()))
     {
         Some(color) => builder.background_color(color),
         None => builder,
@@ -272,27 +280,56 @@ pub fn with_boot<'a, R: tauri::Runtime, M: Manager<R>>(
     builder
 }
 
-/// The colour a window shows before its page has painted, for a pinned
-/// appearance: the page's own `--doc-bg`, which `--ui-bg` follows. On Linux GTK and WebKit otherwise flash
-/// their own colours first. "system" is left alone: guessing wrong would flash.
+/// The colour a window shows before its page has painted: the page's own
+/// `--doc-bg`, which `--ui-bg` follows. Linux GTK and Windows' WebView2
+/// otherwise show white first: at launch, and on Windows again whenever the
+/// window is maximized or comes back. "system" follows `system_dark`, left
+/// alone where that is unknown: guessing wrong would flash.
+#[cfg_attr(not(any(target_os = "linux", windows)), allow(dead_code))]
+pub(crate) fn window_background(
+    settings: &Value,
+    system_dark: Option<bool>,
+) -> Option<tauri::window::Color> {
+    let dark = match settings.get("theme").map(Value::as_str) {
+        Some(Some("dark")) => true,
+        Some(Some("light")) => false,
+        Some(Some("system")) | None => system_dark?,
+        _ => return None,
+    };
+    Some(if dark {
+        tauri::window::Color(0x1f, 0x1b, 0x16, 0xff)
+    } else {
+        tauri::window::Color(0xfb, 0xf8, 0xf2, 0xff)
+    })
+}
+
+/// Whether the system is in dark mode, where it can be read before a window
+/// exists: Windows' own setting for apps.
+#[cfg(windows)]
+pub(crate) fn system_dark() -> Option<bool> {
+    let key = windows_registry::CURRENT_USER
+        .open(r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
+        .ok()?;
+    Some(key.get_u32("AppsUseLightTheme").ok()? == 0)
+}
+
+#[cfg(not(windows))]
 #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
-pub(crate) fn pinned_background(settings: &Value) -> Option<tauri::window::Color> {
-    match settings.get("theme").and_then(Value::as_str) {
-        Some("dark") => Some(tauri::window::Color(0x1f, 0x1b, 0x16, 0xff)),
-        Some("light") => Some(tauri::window::Color(0xfa, 0xf6, 0xee, 0xff)),
-        _ => None,
-    }
+pub(crate) fn system_dark() -> Option<bool> {
+    None
 }
 
 /// Gives every open app window the background `with_boot` would give it now,
 /// so unpainted edges (during a resize) don't keep the old appearance's colour.
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", windows))]
 pub(crate) fn apply_window_backgrounds(app: &AppHandle) {
     let Some(stores) = app.try_state::<Stores>() else {
         return;
     };
-    let color = pinned_background(&stores.settings.snapshot().0);
-    for (label, window) in app.windows() {
+    let color = window_background(&stores.settings.snapshot().0, system_dark());
+    // The webview's own colour too, which WebView2 shows on maximize: the
+    // window's alone left a theme changed since launch flashing the old one.
+    for (label, window) in app.webview_windows() {
         // Only the windows the user sees: not the transparent tab-drag
         // pill, the hidden PDF-export renderers or background host.
         use crate::windows::WindowKind;

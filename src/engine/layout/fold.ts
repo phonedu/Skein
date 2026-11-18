@@ -22,6 +22,8 @@ export interface Folded {
   need: number;
 }
 
+const NONE: ReadonlySet<string> = new Set();
+
 /** Only along a row: an island folded into the one above or below frees no
  *  width, a column being as wide as its widest. */
 const SIDES: Side[] = ["left", "right"];
@@ -44,8 +46,11 @@ export function foldIsland(
   layout: SplitLayout,
   isPanel: (pane: Pane) => boolean,
   need: number,
-): { layout: SplitLayout; folded: Folded } | null {
-  const panes = [...panesOf(layout.root)].reverse();
+  keep: ReadonlySet<string> = NONE,
+): { layout: SplitLayout; folded: Folded; panel: boolean } | null {
+  const panes = [...panesOf(layout.root)]
+    .reverse()
+    .filter((p) => !keep.has(p.id));
   const order = [...panes.filter(isPanel), ...panes.filter((p) => !isPanel(p))];
   for (const panel of order) {
     for (const side of SIDES) {
@@ -62,6 +67,7 @@ export function foldIsland(
       };
       return {
         layout: next,
+        panel: isPanel(panel),
         folded: {
           id: panel.id,
           tabs: [...panel.tabs],
@@ -75,6 +81,22 @@ export function foldIsland(
     }
   }
   return null;
+}
+
+/** `layout` with every panel's island but those in `keep` folded into the
+ *  island beside it: what a split may count on them giving. */
+export function foldPanels(
+  layout: SplitLayout,
+  isPanel: (pane: Pane) => boolean,
+  keep: ReadonlySet<string> = NONE,
+): SplitLayout {
+  let next = layout;
+  for (;;) {
+    const out = foldIsland(next, isPanel, 0, keep);
+    // With no panel beside another island left, a document's would go.
+    if (!out || !out.panel) return next;
+    next = out.layout;
+  }
 }
 
 /** A folded island back on its side of the island it joined, under its own

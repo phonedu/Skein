@@ -1,3 +1,4 @@
+import { createSubscribers } from "../utils/store";
 /**
  * Items added from outside (plugins) to the file tree's, a tab's, a
  * view's and a floating view's menus. Each menu asks when it opens.
@@ -26,12 +27,12 @@ interface ContributedItem {
 type Provider = (target: ContextMenuTarget) => ContributedItem[];
 
 const providers = new Map<ContextMenuPlace, Provider[]>();
-const listeners = new Set<() => void>();
+const subscribers = createSubscribers();
 let version = 0;
 
 function changed() {
   version++;
-  for (const listener of listeners) listener();
+  subscribers.publish();
 }
 
 export function registerContextItems(
@@ -64,11 +65,60 @@ export function contributedContextItems(
   });
 }
 
-/** For buttons that show without a menu being opened (view/title). */
-export function subscribeContextItems(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
+/** Menus whose plugin items may be worked out as they open. */
+export type LateMenuPlace = "editor/context" | "file/context";
+
+/** What such a menu was opened on. */
+export interface LateMenuTarget {
+  path: string | null;
+  folder?: boolean;
+  /** For "editor/context": the selected text, "" for none. */
+  selectedText?: string;
 }
+
+type LateProvider = (target: LateMenuTarget) => Promise<ContributedItem[]>;
+
+const lateProviders = new Map<LateMenuPlace, LateProvider[]>();
+
+/** A provider that answers as the menu opens (a plugin's, over its
+ *  channel), until the returned function takes it away. */
+export function registerLateContextItems(
+  place: LateMenuPlace,
+  provider: LateProvider,
+): () => void {
+  const list = lateProviders.get(place) ?? [];
+  list.push(provider);
+  lateProviders.set(place, list);
+  return () => {
+    const at = list.indexOf(provider);
+    if (at >= 0) list.splice(at, 1);
+  };
+}
+
+/** How long an opening menu waits for a provider before leaving it out. */
+const LATE_WAIT_MS = 500;
+
+/** What the late providers add for a menu opened on `target`: those that
+ *  answer in time, in their order; null when none is registered, so the
+ *  menu needn't wait at all. */
+export function lateContextItems(
+  place: LateMenuPlace,
+  target: LateMenuTarget,
+): Promise<ContributedItem[]> | null {
+  const list = lateProviders.get(place) ?? [];
+  if (!list.length) return null;
+  const late = new Promise<ContributedItem[]>((resolve) =>
+    setTimeout(() => resolve([]), LATE_WAIT_MS),
+  );
+  return Promise.all(
+    list.map((provide) =>
+      Promise.race([provide(target).catch(() => []), late]),
+    ),
+  ).then((groups) => groups.flat());
+}
+
+/** For buttons that show without a menu being opened (view/title). */
+export const subscribeContextItems = subscribers.subscribe;
 
 export function contextItemsVersion(): number {
   return version;

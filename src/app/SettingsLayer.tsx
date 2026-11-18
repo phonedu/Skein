@@ -1,6 +1,6 @@
 import { CreateChat } from "../settings/pages/create-chat-lazy";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
-import { OPEN_CREATE_EVENT } from "../ai/chat/create-request";
+import { onCreateAsked } from "../ai/chat/create-request";
 import { lazyModule } from "../lazy/lazy-module";
 import { settingsFeature } from "../features/settings/lazy";
 import { lazyComponent } from "../lazy/lazy-component";
@@ -11,7 +11,7 @@ import {
 import type { SettingsPanelProps } from "../settings/SettingsPanel";
 import { Presence } from "../engine/motion/usePresence";
 import { isIOSApp } from "../platform/capabilities";
-import { SHOW_SIDEBAR_TAB_EVENT } from "../utils/events";
+import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../utils/events";
 import {
   closeSettingsDialog,
   onSettingsDialogChange,
@@ -60,7 +60,7 @@ const SettingsPanel = lazyComponent(
 );
 
 /** Where the iPad's Settings sheet opens: a page's id, or "extensions" -
- *  the phone's plugins and themes. */
+ *  the phone's plugins and themes. The dialog maps "updates" to About. */
 type SettingsStart = string;
 
 /**
@@ -91,7 +91,7 @@ export function useSettingsOpening(tabs: TabState) {
       if (inTabs) request("extensions");
       else showPage(tabs, "create");
     };
-    window.addEventListener(OPEN_CREATE_EVENT, open);
+    const stopCreate = onCreateAsked(open);
     // A page picked in the sidebar's list, or a search result there.
     const page = (e: Event) => {
       const { page, jump } = (e as CustomEvent<SettingsPageRequest>).detail;
@@ -102,7 +102,7 @@ export function useSettingsOpening(tabs: TabState) {
     };
     window.addEventListener(OPEN_SETTINGS_PAGE_EVENT, page);
     return () => {
-      window.removeEventListener(OPEN_CREATE_EVENT, open);
+      stopCreate();
       window.removeEventListener(OPEN_SETTINGS_PAGE_EVENT, page);
     };
   }, [tabs]);
@@ -128,7 +128,6 @@ export function useSettingsOpening(tabs: TabState) {
           : window.dispatchEvent(
               new CustomEvent(SHOW_SIDEBAR_TAB_EVENT, { detail: "plugins" }),
             );
-      // A plugin's page in its tab; the list itself is the sidebar's.
       if (id) openPluginPage(id);
       else openExtensionsTab("plugins");
       request("extensions");

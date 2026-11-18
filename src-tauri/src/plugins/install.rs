@@ -198,8 +198,12 @@ fn swap_in(new: &Path, target: &Path, aside: &Path) -> Result<(), String> {
         std::fs::rename(target, aside).map_err(|e| e.to_string())?;
     }
     if let Err(e) = std::fs::rename(new, target) {
-        if had {
-            let _ = std::fs::rename(aside, target);
+        // Put back; if that fails too, say where the one that worked is.
+        if had && std::fs::rename(aside, target).is_err() {
+            return Err(format!(
+                "{e} (the previous version is at {})",
+                aside.display()
+            ));
         }
         return Err(e.to_string());
     }
@@ -324,9 +328,9 @@ fn copy_dir(from: &Path, to: &Path, total: &mut u64) -> Result<(), String> {
         .flatten()
     {
         let name = entry.file_name();
-        // A developer's checkout: its git folder and installed packages
-        // aren't the plugin.
-        if name == ".git" || name == "node_modules" {
+        // A developer's checkout: its git folder, secrets and installed
+        // packages aren't the plugin.
+        if super::access::not_plugin_file(&name) {
             continue;
         }
         let file_type = entry.file_type().map_err(|e| e.to_string())?;

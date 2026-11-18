@@ -102,8 +102,7 @@ pluginApi.settingsPages.register({
 Themes are already open to everyone, and need no plugin: a Typora-style
 CSS file restyles the document, and the interface follows it. Every colour
 in the window comes from a variable a theme can set on its `:root`; the
-variables are listed in
-[docs/design/design-language.md](../design/design-language.md).
+variables are the `--ui-*` custom properties on the page's `:root`.
 
 ## Plugins
 

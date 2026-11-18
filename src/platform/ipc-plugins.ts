@@ -5,6 +5,7 @@ import type * as Access from "./bindings/plugin-access";
 export type PluginFile = Generated.PluginFile;
 import { Channel } from "@tauri-apps/api/core";
 import { call, command, desktopActionCommand } from "./ipc-call";
+import { dirname } from "../utils/path";
 
 /** Plugins and MCP servers: the calls Settings › Extensions and the plugin broker make. */
 
@@ -15,6 +16,12 @@ export type PluginsState = Generated.PluginsState_Serialize;
 export type PluginCatalogEntry = Generated.CatalogEntry_Serialize;
 export type StoreScope = Access.StoreScope;
 export type PluginDocumentMeta = Access.DocumentMeta_Serialize;
+
+/** An Android folder opened without access to all files: its files go
+ *  through the native plugin (content-plugin-fs.ts), not Rust. */
+const inContent = (root: string) => root.startsWith("content://");
+const contentFs = () =>
+  import("./content-plugin-fs").then((m) => m.contentPluginFs);
 
 /** A raw IPC response's bytes, which specta can't type, so those commands
  *  go through `call`. */
@@ -63,6 +70,13 @@ export const agentsIpc = {
 
 export const plugins = {
   state: () => command("plugins_state"),
+  /** A plugin's use of the user's AI model: Textus AI on, the user's yes,
+   *  tokens this month. */
+  aiStatus: (plugin: string) => command("plugin_ai_status", plugin),
+  aiAllow: (plugin: string, more: boolean) =>
+    command("plugin_ai_allow", plugin, more),
+  aiComplete: (plugin: string, system: string, prompt: string) =>
+    command("plugin_ai_complete", plugin, system, prompt),
   setAll: (on: boolean) => command("plugins_set_all", on),
   set: (id: string, enabled: boolean, granted: string[]) =>
     command("plugin_set", id, enabled, granted),
@@ -105,33 +119,57 @@ export const plugins = {
   openScriptsDir: () => desktopActionCommand("plugin_open_scripts_dir"),
   file: (id: string, rel: string) =>
     bytes(call<ArrayBuffer>("plugin_file", { id, rel })),
+  /** The file a plugin's tab was opened on; on Android it may be a
+   *  content:// file picked with Open…, outside any folder. */
   readResource: (id: string, path: string) =>
-    bytes(call<ArrayBuffer>("plugin_read_resource", { id, path })),
+    inContent(path)
+      ? contentFs().then((f) => f.readResource(path))
+      : bytes(call<ArrayBuffer>("plugin_read_resource", { id, path })),
+  writeResource: (id: string, path: string, text: string) =>
+    inContent(path)
+      ? contentFs().then((f) => f.writeResource(path, text))
+      : command("plugin_fs_write", id, dirname(path), path, text, false),
   fsRead: (id: string, root: string, path: string) =>
-    bytes(call<ArrayBuffer>("plugin_fs_read", { id, root, path })),
+    inContent(root)
+      ? contentFs().then((f) => f.read(root, path))
+      : bytes(call<ArrayBuffer>("plugin_fs_read", { id, root, path })),
   fsList: (id: string, root: string, path: string) =>
-    command("plugin_fs_list", id, root, path),
+    inContent(root)
+      ? contentFs().then((f) => f.list(root, path))
+      : command("plugin_fs_list", id, root, path),
   /** The folder's Markdown documents with their text, in one call. */
   fsDocuments: (id: string, root: string) =>
     command("plugin_fs_documents", id, root),
   fsSearch: (id: string, root: string, query: string, limit: number | null) =>
     command("plugin_fs_search", id, root, query, limit),
   fsRename: (id: string, root: string, from: string, to: string) =>
-    command("plugin_fs_rename", id, root, from, to),
+    inContent(root)
+      ? contentFs().then((f) => f.rename(root, from, to))
+      : command("plugin_fs_rename", id, root, from, to),
   /** To the system Trash: nothing a plugin removes is gone for good. */
   fsTrash: (id: string, root: string, path: string) =>
-    command("plugin_fs_trash", id, root, path),
+    inContent(root)
+      ? contentFs().then((f) => f.trash())
+      : command("plugin_fs_trash", id, root, path),
   fsMkdir: (id: string, root: string, path: string) =>
-    command("plugin_fs_mkdir", id, root, path),
+    inContent(root)
+      ? contentFs().then((f) => f.mkdir(root, path))
+      : command("plugin_fs_mkdir", id, root, path),
   fsStat: (id: string, root: string, path: string) =>
-    command("plugin_fs_stat", id, root, path),
+    inContent(root)
+      ? contentFs().then((f) => f.stat(root, path))
+      : command("plugin_fs_stat", id, root, path),
   fsCreate: (id: string, root: string, path: string, text: string) =>
-    command("plugin_fs_create", id, root, path, text),
+    inContent(root)
+      ? contentFs().then((f) => f.create(root, path, text))
+      : command("plugin_fs_create", id, root, path, text),
   /** A text file and a token naming its version. */
   appSettings: (id: string, vault: string, name: string) =>
     command("plugin_app_settings", id, vault, name),
   fsReadVersioned: (id: string, root: string, path: string) =>
-    command("plugin_fs_read_versioned", id, root, path),
+    inContent(root)
+      ? contentFs().then((f) => f.readVersioned(root, path))
+      : command("plugin_fs_read_versioned", id, root, path),
   /** Writes only if the file is still the version `token` names. */
   fsWriteIf: (
     id: string,
@@ -139,13 +177,28 @@ export const plugins = {
     path: string,
     text: string,
     token: string,
-  ) => command("plugin_fs_write_if", id, root, path, text, token),
+  ) =>
+    inContent(root)
+      ? contentFs().then((f) => f.writeIf(root, path, text, token))
+      : command("plugin_fs_write_if", id, root, path, text, token),
   /** The folder's documents and what they hold: those changed since
    *  generation `after`, with the paths gone, or every one (`whole`). */
   metadataAll: (id: string, root: string, after: number | null) =>
     command("plugin_metadata_all", id, root, after),
   metadataGet: (id: string, root: string, path: string) =>
     command("plugin_metadata_get", id, root, path),
+  /** The folder's Git branch and changes; null outside a repository. */
+  gitStatus: (id: string, root: string) =>
+    command("plugin_git_status", id, root),
+  /** A file's commits, newest first, through renames. */
+  gitLog: (id: string, root: string, path: string, limit: number | null) =>
+    command("plugin_git_log", id, root, path, limit),
+  gitShow: (id: string, root: string, hash: string, path: string) =>
+    command("plugin_git_show", id, root, hash, path),
+  gitCommit: (id: string, root: string, message: string, paths: string[]) =>
+    command("plugin_git_commit", id, root, message, paths),
+  /** The writer agreed to Git running what the folder's repository sets up. */
+  gitTrust: (root: string) => command("git_trust_repository", root),
   secretGet: (id: string, key: string) => command("plugin_secret_get", id, key),
   secretSet: (id: string, key: string, value: string | null) =>
     command("plugin_secret_set", id, key, value),
@@ -155,7 +208,10 @@ export const plugins = {
     path: string,
     contents: string,
     base64 = false,
-  ) => command("plugin_fs_write", id, root, path, contents, base64),
+  ) =>
+    inContent(root)
+      ? contentFs().then((f) => f.write(root, path, contents, base64))
+      : command("plugin_fs_write", id, root, path, contents, base64),
   http: (
     id: string,
     request: {
@@ -164,8 +220,11 @@ export const plugins = {
       headers?: Record<string, string>;
       body?: string;
       bodyBase64?: boolean;
+      cancelId?: string;
     },
   ) => command("plugin_http", id, request),
+  httpCancel: (id: string, cancelId: string) =>
+    command("plugin_http_cancel", id, cancelId),
   // A plugin's two stores: `root` is the open folder, for the project's.
   storeGet: (id: string, scope: StoreScope, root: string | null, key: string) =>
     command("plugin_store_get", id, scope, root, key) as Promise<unknown>,

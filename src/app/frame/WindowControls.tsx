@@ -23,7 +23,7 @@ export function AppMenuButton({ checks }: { checks?: MenuChecks } = {}) {
 
   const close = useCallback(() => {
     setAnchor(null);
-    focusOnClose.current?.focus();
+    focusOnClose.current?.focus({ preventScroll: true });
     focusOnClose.current = null;
   }, []);
 
@@ -80,6 +80,7 @@ export function AppMenuButton({ checks }: { checks?: MenuChecks } = {}) {
               x={anchor.x}
               y={anchor.y}
               onClose={close}
+              anchor={ref.current}
               checks={checks}
             />
           </Suspense>

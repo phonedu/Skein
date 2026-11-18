@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import type { DocTab } from "../../document/doc-tabs";
 import { session } from "../../platform/ipc";
 import { takeWindowSession } from "../../document/launch-window";
@@ -9,10 +9,12 @@ import { afterStartupRestore } from "../../document/reload-tabs";
 import {
   setSplitLayout,
   subscribeSplit,
+  tabInUse,
   windowLayout,
+  windowTabs,
 } from "../../engine/layout/store";
 import { asRoot } from "../../engine/layout/ops";
-import { panesOf } from "../../engine/layout/tree";
+import { mapPanes, panesOf, type LayoutNode } from "../../engine/layout/tree";
 import {
   buildSaved,
   readSavedSplit,
@@ -22,6 +24,23 @@ import {
 
 /** A file's tab by its path: a document's, or a plugin's tab of a file. */
 const pathOf = (tab: DocTab) => tab.path ?? tab.view?.resource ?? null;
+
+/** The saved islands with the draft the launch put in front (a split
+ *  keeps only files) in front of the first island, or as they were. */
+export function withDraftInFront(
+  root: LayoutNode,
+  tabs: readonly DocTab[],
+  inUse: string,
+): LayoutNode {
+  const draft = tabs.find((tab) => tab.id === inUse && !pathOf(tab));
+  const [first] = panesOf(root);
+  if (!draft || !first) return root;
+  return mapPanes(root, (p) =>
+    p.id === first.id
+      ? { ...p, tabs: [...p.tabs, draft.id], front: draft.id }
+      : p,
+  );
+}
 
 /**
  * Brings this window's islands back once the launch has opened its
@@ -33,8 +52,6 @@ export function useWindowSession(
   folder: string | null,
   activate: (id: string) => void,
 ): void {
-  const tabsRef = useRef(tabs);
-  tabsRef.current = tabs;
   const [ready, setReady] = useState(false);
   const layout = useSyncExternalStore(subscribeSplit, windowLayout);
 
@@ -47,11 +64,13 @@ export function useWindowSession(
       // tab in use; nothing here pulls focus from what the user picked.
       if (saved) {
         const idOf = new Map<string, string>();
-        for (const tab of tabsRef.current) {
+        for (const tab of windowTabs<DocTab>()) {
           const path = pathOf(tab);
           if (path && savedPaths(saved).includes(path)) idOf.set(path, tab.id);
         }
-        const root = buildSaved(saved, idOf);
+        const built = buildSaved(saved, idOf);
+        const root =
+          built && withDraftInFront(built, windowTabs<DocTab>(), tabInUse());
         if (root && root.kind === "split") {
           const [first] = panesOf(root);
           // Its first island's document in front, so the split keeps them all.
@@ -80,7 +99,9 @@ export function useWindowSession(
   const key = JSON.stringify([paths, layout.root, folder]);
   useEffect(() => {
     if (!canUseWindows || !ready) return;
-    const byId = new Map(tabsRef.current.map((tab) => [tab.id, pathOf(tab)]));
+    const byId = new Map(
+      windowTabs<DocTab>().map((tab) => [tab.id, pathOf(tab)]),
+    );
     const tree = saveNode(layout.root, (id) => byId.get(id) ?? null);
     void trackWrite(
       session.updateWindow({

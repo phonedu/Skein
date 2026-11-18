@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { isImeKeydown } from "../../utils/ime";
 import { usePresenceProps } from "../motion/usePresence";
@@ -34,15 +34,36 @@ export function Sheet({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, open]);
+  // A menu takes the focus: the keyboard goes down, and nothing typed lands
+  // in the document behind it.
+  const sheet = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (role === "menu") sheet.current?.focus({ preventScroll: true });
+  }, [role]);
+  // The click a tap makes after the finger lifts can reach a sheet that the
+  // same tap opened: only a press made on it counts (a key's click too).
+  const pressed = useRef(false);
   return createPortal(
     <div
       {...presence}
       className="sheet-scrim"
+      onPointerDown={() => (pressed.current = true)}
+      onClickCapture={(e) => {
+        if (pressed.current || e.detail === 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={`sheet ${className}`} role={role} aria-label={label}>
+      <div
+        ref={sheet}
+        tabIndex={-1}
+        className={`sheet ${className}`}
+        role={role}
+        aria-label={label}
+      >
         {children}
       </div>
     </div>,

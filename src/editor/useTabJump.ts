@@ -32,11 +32,10 @@ export function useTabJump(
         // A heading the document doesn't have leaves it at its top.
         if (jump.kind === "heading")
           revealHeading(ctx.get(editorViewCtx), jump.anchor);
+        else if (jump.kind === "outline" && jump.select)
+          selectNthSection(ctx.get(editorViewCtx), jump.index);
         else if (jump.kind === "outline")
-          (jump.select ? selectNthSection : revealNthHeading)(
-            ctx.get(editorViewCtx),
-            jump.index,
-          );
+          revealNthHeading(ctx.get(editorViewCtx), jump.index);
         // A line alone is counted in the text as it was opened, not in
         // the editor's own writing of it (blank lines, lists, front matter).
         else if (jump.kind === "place" && onlyLine(jump.place) !== null)
@@ -44,7 +43,9 @@ export function useTabJump(
             ctx,
             mountedValue.current,
             {
-              offset: lineOffset(mountedValue.current, onlyLine(jump.place)!),
+              // Its end: read up to its start, the caret would land at the
+              // end of the block before.
+              offset: lineEnd(mountedValue.current, onlyLine(jump.place)!),
               viewportY: null,
             },
             typewriterRef.current,
@@ -58,6 +59,7 @@ export function useTabJump(
             jump.at.pos,
             null,
             typewriterRef.current,
+            !jump.stay,
           );
         else
           applyEditorCaret(
@@ -65,6 +67,7 @@ export function useTabJump(
             mountedValue.current,
             { offset: jump.at.offset, viewportY: null },
             typewriterRef.current,
+            !jump.stay,
           );
       }),
     [run, typewriterRef, revealPlace],
@@ -91,6 +94,13 @@ function onlyLine(place: DocumentPlace): number | null {
     !place.heading
     ? place.line
     : null;
+}
+
+/** Where 0-based line `line` ends in `text`, before its line break. */
+export function lineEnd(text: string, line: number): number {
+  const at = lineOffset(text, line);
+  const next = text.indexOf("\n", at);
+  return next < 0 ? text.length : next;
 }
 
 /** Where 0-based line `line` starts in `text`; its end past the last. */

@@ -1,7 +1,8 @@
 import { tokenPx } from "../tokens/token-px";
-import { useLayoutEffect, useState, type RefObject } from "react";
+import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { flushSync } from "react-dom";
 import { isMobileApp } from "../../platform/capabilities";
+import { onAppearance } from "../tokens/appearance";
 
 /** The islands' area as laid out: its size, where it sits in the shell,
  *  and the layout's spacings in pixels. */
@@ -49,9 +50,18 @@ export function useIslandRoom(
   key: string,
 ): IslandRoom | null {
   const [room, setRoom] = useState<IslandRoom | null>(null);
+  const observer = useRef<ResizeObserver | null>(null);
   useLayoutEffect(() => {
-    const next = measure(area.current);
+    const el = area.current;
+    const next = measure(el);
     if (next) setRoom((was) => (same(was, next) ? was : next));
+    // Observed afresh, it reports its size next frame: a size read
+    // mid-change (a sidebar narrowed and widened again before the frame)
+    // is corrected even when the frame ends at the size it had before.
+    if (el && observer.current) {
+      observer.current.unobserve(el);
+      observer.current.observe(el);
+    }
   }, [area, key]);
   useLayoutEffect(() => {
     const el = area.current;
@@ -61,14 +71,28 @@ export function useIslandRoom(
       if (next)
         flushSync(() => setRoom((was) => (same(was, next) ? was : next)));
     };
-    const observer = new ResizeObserver(remeasure);
-    observer.observe(el);
+    const watch = new ResizeObserver(remeasure);
+    watch.observe(el);
+    observer.current = watch;
+    // The spacings change with the look (Layout, Interface Size) too, with
+    // the area's size often staying the same.
+    const restyled = onAppearance(remeasure);
     // A phone's also once the window's resize is told: keyboard-up, marked
-    // then, may change the spacings after the size is seen.
-    if (isMobileApp) window.addEventListener("resize", remeasure);
+    // then, may change the spacings after the size is seen. The app's own
+    // word on its bars and keyboard comes with no resize at all: read once
+    // those have been applied.
+    const later = () => requestAnimationFrame(remeasure);
+    const told = ["textus-insets", "textus-keyboard"];
+    if (isMobileApp) {
+      window.addEventListener("resize", remeasure);
+      for (const type of told) window.addEventListener(type, later);
+    }
     return () => {
-      observer.disconnect();
+      watch.disconnect();
+      restyled();
+      observer.current = null;
       window.removeEventListener("resize", remeasure);
+      for (const type of told) window.removeEventListener(type, later);
     };
   }, [area]);
   return room;

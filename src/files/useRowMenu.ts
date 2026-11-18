@@ -1,5 +1,5 @@
 import { emitPluginEvent } from "../plugins/app-bridge";
-import { ENTRY_TRASHED_EVENT } from "../utils/events";
+import { ENTRY_TRASHED_EVENT, sendAppEvent } from "../utils/events";
 import { fill } from "../i18n/fill";
 import {
   useCallback,
@@ -7,10 +7,15 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { fs } from "../platform/ipc";
+import { isMobileApp } from "../platform/capabilities";
+import { iosFiles } from "../platform/ios-files";
 
 import { basename, parentDir } from "../utils/path";
 import { type ContextMenuItem } from "../engine/controls/ContextMenu";
-import { contributedContextItems } from "../registry/context-menu-items";
+import {
+  contributedContextItems,
+  lateContextItems,
+} from "../registry/context-menu-items";
 import {
   showConfirm,
   showMessage,
@@ -27,6 +32,8 @@ type TreeMenu = {
   x: number;
   y: number;
   items: (ContextMenuItem | "separator")[];
+  /** The row's name, heading a phone's sheet. */
+  title?: string;
 } | null;
 
 /** The tree's menus: the one open, and a row's context menu - open, new
@@ -66,18 +73,25 @@ export function useRowMenu(
   const trash = useCallback(
     async (path: string, isDir: boolean) => {
       const name = basename(path);
+      // A phone has no Trash: the document is deleted for good.
       const ok = await showConfirm(
-        fill(isDir ? t.treeTrashFolderConfirm : t.treeTrashConfirm, { name }),
-        { okLabel: t.treeTrash, cancelLabel: t.cancel, danger: true },
+        isMobileApp
+          ? fill(t.docDeleteConfirm, { name })
+          : fill(isDir ? t.treeTrashFolderConfirm : t.treeTrashConfirm, {
+              name,
+            }),
+        {
+          okLabel: isMobileApp ? t.docDeleteOk : t.treeTrash,
+          cancelLabel: t.cancel,
+          danger: true,
+        },
       );
       if (!ok) return;
       try {
         await fs.trashEntry(path, root);
         reload(parentDir(path) ?? root);
         // Its open tabs let it go (useDocumentActions).
-        window.dispatchEvent(
-          new CustomEvent(ENTRY_TRASHED_EVENT, { detail: path }),
-        );
+        sendAppEvent(ENTRY_TRASHED_EVENT, path);
         emitPluginEvent("fileDelete", { path });
       } catch (err) {
         await showMessage(failureText(t, err, name));
@@ -86,10 +100,8 @@ export function useRowMenu(
     [root, t, reload],
   );
 
-  const onRowMenu = useCallback(
-    (e: ReactMouseEvent, path: string, isDir: boolean) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const openRowMenu = useCallback(
+    (at: { x: number; y: number }, path: string, isDir: boolean) => {
       // New things go into the folder clicked, or the one the file is in.
       const dir = isDir ? path : (parentDir(path) ?? root);
       const items: (ContextMenuItem | "separator")[] = [];
@@ -97,6 +109,14 @@ export function useRowMenu(
         items.push(
           // Beside another document: drag it there.
           { label: t.treeOpen, onSelect: () => onFileSelect(path) },
+          ...(isMobileApp
+            ? [
+                {
+                  label: t.menuShare,
+                  onSelect: () => void iosFiles.share(path).catch(() => {}),
+                },
+              ]
+            : []),
           "separator",
         );
       if (path !== root && isDir && onEnter)
@@ -116,22 +136,51 @@ export function useRowMenu(
       );
       items.push("separator", ...pathItems(t, path, root));
       if (path !== root)
-        items.push(
-          { label: t.treeRenameItem, onSelect: () => void rename(path) },
-          {
-            label: t.treeTrash,
-            onSelect: () => void trash(path, isDir),
-            danger: true,
-          },
-        );
+        items.push({
+          label: t.treeRenameItem,
+          onSelect: () => void rename(path),
+        });
+      // A phone deletes documents only: a folder's would be gone for good.
+      if (path !== root && !(isMobileApp && isDir))
+        items.push({
+          label: isMobileApp ? t.docDelete : t.treeTrash,
+          onSelect: () => void trash(path, isDir),
+          danger: true,
+        });
       const added = contributedContextItems("file/context", {
         path,
         folder: isDir,
       });
       if (added.length) items.push("separator", ...added);
-      setMenu({ x: e.clientX, y: e.clientY, items });
+      setMenu({ ...at, items, title: basename(path) });
+      // What plugins work out for this file joins the menu once they answer.
+      void lateContextItems("file/context", { path, folder: isDir })?.then(
+        (late) => {
+          if (!late.length) return;
+          setMenu((open) =>
+            open?.items === items
+              ? {
+                  ...open,
+                  items: [
+                    ...items,
+                    ...(added.length ? [] : ["separator" as const]),
+                    ...late,
+                  ],
+                }
+              : open,
+          );
+        },
+      );
     },
     [root, t, setDraft, rename, trash, onFileSelect, onEnter],
   );
-  return { menu, setMenu, onRowMenu };
+  const onRowMenu = useCallback(
+    (e: ReactMouseEvent, path: string, isDir: boolean) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openRowMenu({ x: e.clientX, y: e.clientY }, path, isDir);
+    },
+    [openRowMenu],
+  );
+  return { menu, setMenu, onRowMenu, openRowMenu };
 }

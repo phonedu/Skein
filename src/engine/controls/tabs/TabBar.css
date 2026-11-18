@@ -28,6 +28,8 @@
   position: relative;
   flex: none;
   align-self: stretch;
+  /* A touch row's room to scroll to its last tabs' starts (useRevealTab). */
+  margin-inline-end: var(--tab-tail, 0px);
 }
 
 .tab-pill {
@@ -46,6 +48,12 @@
   font-size: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
+}
+/* Placed in a row, a tab is the width the fit gave it: below its least
+   where only that much of the row shows beside its list. The measuring
+   copy (no data-tab) keeps the least, which the fit reads. */
+.tab-pill[data-tab] {
+  min-width: 0;
 }
 
 /* Held by a finger until it lifts: it rises under it, ready to drag, and
@@ -171,14 +179,24 @@
   corner-shape: round;
 }
 
-.tab-bar-add:hover {
-  background: var(--ui-hover);
+@media (hover: hover) {
+  .tab-bar-add:hover {
+    background: var(--ui-hover);
+  }
 }
 
 /* Every tab keeps its ×'s room, shown on the open tab and the one pointed
    at: a tab never changes width as it opens or another closes. */
 .tab-pill:not(.tab-pill-active, :hover, :focus-visible) .tab-pill-close {
   visibility: hidden;
+}
+
+/* With no pointer to bring it, an unopened tab's × only takes its name's
+   room: the name has it, the pill's width the same. */
+@media (hover: none) {
+  .tab-pill:not(.tab-pill-active, :focus-visible) .tab-pill-close {
+    display: none;
+  }
 }
 
 /* Overflowing, the + stays beside the list at the row's end as the tabs
@@ -188,6 +206,12 @@
   right: var(--icon-button-s);
   z-index: 2;
   background: var(--ui-frame-fill, var(--ui-bg)) fixed;
+  /* design: allow - a cover and a fade, so no stub of the next tab shows
+     beside it. */
+  box-shadow:
+    0 -4px 0 4px var(--ui-frame, var(--ui-bg)),
+    -8px 0 0 var(--ui-frame, var(--ui-bg)),
+    -12px 0 8px var(--ui-frame, var(--ui-bg));
 }
 
 /* Every tab, listed: held at the row's end as the tabs scroll under it. */
@@ -207,20 +231,25 @@
   border-radius: var(--shape-pill);
   corner-shape: round;
   background: var(--ui-frame-fill, var(--ui-bg)) fixed;
-  /* design: allow - a fade over the overflowing tabs, not a shadow. */
-  box-shadow: -8px 0 8px var(--ui-frame, var(--ui-bg));
+  /* design: allow - a fade over the overflowing tabs, not a shadow; the
+     spread fills its round corners, or a tab shows through them. */
+  box-shadow:
+    0 -4px 0 4px var(--ui-frame, var(--ui-bg)),
+    -8px 0 8px var(--ui-frame, var(--ui-bg));
   color: var(--ui-muted);
   cursor: pointer;
   z-index: 2;
 }
 
-.tab-bar-list:hover {
-  background: color-mix(
-    in srgb,
-    var(--ui-text) 8%,
-    var(--ui-frame, var(--ui-bg))
-  );
-  color: var(--ui-text);
+@media (hover: hover) {
+  .tab-bar-list:hover {
+    background: color-mix(
+      in srgb,
+      var(--ui-text) 8%,
+      var(--ui-frame, var(--ui-bg))
+    );
+    color: var(--ui-text);
+  }
 }
 
 .tab-bar-list svg {

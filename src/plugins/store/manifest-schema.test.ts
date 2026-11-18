@@ -3,7 +3,8 @@ import PERMISSIONS from "./permissions.json";
 import { PERMISSION_LABELS } from "./permissions";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { REQUIRED_SETTINGS, isPermission } from "./manifest";
+import { isPermission } from "./manifest";
+import { REQUIRED_SETTINGS } from "./manifest-types";
 import { MENU_IDS } from "./manifest-parse";
 
 /**
@@ -26,6 +27,8 @@ const SCHEMA = JSON.parse(
   ),
 );
 const MANIFEST_TS = readFileSync(join(__dirname, "manifest.ts"), "utf8");
+// A plugin's contributions are read apart, by manifest-parse.ts.
+const PARSE_TS = readFileSync(join(__dirname, "manifest-parse.ts"), "utf8");
 const props = SCHEMA.properties;
 const contributes = props.contributes.properties;
 
@@ -56,7 +59,8 @@ describe("textus-plugin.schema.json", () => {
   it("has a field for every one the parser reads", () => {
     const top = [...MANIFEST_TS.matchAll(/\bm\.(\w+)/g)].map((m) => m[1]);
     for (const field of new Set(top)) expect(props).toHaveProperty(field);
-    const parts = [...MANIFEST_TS.matchAll(/\bc\.(\w+)/g)].map((m) => m[1]);
+    const parts = [...PARSE_TS.matchAll(/\bc\.(\w+)/g)].map((m) => m[1]);
+    expect(parts.length).toBeGreaterThan(0);
     for (const field of new Set(parts))
       expect(contributes).toHaveProperty(field);
   });

@@ -5,7 +5,6 @@ import {
   REVISION_DISPLAYS,
   type CompletionTone,
   type GrammarStrictness,
-  type ProxyType,
   type RevisionDisplay,
   type AiChangeMode,
 } from "../../prefs/SettingsContext";
@@ -14,15 +13,19 @@ import {
   revisionDisplayName,
 } from "../../ai/revision/revision-display";
 import type { TextKey } from "../../i18n/strings";
-import { SettingRow, ToggleRow, VERBATIM_INPUT } from "../sections/controls";
+import { SettingRow, ToggleRow } from "../sections/controls";
 import { SearchServiceSection } from "../sections/search-service";
 import { WritingConventionsRow } from "../sections/skills";
 import { Select } from "../../engine/controls/Select";
+import {
+  TEXTUS_SOURCE,
+  useInlineSources,
+} from "../../ai/writing/inline-sources";
 
 /**
  * Settings › Textus AI › Writing assist, from what is used most to what is
  * set once: the chat, writing assistance, research writing, then the web
- * search service and the network.
+ * search service.
  */
 export function ChatWritingPage({
   t,
@@ -31,6 +34,7 @@ export function ChatWritingPage({
   phone,
   marginAvailable,
 }: SettingsPageProps) {
+  const sources = useInlineSources();
   return (
     <>
       <SettingsGroup title={t.aiAskLabel}>
@@ -103,6 +107,35 @@ export function ChatWritingPage({
           checked={settings.enableCompletion}
           onChange={(v) => setSettings({ enableCompletion: v })}
         />
+        {settings.enableCompletion &&
+          (sources.length > 0 ||
+            settings.completionSource !== TEXTUS_SOURCE) && (
+            <SettingRow label={t.completionSourceLabel}>
+              <Select
+                className="settings-select"
+                aria-label={t.completionSourceLabel}
+                value={settings.completionSource}
+                onChange={(e) =>
+                  setSettings({ completionSource: e.target.value })
+                }
+              >
+                <option value={TEXTUS_SOURCE}>Textus AI</option>
+                {sources.map((source) => (
+                  <option key={source.key} value={source.key}>
+                    {source.label}
+                  </option>
+                ))}
+                {/* A plugin's source that is off now: kept, and nothing
+                    offered, until another is picked. */}
+                {settings.completionSource !== TEXTUS_SOURCE &&
+                  !sources.some((s) => s.key === settings.completionSource) && (
+                    <option value={settings.completionSource} disabled>
+                      {settings.completionSource.split("#")[0]}
+                    </option>
+                  )}
+              </Select>
+            </SettingRow>
+          )}
         {settings.enableCompletion && (
           <SettingRow label={t.completionToneLabel}>
             <Select
@@ -149,72 +182,11 @@ export function ChatWritingPage({
         <WritingConventionsRow t={t} />
       </SettingsGroup>
 
-      <SettingsGroup title={t.netGroup}>
-        {settings.enableAskAi && <SearchServiceSection t={t} />}
-        <SettingRow label={t.proxyLabel} help={t.proxyAuthHelp}>
-          <Select
-            className="settings-select"
-            aria-label={t.proxyLabel}
-            value={settings.proxyType}
-            onChange={(e) =>
-              setSettings({ proxyType: e.target.value as ProxyType })
-            }
-          >
-            <option value="none">{t.proxyTypeNone}</option>
-            <option value="http">HTTP</option>
-            <option value="https">HTTPS</option>
-            <option value="socks5">SOCKS5</option>
-          </Select>
-        </SettingRow>
-        {settings.proxyType !== "none" && (
-          <>
-            <div className="settings-proxy-row">
-              <input
-                type="text"
-                inputMode="url"
-                {...VERBATIM_INPUT}
-                className="settings-text-input settings-proxy-host"
-                placeholder={t.proxyHostPlaceholder}
-                aria-label={t.proxyHostPlaceholder}
-                value={settings.proxyHost}
-                onChange={(e) => setSettings({ proxyHost: e.target.value })}
-              />
-              <input
-                type="text"
-                inputMode="numeric"
-                {...VERBATIM_INPUT}
-                className="settings-text-input settings-proxy-port"
-                placeholder={t.proxyPortPlaceholder}
-                aria-label={t.proxyPortPlaceholder}
-                value={settings.proxyPort}
-                onChange={(e) => setSettings({ proxyPort: e.target.value })}
-              />
-            </div>
-            <div className="settings-proxy-row">
-              <input
-                type="text"
-                {...VERBATIM_INPUT}
-                autoComplete="off"
-                className="settings-text-input settings-proxy-host"
-                placeholder={t.proxyUserPlaceholder}
-                aria-label={t.proxyUserPlaceholder}
-                value={settings.proxyUsername}
-                onChange={(e) => setSettings({ proxyUsername: e.target.value })}
-              />
-              <input
-                type="password"
-                {...VERBATIM_INPUT}
-                autoComplete="off"
-                className="settings-text-input settings-proxy-host"
-                placeholder={t.proxyPasswordPlaceholder}
-                aria-label={t.proxyPasswordPlaceholder}
-                value={settings.proxyPassword}
-                onChange={(e) => setSettings({ proxyPassword: e.target.value })}
-              />
-            </div>
-          </>
-        )}
-      </SettingsGroup>
+      {settings.enableAskAi && (
+        <SettingsGroup title={t.netGroup}>
+          <SearchServiceSection t={t} />
+        </SettingsGroup>
+      )}
     </>
   );
 }

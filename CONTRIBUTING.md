@@ -15,7 +15,7 @@ to us in English or Chinese ([中文版](CONTRIBUTING.zh-CN.md)).
 - **A new feature?** Check whether it can be a plugin first: most new
   features, and anything that talks to an outside service, belong in
   [textus-plugins](https://github.com/CatVinci-Studio/textus-plugins), not
-  in the app. The [roadmap](ROADMAP.md) lists what stays out of the core.
+  in the app. The [roadmap](ROADMAP.md) shows what is planned next.
 - **A bug fix:** send the pull request straight away. **A feature for the
   app:** open an issue first, so we can agree on it before you build it.
 
@@ -50,11 +50,12 @@ lists every developer document, and
 npm run check
 ```
 
-That is all a pull request needs: types, lint, unit tests, formats and the
-code-shape rules. CI runs the same on every pull request, plus the Rust
-checks on Linux when `src-tauri/` changed. The e2e flows and the native
-builds on all platforms run before each release; maintainers take care of
-them. [docs/dev/code-style.md](docs/dev/code-style.md) has the rules and
+It covers types, lint, unit tests, formats and the code-shape rules. CI
+runs the same on every pull request, plus the whole e2e suite in Chromium
+and WebKit, and the Rust checks on Linux when `src-tauri/` changed; run the
+e2e flows near what you changed before pushing (`npx playwright test
+e2e/<file>`). The native builds on all platforms run before each release.
+[docs/dev/code-style.md](docs/dev/code-style.md) has the rules and
 what checks each; [testing.md](docs/dev/testing.md) says where a new test
 goes.
 

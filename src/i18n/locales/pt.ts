@@ -95,7 +95,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
 `,
   projectOpenStyle: "Abrir perfil de estilo",
   projectPickFolder: "Escolher pasta…",
-  projectNoFolder: "Não usar nenhuma pasta",
+  projectFollowSidebar: "Usar a pasta da barra lateral",
   projectReveal: "Mostrar no gerenciador de arquivos",
   projectLearnStyle: "Aprender meu estilo com amostras…",
   projectImportReferences: "Importar referências…",
@@ -121,6 +121,16 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   codeBlockEditSource: "Editar o código",
   codeBlockDone: "Concluir edição",
   codeBlockDelete: "Excluir o bloco",
+  blockText: "Texto",
+  blockCallout: "Destaque",
+  blockHandleAdd: "Adicionar um bloco abaixo",
+  blockHandleOptions: "Arraste para mover, clique para opções",
+  blockTurnInto: "Transformar em",
+  blockDuplicate: "Duplicar",
+  blockHandlesLabel: "Alças de bloco",
+  blockHandlesHelp:
+    "⋮⋮ ao lado do bloco sob o ponteiro: arraste para mover o bloco, ou clique para transformá-lo, duplicá-lo ou excluí-lo.",
+  smoothCaretLabel: "Cursor suave",
   menuBlockWide: "Exibição larga",
   menuBlockZoom: "Tamanho",
   diagramViewerLabel: "Diagrama",
@@ -131,7 +141,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   pictureViewerTurnHint: "← → outras imagens",
   diagramViewerClose: "Fechar",
   diagramViewerHint:
-    "Role ou faça pinça para dar zoom · arraste para mover · clique duas vezes para ajustar",
+    "Roda ou pinça para dar zoom · arraste ou deslize para mover · clique duas vezes para ajustar",
   codeBlockLanguage: "Linguagem do código",
   codeBlockLanguageSearch: "Pesquisar linguagem",
   announceAiWriting: `${AI_NAME} está escrevendo…`,
@@ -165,8 +175,10 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   revisionDisplayInline: "Tudo no texto",
   revisionDisplayOriginal: "Original no texto, alterações na margem",
   revisionDisplayFinal: "Só o resultado, original na margem",
+  splitNoRoomLow:
+    "Sem espaço para outra divisão: a janela é baixa demais. Oculte o teclado ou deixe a janela mais alta.",
   splitNoRoom:
-    "Sem espaço para dividir: alargue a janela ou feche a barra lateral ou uma divisão",
+    "Não cabe outra divisão: a janela é estreita demais. Alargue-a ou feche uma divisão.",
   revisionDisplayNoRoom: "Sem espaço: feche a barra lateral ou o painel de IA",
   proposalDeletedSentence: "Original",
   proposalAddedSentence: "Adicionado",
@@ -654,6 +666,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "A loja de plugins precisa de uma versão mais nova do Textus. Atualize o Textus para vê-la.",
   errorImageTooBig: "A imagem está vazia ou tem mais de 25 MB.",
   errorNoFolder: "Abra uma pasta primeiro.",
+  errorPluginsNeedAllFiles:
+    "Os plugins não conseguem ler esta pasta: o Textus não tem acesso a todos os arquivos. Abra a pasta de novo e escolha “Continuar”.",
   errorPdfUnsupported:
     "A exportação para PDF não está disponível neste sistema.",
   errorNoText: "Não há texto legível nele.",
@@ -736,6 +750,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     many: "{n} palavras",
     other: "{n} palavras",
   },
+  slipCount: {
+    one: "{n} problema",
+    many: "{n} problemas",
+    other: "{n} problemas",
+  },
   wordCountDetail: "{words} palavras · {characters} caracteres (sem espaços)",
   alertNote: "Nota",
   alertTip: "Dica",
@@ -772,6 +791,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   navShortcuts: "Atalhos",
   generalBasicsLabel: "Básico",
   generalSystemLabel: "Aplicativo",
+  generalNetworkLabel: "Rede",
   settingsFilesGroup: "Arquivos",
   shortcutAiGroupLabel: "IA e escrita",
   shortcutEditorGroupLabel: "Editor e navegação",
@@ -788,6 +808,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   backToStableInstall: "Instalar {version}",
   backToStableNone: "No momento não há uma versão estável para a qual voltar.",
   aiCompletionLabel: "Autocompletar com IA",
+  completionSourceLabel: "Sugestões de",
   completionToneLabel: "Tom do autocompletar",
   completionTone_default: "Seguir o documento",
   completionTone_formal: "Formal",
@@ -866,7 +887,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   conventionsEu: "Instituições da UE",
   agentAttachFile:
     "Anexar arquivos: documentos, PDFs, imagens, código, um zip – qualquer arquivo",
-  chatAttachmentTruncated: "(parcial)",
+  chatAttachmentTruncated: "(longo: lido por partes)",
   chatAttachmentNoVision: `Este provedor não lê imagens. Troque de provedor em Ajustes › ${AI_NAME} ou anexe um documento.`,
   aiGrammarLabel: "Verificação gramatical",
   aiAskLabel: `Chat da ${AI_NAME}`,
@@ -887,9 +908,6 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   providerDropdownLabel: "Provedor",
   authDropdownLabel: "Login e credenciais",
   insertTable: "Inserir Tabela",
-  insertTableRowsLabel: "Linhas",
-  insertTableColumnsLabel: "Colunas",
-  insertTableConfirm: "Inserir",
   alignLeft: "Alinhar à Esquerda",
   alignCenter: "Centralizar",
   alignRight: "Alinhar à Direita",
@@ -904,6 +922,9 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   deleteRow: "Apagar Linha",
   deleteColumn: "Apagar Coluna",
   copyTable: "Copiar tabela",
+  tableSize: "Linhas e colunas",
+  tableGridSize: "{rows} linhas, {cols} colunas",
+  tableGridLoses: "As células com texto serão removidas",
   deleteTable: "Apagar Tabela",
   tableToMarkdown: "Converter em Tabela Markdown",
   tableToMarkdownMerged: "Converter em Tabela Markdown (tem células mescladas)",
@@ -950,9 +971,14 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   modelListLabel: "Lista de modelos",
   customTestConnection: "Testar Conexão",
   customTestSuccess: "A conexão está funcionando.",
+  customModelNotListed:
+    "Conectado, mas este endpoint não lista o modelo “{model}”. Escolha um da lista.",
   customSave: "Salvar",
   proxyLabel: "Proxy de rede",
   proxyTypeNone: "Nenhum (direto)",
+  proxyTypeSystem: "Igual ao sistema",
+  proxySystemHelp:
+    "Usa o proxy das definições de rede do sistema; direto quando não há nenhum.",
   proxyHostPlaceholder: "Host, ex.: 127.0.0.1",
   proxyPortPlaceholder: "Porta",
   proxyUserPlaceholder: "Usuário (opcional)",
@@ -969,12 +995,23 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   agentSend: "Enviar",
   agentStop: "Parar",
   agentRetry: "Tentar de novo",
+  agentForgotStart:
+    "Esta conversa está longa: as primeiras mensagens já não são enviadas ao modelo. Comece uma nova conversa para recomeçar.",
+  revisionsNotKept:
+    "As alterações à espera da sua decisão não puderam ser guardadas no disco. Aceite-as ou recuse-as antes de fechar o documento, ou serão perdidas.",
+  settingsNotSaved:
+    "Neste momento não é possível guardar as definições nem o estado da janela: o que mudar dura até fechar o Textus.",
   agentNeedsFolder:
     "Abra primeiro uma pasta ou salve o documento: o agente trabalha numa pasta.",
   agentStopped: "{agent} parou.",
   agentNoImages:
     "{agent} não consegue ler imagens. Remova a imagem ou escolha outro agente.",
   agentSignIn: "Inicie sessão primeiro no {agent}.",
+  agentApproval: "Aprovação",
+  agentAskFirst: "Perguntar antes",
+  agentAskFirstHint: "Pergunta antes de cada alteração ou comando.",
+  agentAllowAll: "Permitir tudo",
+  agentAllowAllHint: "Executa todas as alterações e comandos sem perguntar.",
   chatAgentsGroup: "Agentes",
   chatAgentPermission: "O agente pede para continuar",
   chatAgentRunCommand: "Executar um comando",
@@ -1171,6 +1208,9 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   activityRail: "Barra de atividade",
   activityRailHide: "Ocultar a barra de atividade",
   activityRailShow: "Mostrar a barra de atividade",
+  windowLayoutGroup: "Layout da janela",
+  classicLookNote:
+    "Prefere o aspeto do Textus antes da 1.4? Escolha Clássico, oculte a barra de atividade e mostre a barra de título numa linha própria. Reverta-os para o aspeto novo.",
   layoutLabel: "Layout",
   layoutIslands: "Ilhas flutuantes",
   layoutClassic: "Clássico",
@@ -1236,6 +1276,10 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   menuTable: "Tabela",
   menuToggleSourceMode: "Modo Código-Fonte",
   menuFormatBar: "Barra de formatação",
+  menuFormatBarTop: "Em cima",
+  menuFormatBarLeft: "À esquerda",
+  menuFormatBarRight: "À direita",
+  menuFormatBarHidden: "Oculta",
   menuToggleTypewriterMode: "Modo Máquina de Escrever",
   menuToggleSidebar: "Barra Lateral",
   menuZoomIn: "Ampliar",
@@ -1285,7 +1329,6 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   windowMaximize: "Maximizar",
   windowRestore: "Restaurar",
   windowClose: "Fechar",
-  chatWindowTitle: AI_NAME,
   chatWindowPin: "Manter na frente",
   chatWindowPinHint: "Manter esta janela na frente do editor",
   chatWindowUnpinHint: "Deixar de manter esta janela na frente do editor",
@@ -1306,7 +1349,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   proposalRelocate: "Pedir à IA que refaça esta edição",
   diffShow: "Mostrar diferenças",
   diffCollapse: "Mostrar menos",
-  chatPendingSummary: "Edições aguardando sua decisão: {n}",
+  chatPendingSummary: "Edições aguardando sua decisão:\u00a0{n}",
   chatPendingReveal: "Mostrar no documento",
   quickAskPosition: "{i} / {n}",
   quickAskPrevEdit: "Edição anterior",
@@ -1462,7 +1505,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "A engrenagem guarda o tema, as fontes e suas contas de IA.",
   tutorialEditorTitle: "Escreva como aparece",
   tutorialEditorBody:
-    "O Markdown vira formatação enquanto você digita: tente `# Um título` ou `- uma lista`.",
+    "O Markdown vira formatação enquanto você digita. Experimente cada um:",
+  tutorialEditorHeading: "Um título: `# Planos`",
+  tutorialEditorList: "Uma lista: `- leite`",
+  tutorialEditorNumbered: "Numerada: `1. primeiro`",
+  tutorialEditorTask: "Uma tarefa: `- [ ] retornar a ligação`",
   tutorialAiTitle: "Textus AI",
   tutorialAiBody:
     "Clique nas faíscas no canto superior direito para abrir o Textus AI.",
@@ -1494,6 +1541,10 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   wordImportDismiss: "Entendi",
   openFileFailed:
     "Não é possível abrir {name}: não é um documento de texto e nenhum plugin abre arquivos deste tipo.",
+  openFileMuted:
+    "O Textus não abre {name} sozinho. Você desativou a sugestão do plugin que o abre; Ajustes › {page} a mostra de novo.",
+  openFileGone:
+    "Não é possível abrir {name}: o arquivo não está mais lá. Talvez tenha sido movido, renomeado ou excluído.",
   wordImportFailed: "Não foi possível abrir {name}.",
   wordSaveRefused:
     "Um documento Markdown não pode ser salvo por cima de um documento do Word. Escolha um nome terminado em .md.",
@@ -1532,7 +1583,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   missingImageChooseFailed: "Não foi possível usar a imagem escolhida.",
   imageStorageGroupLabel: "Imagens",
   imageStorageLabel: "Local das imagens",
-  imageStorageLocal: "Neste computador",
+  imageStorageLocal: "Neste dispositivo",
   imageStorageRemote: "Enviar para uma hospedagem de imagens",
   imageFolderLabel: "Pasta",
   imageFolderSubfolder: "Subpasta",
@@ -1609,7 +1660,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   themeNamePaper: "Papel",
   themeNameSlate: "Ardósia",
   themeNameForest: "Floresta",
-  themeNameAurora: "Aurora",
+  themeNamePrism: "Prisma",
   appearanceLabel: "Aparência",
   appearanceModeLabel: "Claro ou escuro",
   appearanceSystem: "Seguir o sistema",
@@ -1728,7 +1779,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   navProvidersModels: "Modelos",
   navMemorySkills: "Agente",
   memoryGroup: "Memória",
-  netGroup: "Web e proxy",
+  netGroup: "Pesquisa na web",
   modelChoiceGroup: "Escolha do modelo",
   providersGroup: "Provedores",
   chooseFile: "Escolher arquivo…",
@@ -1748,7 +1799,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   writingProviderLabel: "Provedor da escrita",
   followChatProvider: "Igual ao chat",
   providerModelsGroup: "Modelos",
-  providerKeysLocal: "As chaves ficam neste computador.",
+  allFilesAccessAsk:
+    "O Android vai pedir agora que você permita ao Textus gerenciar todos os arquivos. Com essa permissão, o Textus abre esta pasta diretamente: mais rápido, e as alterações de outros apps aparecem na hora. Sem ela, a pasta abre do mesmo jeito, um pouco mais devagar.",
+  allFilesAccessContinue: "Continuar",
+  allFilesAccessNotNow: "Agora não",
+  providerKeysLocal: "As chaves ficam neste dispositivo.",
   pluginsMore: "Mais",
   pluginsSearch: "Pesquisar plugins",
   pluginUpdateNow: "Atualizar",
@@ -1842,7 +1897,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   conventionsDecline: "Manter a atual",
   pluginCardSystemApp: "Abrir com o app do sistema",
   pluginCardNever: "Não sugerir de novo",
-  pluginCardsMuted: "Sugestões de plugins desativadas: {n}",
+  pluginCardsMuted: "Sugestões de plugins desativadas:\u00a0{n}",
   pluginCardsRestore: "Mostrar de novo",
   pluginCardsRestoreAll: "Mostrar de novo as sugestões de plugins ocultas",
   pluginScreenshot: "{name} em uso",
@@ -1910,6 +1965,16 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   pluginPermAiTools: "Dar ao Textus AI ferramentas próprias para usar",
   pluginPermNotifications: "Mostrar notificações do sistema",
   pluginPermAppearance: "Alterar as cores do Textus e dos seus documentos",
+  pluginPermGitCommit: "Fazer commits do Git na pasta aberta com o seu Git",
+  pluginPermComments: "Ler e deixar notas na margem dos seus documentos",
+  pluginPermAiModel:
+    "Usar o seu modelo de IA (conta para o uso do seu serviço de IA)",
+  pluginAiAsk:
+    "{plugin} quer usar o seu modelo de IA. O que ele envia conta para o uso do seu serviço de IA, até {limit} tokens por mês para este plugin.",
+  pluginAiLimit:
+    "{plugin} usou os seus {limit} tokens de IA deste mês. Permitir mais {limit}?",
+  pluginAiAllow: "Permitir",
+  pluginAiUsage: "IA este mês: {used} de {limit} tokens",
   pluginPermAgents:
     "Executar um agente de IA instalado neste computador (ele pode ler e alterar arquivos)",
   pluginPermBackground:
@@ -1917,6 +1982,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   pluginScheduleNotice:
     "{name} agendou uma tarefa. Ela só é executada enquanto o Textus está aberto: ative “{setting}” para que também seja executada com todas as janelas fechadas.",
   pluginPermNetwork: "Conectar-se a {host}",
+  pluginPermHidden: "Ler {path} na pasta aberta",
   pluginPermCommands: "Executar os comandos de {plugin}",
   pluginPermNetworkAny: "Conectar-se a qualquer site",
   menuPlugins: "Plugins",
@@ -1936,7 +2002,15 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   pluginKeysTaken:
     "{name} não consegue usar o teclado: {holder} já o usa. Desligue um deles na lista de plugins da barra lateral.",
   shortcutIndentListItem: "Aumentar recuo do item",
+  shortcutFoldSection: "Recolher seção",
+  shortcutUnfoldSection: "Expandir seção",
   shortcutOutdentListItem: "Diminuir recuo do item",
   pluginKeyTaken:
     "{name}: {key} já é de “{owner}”, então não foi atribuído a “{command}”. Escolha outro em Ajustes › Atalhos.",
+  gitTrustTitle:
+    "Permitir que o Git execute os programas próprios deste repositório?",
+  gitTrustText:
+    "O repositório Git desta pasta está configurado para executar programas no seu computador ({what}). É comum num repositório que você mesmo preparou. Se a pasta veio de outra pessoa, permita apenas se confiar nela.",
+  gitTrustAllow: "Confiar neste repositório",
+  gitTrustRefused: "O Git não é usado aqui: o repositório não é confiável.",
 } satisfies Translation;

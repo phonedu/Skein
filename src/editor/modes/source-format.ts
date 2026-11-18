@@ -1,5 +1,5 @@
 import type { EditorView } from "@codemirror/view";
-import { EditorSelection } from "@codemirror/state";
+import { EditorSelection, type EditorState } from "@codemirror/state";
 
 /**
  * The Format menu's marks and blocks in source mode, as Markdown written
@@ -130,8 +130,8 @@ export function setSourceBlock(view: EditorView, kind: string): boolean {
     (prefix === "1. " && /^\s*\d+[.)]\s/.test(text));
   const off = prefix !== "" && all.every((line) => has(line.text));
   let number = 0;
-  view.dispatch({
-    changes: all.map((line) => {
+  const changes = state.changes(
+    all.map((line) => {
       const m = PREFIX.exec(line.text)!;
       const indent = m[1];
       const next =
@@ -142,7 +142,10 @@ export function setSourceBlock(view: EditorView, kind: string): boolean {
         insert: next,
       };
     }),
-  });
+  );
+  // A caret where the prefix goes lands after it, not before: typing went
+  // in front of a new "### " on an empty line.
+  view.dispatch({ changes, selection: state.selection.map(changes, 1) });
   return true;
 }
 
@@ -157,4 +160,61 @@ export function insertSourceLink(view: EditorView): void {
     changes: { from: range.from, to: range.to, insert },
     selection: { anchor: at },
   });
+}
+
+const FENCE = /^\s*(`{3,}|~{3,})(.*)$/;
+
+/** The code fence holding line `at` (1-based), as its opening and closing
+ *  line numbers; null outside one, or in one never closed. Read from the
+ *  document's start, as Markdown reads it: a closing fence is of the opening
+ *  one's character, as long at least, with nothing after it. */
+function fenceAround(
+  doc: EditorState["doc"],
+  at: number,
+): { open: number; close: number } | null {
+  let open: { line: number; marks: string } | null = null;
+  for (let n = 1; n <= doc.lines; n++) {
+    const found = FENCE.exec(doc.line(n).text);
+    if (!found) continue;
+    const [, marks, rest] = found;
+    if (!open) {
+      if (n > at) return null;
+      open = { line: n, marks };
+    } else if (
+      marks[0] === open.marks[0] &&
+      marks.length >= open.marks.length &&
+      !rest.trim()
+    ) {
+      if (n >= at) return { open: open.line, close: n };
+      open = null;
+    }
+  }
+  return null;
+}
+
+/** The selected lines in a code fence, or the fence around them taken off. */
+export function toggleSourceFence(view: EditorView): boolean {
+  const { state } = view;
+  const range = state.selection.main;
+  const first = state.doc.lineAt(range.from);
+  const last = state.doc.lineAt(range.to);
+  const around = fenceAround(state.doc, first.number);
+  if (around && around.close >= last.number) {
+    // Each fence line with its line break; the last line has none after.
+    const whole = (n: number) => {
+      const line = state.doc.line(n);
+      return n < state.doc.lines
+        ? { from: line.from, to: line.to + 1 }
+        : { from: Math.max(0, line.from - 1), to: line.to };
+    };
+    const changes = state.changes([whole(around.open), whole(around.close)]);
+    view.dispatch({ changes, selection: state.selection.map(changes, 1) });
+    return true;
+  }
+  const changes = state.changes([
+    { from: first.from, insert: "```\n" },
+    { from: last.to, insert: "\n```" },
+  ]);
+  view.dispatch({ changes, selection: state.selection.map(changes, 1) });
+  return true;
 }

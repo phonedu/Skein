@@ -2,7 +2,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { editorViewCtx, serializerCtx } from "@milkdown/kit/core";
 import type { Ctx } from "@milkdown/kit/ctx";
 import type { Node as ProseNode } from "@milkdown/kit/prose/model";
+import { leaveHistory } from "../editor/left-history";
 import { registerTabEditor } from "../editor/tab-editor";
+import { leaveTab } from "../editor/tab-left";
 import {
   readSourceBlocks,
   writePreservingSource,
@@ -16,9 +18,47 @@ import { useLatest } from "../utils/hooks/useLatest";
 export interface DocumentReporting {
   reportedDocRef: { current: ProseNode | null };
   reportedMarkdownRef: { current: string | null };
+  /** The text this editor opened with. */
+  openedValueRef: { readonly current: string };
   /** The editor has mounted with `doc`, read from the opened file. */
   onMounted: (ctx: Ctx, doc: ProseNode) => void;
   reportDoc: (ctx: Ctx, doc: ProseNode) => void;
+  /** What a save writes for `doc`: the file's own text where unchanged. */
+  textOf: (ctx: Ctx, doc: ProseNode) => string;
+}
+
+/** What a save writes for a doc: the opened file, paired block by block
+ *  with the doc it opened as (`pair`), so unchanged blocks are written as
+ *  the file has them and an unedited document stays byte-identical. */
+function useFileText(openedValueRef: { readonly current: string }) {
+  const mountDocRef = useRef<ProseNode | null>(null);
+  const sourceRef = useRef<SourceBlocks | null>(null);
+  // Without that pairing: a doc that serializes as it opened is reported as
+  // the file's own text.
+  const mountMarkdownRef = useRef<string | null>(null);
+  const pair = useCallback(
+    (ctx: Ctx, doc: ProseNode) => {
+      mountDocRef.current = doc;
+      sourceRef.current = readSourceBlocks(ctx, openedValueRef.current, doc);
+    },
+    [openedValueRef],
+  );
+  const textOf = useCallback(
+    (ctx: Ctx, doc: ProseNode) => {
+      const source = sourceRef.current;
+      if (source) return writePreservingSource(ctx, source, doc);
+      const serializer = ctx.get(serializerCtx);
+      const mountDoc = mountDocRef.current;
+      if (mountDoc && mountMarkdownRef.current === null)
+        mountMarkdownRef.current = serializer(mountDoc);
+      const markdown = serializer(doc);
+      return markdown === mountMarkdownRef.current
+        ? openedValueRef.current
+        : markdown;
+    },
+    [openedValueRef],
+  );
+  return { pair, textOf };
 }
 
 export function useDocumentReporting(
@@ -30,49 +70,45 @@ export function useDocumentReporting(
   // debounce still holds.
   const reportedDocRef = useRef<ProseNode | null>(null);
   const reportedMarkdownRef = useRef<string | null>(null);
-  // The opened file, paired block by block with its doc: a save writes
-  // unchanged blocks as the file has them, so an unedited document stays
-  // byte-identical and clean.
   const openedValueRef = useRef(initialValue);
-  const mountDocRef = useRef<ProseNode | null>(null);
-  const sourceRef = useRef<SourceBlocks | null>(null);
-  // Without that pairing: a doc that serializes as it opened is reported as
-  // the file's own text.
-  const mountMarkdownRef = useRef<string | null>(null);
-  const onMounted = useCallback((ctx: Ctx, doc: ProseNode) => {
-    reportedDocRef.current = doc;
-    mountDocRef.current = doc;
-    sourceRef.current = readSourceBlocks(ctx, openedValueRef.current, doc);
-  }, []);
+  const { pair, textOf } = useFileText(openedValueRef);
+  const onMounted = useCallback(
+    (ctx: Ctx, doc: ProseNode) => {
+      reportedDocRef.current = doc;
+      pair(ctx, doc);
+    },
+    [pair],
+  );
   const reportDoc = useCallback(
     (ctx: Ctx, doc: ProseNode) => {
-      const source = sourceRef.current;
-      let value: string;
-      if (source) value = writePreservingSource(ctx, source, doc);
-      else {
-        const serializer = ctx.get(serializerCtx);
-        const mountDoc = mountDocRef.current;
-        if (mountDoc && mountMarkdownRef.current === null)
-          mountMarkdownRef.current = serializer(mountDoc);
-        const markdown = serializer(doc);
-        value =
-          markdown === mountMarkdownRef.current
-            ? openedValueRef.current
-            : markdown;
-      }
+      const value = textOf(ctx, doc);
       reportedMarkdownRef.current = value;
       onChangeRef.current(value);
     },
-    [onChangeRef],
+    [onChangeRef, textOf],
   );
-  return { reportedDocRef, reportedMarkdownRef, onMounted, reportDoc };
+  return {
+    reportedDocRef,
+    reportedMarkdownRef,
+    openedValueRef,
+    onMounted,
+    reportDoc,
+    textOf,
+  };
 }
 
 /** Registers this editor's flush under its tab. */
 export function useEditorFlush(
   tabId: string,
   run: EditorRunner,
-  { reportedDocRef, reportedMarkdownRef, reportDoc }: DocumentReporting,
+  {
+    reportedDocRef,
+    reportedMarkdownRef,
+    openedValueRef,
+    reportDoc,
+  }: DocumentReporting,
+  /** The file it shows: what it leaves is for that file only. */
+  filePathRef: { readonly current: string | null },
 ) {
   const flush = useCallback(
     () =>
@@ -90,7 +126,20 @@ export function useEditorFlush(
   // The debounce reports the same doc again later: a harmless repeat.
   useEffect(() => registerTabEditor(tabId, "flush", flush), [tabId, flush]);
   // Let go when its tab leaves the front: what was typed a moment before
-  // goes out first, while the editor is still there to read it from.
-  const last = useLatest(flush);
-  useLayoutEffect(() => () => void last.current(), [last]);
+  // goes out first, then the editor's own state for the tab's next one,
+  // while it is still there to read them from.
+  const leave = useLatest(() => {
+    const markdown = flush() ?? openedValueRef.current;
+    run((ctx) => {
+      const { state } = ctx.get(editorViewCtx);
+      leaveTab(tabId, {
+        path: filePathRef.current,
+        markdown,
+        doc: state.doc.toJSON(),
+        selection: state.selection.toJSON(),
+        history: leaveHistory(state),
+      });
+    });
+  });
+  useLayoutEffect(() => () => leave.current(), [leave]);
 }

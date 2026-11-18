@@ -1,3 +1,4 @@
+import { focusTabEditor } from "../editor/tab-editor";
 import { tabElement } from "../engine/layout/tab-element";
 import { tabInUse } from "../engine/layout/store";
 import { useEffect, useRef, useState } from "react";
@@ -14,9 +15,14 @@ import type {
 import { fill } from "../i18n/fill";
 import { HideKeyboardIcon, MoreIcon } from "../engine/controls/icons";
 import { formatCombo } from "../utils/shortcuts";
-import { EDITOR_MORE_EVENT, INSERT_BLOCK_EVENT } from "../utils/events";
+import {
+  EDITOR_MORE_EVENT,
+  INSERT_BLOCK_EVENT,
+  sendAppEvent,
+} from "../utils/events";
 import { GROUPS, type Button } from "./format-buttons";
 import { phoneGroups } from "./format-bar-phone";
+import type { FormatBarSide } from "../prefs/settings-values";
 import "./format-bar.css";
 
 /**
@@ -39,7 +45,7 @@ function folded(row: HTMLElement | null): Button[] {
 /** A button's press: its document first, then the menu's event. */
 function press(tabId: string, b: Button) {
   focusDocument(tabId);
-  window.dispatchEvent(new CustomEvent(b.event, { detail: b.detail }));
+  sendAppEvent(b.event, b.detail);
 }
 
 /** The heading picker: body text or a level, as Format's items set them,
@@ -51,7 +57,7 @@ function headingItems(
 ): ("separator" | ContextMenuItem)[] {
   const pick = (detail: string) => () => {
     focusDocument(tabId);
-    window.dispatchEvent(new CustomEvent(INSERT_BLOCK_EVENT, { detail }));
+    sendAppEvent(INSERT_BLOCK_EVENT, detail);
   };
   return [
     {
@@ -97,14 +103,17 @@ function useCaretBlock(tabId: string): CaretBlock {
  *  selection it kept, so the format lands there. */
 function focusDocument(tabId: string) {
   const editor = tabElement(tabId)?.querySelector<HTMLElement>(".ProseMirror");
-  if (editor && !editor.contains(document.activeElement)) editor.focus();
+  if (editor && !editor.contains(document.activeElement)) focusTabEditor(tabId);
 }
 
 export function FormatBar({
   t,
   tabId,
+  side,
 }: {
   t: Strings;
+  /** The document's edge it sits on; a phone's is always its foot. */
+  side: FormatBarSide;
   /** The document it formats: a press brings it into use first (its
    *  island's pointerdown), so the menu's events reach it. */
   tabId: string;
@@ -117,9 +126,21 @@ export function FormatBar({
   // Narrower than its buttons, it keeps as many as fit and folds the rest,
   // from the end, into "⋯".
   const row = useRef<HTMLDivElement>(null);
-  useFitItems(row, ".format-bar-more");
+  const column = !phone && side !== "top";
+  useFitItems(row, ".format-bar-more", column);
+  // Tooltips and menus open toward the page, clear of the next button.
+  const toward = column ? (side === "left" ? "right" : "left") : undefined;
   const headings = () => headingItems(t, tabId, block.heading);
-  const heading = useMenuButton(headings, { title: t.toolbarHeading });
+  // On a phone, closed without a pick, the document takes the keys back:
+  // the keyboard stays up. Elsewhere the focus goes back to the button.
+  const refocus = () => {
+    if (phone) focusDocument(tabId);
+  };
+  const heading = useMenuButton(headings, {
+    title: t.toolbarHeading,
+    beside: toward,
+    onClosed: refocus,
+  });
   const more = useMenuButton(
     () =>
       folded(row.current).map((b): ContextMenuEntry =>
@@ -127,13 +148,15 @@ export function FormatBar({
           ? { label: b.label(t), items: headings() }
           : { label: b.label(t), onSelect: () => press(tabId, b) },
       ),
-    { alignEnd: true },
+    { alignEnd: true, beside: toward, onClosed: refocus },
   );
   return (
     <div
       className="format-bar"
       role="toolbar"
       aria-label={t.toolbarLabel}
+      aria-orientation={column ? "vertical" : undefined}
+      data-side={column ? side : undefined}
       // A press leaves the caret where it was, in the document.
       onMouseDown={(e) => e.preventDefault()}
     >
@@ -151,6 +174,7 @@ export function FormatBar({
                   <IconButton
                     label={label}
                     hint={b.keys ? `${label}  ${formatCombo(b.keys)}` : label}
+                    hintSide={toward}
                     // A menu's button says it opens one, not that it is on.
                     pressed={b.on && !b.picksHeading ? b.on(block) : undefined}
                     onClick={b.picksHeading ? undefined : () => press(tabId, b)}
@@ -166,6 +190,7 @@ export function FormatBar({
         {!phone && (
           <IconButton
             label={t.toolbarMore}
+            hintSide={toward}
             className="tx-icon-button format-bar-more"
             opens={more.button}
           >
@@ -188,7 +213,7 @@ function PhoneEnd({ t }: { t: Strings }) {
     <>
       <IconButton
         label={t.toolbarMore}
-        onClick={() => window.dispatchEvent(new CustomEvent(EDITOR_MORE_EVENT))}
+        onClick={() => sendAppEvent(EDITOR_MORE_EVENT)}
       >
         <MoreIcon />
       </IconButton>

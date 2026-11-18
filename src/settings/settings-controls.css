@@ -132,70 +132,6 @@ button.settings-inline-button {
   font-size: var(--text-footnote);
 }
 
-/* ---- General > AI account: two disclosure rows + expanding panels ---- */
-
-.provider-picker {
-  margin: 0;
-}
-
-.combobox-trigger,
-.provider-auth-trigger {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 52px;
-  padding: 8px 0;
-  border: none;
-  border-radius: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-size: var(--text-body-large);
-  cursor: pointer;
-  text-align: left;
-}
-
-.combobox-trigger:hover,
-.provider-auth-trigger:hover {
-  background: var(--ui-hover);
-}
-
-/* Read like any other row: the name in the text colour, the current value
-   (provider, sign-in state) quieter at the right. */
-.combobox-trigger-label {
-  color: var(--ui-muted);
-}
-
-.provider-disclosure-label {
-  flex: 1;
-  min-width: 0;
-  color: var(--ui-text);
-  font-size: var(--text-body-large);
-}
-
-.combobox-caret {
-  flex-shrink: 0;
-  color: var(--ui-muted);
-  transform: rotate(90deg);
-  transition: transform var(--dur-fast) var(--ease-standard);
-}
-
-.combobox-caret-open {
-  transform: rotate(-90deg);
-}
-
-.status-pill {
-  margin-left: auto;
-  font-size: var(--text-footnote);
-  color: var(--ui-muted);
-  white-space: nowrap;
-}
-
-.status-pill-connected {
-  color: var(--ui-success);
-}
-
 .status-dot {
   width: 6px;
   height: 6px;
@@ -205,23 +141,6 @@ button.settings-inline-button {
   flex-shrink: 0;
 }
 
-/* Expanded credentials: indented behind an accent-tinted rail. */
-.provider-picker > .provider-panel {
-  border-top: none;
-}
-
-.provider-panel {
-  margin: 2px 0 12px 8px;
-  padding: 0 0 0 16px;
-  border-left: 2px solid
-    color-mix(in srgb, var(--ui-accent) 35%, var(--ui-border));
-}
-
-.provider-panel .settings-row,
-.provider-panel .settings-field {
-  padding: 8px 0;
-}
-
 /* Account vs API key, a command vs an address: the shared segmented
    control, in its place in the panel. */
 .settings-segmented {
@@ -229,17 +148,6 @@ button.settings-inline-button {
 }
 
 /* ---- Label + control rows that aren't toggle rows ---- */
-
-/* As a row: short of room, the control goes under the label, from its
-   start (by the width it has, not the window's). */
-.settings-field {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  padding: 12px 0;
-}
 
 /* Label on top, then the controls, then their note, for controls that need
    the row's width. */
@@ -264,4 +172,11 @@ button.settings-inline-button {
 
 .settings-proxy-port {
   flex: 0 0 80px;
+}
+
+/* One row's control under its name: every row's (SettingsGroup). */
+.settings-group-body[data-stacked]
+  > .settings-row:not(.settings-toggle-row)
+  > :last-child:not(:first-child) {
+  flex-basis: 100%;
 }
