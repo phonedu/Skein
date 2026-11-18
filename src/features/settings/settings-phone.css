@@ -316,13 +316,18 @@ button.settings-phone-ic:active {
   padding: 0 var(--space-4);
 }
 
-.settings-phone .settings-content-host .settings-group-actions {
+.settings-phone
+  .settings-content-host
+  :is(.settings-group-actions, .settings-page-group-actions) {
   margin-left: auto;
   margin-bottom: 0;
   gap: 2px;
 }
 
-.settings-phone .settings-content-host .settings-group-actions button {
+.settings-phone
+  .settings-content-host
+  :is(.settings-group-actions, .settings-page-group-actions)
+  button {
   min-height: 40px;
   padding: 0 10px;
   border: 0;
@@ -332,11 +337,101 @@ button.settings-phone-ic:active {
   font-size: var(--text-footnote);
 }
 
-.settings-phone .settings-content-host .settings-group-actions button:active {
+.settings-phone
+  .settings-content-host
+  :is(.settings-group-actions, .settings-page-group-actions)
+  button:active {
   background: var(--ui-hover);
 }
 
-.settings-phone .settings-content-host .settings-group-actions .tree-tool {
+.settings-phone
+  .settings-content-host
+  :is(.settings-group-actions, .settings-page-group-actions)
+  .tree-tool {
   width: 40px;
   padding: 0;
+}
+
+/* ---- Model settings: the providers are rows a thumb picks from ---- */
+
+/* The page's own panel steps aside for the card it sits in; the rows bring
+   the insets and the hairlines. */
+.settings-phone .providers-page {
+  padding: 0;
+  background: var(--ui-surface);
+}
+
+.settings-phone .providers-list {
+  max-width: none;
+  gap: 0;
+}
+
+.settings-phone .providers-item {
+  position: relative;
+  width: 100%;
+  /* 62 written: the chrome's 10/11 draws the list's 56. */
+  min-height: 62px;
+  padding: var(--space-1) var(--space-4);
+  gap: var(--space-3);
+  border-radius: 0;
+  background: none;
+  font-size: var(--text-body);
+}
+
+.settings-phone .providers-item[aria-current="true"] {
+  background: color-mix(in srgb, var(--ui-accent) 9%, transparent);
+}
+
+.settings-phone .providers-item + .providers-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-4);
+  right: var(--space-4);
+  border-top: 1px solid var(--ui-border);
+}
+
+.settings-phone .provider-logo {
+  width: 30px;
+  height: 30px;
+}
+
+/* The picked provider's account under the list: a hairline of its own and
+   the card's insets. */
+.settings-phone .providers-detail {
+  padding: var(--space-4);
+  border-top: 1px solid var(--ui-border);
+}
+
+/* ---- The skills list: captions over the card's rows, same insets ---- */
+
+.settings-phone
+  .settings-page-group-body
+  .settings-builtin-category
+  .tx-list-heading {
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  font-size: var(--text-footnote);
+  letter-spacing: 0.08em;
+}
+
+.settings-phone .settings-page-group-body .settings-skill-item {
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+}
+
+/* The line between two skills, inset like every other row's. */
+.settings-phone
+  .settings-page-group-body
+  .settings-skill-item
+  + .settings-skill-item {
+  border-top: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent var(--space-4),
+    var(--ui-border) var(--space-4),
+    var(--ui-border) 100%
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
 }
