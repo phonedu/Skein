@@ -57,12 +57,8 @@
   padding: 0 var(--space-3);
   /* A softer shoulder than shape-m, matching the mockup's 11px chip. */
   border-radius: 11px;
-  /* --ui-border is the theme's hairline (ui-text 16% mixed into ui-bg):
-     an opaque cool grey, not an ink-tinted translucent brown. The same
-     line the settings page uses for its cards and rows, so edges on the
-     phone read as one family. */
-  border: 1px solid var(--ui-border);
-  background: color-mix(in srgb, var(--phone-paper) 70%, white);
+  border: 0;
+  background: none;
   font-size: var(--text-body);
   font-weight: 650;
   color: var(--phone-ink);
@@ -71,7 +67,6 @@
 
 .ph-vault:active {
   background: color-mix(in srgb, var(--phone-fire) 6%, var(--phone-paper));
-  border-color: color-mix(in srgb, var(--phone-fire) 32%, transparent);
 }
 
 .ph-vault .vic {
@@ -175,7 +170,7 @@
 .ph-tree {
   flex: 1;
   overflow: auto;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-3) 0 var(--space-1);
 }
 
 .phone-home .tree-toolbar,
@@ -184,6 +179,7 @@
 }
 
 .phone-home .tree-row {
+  --tree-chevron: 18px;
   min-height: 56px;
   gap: var(--space-2);
   padding-block: var(--space-1);
@@ -198,8 +194,14 @@
 .phone-home .tree-row-file {
   padding-left: max(
     var(--space-2),
-    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2))
+    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-1))
   );
+}
+
+.phone-home .tree-row .chevron {
+  --icon-scale: 1.8;
+  margin-right: calc(-1 * var(--space-1));
+  opacity: 0.85;
 }
 
 .phone-home .tree-row:hover {
@@ -221,7 +223,7 @@
   height: 30px;
   padding: var(--space-2);
   border-radius: var(--shape-m);
-  background: color-mix(in srgb, var(--phone-fire) 9%, transparent);
+  background: color-mix(in srgb, var(--phone-ink) 5%, var(--phone-paper));
   color: var(--phone-fire);
 }
 

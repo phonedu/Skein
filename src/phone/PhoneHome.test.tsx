@@ -155,6 +155,25 @@ describe("the phone library home", () => {
     expect(phoneHomeCss).toContain("padding: 0 var(--space-4);");
   });
 
+  it("keeps the library control unframed and the tree disclosure easy to see", () => {
+    expect(phoneHomeCss).toMatch(
+      /\.ph-vault \{[^}]*border: 0;[^}]*background: none;/s,
+    );
+    expect(phoneHomeCss).toContain(
+      "padding: 0 var(--space-3) 0 var(--space-1);",
+    );
+    expect(phoneHomeCss).toContain("--tree-chevron: 18px;");
+    expect(phoneHomeCss).toContain("--icon-scale: 1.8;");
+    expect(phoneHomeCss).toContain("opacity: 0.85;");
+    expect(phoneHomeCss).toContain("margin-right: calc(-1 * var(--space-1));");
+  });
+
+  it("uses a neutral paper tint behind folder icons", () => {
+    expect(phoneHomeCss).toContain(
+      "background: color-mix(in srgb, var(--phone-ink) 5%, var(--phone-paper));",
+    );
+  });
+
   it("keeps the tree's depth indent under the phone row's padding", () => {
     // The row's shorthand once wiped pane.css's --tree-indent padding,
     // and a folder's children drew flush with the root. The phone rule
@@ -163,7 +182,7 @@ describe("the phone library home", () => {
       "padding-left: max(var(--space-2), var(--tree-indent));",
     );
     expect(phoneHomeCss).toContain(
-      "calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2))",
+      "calc(var(--tree-indent) + var(--tree-chevron) + var(--space-1))",
     );
   });
 });
