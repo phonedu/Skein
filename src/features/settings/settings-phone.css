@@ -403,6 +403,72 @@ button.settings-phone-ic:active {
   border-top: 1px solid var(--ui-border);
 }
 
+/* A row's help "?" rides after its name, on the same line - not a line of
+   its own under it. */
+.settings-phone .settings-row-label {
+  display: block;
+}
+
+.settings-phone .settings-row-name {
+  display: inline;
+}
+
+.settings-phone .settings-row-label .info-tip {
+  display: inline-flex;
+  vertical-align: -3px;
+  margin-left: var(--space-1);
+}
+
+.settings-phone .settings-row-label .settings-row-desc {
+  display: block;
+}
+
+/* A built-in skill: its name and its badge on one line with the action at
+   the row's end, and the slash hint under both, full width. A grid keeps
+   the action in the first line's last column though the hint spans the
+   card. */
+.settings-phone .settings-row.settings-builtin-skill {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+}
+
+.settings-phone .settings-builtin-skill > .settings-row-text {
+  display: contents;
+}
+
+.settings-phone
+  .settings-builtin-skill
+  > .settings-row-text
+  > .settings-row-label {
+  grid-column: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.settings-phone
+  .settings-builtin-skill
+  > .settings-row-text
+  > .settings-row-hint {
+  grid-column: 1 / -1;
+}
+
+/* The control itself is display: contents here: its actions are the grid
+   item, so they take the first line's end column. */
+.settings-phone
+  .settings-builtin-skill
+  > .settings-row-control
+  > .settings-skill-actions {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  width: auto;
+}
+
 /* ---- The skills list: captions over the card's rows, same insets ---- */
 
 .settings-phone
