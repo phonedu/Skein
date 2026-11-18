@@ -347,13 +347,15 @@
 }
 
 .ph-fab {
-  position: absolute;
+  /* Fixed to the viewport, not the home page: a sheet (createPortal to
+     body, z-index --z-sheet = 500) stacks above --z-floating (200) in the
+     root context, so the scrim covers it. Absolute inside the page was
+     trapped in a child stacking context and bled through. */
+  position: fixed;
   right: var(--space-6);
   /* Clears the gesture bar and leaves a mockup-tight 24px above it; iOS'
      home indicator and Android's gesture handle both live in safe-bottom. */
   bottom: calc(var(--space-6) + var(--safe-bottom, 0px));
-  /* Over the page's rails but under a sheet's scrim (ds-base.css): the FAB
-     a sheet comes up over must not bleed through its dimming. */
   z-index: var(--z-floating);
   width: 56px;
   height: 56px;
