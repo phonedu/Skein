@@ -43,6 +43,14 @@ export function FindReplaceBar({ findReplace, labels }: FindReplaceBarProps) {
     findInput.current?.select();
   }, [findReplace.focusRequest]);
 
+  // A phone's bar floats over the sheet: the page makes room for it while
+  // it is open (chrome.css), so the first lines never slide under it.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("find-open");
+    return () => root.classList.remove("find-open");
+  }, []);
+
   // Enter that confirms an input method's word is the IME's, not Find's.
   function onFindKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !isImeKeydown(e)) {

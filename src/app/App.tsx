@@ -9,6 +9,7 @@ import { Suspense, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
+import { parentDir, relativePath } from "../utils/path";
 import {
   CreateTabPage,
   PluginTabPage,
@@ -96,6 +97,16 @@ function App() {
   const { panelMode, setPanelMode } = shell.panels;
   const { activeTab, activeTitle, activeDirty } = docs;
   const { openFolder, openFile, openFileDialog, handleChange } = docs;
+  // The phone document page's folder line ("交付"): where the file stands
+  // in its library, when it isn't at the root.
+  const phoneSub = (() => {
+    const rootDir = openFolder.folder ?? openFolder.treeRoot;
+    const parent = activeTab.path ? parentDir(activeTab.path) : null;
+    if (!rootDir || !parent) return null;
+    const rel = relativePath(rootDir, parent);
+    return rel && rel !== "." && !rel.startsWith("..") ? rel : null;
+  })();
+
   const { searchFiles } = docs;
   const { searchFocusRequest, clearSearchFocusRequest } = docs;
   const { showTabBar, requestCloseTab, handleTabDetach, dragHoverPreview } =
@@ -192,6 +203,7 @@ function App() {
               <PhoneEditorBar
                 t={t}
                 title={activeTitle}
+                sub={phoneSub}
                 showAgent={aiFeatures(settings, tutorial.active).chat}
                 agentOpen={agentPanel.open}
                 agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}

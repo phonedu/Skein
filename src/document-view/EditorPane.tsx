@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useSettings, type AgentMode } from "../prefs/SettingsContext";
+import { isMobileApp } from "../platform/capabilities";
 import { KatexFirst } from "../editor/math/KatexFirst";
 import { elasticOverscroll } from "../engine/controls/elastic-overscroll";
 import { placeIn, scrollToPlace } from "./reading-place";
@@ -227,7 +228,33 @@ export const EditorPane = memo(function EditorPane({
   }, [tabId, scrollRef]);
 
   return (
-    <div className="editor-scroll tx-scroll-reveal" ref={scrollRef}>
+    <div
+      className="editor-scroll tx-scroll-reveal"
+      ref={scrollRef}
+      // A phone: a tap on the blank run under the text puts the keyboard
+      // away. The page's own paper is the way out of typing, as in the
+      // apps the phone's form follows. The editable covers the whole
+      // sheet, so the run is told by the last block's foot: below it, a
+      // tap is the paper's, not the text's.
+      onPointerDownCapture={
+        isMobileApp
+          ? (e) => {
+              const target = e.target as HTMLElement;
+              const prose = target.closest(
+                ".milkdown .ProseMirror",
+              ) as HTMLElement | null;
+              let blank = !target.closest(".milkdown, .cm-editor");
+              const last = prose?.lastElementChild as HTMLElement | null;
+              const foot = last?.getBoundingClientRect().bottom;
+              if (foot !== undefined && e.clientY > foot + 8) blank = true;
+              if (!blank) return;
+              e.preventDefault();
+              e.stopPropagation();
+              (document.activeElement as HTMLElement | null)?.blur?.();
+            }
+          : undefined
+      }
+    >
       <div
         className={`editor-content ${settings.typewriterMode ? "typewriter-active" : ""}`}
       >

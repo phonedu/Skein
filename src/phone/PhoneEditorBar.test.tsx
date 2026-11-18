@@ -74,12 +74,13 @@ afterEach(() => {
   noticed.length = 0;
 });
 
-function setup(showAgent: boolean) {
+function setup(showAgent: boolean, sub: string | null = null) {
   const onBack = vi.fn();
   render(
     <PhoneEditorBar
       t={en as Strings}
       title="周三的雨.md"
+      sub={sub}
       showAgent={showAgent}
       agentOpen={false}
       agentShortcut="⌘J"
@@ -98,6 +99,14 @@ describe("the phone's editor bar", () => {
       screen.getByRole("button", { name: en.phoneBackToLibrary }),
     );
     expect(onBack).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the folder line under the name, and none at the root", () => {
+    setup(true, "交付");
+    expect(screen.getByText("交付")).toBeTruthy();
+    cleanup();
+    setup(true);
+    expect(screen.queryByText("交付")).toBeNull();
   });
 
   it("shows Textus AI only while the panel can open", () => {

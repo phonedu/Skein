@@ -232,14 +232,16 @@
     transition-duration: 0s;
   }
 
-  /* ---- Find and replace: a bar across the top, under the title row. ---- */
+  /* ---- Find and replace: a bar across the top, under the title row.
+     The home search's trough for the field, quiet round touches for the
+     rest: the same family as the home's search and the sheets. ---- */
 
   :root[data-window-chrome="mobile"] .find-replace-bar {
     top: var(--mobile-top);
     right: 0;
     left: 0;
-    gap: 0;
-    padding: 0 4px;
+    gap: 2px;
+    padding: 6px 8px;
     border: none;
     border-bottom: 1px solid var(--ui-border);
     border-radius: 0;
@@ -253,54 +255,94 @@
   }
 
   :root[data-window-chrome="mobile"] .find-replace-chevron {
-    width: 44px;
+    width: 40px;
     height: 48px;
+    border: none !important;
+    background: none;
+    color: var(--ui-muted);
   }
 
+  /* The field: the home search's trough - bordered, on the surface, with
+     a hairline of light along its top. */
   :root[data-window-chrome="mobile"] .find-replace-field {
-    min-height: 40px;
-    padding: 0 4px 0 8px;
-    border: none;
-    border-radius: var(--shape-m);
-    background: color-mix(in srgb, var(--ui-text) 7%, transparent);
+    min-height: 46px;
+    min-width: 8ch;
+    padding: 0 6px 0 12px;
+    border: 1px solid var(--ui-border);
+    border-radius: 14px;
+    background: var(--ui-surface);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--ui-surface) 60%, transparent),
+      0 1px 3px color-mix(in srgb, var(--ui-text) 5%, transparent);
   }
 
-  /* The grey field is the input's edge; the input itself draws none. */
+  /* The grey trough is the edge; the input itself draws none. */
   :root[data-window-chrome="mobile"] .find-replace-input {
     border: none;
     outline: none;
     background: transparent;
     box-shadow: none;
+    font-size: var(--text-body);
   }
 
+  /* The Aa and .* switches: quiet chips, the ink when on. */
   :root[data-window-chrome="mobile"] .find-replace-toggle {
-    width: 34px;
-    height: 34px;
-    font-size: var(--text-caption) !important;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--shape-s) !important;
+    color: var(--ui-muted);
+    font-size: var(--text-secondary) !important;
   }
 
+  :root[data-window-chrome="mobile"] .find-replace-toggle-active {
+    background: var(--ui-hover) !important;
+    color: var(--ui-text) !important;
+  }
+
+  /* The arrows and the close: round touches, quiet marks. */
   :root[data-window-chrome="mobile"] .find-replace-nav {
     gap: 0;
   }
 
   :root[data-window-chrome="mobile"] .find-replace-nav button {
-    min-width: 48px;
-    height: 48px;
-    border: none;
+    min-width: 42px;
+    height: 42px;
+    border: none !important;
+    border-radius: 50%;
+    color: var(--ui-muted);
+  }
+
+  :root[data-window-chrome="mobile"]
+    .find-replace-nav
+    button:active:not(:disabled) {
+    background: var(--ui-hover);
   }
 
   /* Replace and Replace All: text buttons. A class, since :not(:has(svg)) was
      re-checked for every element added to the editor. */
   :root[data-window-chrome="mobile"] .find-replace-nav .find-replace-text {
-    padding: 0 8px;
+    min-width: 0;
+    height: 42px;
+    padding: 0 10px;
+    border: none !important;
+    border-radius: var(--shape-pill);
     color: var(--ui-accent-text);
     font-size: var(--text-secondary);
+    font-weight: 600;
   }
 
   :root[data-window-chrome="mobile"]
     .find-replace-bar
     button:hover:not(:disabled) {
     background: none;
+  }
+
+  /* With Find open the sheet's first lines stand below its float: the
+     bar's own height (a row's 48 and its padding) plus the usual room. */
+  :root[data-window-chrome="mobile"].find-open
+    .main-pane:not(:has(> .tab-bar))
+    :is(.editor-content:not(.typewriter-active), .source-view .cm-scroller) {
+    padding-top: calc(var(--mobile-top) + 64px + var(--space-4));
   }
 
   /* ---- Notes at the bottom ---- */

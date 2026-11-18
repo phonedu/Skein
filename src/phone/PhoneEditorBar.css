@@ -38,12 +38,30 @@
 .pe-title {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0 var(--space-2);
+}
+
+.pe-name {
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--text-title);
   font-weight: 600;
   letter-spacing: 0.01em;
-  text-align: center;
-  padding: 0 var(--space-2);
+}
+
+/* The folder line: the name's own context, quiet under it. */
+.pe-path {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-caption);
+  letter-spacing: 0.02em;
+  color: var(--ui-muted);
 }

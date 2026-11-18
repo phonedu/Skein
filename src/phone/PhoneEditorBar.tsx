@@ -23,6 +23,7 @@ import "./PhoneEditorBar.css";
 export function PhoneEditorBar({
   t,
   title,
+  sub,
   showAgent,
   agentOpen,
   agentShortcut,
@@ -31,6 +32,9 @@ export function PhoneEditorBar({
 }: {
   t: Strings;
   title: string;
+  /** Where the document lives in its library ("交付"), when not at the
+   *  root: the board keeps the name and its folder on two lines. */
+  sub?: string | null;
   /** The AI panel can be opened: chat is on, or the tour needs it. */
   showAgent: boolean;
   agentOpen: boolean;
@@ -86,7 +90,10 @@ export function PhoneEditorBar({
             <path d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <div className="pe-title">{title}</div>
+        <div className={`pe-title${sub ? " pe-title-sub" : ""}`}>
+          <span className="pe-name">{title}</span>
+          {sub && <span className="pe-path">{sub}</span>}
+        </div>
         <TextusAiButton
           className="pe-ic pe-ai"
           panelOpen={agentOpen}
