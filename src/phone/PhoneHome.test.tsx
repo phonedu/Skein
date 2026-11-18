@@ -154,4 +154,16 @@ describe("the phone library home", () => {
     expect(phoneHomeCss).toContain("min-height: 56px;");
     expect(phoneHomeCss).toContain("padding: 0 var(--space-4);");
   });
+
+  it("keeps the tree's depth indent under the phone row's padding", () => {
+    // The row's shorthand once wiped pane.css's --tree-indent padding,
+    // and a folder's children drew flush with the root. The phone rule
+    // must re-state the indent, files level with the folders' icons.
+    expect(phoneHomeCss).toContain(
+      "padding-left: max(var(--space-2), var(--tree-indent));",
+    );
+    expect(phoneHomeCss).toContain(
+      "calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2))",
+    );
+  });
 });

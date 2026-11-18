@@ -6,6 +6,9 @@
   --phone-muted: var(--ui-muted);
   --phone-line: var(--ui-border);
   --phone-fire: var(--ui-accent);
+  /* A roomier step than the desktop's: the board's levels read at arm's
+     length, a folder's children clearly its own. */
+  --tree-step: 24px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -143,8 +146,20 @@
 .phone-home .tree-row {
   min-height: 56px;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
+  padding-block: var(--space-1);
+  padding-right: var(--space-2);
+  /* The depth indent (pane.css's --tree-indent) survives the phone row's
+     own padding: a folder's children sit inside it, as the board draws. */
+  padding-left: max(var(--space-2), var(--tree-indent));
   border-radius: var(--shape-m);
+}
+
+/* A file level with the folders' icons, as the desktop rows align. */
+.phone-home .tree-row-file {
+  padding-left: max(
+    var(--space-2),
+    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2))
+  );
 }
 
 .phone-home .tree-row:hover {
@@ -177,6 +192,42 @@
 .phone-home .tree-row .tree-badge {
   font-size: var(--text-caption);
   color: var(--phone-muted);
+}
+
+/* The board's line ends: the date or the folder's note count, quiet at
+   the row's right; then the row's ⋯, which opens the row's menu in place
+   of the long press a thumb may not find. */
+.phone-home .tree-meta {
+  flex: none;
+  margin-left: auto;
+  padding-left: var(--space-2);
+  color: var(--phone-muted);
+  font-size: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.phone-home .tree-more {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--phone-muted);
+}
+
+.phone-home .tree-more svg {
+  width: 18px;
+  height: 18px;
+}
+
+.phone-home .tree-more:active {
+  background: var(--ui-hover);
 }
 
 .phone-home .recent-section {

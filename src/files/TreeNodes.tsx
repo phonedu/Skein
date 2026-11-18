@@ -13,6 +13,7 @@ import {
   ChevronIcon,
   FolderIcon,
   FolderOpenIcon,
+  MoreIcon,
 } from "../engine/controls/icons";
 import { fs } from "../platform/ipc";
 import { useSettings } from "../prefs/SettingsContext";
@@ -25,6 +26,8 @@ import { useLongPress } from "../utils/hooks/useLongPress";
 import { isDocumentName } from "./document-name";
 import { localeOf } from "../i18n/langs";
 import { compareEntries, nameCollator } from "../utils/name-order";
+import { dayLabelKind, monthDay } from "./day-label";
+import { countNotes } from "./note-count";
 import { useTree, useTreeRowActions } from "./tree-shared";
 import { isWithin } from "./tree-root";
 import { DraftRow } from "./DraftRow";
@@ -187,6 +190,11 @@ export const DirNode = memo(function DirNode({
           <Tooltip text={basename(path)} description={null} whenCut>
             <span className="tx-truncate tree-label">{basename(path)}</span>
           </Tooltip>
+          {/* The board's folder line ends with ⋯ too, but every folder
+              action it could hold (rename, trash, new here) is a desktop
+              command on this platform — a dead button is no button. It
+              comes with the native folder actions. */}
+          {isMobileApp && <FolderCount path={path} />}
         </div>
       )}
       {open && sorted && (
@@ -276,6 +284,26 @@ const FileNode = memo(function FileNode({
     : mark?.created
       ? t.aiCreatedPending
       : null;
+  // The phone board's date line (今天 / 周二 / 11-14), after the name.
+  const day = dayLabelKind(entry.modified_ms, new Date());
+  const dateText =
+    day && entry.modified_ms
+      ? day === "today"
+        ? t.treeDayToday
+        : day === "weekday"
+          ? new Intl.DateTimeFormat(localeOf(lang), {
+              weekday: "short",
+            }).format(new Date(entry.modified_ms))
+          : monthDay(entry.modified_ms)
+      : null;
+  // One row menu, opened two ways: the thumb's right click (held), and
+  // the board's ⋯ at the line's end, which a tap finds sooner.
+  const [tapped, setTapped] = useState<{ x: number; y: number } | null>(null);
+  const menuAt = press.at ?? tapped;
+  const closeMenu = () => {
+    press.close();
+    setTapped(null);
+  };
   return (
     <>
       <div
@@ -320,14 +348,30 @@ const FileNode = memo(function FileNode({
           </Tooltip>
         )}
         {waiting && <span className="tree-ai-waiting">{waiting}</span>}
+        {isMobileApp && (
+          <>
+            {dateText && <span className="tree-meta">{dateText}</span>}
+            <button
+              type="button"
+              className="tree-more"
+              aria-label={t.treeRowMore}
+              onClick={(e) => {
+                e.stopPropagation();
+                setTapped({ x: e.clientX, y: e.clientY });
+              }}
+            >
+              <MoreIcon />
+            </button>
+          </>
+        )}
       </div>
-      <Presence show={!!press.at}>
-        {press.at && (
+      <Presence show={!!menuAt}>
+        {menuAt && (
           <ContextMenu
-            x={press.at.x}
-            y={press.at.y}
+            x={menuAt.x}
+            y={menuAt.y}
             title={entry.name}
-            onClose={press.close}
+            onClose={closeMenu}
             items={[
               { label: t.treeOpen, onSelect: () => onSelect(entry.path) },
               {
@@ -340,4 +384,34 @@ const FileNode = memo(function FileNode({
       </Presence>
     </>
   );
+});
+
+/** A folder row's line end (the phone board's "2 篇"): the notes under it,
+ *  from the folder index the search already uses. Nothing for an empty
+ *  folder — a quiet row tells the truth a glance can check. */
+const FolderCount = memo(function FolderCount({ path }: { path: string }) {
+  const { t, settings } = useSettings();
+  const tree = useTree();
+  const version = tree.versions[path] ?? 0;
+  const [text, setText] = useState<string | null>(null);
+  useEffect(() => {
+    let stale = false;
+    fs.indexFolder(path)
+      .then((result) => {
+        if (stale) return;
+        const n = countNotes(result.files);
+        setText(
+          n > 0
+            ? plural(t.treeFolderNotes, n, settings.language) +
+                (result.truncated ? "+" : "")
+            : null,
+        );
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [path, version, t, settings.language]);
+  if (!text) return null;
+  return <span className="tree-meta">{text}</span>;
 });

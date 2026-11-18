@@ -35,6 +35,15 @@ body {
   flex-direction: column;
 }
 
+/* In that column the pane is what fills the rest (mobile/styles/sidebar.css
+   later sets `flex: none` on the same selector for the pushed-sidebar row,
+   and with the pane's content absolutely positioned it would collapse to
+   zero height — the editor drawn blank). One step more specific wins the
+   cascade wherever the two files' import order lands. */
+:root[data-window-chrome="mobile"] .app-shell > .main-pane {
+  flex: 1;
+}
+
 /* On the desktop the window is one grid (design-language.md 5.7): the
    activity rail's column, the sidebar's, the islands' area; the window
    bar's row over them, the rest under it. Each part is placed by its cell,
