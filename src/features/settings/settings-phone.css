@@ -217,27 +217,50 @@ button.settings-phone-ic:active {
   background: var(--ui-surface);
 }
 
-.settings-phone
-  .settings-content-host
-  .settings-page-group-body
-  > .settings-row {
+/* Every row in the card - a fold's nested ones included - keeps the card's
+   insets; a fold puts rows inside a wrapper where a direct-child rule
+   would miss them. */
+.settings-phone .settings-content-host .settings-page-group-body .settings-row {
   position: relative;
-  min-height: 56px;
+  /* 62 written: the chrome's 10/11 draws the home list's 56. */
+  min-height: 62px;
   padding: var(--space-1) var(--space-4);
   border-bottom: 0;
+  /* The hairline between rows, inset to the text: a pixel of the card's
+     own line, drawn whether or not a wrapper (a fold) sits between two
+     rows. */
+  background-image: linear-gradient(
+    to right,
+    transparent var(--space-4),
+    var(--ui-border) var(--space-4),
+    var(--ui-border) 100%
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
 }
 
+/* The card's first row sits under its edge: no line above it. */
 .settings-phone
   .settings-content-host
   .settings-page-group-body
-  > .settings-row
-  + .settings-row::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: var(--space-4);
-  right: 0;
-  border-top: 1px solid var(--ui-border);
+  > :first-child.settings-row,
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  > :first-child
+  > .settings-row:first-child {
+  background-image: none;
+}
+
+/* A fold's own rows already carry the line above; the fold body's children
+   must not draw a second one. */
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  .settings-fold-body
+  > * {
+  border-top: 0;
 }
 
 /* The legacy blocks a page still carries - Custom CSS, the theme sections -
@@ -280,4 +303,40 @@ button.settings-phone-ic:active {
 
 .settings-phone .settings-content-host .settings-group-body > .tx-list-note {
   padding: var(--space-4);
+}
+
+/* A group's head on a phone: a quiet caption, then one row of tools in a
+   single shape - a round touch per action - wrapping under the caption
+   when the two don't fit. Three shapes in one line (a bare glyph, a ring,
+   a pill) read as a jumble, not a toolbar. */
+.settings-phone .settings-content-host .settings-group-head {
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0 0 var(--space-3);
+  padding: 0 var(--space-4);
+}
+
+.settings-phone .settings-content-host .settings-group-actions {
+  margin-left: auto;
+  margin-bottom: 0;
+  gap: 2px;
+}
+
+.settings-phone .settings-content-host .settings-group-actions button {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--shape-pill);
+  background: none;
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+}
+
+.settings-phone .settings-content-host .settings-group-actions button:active {
+  background: var(--ui-hover);
+}
+
+.settings-phone .settings-content-host .settings-group-actions .tree-tool {
+  width: 40px;
+  padding: 0;
 }

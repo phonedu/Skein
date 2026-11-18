@@ -179,22 +179,38 @@
     gap: 12px;
   }
 
-  /* A short name gives its room to the control beside it, so a picker
-     with a long value stays on the row instead of dropping under it. */
+  /* A name and its control share the row: the name gives way, the control
+     keeps its seat - a wordy control is not pushed onto a line of its own.
+     A word wider than the row still breaks; no hyphens, which would cut
+     file names ("agen-t.md"). */
   :root[data-window-chrome="mobile"]
-    .settings-row:not([data-stacked])
+    .settings-row:not([data-stacked]):not(:has(.settings-row-desc))
     > *:first-child {
-    flex-basis: 96px;
-    /* As narrow as its longest word, so the control goes under it rather
-       than squeezing it letter by letter; a word wider than the row still
-       breaks. No hyphens, which would cut file names ("agen-t.md"). */
+    flex: 1 1 auto;
+    min-width: 0;
     max-width: 100%;
     overflow-wrap: break-word;
   }
 
-  /* Stacked (Custom CSS), that basis would be a height: a gap under the name. */
-  :root[data-window-chrome="mobile"] .settings-row-stacked > *:first-child {
-    flex-basis: auto;
+  /* A row that explains itself: the words take the whole line and the
+     control sits under them at the row's end - nothing squeezed into a
+     sliver beside a paragraph. */
+  :root[data-window-chrome="mobile"]
+    .settings-row:not([data-stacked]):has(.settings-row-desc) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  :root[data-window-chrome="mobile"]
+    .settings-row:has(.settings-row-desc)
+    > .settings-row-value {
+    align-self: flex-end;
+  }
+
+  :root[data-window-chrome="mobile"] .settings-row-desc {
+    font-size: var(--text-footnote);
+    line-height: 1.5;
   }
 
   :root[data-window-chrome="mobile"]
