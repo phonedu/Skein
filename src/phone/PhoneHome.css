@@ -57,7 +57,9 @@
   padding: 0 var(--space-3);
   /* A softer shoulder than shape-m, matching the mockup's 11px chip. */
   border-radius: 11px;
-  border: 1px solid color-mix(in srgb, var(--phone-ink) 8%, transparent);
+  /* The chip's edge is barely there on the mockup: a deep-ink hairline
+     at 8% reads as a brown line on this paper; 3% is only a shade. */
+  border: 1px solid color-mix(in srgb, var(--phone-ink) 3%, transparent);
   background: color-mix(in srgb, var(--phone-paper) 70%, white);
   font-size: var(--text-body);
   font-weight: 650;
@@ -132,7 +134,10 @@
   min-height: 48px;
   margin: var(--space-3) var(--space-5) var(--space-3);
   padding: 0 var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--phone-ink) 6%, transparent);
+  /* The mockup's search has no edge: the paler fill and the 1px top
+     highlight lift it off the paper. A deep-ink border reads as a brown
+     ring on this background. */
+  border: 0;
   border-radius: 14px;
   background: color-mix(in srgb, var(--phone-paper) 80%, white);
   /* A 1px top highlight so the pill lifts off the paper, and a feather of
