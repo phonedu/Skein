@@ -710,6 +710,9 @@ utiliser une.
   phoneVaultCurrent: "Actuelle",
   phoneVaultOpenOther: "Ouvrir un autre dossier…",
   phoneVaultNone: "Aucun dossier ouvert pour l’instant.",
+  phoneHomeEmptyTitle: "Choisissez un dossier pour commencer",
+  phoneHomeEmptyHint:
+    "Textus conserve vos notes sous forme de fichiers Markdown dans le dossier de votre choix.",
   menuDocuments: "Documents",
   docListTitle: "Documents",
   docListClose: "Fermer",

@@ -157,13 +157,28 @@ export function PhoneHome({
             onEntryMoved={onEntryMoved}
           />
         ) : (
-          <button
-            type="button"
-            className="ph-open"
-            onClick={() => emitToThisWindow("menu-open-folder")}
-          >
-            {t.menuOpenFolder}
-          </button>
+          <div className="ph-empty">
+            <div className="ph-empty-glyph" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              >
+                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
+              </svg>
+            </div>
+            <div className="ph-empty-title">{t.phoneHomeEmptyTitle}</div>
+            <div className="ph-empty-hint">{t.phoneHomeEmptyHint}</div>
+            <button
+              type="button"
+              className="ph-empty-cta"
+              onClick={() => emitToThisWindow("menu-open-folder")}
+            >
+              {t.menuOpenFolder}
+            </button>
+          </div>
         )}
       </div>
       <button

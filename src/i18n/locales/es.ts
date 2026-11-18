@@ -708,6 +708,9 @@ para usar una.
   phoneVaultCurrent: "Actual",
   phoneVaultOpenOther: "Abrir otra carpeta…",
   phoneVaultNone: "Aún no hay carpeta abierta.",
+  phoneHomeEmptyTitle: "Elige una carpeta para empezar",
+  phoneHomeEmptyHint:
+    "Textus guarda tus notas como archivos Markdown en la carpeta que elijas.",
   menuDocuments: "Documentos",
   docListTitle: "Documentos",
   docListClose: "Cerrar",

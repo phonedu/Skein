@@ -31,6 +31,14 @@
      is over everything. */
   --z-phone-page: 350;
   --z-sheet-menu: 500;
+  /* No island chrome on the phone: the page's edge is the window's, as
+     iOS and Android apps go. Overrides layout-tokens' islands defaults
+     for the editor, the chat window and every other islanded surface. */
+  --island-inset: 0px;
+  --island-gap: 0px;
+  --island-foot: 0px;
+  --island-radius: 0px;
+  --island-edge: none;
 }
 
 /* 16px is the least WebKit will show a focused field at without zooming

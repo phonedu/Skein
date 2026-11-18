@@ -612,6 +612,9 @@ export default {
   phoneVaultCurrent: "当前",
   phoneVaultOpenOther: "打开其他文件夹…",
   phoneVaultNone: "还没有打开文件夹。",
+  phoneHomeEmptyTitle: "选一个文件夹开始",
+  phoneHomeEmptyHint:
+    "Textus 把你的笔记作为 Markdown 文件保存在你选的文件夹里。",
   menuDocuments: "文档",
   docListTitle: "文档",
   docListClose: "关闭",

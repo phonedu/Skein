@@ -659,6 +659,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   phoneVaultCurrent: "現在",
   phoneVaultOpenOther: "別のフォルダーを開く…",
   phoneVaultNone: "開いているフォルダーはありません。",
+  phoneHomeEmptyTitle: "フォルダーを選んで始めましょう",
+  phoneHomeEmptyHint:
+    "Textus はあなたのノートを、選んだフォルダーに Markdown ファイルとして保存します。",
   menuDocuments: "書類",
   docListTitle: "書類",
   docListClose: "閉じる",

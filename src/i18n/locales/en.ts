@@ -672,6 +672,9 @@ type /name in a conversation to use one.
   phoneVaultCurrent: "Current",
   phoneVaultOpenOther: "Open another folder…",
   phoneVaultNone: "No folder open yet.",
+  phoneHomeEmptyTitle: "Pick a folder to begin",
+  phoneHomeEmptyHint:
+    "Textus keeps your notes as Markdown files in a folder of your choice.",
   menuDocuments: "Documents",
   docListTitle: "Documents",
   docListClose: "Close",

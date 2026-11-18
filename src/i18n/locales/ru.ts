@@ -705,6 +705,9 @@ export default {
   phoneVaultCurrent: "Текущая",
   phoneVaultOpenOther: "Открыть другую папку…",
   phoneVaultNone: "Папка ещё не открыта.",
+  phoneHomeEmptyTitle: "Выберите папку, чтобы начать",
+  phoneHomeEmptyHint:
+    "Textus хранит ваши заметки в виде файлов Markdown в выбранной вами папке.",
   menuDocuments: "Документы",
   docListTitle: "Документы",
   docListClose: "Закрыть",
