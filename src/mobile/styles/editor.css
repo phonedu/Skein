@@ -85,3 +85,20 @@
   > :is(h1, h2, h3, h4, h5, h6) {
   scroll-margin-top: calc(var(--mobile-top) + 18px);
 }
+
+/* Source mode at phone width: the document's own body size in the mono
+   face (it inherited the app's 16), so the Markdown reads at arm's length
+   as the rendered page does. */
+:root[data-window-chrome="mobile"] .source-view .cm-editor {
+  font-size: var(--text-body);
+  line-height: 1.75;
+}
+
+/* The phone's page puts the bar in the flow, so the source column starts
+   under it already: the bar's height must not be added a second time. */
+:root[data-window-chrome="mobile"]
+  .main-pane:not(:has(> .tab-bar))
+  .source-view
+  .cm-scroller {
+  padding-top: var(--space-6);
+}

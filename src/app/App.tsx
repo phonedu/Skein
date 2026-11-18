@@ -207,7 +207,12 @@ function App() {
                 showAgent={aiFeatures(settings, tutorial.active).chat}
                 agentOpen={agentPanel.open}
                 agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
-                onBack={() => setPhoneView("home")}
+                onBack={() => {
+                  // A step, not a jump: from the AI page back to the
+                  // document, and from the document back to the library.
+                  if (agentPanel.open) return toggleAgentPanel();
+                  setPhoneView("home");
+                }}
                 onToggleAgent={toggleAgentPanel}
               />
             )

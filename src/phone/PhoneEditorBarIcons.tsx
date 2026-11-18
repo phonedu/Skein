@@ -58,3 +58,13 @@ export function InboxActionIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+/** Angle brackets: the document's own Markdown, source mode. */
+export function SourceActionIcon({ className }: { className?: string }) {
+  return (
+    <svg {...baseProps(className)} aria-hidden>
+      <path d="m9 8-4 4 4 4" />
+      <path d="m15 8 4 4-4 4" />
+    </svg>
+  );
+}

@@ -15,9 +15,11 @@ import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
 import {
   OutlineActionIcon,
   FindActionIcon,
+  SourceActionIcon,
   ShareActionIcon,
   InboxActionIcon,
 } from "./PhoneEditorBarIcons";
+import { emitToThisWindow } from "../platform/menu-events";
 import "./PhoneEditorBar.css";
 
 export function PhoneEditorBar({
@@ -55,6 +57,11 @@ export function PhoneEditorBar({
       Icon: FindActionIcon,
       onSelect: () =>
         window.dispatchEvent(new CustomEvent(TOGGLE_FIND_REPLACE_EVENT)),
+    },
+    {
+      label: t.menuToggleSourceMode,
+      Icon: SourceActionIcon,
+      onSelect: () => emitToThisWindow("menu-toggle-source-mode"),
     },
     {
       label: t.phoneDocActionShare,

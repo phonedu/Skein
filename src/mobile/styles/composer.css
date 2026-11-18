@@ -110,3 +110,58 @@
   width: 20px;
   height: 20px;
 }
+
+/* The composer is the page's foot on a phone: the field's box in the same
+   paper family as the home's search trough, and Send a disc with its
+   arrow at the FAB's own size - a thumb's, not a label's. */
+:root[data-window-chrome="mobile"] .agent-panel-body .inline-chat-field {
+  padding: 10px;
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--ui-surface) 60%, transparent),
+    0 1px 3px color-mix(in srgb, var(--ui-text) 5%, transparent);
+}
+
+:root[data-window-chrome="mobile"] .agent-panel-body .inline-chat-send {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* The arrow says it; the label stays for the readers. */
+:root[data-window-chrome="mobile"] .agent-panel-body .inline-chat-send-label {
+  display: none;
+}
+
+:root[data-window-chrome="mobile"] .agent-panel-body .inline-chat-send-icon {
+  display: block;
+}
+
+/* No words yet: a quiet trough, not a lit button. */
+:root[data-window-chrome="mobile"]
+  .agent-panel-body
+  .inline-chat-send:disabled {
+  border-color: transparent;
+  background: var(--ui-hover);
+  color: var(--ui-muted);
+  opacity: 1;
+}
+
+/* The empty state's mark at the library's size: a chip, not a dot. */
+:root[data-window-chrome="mobile"] .agent-panel-body .agent-panel-empty-mark {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+}
+
+:root[data-window-chrome="mobile"]
+  .agent-panel-body
+  .agent-panel-empty-mark
+  svg {
+  width: 30px;
+  height: 30px;
+}

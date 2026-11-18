@@ -24,6 +24,7 @@ import {
   type PaperGenreChoice,
 } from "../../paper/paper-genres";
 import { ModeIcon } from "../mode-icons";
+import { AssistantIcon } from "../../../engine/controls/icons";
 import { useSettings, type PanelMode } from "../../../prefs/SettingsContext";
 import { START_MODE, initialMode } from "../last-mode";
 import { useAiSignedIn } from "../chat-models";
@@ -125,16 +126,22 @@ export function ConversationPanel({
     >
       {signedIn === false && conversation.history.length === 0 ? (
         // Nothing to send to yet: where to sign in, not a box that answers
-        // nothing.
+        // nothing. A card of its own, in the same family as the library's
+        // empty state.
         <div className="agent-panel-empty agent-panel-sign-in">
-          <p className="agent-panel-empty-text">{t.chatSignInHint}</p>
-          <button
-            type="button"
-            className="tx-button"
-            onClick={() => openSettingsPage("providers")}
-          >
-            {t.chatSignIn}
-          </button>
+          <div className="agent-panel-sign-in-card">
+            <span className="agent-panel-sign-in-mark" aria-hidden="true">
+              <AssistantIcon />
+            </span>
+            <p className="agent-panel-empty-text">{t.chatSignInHint}</p>
+            <button
+              type="button"
+              className="tx-button primary agent-panel-sign-in-cta"
+              onClick={() => openSettingsPage("providers")}
+            >
+              {t.chatSignIn}
+            </button>
+          </div>
         </div>
       ) : (
         <>
