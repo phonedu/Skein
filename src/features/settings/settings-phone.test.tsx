@@ -2,10 +2,17 @@
 // The phone's settings: the list is the first sight, a section pushes as
 // its own page under a back row, and the desktop's dialog never mounts.
 import { readFileSync } from "node:fs";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsHost } from ".";
 import { SettingsProvider } from "../../prefs/SettingsContext";
+import { back as androidBack } from "../../mobile/back";
 import en from "../../i18n/locales/en";
 
 const settingsPhoneCss = readFileSync(
@@ -50,13 +57,13 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-function host(page = "general") {
+function host(page = "general", onClose: () => void = () => {}) {
   return render(
     <SettingsProvider>
       <SettingsHost
         page={page}
         jump={null}
-        onClose={() => {}}
+        onClose={onClose}
         fixedShortcuts={[]}
         pluginCommands={[]}
       />
@@ -87,6 +94,24 @@ describe("the phone's settings", () => {
     host("about");
     expect(document.querySelector(".settings-content-host")).toBeTruthy();
     expect(screen.getAllByText(en.navAbout).length).toBeGreaterThan(0);
+  });
+
+  it("Android's Back pops a section to the list, then closes Settings", async () => {
+    const onClose = vi.fn();
+    host("general", onClose);
+    fireEvent.click(screen.getByRole("button", { name: en.navGeneral }));
+    expect(document.querySelector(".settings-content-host")).toBeTruthy();
+
+    await act(async () => {
+      expect(androidBack()).toBe(true);
+    });
+    expect(document.querySelector(".settings-content-host")).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+
+    await act(async () => {
+      expect(androidBack()).toBe(true);
+    });
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it("leads the bar with a back arrow and centres the title", () => {

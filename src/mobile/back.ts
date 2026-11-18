@@ -1,7 +1,8 @@
 import { hasSystemBack } from "../platform/capabilities";
 
-/** Layers that close on Escape: sheets, modal dialogs, menus. */
-const LAYERS = '.sheet, [aria-modal="true"], [role="menu"]';
+/** Layers that close on Escape: sheets, modal dialogs, menus, the find bar
+ *  (an Escape listener of its own, outside the modal markup). */
+const LAYERS = '.sheet, [aria-modal="true"], [role="menu"], .find-replace-bar';
 
 const closers: (() => boolean)[] = [];
 

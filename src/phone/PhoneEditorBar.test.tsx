@@ -7,6 +7,7 @@ import { PhoneEditorBar } from "./PhoneEditorBar";
 import en from "../i18n/locales/en";
 import type { Strings } from "../i18n/strings";
 import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
+import { takeTabJump } from "../editor/tab-jump";
 
 const editorBarCss = readFileSync("src/phone/PhoneEditorBar.css", "utf8");
 const mobileEditorCss = readFileSync("src/mobile/styles/editor.css", "utf8");
@@ -21,6 +22,16 @@ vi.mock("../engine/controls/notices", () => ({
   showNotice: (text: string) => noticed.push(text),
 }));
 
+const shared: string[] = [];
+vi.mock("../platform/ios-files", () => ({
+  iosFiles: {
+    share: (path: string) => {
+      shared.push(path);
+      return Promise.resolve();
+    },
+  },
+}));
+
 // The sheet itself has its own tests; here we only check the bar hands it
 // the right items and closes on select. A plain stub stands in for the Sheet
 // so this test skips SettingsProvider and the Presence transitions.
@@ -31,6 +42,8 @@ vi.mock("../engine/controls/ActionSheet", async () => {
     onSelect: () => void;
     Icon?: unknown;
     fire?: boolean;
+    disabled?: boolean;
+    depth?: number;
   };
   return {
     ActionSheet: ({
@@ -52,6 +65,8 @@ vi.mock("../engine/controls/ActionSheet", async () => {
                 key: i,
                 role: "menuitem",
                 "aria-label": item.label,
+                disabled: item.disabled,
+                "data-depth": item.depth,
                 onClick: () => {
                   onClose();
                   item.onSelect();
@@ -72,15 +87,23 @@ vi.mock("../engine/motion/usePresence", () => ({
 afterEach(() => {
   cleanup();
   noticed.length = 0;
+  shared.length = 0;
 });
 
-function setup(showAgent: boolean, sub: string | null = null) {
+function setup(
+  showAgent: boolean,
+  sub: string | null = null,
+  doc: { content?: string; path?: string | null; tabId?: string } = {},
+) {
   const onBack = vi.fn();
   render(
     <PhoneEditorBar
       t={en as Strings}
       title="周三的雨.md"
       sub={sub}
+      path={doc.path === undefined ? "/笔记/周三的雨.md" : doc.path}
+      content={doc.content ?? ""}
+      tabId={doc.tabId ?? "tab-1"}
       showAgent={showAgent}
       agentOpen={false}
       agentShortcut="⌘J"
@@ -127,14 +150,7 @@ describe("the phone's editor bar", () => {
       screen.getByRole("menuitem", { name: en.phoneDocActionInbox }),
     ).toBeTruthy();
 
-    // Outline is a placeholder for now: a notice, no event.
-    fireEvent.click(
-      screen.getByRole("menuitem", { name: en.phoneDocActionOutline }),
-    );
-    expect(noticed).toContain(en.phoneComingSoon);
-
     // Find & replace rides the existing window event the desktop uses.
-    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
     const fired = vi.fn();
     window.addEventListener(TOGGLE_FIND_REPLACE_EVENT, fired);
     fireEvent.click(
@@ -142,6 +158,52 @@ describe("the phone's editor bar", () => {
     );
     expect(fired).toHaveBeenCalledOnce();
     window.removeEventListener(TOGGLE_FIND_REPLACE_EVENT, fired);
+  });
+
+  it("lists the headings in the outline sheet, indented, and jumps to one", () => {
+    setup(true, null, { content: "# 第一节\n\n## 第二节\n\n### 第三节\n" });
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: en.phoneDocActionOutline }),
+    );
+    const first = screen.getByRole("menuitem", { name: "第一节" });
+    const second = screen.getByRole("menuitem", { name: "第二节" });
+    expect(first.getAttribute("data-depth")).toBe("1");
+    expect(second.getAttribute("data-depth")).toBe("2");
+
+    fireEvent.click(second);
+    // The editor takes the jump by heading index (revealPosition).
+    expect(takeTabJump("tab-1")).toEqual({ kind: "outline", index: 1 });
+  });
+
+  it("says so, instead of opening an empty outline", () => {
+    setup(true, null, { content: "只有正文，没有标题。\n" });
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: en.phoneDocActionOutline }),
+    );
+    expect(noticed).toContain(en.outlineEmpty);
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("shares a saved document, and offers nothing to share for an unsaved one", () => {
+    setup(true);
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent.click(
+      screen.getByRole("menuitem", { name: en.phoneDocActionShare }),
+    );
+    expect(shared).toEqual(["/笔记/周三的雨.md"]);
+
+    shared.length = 0;
+    cleanup();
+    setup(true, null, { path: null });
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    const share = screen.getByRole("menuitem", {
+      name: en.phoneDocActionShare,
+    }) as HTMLButtonElement;
+    expect(share.disabled).toBe(true);
+    fireEvent.click(share);
+    expect(shared).toEqual([]);
   });
 
   it("keeps phone editor controls at the Android touch size", () => {

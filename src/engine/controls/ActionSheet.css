@@ -101,6 +101,28 @@
   text-overflow: ellipsis;
 }
 
+/* A hierarchy's deeper rows (an outline's headings): each level in under
+   the one above it, so the tree reads without marks of its own. */
+.action-sheet-item[data-depth="2"] .action-sheet-text {
+  padding-left: 12px;
+}
+
+.action-sheet-item[data-depth="3"] .action-sheet-text {
+  padding-left: 24px;
+}
+
+.action-sheet-item[data-depth="4"] .action-sheet-text {
+  padding-left: 36px;
+}
+
+.action-sheet-item[data-depth="5"] .action-sheet-text {
+  padding-left: 48px;
+}
+
+.action-sheet-item[data-depth="6"] .action-sheet-text {
+  padding-left: 60px;
+}
+
 .action-sheet-sub {
   font-size: var(--text-footnote);
   color: var(--ui-muted);

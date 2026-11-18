@@ -2,7 +2,7 @@
 // document's name, Textus AI, and ⋯ for the document's action sheet. The
 // phone has no tab strip - the library is the navigation - so what the
 // desktop puts in a right-click menu lives in this sheet.
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Strings } from "../i18n/strings";
 import { TextusAiButton } from "../ai/TextusAiSwitch";
 import {
@@ -20,12 +20,21 @@ import {
   InboxActionIcon,
 } from "./PhoneEditorBarIcons";
 import { emitToThisWindow } from "../platform/menu-events";
+import { iosFiles } from "../platform/ios-files";
+import { parseHeadings } from "../files/outline-parse";
+import { currentHeading } from "../files/outline-current";
+import { plainInline } from "../utils/markdown-plain";
+import { noteJump } from "../editor/nav-history";
+import { setTabJump } from "../editor/tab-jump";
 import "./PhoneEditorBar.css";
 
 export function PhoneEditorBar({
   t,
   title,
   sub,
+  path,
+  content,
+  tabId,
   showAgent,
   agentOpen,
   agentShortcut,
@@ -37,6 +46,12 @@ export function PhoneEditorBar({
   /** Where the document lives in its library ("交付"), when not at the
    *  root: the board keeps the name and its folder on two lines. */
   sub?: string | null;
+  /** The document on disk; Share is offered once it has one. */
+  path?: string | null;
+  /** Its text, for the outline (the document page's own copy). */
+  content: string;
+  /** The tab whose editor the outline scrolls. */
+  tabId: string;
   /** The AI panel can be opened: chat is on, or the tour needs it. */
   showAgent: boolean;
   agentOpen: boolean;
@@ -45,12 +60,34 @@ export function PhoneEditorBar({
   onToggleAgent: () => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [outlineOpen, setOutlineOpen] = useState(false);
+
+  // The outline is read when it is opened, not on every keystroke.
+  const outline = useMemo(
+    () =>
+      outlineOpen
+        ? parseHeadings(content)
+            .map((heading, index) => ({ heading, index }))
+            .filter(({ heading }) => heading.text.trim())
+        : [],
+    [outlineOpen, content],
+  );
+  const at = useMemo(
+    () => (outlineOpen ? currentHeading(tabId) : -1),
+    [outlineOpen, tabId],
+  );
+
+  const openOutline = () => {
+    if (!parseHeadings(content).some((heading) => heading.text.trim()))
+      return showNotice(t.outlineEmpty);
+    setOutlineOpen(true);
+  };
 
   const items: (ActionSheetItem | "separator")[] = [
     {
       label: t.phoneDocActionOutline,
       Icon: OutlineActionIcon,
-      onSelect: () => showNotice(t.phoneComingSoon),
+      onSelect: openOutline,
     },
     {
       label: t.phoneDocActionFind,
@@ -66,7 +103,11 @@ export function PhoneEditorBar({
     {
       label: t.phoneDocActionShare,
       Icon: ShareActionIcon,
-      onSelect: () => showNotice(t.phoneComingSoon),
+      // A document that has not been saved has nothing to hand on.
+      disabled: !path,
+      onSelect: () => {
+        if (path) void iosFiles.share(path).catch(() => {});
+      },
     },
     "separator",
     {
@@ -76,6 +117,19 @@ export function PhoneEditorBar({
       onSelect: () => showNotice(t.phoneComingSoon),
     },
   ];
+
+  const outlineItems: (ActionSheetItem | "separator")[] = outline.map(
+    ({ heading, index }) => ({
+      label: plainInline(heading.text),
+      depth: heading.level,
+      current: index === at,
+      onSelect: () => {
+        // The editor scrolls there as every jump does (revealPosition).
+        noteJump();
+        setTabJump(tabId, { kind: "outline", index }, true);
+      },
+    }),
+  );
 
   return (
     <>
@@ -134,6 +188,15 @@ export function PhoneEditorBar({
             head={title}
             items={items}
             onClose={() => setSheetOpen(false)}
+          />
+        )}
+      </Presence>
+      <Presence show={outlineOpen}>
+        {outlineOpen && (
+          <ActionSheet
+            title={t.phoneDocActionOutline}
+            items={outlineItems}
+            onClose={() => setOutlineOpen(false)}
           />
         )}
       </Presence>

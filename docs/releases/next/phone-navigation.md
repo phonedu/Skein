@@ -1,0 +1,8 @@
+### New
+
+- On a phone, the document's ⋯ sheet opens its outline: every heading, indented by level, with the section you are reading ticked. Tap one to go there.
+- Share hands the document to the system's own share sheet. A document that has not been saved has nothing to share, so the row rests until it does.
+
+### Fixed
+
+- Android's Back steps back through the app instead of leaving it: an open sheet or the find bar closes, the AI page returns to the document, the document to the library, and Settings' pages go back to its list. From the library, Back puts the app away as before.

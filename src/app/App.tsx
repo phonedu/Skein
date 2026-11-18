@@ -5,7 +5,7 @@ import { useWindowAi } from "./islands/useWindowAi";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -22,6 +22,7 @@ import {
   type PageRequest,
 } from "./tabs/page-tabs";
 import { usePhoneLayout } from "../engine/controls/usePhoneLayout";
+import { onBack } from "../mobile/back";
 import { useSettings } from "../prefs/SettingsContext";
 import { formatCombo } from "../utils/shortcuts";
 import { fixedShortcutGroups } from "../registry/fixed-shortcuts";
@@ -106,6 +107,39 @@ function App() {
     const rel = relativePath(rootDir, parent);
     return rel && rel !== "." && !rel.startsWith("..") ? rel : null;
   })();
+
+  // Android's Back steps through the phone's pages instead of leaving the
+  // app: the AI page back to the document, the document to the library, and
+  // from the library on it is the system's (the app goes to the background).
+  // Registered once, so Settings - mounted over these while it is up - keeps
+  // answering first.
+  const backStep = useRef({
+    agentOpen: false,
+    inDoc: false,
+    closeAgent: () => {},
+    toHome: () => {},
+  });
+  backStep.current = {
+    agentOpen: agentPanel.open,
+    inDoc: phoneView === "doc",
+    closeAgent: toggleAgentPanel,
+    toHome: () => setPhoneView("home"),
+  };
+  useEffect(() => {
+    if (!phone) return;
+    return onBack(() => {
+      const step = backStep.current;
+      if (step.agentOpen) {
+        step.closeAgent();
+        return true;
+      }
+      if (step.inDoc) {
+        step.toHome();
+        return true;
+      }
+      return false;
+    });
+  }, [phone]);
 
   const { searchFiles } = docs;
   const { searchFocusRequest, clearSearchFocusRequest } = docs;
@@ -204,6 +238,9 @@ function App() {
                 t={t}
                 title={activeTitle}
                 sub={phoneSub}
+                path={activeTab.path}
+                content={activeTab.content}
+                tabId={activeTab.id}
                 showAgent={aiFeatures(settings, tutorial.active).chat}
                 agentOpen={agentPanel.open}
                 agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}

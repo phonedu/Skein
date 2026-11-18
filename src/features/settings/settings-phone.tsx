@@ -13,6 +13,7 @@ import { SettingsPhoneList } from "./settings-phone-list";
 import { SettingsContent } from "./settings-content";
 import { useSettingsDialogSearch } from "./settings-search";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
+import { onBack } from "../../mobile/back";
 import type { ShortcutCommand } from "../../settings/pages/types";
 import "./settings-phone.css";
 
@@ -36,6 +37,7 @@ export function SettingsPhone(props: {
   docPath?: string | null;
 }) {
   const { t } = useSettings();
+  const { onClose } = props;
   const [pageId, setPageId] = useState<string | null>(
     props.initialPage === "general" ? null : props.initialPage,
   );
@@ -50,6 +52,21 @@ export function SettingsPhone(props: {
     return () => root.removeAttribute("data-modal-open");
   }, []);
 
+  // Android's Back: a pushed page goes back to the list, and the list closes
+  // Settings; the app's own step (the AI page, the document) is next, as
+  // this was mounted over it.
+  useEffect(
+    () =>
+      onBack(() => {
+        if (pageId !== null) {
+          setPageId(null);
+          return true;
+        }
+        onClose();
+        return true;
+      }),
+    [pageId, onClose],
+  );
   const searchPages: SearchablePage[] = props.pages.map((pageDef) => ({
     key: pageDef.id,
     name: pageDef.label(t),

@@ -21,6 +21,9 @@ export interface ActionSheetItem {
   checked?: boolean;
   /** Shown but not offered now. */
   disabled?: boolean;
+  /** A row deeper in a hierarchy (an outline's heading, 1 being the top):
+   *  its name is indented by the level. */
+  depth?: number;
 }
 
 /**
@@ -82,6 +85,7 @@ export function ActionSheet({
                       : undefined
                   }
                   disabled={item.disabled}
+                  data-depth={item.depth}
                   className={rowClass(item)}
                   onClick={() => {
                     onClose();
