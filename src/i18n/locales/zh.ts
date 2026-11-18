@@ -262,7 +262,7 @@ export default {
   learnRemember: "记住",
   learnNotNow: "暂不",
   learnNever: "不再询问",
-  learnSaved: "已记住。可以在“记忆”里查看或删除（在 AI 标签上点右键）。",
+  learnSaved: "已记住。可以在 AI 面板的「记忆」里查看或删除。",
   learnLabel: "从修订取舍中学到的",
   composerSuggestionTab: "Tab 采用",
   composerFollowUps: "建议的下一句",
@@ -273,7 +273,7 @@ export default {
   researchCheckClaimsHint:
     "研究模式修改草稿前，把每个带引用的句子和该来源的笔记对一遍，说过头的会改写。更严谨，每节多一次模型调用。",
   rememberAutomaticallyLabel: "记忆",
-  rememberAutomaticallyHint: `${AI_NAME} 会记下你的要求和写作习惯，供以后的对话使用；可以在“记忆”里查看、修改或撤销（在 AI 标签上点右键）。每次回复后，会再向同一个模型发一次简短请求，决定记下什么。`,
+  rememberAutomaticallyHint: `${AI_NAME} 会记下你的要求和写作习惯，供以后的对话使用；可以在 AI 面板的「记忆」里查看、修改或撤销。每次回复后，会再向同一个模型发一次简短请求，决定记下什么。`,
   toolRemember: "记下来",
   agentGeneratingImage: "正在生成图片…",
   toolGenerateImage: "正在生成图片",
