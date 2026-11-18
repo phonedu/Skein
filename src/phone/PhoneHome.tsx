@@ -1,8 +1,8 @@
-// The phone's home: the open vault's file tree as the first surface.
-// Slice 1 of the phone form (ruling 30's fork line): the tree, the vault
-// name and settings in the top bar. New-document lives in the floating action
-// button so the bar stays quiet like the approved phone board. The vault
-// name opens the library-switcher sheet; recents will flow in later.
+// The phone's home: the open vault's file tree as the first surface —
+// the tree, the vault name and settings in the top bar. New-document lives
+// in the floating action button so the bar stays quiet like the approved
+// phone board. The vault name opens the library-switcher sheet; recents
+// will flow in later.
 import { useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
