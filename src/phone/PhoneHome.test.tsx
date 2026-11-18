@@ -171,38 +171,56 @@ describe("the phone library home", () => {
   });
 
   it("uses the Android phone rhythm for search and library rows", () => {
-    expect(phoneHomeCss).toContain("min-height: 56px;");
+    // The board's 50px rows, restated past the plain mobile row rule, and
+    // its 46px search pill: sheet lengths draw at the chrome's 10/11, so
+    // 55 and 50 are the written values.
+    expect(phoneHomeCss).toContain("min-height: 55px;");
     expect(phoneHomeCss).toContain("padding: 0 var(--space-4);");
+    expect(phoneHomeCss).toContain("min-height: 50px;");
   });
 
-  it("keeps the library control unframed and the tree disclosure easy to see", () => {
+  it("keeps the library control unframed and the tree disclosure quiet", () => {
     expect(phoneHomeCss).toMatch(
       /\.ph-vault \{[^}]*border: 0;[^}]*background: none;/s,
     );
-    expect(phoneHomeCss).toContain(
-      "padding: 0 var(--space-3) 0 var(--space-1);",
-    );
-    expect(phoneHomeCss).toContain("--tree-chevron: 18px;");
-    expect(phoneHomeCss).toContain("--icon-scale: 1.8;");
-    expect(phoneHomeCss).toContain("opacity: 0.85;");
-    expect(phoneHomeCss).toContain("margin-right: calc(-1 * var(--space-1));");
+    // The board's library inset: rows stand in 12px from each edge.
+    expect(phoneHomeCss).toContain("padding: 0 var(--space-3);");
+    // The board's small quiet disclosure: 13px drawn from the 10px design,
+    // seated in its 22px box (24.2 written at the chrome's 10/11).
+    expect(phoneHomeCss).toContain("--tree-chevron: 24.2px;");
+    expect(phoneHomeCss).toContain("--icon-scale: 1.43;");
   });
 
-  it("uses a neutral paper tint behind folder icons", () => {
+  it("draws the board's folder chip: fire-tinted, bronze glyph, svg-sized", () => {
+    // The chip is the icon's own inline size (icons.tsx's iconSize wins
+    // over any width here): 15px design at 2.2 draws 30px. A width rule
+    // once starved the glyph to a 0 viewport under the chip's padding.
+    expect(phoneHomeCss).toContain("--icon-scale: 2.2;");
     expect(phoneHomeCss).toContain(
-      "background: color-mix(in srgb, var(--phone-ink) 5%, var(--phone-paper));",
+      "background: color-mix(in srgb, var(--phone-fire) 8%, transparent);",
     );
+    expect(phoneHomeCss).toContain("color: var(--phone-fold);");
   });
 
   it("keeps the tree's depth indent under the phone row's padding", () => {
     // The row's shorthand once wiped pane.css's --tree-indent padding,
     // and a folder's children drew flush with the root. The phone rule
-    // must re-state the indent, files level with the folders' icons.
+    // must re-state the indent - from the second level on, the board's
+    // root rows standing at the pane's inset - and files level with the
+    // folders' chips.
     expect(phoneHomeCss).toContain(
       "padding-left: max(var(--space-2), var(--tree-indent));",
     );
     expect(phoneHomeCss).toContain(
-      "calc(var(--tree-indent) + var(--tree-chevron) + var(--space-1))",
+      "calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2) + 10px)",
+    );
+  });
+
+  it("marks the open document with the board's fire dot", () => {
+    // Off the desktop's tree by default, on at the phone's home only.
+    expect(phoneHomeCss).toMatch(/\.tree-fdot \{[^}]*display: none;/s);
+    expect(phoneHomeCss).toMatch(
+      /\.phone-home \.tree-fdot \{[^}]*display: inline-block;[^}]*background: var\(--phone-fire\);/s,
     );
   });
 });

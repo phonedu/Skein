@@ -6,9 +6,18 @@
   --phone-muted: var(--ui-muted);
   --phone-line: var(--ui-border);
   --phone-fire: var(--ui-accent);
+  /* The board's folder bronze (mockup .tic.fold's #a4682e): the fire
+     softened toward the paper's warm grey, so full fire keeps its one job
+     of marking what is happening now. */
+  --phone-fold: color-mix(
+    in srgb,
+    var(--phone-fire) 76%,
+    color-mix(in srgb, var(--phone-ink) 50%, var(--phone-paper)) 24%
+  );
   /* A roomier step than the desktop's: the board's levels read at arm's
-     length, a folder's children clearly its own. */
-  --tree-step: 24px;
+     length, a folder's children clearly its own (34px there; sheet
+     lengths draw at 10/11 here, so 37 written lands at ~34). */
+  --tree-step: 37px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -77,7 +86,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--phone-fire);
+  color: var(--phone-fold);
   flex: none;
 }
 
@@ -126,9 +135,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  /* 48dp Material target; the pill reads a shade shorter without hurting
-     the touch. */
-  min-height: 48px;
+  /* 48dp Material target; at the chrome's 10/11 this draws the board's
+     46px pill and the touch keeps its depth. */
+  min-height: 50px;
   margin: var(--space-3) var(--space-5) var(--space-3);
   padding: 0 var(--space-4);
   /* The same cool hairline as the settings page and the vault chip:
@@ -170,7 +179,8 @@
 .ph-tree {
   flex: 1;
   overflow: auto;
-  padding: 0 var(--space-3) 0 var(--space-1);
+  /* The board's library inset: rows stand in 12px from each edge. */
+  padding: 0 var(--space-3);
 }
 
 .phone-home .tree-toolbar,
@@ -179,29 +189,47 @@
 }
 
 .phone-home .tree-row {
-  --tree-chevron: 18px;
-  min-height: 56px;
-  gap: var(--space-2);
+  /* The board's disclosure box: 22px drawn, its 13px chevron centred in
+     it (the svg at --icon-scale 1.43 below plus this row's gap stands in
+     for box + gap). Written lengths draw at the chrome's 10/11. */
+  --tree-chevron: 24.2px;
+  /* The tree counts the root level as depth 1, so pane.css's indent
+     would step even the root rows in; the board's root rows stand at the
+     pane's inset, and one level in is one step (34px drawn). */
+  --tree-indent: min(calc(max(var(--depth, 1) - 1, 0) * var(--tree-step)), 35%);
+  gap: 10px;
   padding-block: var(--space-1);
   padding-right: var(--space-2);
-  /* The depth indent (pane.css's --tree-indent) survives the phone row's
-     own padding: a folder's children sit inside it, as the board draws. */
+  /* The depth indent survives the phone row's own padding: a folder's
+     children sit inside it, as the board draws. */
   padding-left: max(var(--space-2), var(--tree-indent));
   border-radius: var(--shape-m);
 }
 
+/* The board's rows stand 50px. The plain mobile row rule (sidebar.css)
+   writes 48 and beats this file's own, so the board's height is restated
+   past it; at the chrome's 10/11, 55 written lands at 50. */
+:root[data-window-chrome="mobile"] .phone-home .tree-row {
+  min-height: 55px;
+}
+
 /* A file level with the folders' icons, as the desktop rows align. */
 .phone-home .tree-row-file {
+  /* A file has no disclosure: its icon takes the box's seat (chevron
+     measure + margin + gap) plus the row's own padding, so it lands under
+     the folders' chips, as the board draws. */
   padding-left: max(
     var(--space-2),
-    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-1))
+    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2) + 10px)
   );
 }
 
 .phone-home .tree-row .chevron {
-  --icon-scale: 1.8;
-  margin-right: calc(-1 * var(--space-1));
-  opacity: 0.85;
+  /* The board's disclosure is small and quiet: 13px drawn, at the tree's
+     own muted ink (FileTree.css's 0.6 opacity stands). The margin walks
+     the svg into its 22px box's seat, chip-ward. */
+  --icon-scale: 1.43;
+  margin-right: 10px;
 }
 
 .phone-home .tree-row:hover {
@@ -213,27 +241,58 @@
 }
 
 .phone-home .tree-row .tree-icon {
-  width: 22px;
-  height: 22px;
+  /* The board's 16px file glyph from the 15px design (folders re-scale
+     below). */
+  --icon-scale: 1.17;
   color: var(--phone-muted);
 }
 
 .phone-home .tree-row:not(.tree-row-file) .tree-icon {
-  width: 30px;
-  height: 30px;
+  /* The chip is the icon's own inline size (icons.tsx's iconSize wins over
+     any width here): 15px design at 2.2 draws the board's 30px square, and
+     the padding makes the glyph's room. The board tints the chip warm at
+     8% fire, corners at the 8px step (shape-s; shape-m is 14), its glyph
+     in the softened bronze. */
+  --icon-scale: 2.2;
   padding: var(--space-2);
-  border-radius: var(--shape-m);
-  background: color-mix(in srgb, var(--phone-ink) 5%, var(--phone-paper));
-  color: var(--phone-fire);
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--phone-fire) 8%, transparent);
+  color: var(--phone-fold);
 }
 
 .phone-home .tree-row .tree-label {
   font-size: var(--text-body);
 }
 
+/* The board marks the open document with the dot alone: the selection
+   block belongs to the desktop's pointer light, not the phone's paper
+   (aria-selected stays in the row for the readers). */
+.phone-home .tree-row-active {
+  background: none;
+  color: inherit;
+}
+
 .phone-home .tree-row .tree-badge {
   font-size: var(--text-caption);
   color: var(--phone-muted);
+}
+
+/* The board marks the open document with a fire dot before its name -
+   "happening now" is the fire's only job. The dot rides in the shared
+   file row's markup, so the default keeps it off the desktop's tree. */
+.tree-fdot {
+  display: none;
+}
+
+.phone-home .tree-fdot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--phone-fire);
+  margin-right: 8px;
+  vertical-align: 2px;
+  flex: none;
 }
 
 /* The board's line ends: the date or the folder's note count, quiet at
@@ -250,22 +309,20 @@
 }
 
 .phone-home .tree-more {
+  /* The board's 38px tap square (42 written at the chrome's 10/11), its
+     ⋯ drawn 18px from the 16px design via the svg's own scale. */
+  --icon-scale: 1.24;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   border: 0;
   border-radius: var(--shape-s);
   background: none;
   color: var(--phone-muted);
-}
-
-.phone-home .tree-more svg {
-  width: 18px;
-  height: 18px;
 }
 
 .phone-home .tree-more:active {
