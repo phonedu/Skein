@@ -55,6 +55,17 @@ export interface TreeShared {
   /** An empty folder's one button: a new document named in place there,
    *  with its label. Null where documents aren't made here. */
   newDocument: { label: string; start: () => void } | null;
+  /** The empty root's own state, where the new-document draft doesn't
+   *  apply (the phone's home): copy and a call to action of its own. */
+  emptyState: {
+    title: string;
+    hint?: string;
+    label: string;
+    start: () => void;
+  } | null;
+  /** What an empty name filter reads, instead of the empty state: the
+   *  search found nothing, which is not the same as an empty vault. */
+  noResults: string | null;
   /** A folder to bring into view: it and those above it open. */
   reveal: string | null;
 }

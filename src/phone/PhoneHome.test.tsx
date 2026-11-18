@@ -9,12 +9,19 @@ import { PhoneHome } from "./PhoneHome";
 
 const phoneHomeCss = readFileSync("src/phone/PhoneHome.css", "utf8");
 
+const fileTreeProps = vi.hoisted(() => ({
+  last: null as Record<string, unknown> | null,
+}));
+
 vi.mock("../files/FileTree", () => ({
-  FileTree: () => (
-    <div data-testid="phone-file-tree">
-      <div className="tree-toolbar">desktop controls</div>
-    </div>
-  ),
+  FileTree: (props: Record<string, unknown>) => {
+    fileTreeProps.last = props;
+    return (
+      <div data-testid="phone-file-tree">
+        <div className="tree-toolbar">desktop controls</div>
+      </div>
+    );
+  },
 }));
 
 vi.mock("../platform/capabilities", () => ({
@@ -110,7 +117,7 @@ describe("the phone library home", () => {
     expect(screen.getByTestId("phone-file-tree")).toBeTruthy();
   });
 
-  it("lets the phone search field receive text", () => {
+  it("lets the phone search field receive text, and clear itself", () => {
     render(
       <PhoneHome
         t={en as Strings}
@@ -126,8 +133,34 @@ describe("the phone library home", () => {
       name: en.phoneSearchPlaceholder,
     });
     expect(input.hasAttribute("readonly")).toBe(false);
+    // No clear while the field is empty; typing brings it, and it empties.
+    expect(
+      screen.queryByRole("button", { name: en.phoneSearchClear }),
+    ).toBeNull();
     fireEvent.change(input, { target: { value: "guide" } });
     expect((input as HTMLInputElement).value).toBe("guide");
+    fireEvent.click(screen.getByRole("button", { name: en.phoneSearchClear }));
+    expect((input as HTMLInputElement).value).toBe("");
+  });
+
+  it("hands the tree the empty vault's state and the search's no-results", () => {
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={openFolderProp}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+
+    expect(fileTreeProps.last?.["noResults"]).toBe(en.phoneSearchNoResults);
+    const empty = fileTreeProps.last?.["emptyState"] as Record<string, unknown>;
+    expect(empty.title).toBe(en.phoneVaultEmptyTitle);
+    expect(empty.hint).toBe(en.phoneVaultEmptyHint);
+    expect(empty.label).toBe(en.menuNewFile);
+    expect(typeof empty.start).toBe("function");
   });
 
   it("keeps the new-document control connected to the existing callback", () => {
@@ -171,10 +204,10 @@ describe("the phone library home", () => {
   });
 
   it("uses the Android phone rhythm for search and library rows", () => {
-    // The board's 50px rows, restated past the plain mobile row rule, and
-    // its 46px search pill: sheet lengths draw at the chrome's 10/11, so
-    // 55 and 50 are the written values.
-    expect(phoneHomeCss).toContain("min-height: 55px;");
+    // The user's ruling from the reference app: rows stand 56px drawn
+    // (62 written at the chrome's 10/11), and the search pill 46px (50
+    // written).
+    expect(phoneHomeCss).toContain("min-height: 62px;");
     expect(phoneHomeCss).toContain("padding: 0 var(--space-4);");
     expect(phoneHomeCss).toContain("min-height: 50px;");
   });

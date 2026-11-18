@@ -176,11 +176,51 @@
   opacity: 0.72;
 }
 
+/* While the search is live, its trough warms: happening-now is the fire's
+   job, and so is this. */
+.ph-search:focus-within {
+  border-color: color-mix(in srgb, var(--phone-fire) 45%, var(--ui-border));
+}
+
+.ph-search:focus-within > svg {
+  color: var(--phone-fire);
+}
+
+/* Our own clear takes the seat; the WebView's native one stays home. */
+.ph-search input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.ph-search-clear {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--phone-muted);
+}
+
+.ph-search-clear svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ph-search-clear:active {
+  background: var(--ui-hover);
+}
+
 .ph-tree {
   flex: 1;
   overflow: auto;
-  /* The board's library inset: rows stand in 12px from each edge. */
-  padding: 0 var(--space-3);
+  /* The board's library inset: rows stand in 12px from each edge. The
+     foot clears the floating action, so the last row scrolls out from
+     under it. */
+  padding: 0 var(--space-3) 80px;
 }
 
 .phone-home .tree-toolbar,
@@ -206,11 +246,11 @@
   border-radius: var(--shape-m);
 }
 
-/* The board's rows stand 50px. The plain mobile row rule (sidebar.css)
-   writes 48 and beats this file's own, so the board's height is restated
-   past it; at the chrome's 10/11, 55 written lands at 50. */
+/* The rows stand at the ruling the user took from the reference app's
+   airier list: 56px drawn (62 written at the chrome's 10/11), past the
+   plain mobile row rule the same way. */
 :root[data-window-chrome="mobile"] .phone-home .tree-row {
-  min-height: 55px;
+  min-height: 62px;
 }
 
 /* A file level with the folders' icons, as the desktop rows align. */
@@ -225,11 +265,11 @@
 }
 
 .phone-home .tree-row .chevron {
-  /* The board's disclosure is small and quiet: 13px drawn, at the tree's
-     own muted ink (FileTree.css's 0.6 opacity stands). The margin walks
-     the svg into its 22px box's seat, chip-ward. */
+  /* The board's disclosure is small and quiet: 13px drawn, centred in its
+     22px box (the side margins make the box up around the svg), at the
+     tree's own muted ink (FileTree.css's 0.6 opacity stands). */
   --icon-scale: 1.43;
-  margin-right: 10px;
+  margin-inline: 5px;
 }
 
 .phone-home .tree-row:hover {
@@ -343,6 +383,84 @@
    desktop notes-board fact strip would collide with the floating action. */
 .phone-home .view-foot {
   display: none;
+}
+
+/* The empty vault (opened, but nothing in it yet): the no-folder state's
+   sibling one page over - a glyph, two lines, and the call - standing
+   where the desktop would draft its first document in place. */
+.phone-home .tree-empty-vault {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 var(--space-6);
+  min-height: 55vh;
+}
+
+.phone-home .tree-empty-glyph {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  margin-bottom: var(--space-5);
+  background: color-mix(in srgb, var(--phone-fire) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The app's file glyph rides on a ::after (a mask cuts the paint it
+     sits on, so the chip itself must stay unmasked). */
+  --tree-empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linejoin='round'%3E%3Cpath d='M6 3h8l4 4v14H6V3z'/%3E%3Cpath d='M14 3v4h4'/%3E%3C/svg%3E");
+}
+
+.phone-home .tree-empty-glyph::after {
+  content: "";
+  width: 30px;
+  height: 30px;
+  background: var(--phone-fire);
+  -webkit-mask: var(--tree-empty-icon) center / contain no-repeat;
+  mask: var(--tree-empty-icon) center / contain no-repeat;
+}
+
+.phone-home .tree-empty-title {
+  font-size: 20px;
+  font-weight: 650;
+  color: var(--phone-ink);
+  letter-spacing: 0.01em;
+}
+
+.phone-home .tree-empty-hint {
+  margin-top: var(--space-2);
+  max-width: 280px;
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--phone-muted);
+}
+
+.phone-home .tree-empty-cta {
+  margin-top: var(--space-6);
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 0;
+  border-radius: var(--shape-pill);
+  background: var(--phone-fire);
+  color: var(--phone-paper);
+  font-size: var(--text-body);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow:
+    0 2px 6px color-mix(in srgb, var(--phone-fire) 36%, transparent),
+    0 1px 2px color-mix(in srgb, var(--phone-ink) 18%, transparent);
+}
+
+.phone-home .tree-empty-cta:active {
+  background: color-mix(in srgb, var(--phone-fire) 88%, black);
+}
+
+/* A search with no matches reads alone: one quiet line on the paper. */
+.phone-home .tree-empty-search {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--phone-muted);
 }
 
 /* The phone's empty-state for the home: no folder picked yet. A plain icon

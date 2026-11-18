@@ -8,7 +8,14 @@ const openInNewWindow = (path: string) =>
 /** What the tree's rows read: the folders' state, and the row actions apart
  *  from it, which keep while the folders are read again. */
 export function useTreeContexts(
-  input: Omit<TreeShared, keyof TreeRowActions | "newDocument" | "dropInto"> & {
+  input: Omit<
+    TreeShared,
+    | keyof TreeRowActions
+    | "newDocument"
+    | "dropInto"
+    | "emptyState"
+    | "noResults"
+  > & {
     desktop: boolean;
     dropInto: string | null | undefined;
     onRowMenu: NonNullable<TreeRowActions["onRowMenu"]>;
@@ -16,6 +23,10 @@ export function useTreeContexts(
     newDocumentLabel: string;
     setDraft: (draft: TreeDraft) => void;
     root: string;
+    /** The phone home's empty vault and its search's no-results; null
+     *  everywhere else. */
+    emptyState?: TreeShared["emptyState"];
+    noResults?: TreeShared["noResults"];
   },
 ): { rowActions: TreeRowActions; shared: TreeShared } {
   const { desktop, onRowMenu, onRowPointerDown } = input;
@@ -62,6 +73,8 @@ export function useTreeContexts(
             start: () => setDraft({ dir: root, kind: "document" }),
           }
         : null,
+      emptyState: input.emptyState ?? null,
+      noResults: input.noResults ?? null,
       reveal,
     }),
     [
@@ -80,6 +93,8 @@ export function useTreeContexts(
       setDraft,
       root,
       newDocumentLabel,
+      input.emptyState,
+      input.noResults,
       reveal,
     ],
   );

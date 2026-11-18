@@ -21,6 +21,7 @@ import { setUiState } from "../storage/ui-state";
 import {
   TreeContext,
   TreeRowActionsContext,
+  type TreeShared,
   type TreeSort,
 } from "./tree-shared";
 import { useTreeContexts } from "./useTreeContexts";
@@ -51,6 +52,10 @@ interface FileTreeProps {
   activePath: string | null;
   /** A phone-home name filter; empty keeps the normal tree. */
   filter?: string;
+  /** The empty root's state and the empty search's hint; the phone home's
+   *  two quiet states, null everywhere else. */
+  emptyState?: TreeShared["emptyState"];
+  noResults?: TreeShared["noResults"];
   /** How it opens: a tab of its own unless `how` says to look (a click,
    *  the preview tab) or Open to the Side. */
   onFileSelect: (path: string, how?: FileOpenHow) => void;
@@ -73,6 +78,8 @@ export function FileTree({
   folder,
   activePath,
   filter = "",
+  emptyState = null,
+  noResults = null,
   onFileSelect,
   onOpenAsFolder,
   onCloseFolder,
@@ -133,6 +140,8 @@ export function FileTree({
     root,
     reveal,
     filter,
+    emptyState,
+    noResults,
   });
 
   const openSortMenu = (e: ReactMouseEvent<HTMLButtonElement>) => {

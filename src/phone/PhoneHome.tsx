@@ -144,6 +144,25 @@ export function PhoneHome({
           aria-label={t.phoneSearchPlaceholder}
           placeholder={t.phoneSearchPlaceholder}
         />
+        {searchQuery && (
+          <button
+            type="button"
+            className="ph-search-clear"
+            aria-label={t.phoneSearchClear}
+            onClick={() => setSearchQuery("")}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden
+            >
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
       <div className="ph-tree">
         {openFolder.treeRoot ? (
@@ -154,6 +173,13 @@ export function PhoneHome({
             folder={openFolder.folder}
             activePath={activePath}
             filter={searchQuery}
+            emptyState={{
+              title: t.phoneVaultEmptyTitle,
+              hint: t.phoneVaultEmptyHint,
+              label: t.menuNewFile,
+              start: onNewFile,
+            }}
+            noResults={t.phoneSearchNoResults}
             onOpenAsFolder={canOpenFolder ? openFolder.openFolder : undefined}
             onFileSelect={onOpenFile}
             onCloseFolder={openFolder.closeFolder}

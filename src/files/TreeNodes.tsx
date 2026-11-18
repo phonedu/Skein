@@ -226,7 +226,31 @@ export const DirNode = memo(function DirNode({
             !loaded?.failed &&
             filtered.length === 0 &&
             !drafting &&
-            tree.newDocument && (
+            (filter ? (
+              // A search that found nothing: not an empty vault, only no
+              // matches here.
+              tree.noResults ? (
+                <div className="tx-empty tree-empty tree-empty-search">
+                  {tree.noResults}
+                </div>
+              ) : null
+            ) : tree.emptyState ? (
+              // The phone home's empty vault: its own quiet copy and call.
+              <div className="tree-empty tree-empty-vault">
+                <span className="tree-empty-glyph" aria-hidden />
+                <div className="tree-empty-title">{tree.emptyState.title}</div>
+                {tree.emptyState.hint && (
+                  <div className="tree-empty-hint">{tree.emptyState.hint}</div>
+                )}
+                <button
+                  type="button"
+                  className="tree-empty-cta"
+                  onClick={tree.emptyState.start}
+                >
+                  {tree.emptyState.label}
+                </button>
+              </div>
+            ) : tree.newDocument ? (
               // Empty: a button that makes the first document.
               <div className="tx-empty tree-empty">
                 <button
@@ -237,7 +261,7 @@ export const DirNode = memo(function DirNode({
                   {tree.newDocument.label}
                 </button>
               </div>
-            )}
+            ) : null)}
           <TreeRowsInSight
             dir={path}
             entries={filtered}
