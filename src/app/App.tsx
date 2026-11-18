@@ -222,7 +222,9 @@ function App() {
               presence={sidebarPresence}
               closing={sidebarClosing}
               mode={panelMode}
-              onModeChange={setPanelMode}
+              onModeChange={(id) =>
+                id === "search" ? searchFiles() : setPanelMode(id)
+              }
               width={sidebarWidth}
               openFolder={openFolder}
               activePath={activeTab.path}

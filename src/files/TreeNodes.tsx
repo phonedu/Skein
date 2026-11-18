@@ -18,6 +18,7 @@ import {
 import { fs } from "../platform/ipc";
 import { useSettings } from "../prefs/SettingsContext";
 import { basename, isInside, onTheWay, parentDir } from "../utils/path";
+import { isMobileApp } from "../platform/capabilities";
 import { useLongPress } from "../utils/hooks/useLongPress";
 import { isDocumentName } from "./document-name";
 import { localeOf } from "../i18n/langs";

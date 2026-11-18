@@ -11,7 +11,7 @@ import {
 import type { SettingsPanelProps } from "../settings/SettingsPanel";
 import { Presence } from "../engine/motion/usePresence";
 import { isIOSApp } from "../platform/capabilities";
-import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../utils/events";
+import { SHOW_SIDEBAR_TAB_EVENT } from "../utils/events";
 import {
   closeSettingsDialog,
   onSettingsDialogChange,

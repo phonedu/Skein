@@ -584,7 +584,7 @@ export default {
   grammarNext: "Следующее замечание",
   notesLibrary: "Библиотека",
   notesRecent: "Недавние",
-  notesFootCount: "Заметок: {n}",
+  notesFootCount: "Заметок: {n}",
   notesFootNote: "Markdown — это всё",
   treeTab: "Файлы",
   phoneBackToLibrary: "Вернуться в библиотеку",

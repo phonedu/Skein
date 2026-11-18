@@ -13,7 +13,6 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
-
 }
 
 .action-sheet-grab {
@@ -30,11 +29,7 @@
   max-height: calc(100vh - var(--safe-top, 0px) - 154px);
   overflow-y: auto;
   border-radius: 22px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--ui-surface) 96%, white 4%),
-    var(--ui-surface)
-  );
+  background: var(--ui-surface);
   box-shadow: 0 1px 3px color-mix(in srgb, var(--ui-text) 6%, transparent);
 }
 
