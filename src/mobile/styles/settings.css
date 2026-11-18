@@ -213,6 +213,13 @@
     line-height: 1.5;
   }
 
+  /* A switch is small: it keeps its seat at the row's end while the name
+     wraps beside it, instead of dropping to a line of its own. */
+  :root[data-window-chrome="mobile"]
+    .settings-row.settings-toggle-row:not([data-stacked]) {
+    flex-wrap: nowrap;
+  }
+
   :root[data-window-chrome="mobile"]
     :is(
       .settings-row-label,

@@ -403,6 +403,38 @@ button.settings-phone-ic:active {
   border-top: 1px solid var(--ui-border);
 }
 
+/* Legacy cards (the About links, a provider's account) keep the same
+   rows: the cards' hairlines are drawn the same way, inset to the body's
+   own padding, since a border-top with a color-mix in it is dropped whole
+   on this web view. */
+.settings-phone .settings-content-host .settings-group-body > .settings-row {
+  position: relative;
+  /* 62 written: 56 drawn at the chrome's step. */
+  min-height: 62px;
+  background-image: linear-gradient(
+    to right,
+    var(--ui-border),
+    var(--ui-border)
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+.settings-phone
+  .settings-content-host
+  .settings-group-body
+  > .settings-row:first-child {
+  background-image: none;
+}
+
+/* The sponsor line under the app's name: an action, not a web link. */
+.settings-phone .settings-about-sponsor {
+  color: var(--ui-accent-text);
+  font-size: var(--text-footnote);
+  text-decoration: none;
+}
+
 /* A row's help "?" rides after its name, on the same line - not a line of
    its own under it. */
 .settings-phone .settings-row-label {
@@ -500,4 +532,46 @@ button.settings-phone-ic:active {
   background-size: 100% 1px;
   background-position: 0 0;
   background-repeat: no-repeat;
+}
+
+/* ---- The search's results: the list's cards, match for match ---- */
+
+/* Results replace the list, outside the page host: their groups take the
+   same captions, cards and inset hairlines by their own names. */
+.settings-phone .settings-phone-body > .settings-group {
+  margin-top: var(--space-4);
+}
+
+.settings-phone .settings-phone-body > .settings-group:first-of-type {
+  margin-top: var(--space-2);
+}
+
+.settings-phone .settings-phone-body .settings-group-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-footnote);
+  letter-spacing: 0.08em;
+}
+
+.settings-phone .settings-phone-body .settings-group-body {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+}
+
+.settings-phone .settings-phone-body .settings-group-body > .settings-row {
+  min-height: 62px;
+  background-image: linear-gradient(
+    to right,
+    var(--ui-border),
+    var(--ui-border)
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+.settings-phone
+  .settings-phone-body
+  .settings-group-body
+  > .settings-row:first-child {
+  background-image: none;
 }
