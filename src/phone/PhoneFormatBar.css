@@ -138,6 +138,18 @@
   background: var(--ui-border);
 }
 
+/* The AI actions are sentences, so they wrap and the panel grows rather
+   than clipping them. */
+.pf-ai-panel .pf-ai-key {
+  height: auto;
+  min-height: 38px;
+  padding: 6px;
+  font-size: var(--text-footnote);
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+
 /* Inline formats, over the selection, clear of the finger. */
 .pf-selection {
   position: fixed;

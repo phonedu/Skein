@@ -2,6 +2,8 @@
 /// without a direct import between the two.
 export const TRIGGER_COMPLETION_EVENT = "textus:trigger-completion";
 export const TRIGGER_GRAMMAR_CHECK_EVENT = "textus:trigger-grammar-check";
+/** Asks Textus AI for a picture of the selected or caret paragraph. */
+export const ILLUSTRATE_PARAGRAPH_EVENT = "textus:illustrate-paragraph";
 export const TOGGLE_FLOATING_CHAT_EVENT = "textus:toggle-floating-chat";
 export const TOGGLE_FIND_REPLACE_EVENT = "textus:toggle-find-replace";
 /** Edit › Replace… and Find Next. */
@@ -124,6 +126,7 @@ export interface BlockMenuRequest {
 interface AppEvents {
   [TRIGGER_COMPLETION_EVENT]: undefined;
   [TRIGGER_GRAMMAR_CHECK_EVENT]: undefined;
+  [ILLUSTRATE_PARAGRAPH_EVENT]: undefined;
   [TOGGLE_FLOATING_CHAT_EVENT]: undefined;
   [TOGGLE_FIND_REPLACE_EVENT]: undefined;
   [SHOW_REPLACE_EVENT]: undefined;

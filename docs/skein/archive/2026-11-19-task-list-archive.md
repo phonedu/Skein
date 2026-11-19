@@ -49,7 +49,7 @@ E0–E4 全部完成；规格已归档 [2026-11-17-collect-plugin.md](2026-11-17
 - 手机首页、编辑器栏、sheet、返回手势、元素一致性等批次已推（提交记录见 `git log`；具体 release 以发布记录为准）。
 - 2026-11-19 的“重设计合并概念”已归档，不推进；手机线继续按裁决 29/30/31 走。
 - **PH1 手机格式工具栏（2026-11-19，完成）**：常驻主条六键＋就地面板 ×2＋插入面板 2×5＋选中浮条；表格/图片上下文排；「更多」菜单减法；源码模式 heading/list/clear 事件通路；图片选择器经 `textus-files` ContentResolver 实际插入通过。真机华为 PKT0220512001548 全项验收；单测 7/7＋45/45，typecheck/eslint/prettier/build 过（启动 chunk 918KB，手机条 lazy）。§2.5 四项结论：task-list/sink/lift 已补；INSERT_BLOCK 全集核过；`selectionchange` 用 rAF 合并；原生块菜单「剪切块」仍待裁。
-- **PH1c 手机工具栏手感修正（2026-11-19，完成）**：选中浮条离选区 96 → 36px；`+` 面板撤「更多」改 3×3 九键；主条加 AI 键（配图 / 续写 / 检查语法），手机 AI sheet 只留这三样；剪切 / 全选 / 复制纯文本交回系统选区菜单；`buildPhoneMoreItems` 只返回 `aiItems`。真机通过，桌面右键不动。
+- **PH1c 手机工具栏手感修正（2026-11-19，完成）**：选中浮条离选区 96 → 36px；`+` 面板撤「更多」改 3×3 九键；主条加 AI 键（配图 / 续写 / 检查语法），AI 走与文本/列表相同的 `.pf-panel` 就地面板、不再弹窗；剪切 / 全选 / 复制纯文本交回系统选区菜单；`buildPhoneMoreItems` 只返回 `aiItems`。真机通过，桌面右键不动。
 - **PH1b 工具栏面板形态返工（2026-11-19）**：按《手机端工具栏改造方案》§2.6 完成——文本/列表改就地面板（本地 `panel` state、`.pf-panel` 浮主条上方 6px、键盘不退选区不丢、同键收/另一键切/点正文收、`aria-expanded`）；插入面板撤 `Sheet`/抓取条/取消钮，改 fixed chrome 层占键盘位（`keyboardCovered()` 快照、`insert-open` 豁免 `.keyboard-up`、主条抬起）；主条与面板 `onMouseDown` 保焦点；「更多」菜单减插入表格/查找替换（AI 两样留）。真机华为 PKT0220512001548 五项验收过；附 `SourceEditor` focus 注册 + `focusDocument` 显式回焦、选中浮条左缘 `half=156`。证据并入 PH1 条。
 
 ---

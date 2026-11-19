@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Strings } from "../i18n/strings";
 import {
@@ -25,6 +25,9 @@ type Anchor = { top: number; left: number; below: boolean };
  *  up and the selection is in this document. */
 function useSelectionAnchor(tabId: string, enabled: boolean): Anchor | null {
   const [anchor, setAnchor] = useState<Anchor | null>(null);
+  // One scroll-up per selection, so a selection already at the end falls
+  // back to the stacked position instead of hunting for room.
+  const nudged = useRef(false);
   useEffect(() => {
     if (!enabled) {
       setAnchor(null);
@@ -45,6 +48,7 @@ function useSelectionAnchor(tabId: string, enabled: boolean): Anchor | null {
           return;
         }
         if (selection.isCollapsed) {
+          nudged.current = false;
           setAnchor(null);
           return;
         }
@@ -66,24 +70,45 @@ function useSelectionAnchor(tabId: string, enabled: boolean): Anchor | null {
           Math.max(window.innerWidth - half, half),
         );
         // Android's own selection menu sits above the selection; ours sits
-        // just below it, past the selection handles (36 is enough for them),
-        // and above only near the bottom where there is no room below.
+        // just below it, past the selection handles (36 is enough for them).
+        // At the page's bottom it scrolls the editor up once to make that
+        // room; if there is none (end of the document), it stacks above the
+        // system menu rather than drawing over it.
         const gap = 36;
-        const below = box.bottom + gap + 56 < window.innerHeight - 60;
+        const barRoom = 56;
+        const visibleBottom = window.innerHeight - 60;
+        const below = box.bottom + gap + barRoom < visibleBottom;
+        if (!below && !nudged.current) {
+          nudged.current = true;
+          const scroller = root.querySelector<HTMLElement>(".editor-scroll");
+          if (scroller) {
+            const max = scroller.scrollHeight - scroller.clientHeight;
+            const before = scroller.scrollTop;
+            scroller.scrollTop = Math.min(
+              max,
+              before + box.bottom + gap + barRoom - visibleBottom,
+            );
+            if (scroller.scrollTop !== before) return;
+          }
+        }
         setAnchor({
-          top: below ? box.bottom + gap : box.top,
+          top: below ? box.bottom + gap : box.top - 56,
           left,
           below,
         });
       });
     };
+    const onSelectionChange = () => {
+      nudged.current = false;
+      read();
+    };
     read();
-    document.addEventListener("selectionchange", read);
+    document.addEventListener("selectionchange", onSelectionChange);
     window.addEventListener("scroll", read, true);
     window.addEventListener("resize", read);
     return () => {
       cancelAnimationFrame(frame);
-      document.removeEventListener("selectionchange", read);
+      document.removeEventListener("selectionchange", onSelectionChange);
       window.removeEventListener("scroll", read, true);
       window.removeEventListener("resize", read);
     };

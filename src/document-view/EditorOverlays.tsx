@@ -14,6 +14,9 @@ import { FindReplaceBar } from "../editor/find/FindReplaceBar";
 import { Presence } from "../engine/motion/usePresence";
 import type { Settings } from "../prefs/SettingsContext";
 import type { Strings } from "../i18n/strings";
+import { useWindowEvent } from "../utils/hooks/useWindowEvent";
+import { ILLUSTRATE_PARAGRAPH_EVENT } from "../utils/events";
+import { editorInUse } from "../editor/editor-in-use";
 
 /** What opens over one tab's editor: the find bar, its menu, the AI notice,
  *  dialogs and the grammar card. */
@@ -39,6 +42,12 @@ export function EditorOverlays({
   const { run, clipboard, notice } = setup;
   const { imageNameRequest, closeImageNameDialog } = setup.imageName;
   const { findReplace, tableDialogOpen, setTableDialogOpen } = popups;
+  // The phone's AI panel: a picture for the selection or the caret's
+  // paragraph, as the right-click menu's item does it.
+  useWindowEvent(ILLUSTRATE_PARAGRAPH_EVENT, () => {
+    if (run((ctx) => editorInUse(ctx.get(editorViewCtx).dom)))
+      review.illustrateParagraph();
+  });
   const findBar = (
     <Presence show={findReplace.open}>
       {findReplace.open && (

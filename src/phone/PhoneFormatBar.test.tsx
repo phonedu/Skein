@@ -9,10 +9,10 @@ import type { Strings } from "../i18n/strings";
 import { NO_BLOCK } from "../editor/caret-block";
 import {
   EDIT_ACTION_EVENT,
-  EDITOR_MORE_EVENT,
   INSERT_BLOCK_EVENT,
   TOGGLE_BLOCK_EVENT,
   TOGGLE_MARK_EVENT,
+  TRIGGER_COMPLETION_EVENT,
 } from "../utils/events";
 import { PhoneFormatBar } from "./PhoneFormatBar";
 
@@ -93,10 +93,20 @@ describe("PhoneFormatBar", () => {
     expect(event?.detail).toBe("undo");
   });
 
-  it("opens the AI actions from the main bar", () => {
+  it("opens the AI actions in the same in-place panel as text and list", () => {
     renderBar();
     fireEvent.click(screen.getByRole("button", { name: AI_NAME }));
-    expect(dispatched.some((e) => e.type === EDITOR_MORE_EVENT)).toBe(true);
+    expect(screen.getByRole("toolbar", { name: AI_NAME })).toBeTruthy();
+    for (const label of [
+      t.illustrateParagraph,
+      t.triggerCompletion,
+      t.triggerGrammarCheck,
+    ])
+      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: t.triggerCompletion }));
+    expect(dispatched.some((e) => e.type === TRIGGER_COMPLETION_EVENT)).toBe(
+      true,
+    );
   });
 
   it("opens the heading choices just above the bar", () => {

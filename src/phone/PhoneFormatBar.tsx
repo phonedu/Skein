@@ -15,9 +15,11 @@ import {
 import { fill } from "../i18n/fill";
 import { AI_NAME } from "../i18n/names";
 import {
-  EDITOR_MORE_EVENT,
+  ILLUSTRATE_PARAGRAPH_EVENT,
   INSERT_BLOCK_EVENT,
   TOGGLE_BLOCK_EVENT,
+  TRIGGER_COMPLETION_EVENT,
+  TRIGGER_GRAMMAR_CHECK_EVENT,
   sendAppEvent,
 } from "../utils/events";
 import { aiFeatures } from "../prefs/ai-features";
@@ -48,7 +50,7 @@ import "./PhoneFormatBar.css";
 /** A press that keeps the document's focus, and so its keyboard. */
 const keepFocus = (e: { preventDefault: () => void }) => e.preventDefault();
 
-type Panel = "text" | "list" | null;
+type Panel = "text" | "list" | "ai" | null;
 
 /** The heading choice: body text or a level, the caret's own ticked. */
 function headingChoices(t: Strings): {
@@ -95,8 +97,10 @@ export function PhoneFormatBar({
   const imageService = useImageService(settings);
   // The same three actions the phone's AI sheet offers: a picture, a
   // continuation, a grammar check. No action, no key.
-  const showAi =
-    ai.completion || ai.grammar || (ai.chat && imageService !== null);
+  const canIllustrate = ai.chat && imageService !== null;
+  const canComplete = ai.completion;
+  const canGrammar = ai.grammar;
+  const showAi = canIllustrate || canComplete || canGrammar;
 
   // The bar is hidden while the keyboard is down (format-bar.css), but the
   // insert panel closes the keyboard on purpose: `insert-open` keeps it.
@@ -193,11 +197,9 @@ export function PhoneFormatBar({
             {showAi && (
               <IconButton
                 label={AI_NAME}
-                className="pf-key"
-                onClick={() => {
-                  focusDocument(tabId);
-                  sendAppEvent(EDITOR_MORE_EVENT);
-                }}
+                className={`pf-key${panel === "ai" ? " is-on" : ""}`}
+                expanded={panel === "ai"}
+                onClick={() => togglePanel("ai")}
               >
                 <AssistantIcon />
               </IconButton>
@@ -238,6 +240,14 @@ export function PhoneFormatBar({
           <HeadingPanel t={t} tabId={tabId} block={block} />
         ) : panel === "list" ? (
           <ListPanel t={t} tabId={tabId} block={block} />
+        ) : panel === "ai" ? (
+          <AiPanel
+            t={t}
+            tabId={tabId}
+            illustrate={canIllustrate}
+            complete={canComplete}
+            grammar={canGrammar}
+          />
         ) : null}
       </Presence>
       <Presence show={insertOpen}>
@@ -365,6 +375,74 @@ function ListPanel({
       >
         <OutdentActionIcon />
       </button>
+    </PresenceDiv>
+  );
+}
+
+/** The AI writing actions, in the same in-place panel as the heading and
+ *  list choices: a picture, a continuation, a grammar check. */
+function AiPanel({
+  t,
+  tabId,
+  illustrate,
+  complete,
+  grammar,
+}: {
+  t: Strings;
+  tabId: string;
+  illustrate: boolean;
+  complete: boolean;
+  grammar: boolean;
+}) {
+  const choose = (
+    event:
+      | typeof ILLUSTRATE_PARAGRAPH_EVENT
+      | typeof TRIGGER_COMPLETION_EVENT
+      | typeof TRIGGER_GRAMMAR_CHECK_EVENT,
+  ) => {
+    focusDocument(tabId);
+    sendAppEvent(event);
+  };
+  return (
+    <PresenceDiv
+      className="pf-panel pf-ai-panel"
+      role="toolbar"
+      aria-label={AI_NAME}
+      onMouseDown={keepFocus}
+    >
+      {illustrate && (
+        <button
+          type="button"
+          className="pf-panel-key pf-ai-key"
+          aria-label={t.illustrateParagraph}
+          onMouseDown={keepFocus}
+          onClick={() => choose(ILLUSTRATE_PARAGRAPH_EVENT)}
+        >
+          {t.illustrateParagraph}
+        </button>
+      )}
+      {complete && (
+        <button
+          type="button"
+          className="pf-panel-key pf-ai-key"
+          aria-label={t.triggerCompletion}
+          onMouseDown={keepFocus}
+          onClick={() => choose(TRIGGER_COMPLETION_EVENT)}
+        >
+          {t.triggerCompletion}
+        </button>
+      )}
+      {grammar && (
+        <button
+          type="button"
+          className="pf-panel-key pf-ai-key"
+          aria-label={t.triggerGrammarCheck}
+          onMouseDown={keepFocus}
+          onClick={() => choose(TRIGGER_GRAMMAR_CHECK_EVENT)}
+        >
+          {t.triggerGrammarCheck}
+        </button>
+      )}
     </PresenceDiv>
   );
 }
