@@ -73,6 +73,18 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 - **H1 Android 默认库 = App Documents（2026-11-19，完成）**：清装首启首页直接显示 `getExternalFilesDir(Documents)`（`/storage/emulated/0/Android/data/com.catvinci.textus/files/Documents`），无 SAF 授权；空库 CTA 直接命名建文件、2s 自动保存、行菜单重命名/删除均过；图片 content URI 已由 `textus-files` `pick_image` + `read_data` 解决。手机无 Save 命令，自动保存强制开启。
 - **H6 打开文件处理（2026-11-19 核）**：`useExternalChangeReload` 已在 `FILE_WRITTEN_EVENT` 时只读相关 tab；干净 tab 经 `takeDiskText` 原地重载（一次 undo，AI 对话保留），脏 tab 继续 defer；`external-change.test.ts` 覆盖插件通知与 patch。无代码改动，任务本身早已落地。
 
+### 1.8 同步插件多端 spike（S1，2026-11-19 完成 WebDAV 轨）
+
+| 项 | 证据 |
+| --- | --- |
+| Android 插件可运行 | manifest `platforms: ["desktop","ios"]`（Android 走 iOS 运行时，`8d57c7c`）；设置 › 扩展 › 插件 › 云同步页面在华为 PKT0220512001548 完整渲染 |
+| 真机上传/下载/删除/改名/冲突/杀进程 | 全部通过；含 16 MiB PDF（8×2 MiB 块）、App trash 删除、锁残留提示 + `清除遗留锁`、冲突副本 `Sync conflicts/phone-note2 (9efe122e).md` |
+| 桌面官方插件读同一远端 | portable 隔离构建的 0.6.1 插件下载手机上传的 5 个文件；桌面改文件后手机下载到改动 |
+| S3 | 未跑通：s3rver 不支持 `If-None-Match: *` 条件写，插件按设计中止；转 S1b（真实 S3/MinIO/R2） |
+| 轨 A / 轨 B | 未跑；U1 维持 App Documents 普通路径，H9 仍条件任务 |
+| 报告 | [同步插件多端 spike 报告](../03-调研/同步评审/spike-报告.md) |
+| 插件提交 | `skein-sync-prep`：`8d57c7c` Android、`4874d4c` 安全补丁、`175b53c` 改名不误判批量删除 |
+
 ---
 
 ## 2. 封存 / 不推进
