@@ -1,6 +1,6 @@
 # Textus 手机端格式工具栏改造方案（墨契三件套移植）
 
-> **状态**：**第一片 + PH1b 已完成（2026-11-19）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界，**§2.6 = 第一片形态返工单（已完成，任务 PH1b ✅）**；PH1 余清除格式 / 图片实际插入 / 选中浮条真机复核。**任务 = 任务清单 PH1 ＋ PH1b（返工）。**
+> **状态**：**PH1 已完成（2026-11-19）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界，**§2.6 = 第一片形态返工单（已完成，任务 PH1b ✅）**；PH3/PH4 核查另列。**任务 = 任务清单 PH1（已归档）＋ PH1b（已归档）。**
 > **对象**：本仓 `src/app/FormatBar.tsx`（手机分支）· `format-bar-phone.tsx` · `format-buttons.ts` · `format-bar.css`；墨契侧规格 = `C:\Project\Moqi\project-b\docs\10-移动端UI与交互规范.md` §6.3（2026-10-24 减法批定稿）。
 > **读法 · 寿命**：实施手机端格式工具时按 § 跳入；上游发布浮层格式条时回 §5 看冲突处理。
 > **规范的家**：裁决在《界面改造方案》§4.8；任务状态在《任务清单》。
@@ -74,16 +74,16 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 
 说明：`code-block` / `table` / `blockquote` / `callout` / `math-block` / `task-list` / `rule` 的 id 见 `src/editor/blocks/block-kind-list.ts`；**图片走 `pickImageFile` + `copyToImageFolder` + `INSERT_MARKDOWN_EVENT`**（已选中图片的宽度/删除仍走 `IMAGE_ACTION_EVENT`）；链接走 `INSERT_LINK_EVENT`。**若实施时发现「更多」没有现成菜单可开，则第 10 键改为「H2」（`INSERT_BLOCK_EVENT "h2"`），并在 PH1 证据里记下这一替换。**
 
-> **Android 真机发现（2026-11-19）**：系统选择器能开，但返回 `content://com.android.providers.media.documents/...`；`read_binary_file_base64` 只走 `fs::read`，图片实际插入失败。归 **H1**（content resolver 拷到缓存再走普通路径）后回 PH1 复核；选择器入口本身已验。
+> **Android 真机（2026-11-19）**：系统选择器返回 `content://com.android.providers.media.documents/...`；已由 `textus-files` 插件新增 `pick_image`（带文件名）＋ `read_data`（ContentResolver）解决，真机实际插入通过（draft assets URL）。H1 仍负责「默认库 = App Documents」的普通路径，但图片选择器这一项已不阻塞 PH1。
 
 ### 2.5 待对清单（实施前逐项核；全是「事件有没有」，不是「要不要造」）
 
 > **这四项并入任务清单 PH1 验收**：每项在 PH1 证据里给出「有 / 无、补了什么菜单层」的结论；不是另开任务。
 
-1. 待办列表 toggle 与缩进 / 反缩进：**已补**——`TOGGLE_BLOCK_EVENT` 新增 `task-list`、`sink-list-item`、`lift-list-item`（菜单层，非内核）；真机再核。
-2. `INSERT_BLOCK_EVENT` 的 detail 全集：已按 `src/editor/blocks/block-kind-list.ts` 核对；图片插入改用 picker（见 §2.4），不走 `IMAGE_ACTION_EVENT`。
-3. `selectionchange` 在 Tauri Android WebView 的频率与节流（墨契 Android 学费清单同族，见《改造方案》附录 B.3.3）
-4. 原生块菜单缺「剪切块」（`block-menu.ts` 只有 copy/duplicate/delete）——补一条菜单项是小活，裁完再动
+1. 待办列表 toggle 与缩进 / 反缩进：**已补**——`TOGGLE_BLOCK_EVENT` 新增 `task-list`、`sink-list-item`、`lift-list-item`（菜单层，非内核）；真机已核。
+2. `INSERT_BLOCK_EVENT` 的 detail 全集：已按 `src/editor/blocks/block-kind-list.ts` 核对；图片插入改用 picker（见 §2.4），不走 `IMAGE_ACTION_EVENT`。**结论：有；图片经 `textus-files` ContentResolver 读取，真机实际插入通过。**
+3. `selectionchange` 在 Tauri Android WebView 的频率与节流（墨契 Android 学费清单同族，见《改造方案》附录 B.3.3）。**结论：有；`useSelectionAnchor` 用 `requestAnimationFrame` 合并，未额外节流，真机选区浮条跟手、无抖动。**
+4. 原生块菜单缺「剪切块」（`block-menu.ts` 只有 copy/duplicate/delete）——补一条菜单项是小活，裁完再动。**结论：仍缺；待裁，不阻塞 PH1。**
 
 ### 2.6 形态修正单（2026-11-19 · 第一片返工 = 任务 PH1b）
 
