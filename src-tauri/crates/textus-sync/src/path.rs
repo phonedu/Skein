@@ -93,6 +93,15 @@ pub fn in_scope(path: &str) -> bool {
             || has_extension(path, &MEDIA_EXTENSIONS))
 }
 
+/// Whether a folder may contain files the sync carries. Hidden folders are
+/// not walked; `.textus` and `.obsidian` are reached by the scan itself.
+pub fn descend(path: &str) -> bool {
+    relative_path(path)
+        && path
+            .split('/')
+            .all(|part| !part.starts_with('.') && !ignored_folder(part))
+}
+
 fn ignored_folder(part: &str) -> bool {
     IGNORED_FOLDERS
         .iter()

@@ -13,6 +13,7 @@ use crate::protocol::{
 };
 use crate::store::ObjectStore;
 use chrono::{SecondsFormat, Utc};
+use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
 
@@ -25,7 +26,8 @@ pub struct SyncOptions {
     pub allow_bulk_delete: bool,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SyncResult {
     pub revision: String,
     pub uploaded: usize,

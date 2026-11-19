@@ -104,6 +104,7 @@ export const commands = {
 	 *  deleting it, and refuses the folder the tree is showing.
 	 */
 	tree_trash_entry: (path: string, root: string) => __TAURI_INVOKE<null>("tree_trash_entry", { path, root }),
+	sync_run: (request: string) => __TAURI_INVOKE<string>("sync_run", { request }),
 	/**
 	 *  Where an Obsidian image embed's file is, as an absolute path for the asset
 	 *  protocol; None when it isn't an image or isn't in the vault.

@@ -40,6 +40,7 @@ mod plugins;
 mod schedule;
 mod settings;
 mod spawn;
+mod sync;
 #[cfg(desktop)]
 mod tab_drag;
 #[cfg(target_os = "macos")]

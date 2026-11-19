@@ -36,6 +36,7 @@ pub mod pdf_page_numbers;
 pub mod prefs;
 pub mod recents;
 pub mod session;
+pub mod sync;
 pub mod system_info;
 pub mod theme_gallery;
 pub mod themes;

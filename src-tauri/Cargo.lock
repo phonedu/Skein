@@ -5034,6 +5034,7 @@ name = "textus"
 version = "1.4.5"
 dependencies = [
  "aicompat",
+ "async-trait",
  "base64 0.22.1",
  "block2",
  "calamine",
@@ -5080,6 +5081,7 @@ dependencies = [
  "tauri-plugin-updater",
  "tauri-specta",
  "tempfile",
+ "textus-sync",
  "tokio",
  "trash",
  "unicode-normalization",

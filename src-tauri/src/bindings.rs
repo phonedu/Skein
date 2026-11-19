@@ -41,6 +41,7 @@ fn groups() -> Vec<(&'static str, Builder<tauri::Wry>)> {
                     crate::commands::tree_ops::tree_move_entry,
                     crate::commands::tree_ops::tree_rename_entry,
                     crate::commands::tree_ops::tree_trash_entry,
+                    crate::commands::sync::sync_run,
                     crate::commands::vault::resolve_vault_image,
                     crate::commands::vault::resolve_note_link,
                     crate::commands::link_root::document_link_root,
