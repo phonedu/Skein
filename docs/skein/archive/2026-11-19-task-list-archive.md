@@ -85,6 +85,16 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 | 报告 | [同步插件多端 spike 报告](../03-调研/同步评审/spike-报告.md) |
 | 插件提交 | `skein-sync-prep`：`8d57c7c` Android、`4874d4c` 安全补丁、`175b53c` 改名不误判批量删除 |
 
+### 1.9 手机插件入口 / 同步状态（H8，2026-11-19）
+
+| 项 | 证据 |
+| --- | --- |
+| 首页插件入口 | `PhoneHome` 顶栏加插件按钮（Puzzle），直达 设置 › 扩展 › 插件；真机华为 PKT0220512001548 通过（`8bef239f`） |
+| 首页同步状态 | 搜索框下显示插件状态条（如“尚未同步”），点击同样进插件页；真机通过 |
+| 宿主动作 | `layout.tabs` 供插件判断打开文件；`onDidSave` / `onDidRename` / `onDidChangeRoot` 已存在；同步写入走 broker 的 `FILE_WRITTEN_EVENT`，外部改重载链路已覆盖 |
+| 未做 | 编辑器页状态（首页已满足 H8 的“首页/编辑器”二选一）；正式 open-docs 注册表留 S2 |
+| 测试 | `PhoneHome.test` 14/14；Android debug APK 真机验收 |
+
 ---
 
 ## 2. 封存 / 不推进
