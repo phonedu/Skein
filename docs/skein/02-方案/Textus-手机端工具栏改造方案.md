@@ -1,6 +1,6 @@
 # Textus 手机端格式工具栏改造方案（墨契三件套移植）
 
-> **状态**：**已裁待实施（2026-11-18，用户裁）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界。
+> **状态**：**已裁待实施（2026-11-18，用户裁）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界。**任务 = 任务清单 PH1。**
 > **对象**：本仓 `src/app/FormatBar.tsx`（手机分支）· `format-bar-phone.tsx` · `format-buttons.ts` · `format-bar.css`；墨契侧规格 = `C:\Project\Moqi\project-b\docs\10-移动端UI与交互规范.md` §6.3（2026-10-24 减法批定稿）。
 > **读法 · 寿命**：实施手机端格式工具时按 § 跳入；上游发布浮层格式条时回 §5 看冲突处理。
 > **规范的家**：裁决在《界面改造方案》§4.8；任务状态在《任务清单》。
@@ -60,18 +60,30 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 
 ### 2.4 插入面板（占键盘位，2 列 × 5 行）
 
-代码块 / 表格 / 引用 / 图片 / 链接 / 分割线…（明细 = `INSERT_BLOCK_EVENT` 各 detail 对齐，待办②）；图片走既有 `IMAGE_ACTION_EVENT` 面。
+10 键定死如下（全部走既有事件；第 10 键「更多」打开完整插入菜单，不新增内核行为）：
+
+| 行 | 左 | 右 |
+| --- | --- | --- |
+| 1 | 代码块 `code-block` | 表格 `table` |
+| 2 | 引用 `blockquote` | 标注 `callout` |
+| 3 | 公式 `math-block` | 待办列表 `task-list` |
+| 4 | 分割线 `rule` | 图片 `IMAGE_ACTION_EVENT` |
+| 5 | 链接 `INSERT_LINK_EVENT` | 更多（完整插入菜单 / slash 菜单） |
+
+说明：`code-block` / `table` / `blockquote` / `callout` / `math-block` / `task-list` / `rule` 的 id 见 `src/editor/blocks/block-kind-list.ts`；图片与链接走既有事件。**若实施时发现「更多」没有现成菜单可开，则第 10 键改为「H2」（`INSERT_BLOCK_EVENT "h2"`），并在 PH1 证据里记下这一替换。**
 
 ### 2.5 待对清单（实施前逐项核；全是「事件有没有」，不是「要不要造」）
 
+> **这四项并入任务清单 PH1 验收**：每项在 PH1 证据里给出「有 / 无、补了什么菜单层」的结论；不是另开任务。
+
 1. 待办列表（task list）toggle 与缩进 / 反缩进（sink / lift list item）是否已在 `editor-menu` 暴露；无则**菜单层补发**（仍非内核改动）
-2. `INSERT_BLOCK_EVENT` 的 detail 全集（分割线 / 图片插入路径）
+2. `INSERT_BLOCK_EVENT` 的 detail 全集（分割线 / 图片插入路径）；§2.4 的 10 键按此核对
 3. `selectionchange` 在 Tauri Android WebView 的频率与节流（墨契 Android 学费清单同族，见《改造方案》附录 B.3.3）
 4. 原生块菜单缺「剪切块」（`block-menu.ts` 只有 copy/duplicate/delete）——补一条菜单项是小活，裁完再动
 
 ## 3. 视觉（纸墨画板同语言）
 
-- 主条 46px 贴键盘顶；纸墨 token（暖纸底 / 石墨字），**fire 只给 active writing state**（沿用 phone-handoff 世界设定）
+- 主条 46px 贴键盘顶；纸墨 token（暖纸底 / 石墨字），**fire 只给 active writing state**（沿用手机纸墨 token 与 `PhoneEditorBarIcons` 族）
 - 六键线条图标 20px / 2px，与 `PhoneEditorBarIcons` 族一致；面板 / 浮层走 `ActionSheet` / `Presence` 既有运动体系
 - 横滑排与隐藏滚动条（`format-bar.css:179`）随本次**退役**
 

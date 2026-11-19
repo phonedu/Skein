@@ -2,11 +2,11 @@
 
 > 从 Markdown 编辑器到多端笔记 Agent 工作台
 >
-> 版本：v1.3（项目基线）
-> 日期：2026-11-16
-> 对象：`CatVinci-Studio/Textus` v1.4.2（MIT License）
-> 配套：《笔记资产理论》v0.2 · 《Textus-Agent工具契约》v0.3 · 《Textus-界面改造方案》v0.1 · 《Agent基座与竞品调研》v0.2
-> 存放：`C:\Project\textus\docs\baseline\`（工作仓内，独立子目录不与上游 docs 混排）
+> 版本：v1.6（项目基线；2026-11-19 修订）
+> 日期：2026-11-16（初版）· 2026-11-19（现行修订）
+> 对象：成文对象 `CatVinci-Studio/Textus` v1.4.2；**现行基线 v1.4.5**（2026-11-18 并线；下一节拍 v1.4.6）
+> 配套：《笔记资产理论》v0.2 · 《Textus-Agent工具契约》v0.3.1 · 《Textus-界面改造方案》v0.7 · 《Agent基座与竞品调研》v0.2
+> 存放：`C:/Project/Textus/docs/skein/02-方案/`
 
 ## 文档说明
 
@@ -14,11 +14,11 @@
 
 - **《笔记资产理论》（v0.2）**：假设、指标与淘汰机制——理论真相；
 - **《Textus-Agent工具契约》（v0.3）**：Agent 能做什么、不能做什么——接口真相；
-- **本文（v1.2）**：定位与实施——计划真相；
-- **《Textus-界面改造方案》（v0.1）**：已经落地的界面改写（画板对齐 + Base UI 设置页重建）——界面现状真相；
+- **本文（v1.6）**：定位与实施——计划真相；
+- **《Textus-界面改造方案》（v0.6+）**：已经落地的界面改写（画板对齐 + Base UI 设置页重建）——界面现状真相；
 - **《Agent基座与竞品调研》（v0.2）**：Textus 基座 agent-ready 九项能力判定 + happy-friday-lite（源码级）/ ima / WorkBuddy / Astryx 竞品参照——结论已并入本文 §8 阶段 1、§9 风险表、§11 决议记录。
 
-对象：`CatVinci-Studio/Textus` v1.4.2（MIT）。附录 A = 阶段 1 验收清单；附录 B = 2026-11-15 的逐文件代码核对与墨契吸收清单。
+对象：成文对象 `CatVinci-Studio/Textus` v1.4.2；现行基线 v1.4.5（MIT）。附录 A = 阶段 1 验收清单；附录 B = 2026-11-15 的逐文件代码核对与墨契吸收清单。
 
 **v1.1 变更**：① 阶段 1 增「基座承载判定」——不引 DeepAgents/LangChain，资产闭环跑在 Textus 原生 agent 骨架上，并借 happy-friday-lite 四条决策作实现细则；② §9 风险表补「上游同域演进」「同类开源产品许可边界」两行；③ §7.8 先不做补「墨契式浮层格式条」（触发点 = 上游浮层格式条落地）；④ §11 决议记录补三条（基座判定 / 参考项目 / 浮层工具栏触发点）。
 
@@ -27,6 +27,10 @@
 **v1.3 变更（2026-11-16）**：① §9 风险表去重（评审遗留的两行重复）；② 阶段 0.5 复用率结算口径写明（每条资产自激活起 30 天内计，观察期后续观结算）；③ §7 界面目标定档为 `boards/screens/` 十屏画板、按屏开工并撤销"等阶段 0.5"总门（§11 决议记录同步）；④ 画板目录清理：boards 只留 `screens/`。
 
 **v1.4 变更（2026-11-16，三文档对齐复核）**：① §7.2 手机底栏词条与桌面 rail 对齐十屏画板（底栏 = 今天 / 笔记 / 收集 / 资产，设置进「更多」；rail 去插件）；② §11 卡片命名措辞修订（界面词条只暴露笔记 / 任务 / 资产；judgments 目录与确认中心动作词条可见）。布局与闭环经复核无改动；界面侧新增裁决 26–28 见《界面改造方案》§4.4。
+
+**v1.5 变更（2026-11-17）**：① 裁决 29：十屏 IA 封存，桌面改为小改宿主＋插件优先；② 裁决 30：手机端按成熟移动形态开工（Android 线，iOS 归上游）；③ 相应 §7/§11 的“十屏按屏开工”降为历史定档。
+
+**v1.6 变更（2026-11-19）**：① 同步立项（S 组：插件多端 spike → 内置客户端；不做自建云/账号）；② 资产库改为主库子目录 `<vault>/asset-library/`；③ D0/附录 A 的 iOS 验收改为“由上游验收”，本 fork Android-only；④ 基线更新 v1.4.5；⑤ 修正插件 API 方法名（`files.process`；`processRead/Write` 是宿主 broker 内部名）。
 
 ---
 
@@ -216,7 +220,7 @@ Agent 的能力上限由这四件事决定，而不是由模型决定。
 ### 4.1 目录结构
 
 ```text
-asset-library/
+<vault>/asset-library/     # 主库内子目录（2026-11-19 用户裁）
 ├─ inbox/                  # 未整理的原始笔记
 ├─ tasks/                  # 任务卡
 ├─ judgments/              # 判断卡
@@ -301,7 +305,7 @@ Front Matter 使用 snake_case，Agent API 使用 camelCase，映射在领域层
 
 **不复用 `.textus/library`。**
 
-该目录当前承载 Textus AI 的条目与记忆语义，混入任务卡会让两套概念互相污染。资产库使用用户可见的独立目录，便于 Git、Syncthing、iCloud 等工具同步与备份。
+该目录当前承载 Textus AI 的条目与记忆语义，混入任务卡会让两套概念互相污染。资产库使用**主库内用户可见的子目录 `<vault>/asset-library/`**（2026-11-19 用户裁），随主库一起同步与备份；不复用 `.textus/library`。
 
 需要跨端传输的是这些 Markdown 文件，不是插件的内部数据库。
 
@@ -390,15 +394,17 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 3. **复盘确认**：看证据，选择确认、驳回或保留草稿。
 4. **调用资产**：搜索 `active` 资产，复制、插入或交给 Agent。
 
-第一版不改手机导航：
+**2026-11-17 裁决 30 已改判**：手机端按成熟移动形态重排（Android 线，iOS 归上游）；下面“第一版不改导航 / 复用抽屉 / 页签”的限制**不再作为实现依据**。四个高频动作保留；320px/44px 仍适用。当前手机任务见任务清单 PH1/PH2/PH3/PH4。
 
-- 插件页复用现有抽屉入口。
-- 详情打开为普通 Tab。
-- 表单和确认使用现有组件。
+~~第一版不改手机导航：~~
+
+- ~~插件页复用现有抽屉入口。~~
+- ~~详情打开为普通 Tab。~~
+- ~~表单和确认使用现有组件。~~
 - 按约 320px 宽度、44px 触控目标检查。
-- 平板继续使用桌面布局。
+- ~~平板继续使用桌面布局。~~
 
-只有在验证手机端确实高频使用后，才把"快速收集"提升为底部按钮或系统分享入口。
+~~只有在验证手机端确实高频使用后，才把"快速收集"提升为底部按钮或系统分享入口。~~
 
 ### 6.3 平板
 
@@ -432,7 +438,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 **路线 B：首版限制存放位置（推荐先做）**
 
-移动端资产库先放在应用可管理的普通目录，验证业务闭环，之后再支持任意 SAF 目录。
+移动端资产库先放在主库（App Documents）内的 `asset-library/` 子目录，验证业务闭环；任意 SAF 目录后置。
 
 **不建议**把"授予所有文件访问权限"作为资产库正常工作的前提。
 
@@ -452,7 +458,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ## 7. 界面与功能重规划
 
-> **与界面基线的分工**：本节是**往哪走**（新信息架构）；已经落地的界面改写——画板对齐与 Base UI 设置页重建——记在《Textus-界面改造方案》，那是**已经走到哪**。**2026-11-16 定档：本节的界面目标 = `boards/screens/` 十屏画板，已按屏开工**（数据依赖屏的次序见《改造任务清单》§4）；开工前先读《界面改造方案》：设置页的壳（浮层、导航列、行与控件皮肤）可直接复用，只换导航清单与页面内容。
+> **与界面基线的分工**：本节是**往哪走**（新信息架构）；已经落地的界面改写——画板对齐与 Base UI 设置页重建——记在《Textus-界面改造方案》，那是**已经走到哪**。**2026-11-16 定档：本节的界面目标 = `boards/screens/` 十屏画板，已按屏开工**（数据依赖屏的次序见《改造任务清单》§4）；**2026-11-17 裁决 29 已封存十屏 IA：本节不再施工，以下为历史定档；当前路线 = 小改宿主＋插件优先，见任务清单。**
 
 ### 7.1 为什么不能"直接加页面"
 
@@ -561,6 +567,8 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ### 7.8 界面改造顺序
 
+> **2026-11-17 裁决 29 已封存十屏 IA：本节顺序仅作历史参考，当前顺序见任务清单。**
+
 1. 今天视图（先只读聚合，验证信息是否有用）
 2. 触发式资产提示（按阶段匹配，不靠搜索）
 3. 快速收集
@@ -582,13 +590,13 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 **交付**
 
-- 在 Android 真机上完成一次目录授权、新建文件、修改、冲突检测。
-- 在 iOS 真机上重复同一流程。
-- 记录两端实际能力差异。
+- 在 Android 真机上完成一次目录授权、新建文件、修改、删除、重命名、冲突检测。
+- iOS 真机由上游验收；本 fork 不重复。
+- 记录 Android 实际能力与不支持项；iOS 差异由上游记录。
 
 **验收**
 
-- 两端都能稳定读写同一份 Markdown。
+- Android 能稳定读写同一份 Markdown（iOS 由上游验收）。
 - 明确列出不支持的存储操作。
 
 **不做**
@@ -647,7 +655,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 **不做**
 
-- 不改同步。
+- ~~不改同步~~（2026-11-19 同步 S 组立项；S0a supersede 后以新方案为准）。
 - 不做插件市场。
 - 不做账号。
 - 不做知识图谱。
@@ -663,7 +671,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 - 宿主负责人工确认弹窗。
 - 历史、冲突、归档的自动化测试。
 - Android SAF 适配。
-- iOS / Android 真机回归。
+- Android 真机回归（iOS 归上游）。
 
 **待审（触发点后启动，本阶段默认不做）**：子代理编排（researcher 模式）、向量 RAG（若关键词级检索被证不够）、资产 MCP / CLI 对外开放（Astryx 同款 agent-ready 形态，依赖受控写入成熟）、**DSH 集成两档**（DeepSeek Harness：嵌入 agent 模块 / 资产工具做成 DSH 插件——触发点 = DSH 出稳定版且插件 API 冻结；详见《Agent基座与竞品调研》§5）。
 
@@ -679,10 +687,10 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 **交付**
 
-- 系统分享收集。
-- 手机快捷入口。
-- 第三方同步说明与冲突提示。
-- 可选：桌面小组件 / 通知提醒。
+- 系统分享收集（可选，默认不做，按需进待审）。
+- 手机快捷入口（可选，默认不做，按需进待审）。
+- 同步客户端与冲突中心（S 组；取代原“第三方同步说明与冲突提示”）。
+- 可选：桌面小组件 / 通知提醒（默认不做）。
 
 **验收**
 
@@ -691,7 +699,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 **慎重**
 
-- 自建同步与账号体系放到最后，除非验证出真实付费需求。
+- ~~自建同步与账号体系放到最后~~（2026-11-19 改判：同步作为**内置客户端**立项，S 组；仍不做自建云/账号体系；排期见任务清单）。
 
 ---
 
@@ -722,7 +730,7 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 - 不做知识图谱。
 - 不做多人协作。
 - 不做向量数据库。
-- 不做自建云与账号体系。
+- 不做自建云与账号体系（内置同步客户端只连用户自有 WebDAV/S3，不是自建云）。
 - 不让 AI 自动确认自己的判断。
 - 不为了"功能齐全"一次性改完桌面和手机。
 - 不把 `.textus/library` 改造成资产库。
@@ -731,17 +739,17 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 
 ## 11. 决议记录
 
-开工前需要裁的事项均已随正文与配套文档落定；改任何一条 = 改基线，须留版本记录。
+除同步 S0a（supersede）与资产库回写外，开工前需要裁的事项已随正文与配套文档落定；待办见任务清单。改任何一条 = 改基线，须留版本记录。
 
 | 事项             | 决议                                                                                                                                                                                                 | 出处                                 |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | 资产能力放哪     | 插件先行，阶段 2 下沉宿主                                                                                                                                                                            | 契约 §0 两阶段；本文 §12.2           |
-| 资产目录位置     | 用户可见的独立目录（Vault 内），不复用 `.textus/library`                                                                                                                                             | §4.1 / §4.5                          |
-| 卡片命名         | 数据用任务 / 判断 / 资产；界面**词条**（列表、详情、分组）只暴露"笔记 / 任务 / 资产"；`judgments` 作为库目录名与确认中心动作词条（「新建判断草稿」）可见，判断不作为一级界面类型                        | §7.3；十屏评审 2026-11-16 修订        |
+| 资产目录位置     | 主库内用户可见子目录 `<vault>/asset-library/`，随主库同步；不复用 `.textus/library`（2026-11-19 用户裁）                                                                                                                                             | §4.1 / §4.5                          |
+| 卡片命名         | 数据用任务 / 判断 / 资产；界面**词条**（列表、详情、分组）只暴露"笔记 / 任务 / 资产"；`judgments` 作为库目录名与确认中心动作词条（「新建判断草稿」）可见，判断不作为一级界面类型                        | §7.2 注；十屏评审 2026-11-16 修订（十屏已封存）        |
 | 手机首版范围     | 只做四个动作                                                                                                                                                                                         | §6.2                                 |
-| 同步             | 首版第三方，自建放最后                                                                                                                                                                               | §8 阶段 3 慎重项                     |
+| 同步             | 2026-11-19 改判：先插件多端 spike，再内置客户端（S 组）；不做自建云/账号；S0a 落 supersede                                                                                                                                                                               | §8 阶段 3 慎重项                     |
 | Android 策略     | 先限制目录，再补 SAF                                                                                                                                                                                 | §6.4 路线 B                          |
-| 维护模式         | 纯插件起步，薄 fork 收口，不做深度分叉                                                                                                                                                               | §12.6                                |
+| 维护模式         | 纯插件起步，薄 fork 收口，不做深度分叉；同步 S 组为受控深分叉（crate 隔离）                                                                                                                          | §12.2                                |
 | 上游 PR          | 通用能力优先提回上游                                                                                                                                                                                 | §12.6                                |
 | 理论版本策略     | 每张卡带 `theory_version`，历史不重写                                                                                                                                                                | 《笔记资产理论》§7.6                 |
 | Agent 基座判定   | Textus 原生骨架承载，不引 DeepAgents / LangChain                                                                                                                                                     | §8 阶段 1；《Agent基座与竞品调研》§2 |
@@ -749,8 +757,8 @@ v0.3 增加 `resolve_assets_for_trigger`，原因是资产的价值发生在动�
 | 墨契式浮层工具栏 | 2026-11-18 改判：撤销「等上游」触发点；桌面 = 停靠基底＋按需补缺；手机 = 裁决 31 自建                                                                                                                                                     | §7.8 先不做；§9 上游同域演进         |
 | 上游跟随策略     | 按 release 节奏跟随（rebase patch 清单）；独立维护仅触发点后退路（三条可证伪触发点见 §12.7）                                                                                                         | §12.7                                |
 | 界面基线归属     | 已落地的界面改写（画板对齐 + Base UI 设置页重建）单独立《Textus-界面改造方案》管，本文 §7 只管新 IA                                                                                                  | 《Textus-界面改造方案》§0 / §7       |
-| 界面主线定档     | `boards/screens/` 十屏画板 = 目标界面，按屏开工、不设"等阶段 0.5"总门；笔记 / 设置 / 壳先做，今天 / 资产 / 确认中心 / Agent / 收集的数据面随 D1；boards 只留 `screens/`（directions / skeleton / shots / skins 已删） | 《任务清单》§4；boards/README        |
-| 组件库选型       | **Base UI**（`@base-ui/react@1.9.0`，MIT，Radix 原班人马的续作）；Radix 仅作 Base UI 缺件时的退路                                                                                                    | 《Textus-界面改造方案》§4.3          |
+| 界面主线定档     | ~~十屏画板 = 目标界面，按屏开工~~（2026-11-17 裁决 29 封存）；现行 = 小改宿主＋插件优先，十屏待 D0.5 后另议 | 《任务清单》§4；boards/README        |
+| 组件库选型       | **Base UI**（`@base-ui/react@1.9.0`，MIT，Radix 原班人马的续作）；Radix 仅作 Base UI 缺件时的退路                                                                                                    | 《Textus-界面改造方案》§4.5          |
 | 设置页桌面形态   | 浮层（替换设置页签与侧栏设置列表）；iPhone / iPad 保留旧面板（平台门控）                                                                                                                             | 《Textus-界面改造方案》§3.5–§3.6     |
 
 ---
@@ -769,7 +777,7 @@ Textus 使用 MIT 许可证，允许修改、分发，包括闭源分发，只�
 | -------- | -------------------------- | ---------- | -------- | -------- |
 | 纯插件   | 插件目录 + 少量注册        | 极低       | 低       | 阶段 1   |
 | 薄 fork  | 新增模块 + 少量接入点      | 中         | 中       | 阶段 2   |
-| 深度分叉 | 导航、编辑器、同步、发布链 | 高         | 高       | 不建议   |
+| 深度分叉 | 导航、编辑器、同步、发布链 | 高         | 高       | 不建议；**同步已改为受控深分叉（S 组，crate 隔离）** |
 
 ### 12.3 纯插件模式
 
@@ -813,14 +821,15 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 - `src/platform/capabilities.ts`；
 - `src-tauri/tauri.conf.json`（权限与插件声明）；
 - 语言文件（新增 key）；
-- 插件权限表（仅当新增 API）。
+- 插件权限表（仅当新增 API）；
+- **同步/宿主新增（2026-11-19 补）**：`src-tauri/Cargo.toml`（workspace/依赖）、`src-tauri/src/lib.rs`（`sync::init`）、`src-tauri/src/invoke_handler.rs`、`src-tauri/src/bindings.rs`、Settings 页注册（`settings-pages.tsx` / `builtin-pages.tsx`）、移动端文件/回收站原生 API（若做）。
 
 ### 12.5 升级流程
 
 1. 拉取上游 tag。
 2. rebase 到功能分支。
 3. 跑 `typecheck`、`lint`、`test`、`test:e2e`。
-4. 桌面 smoke + iOS / Android 真机 smoke。
+4. 桌面 smoke + Android 真机 smoke（iOS 归上游）。
 5. 处理冲突，更新 patch 清单。
 6. 打自己的版本号，同时保留上游版本号便于追溯。
 
@@ -837,7 +846,7 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 
 **节拍**：
 
-- 主基线 = 上游 **release tag**（自 v1.4.2 起）；每次上游发新版 → 拉 tag → rebase patch 清单（§12.4 的 5 个接入点）→ 跑门禁 → 真机 smoke → 打自己的版本号。
+- 主基线 = 上游 **release tag**（现 v1.4.5，自 v1.4.2 起；下一节拍 v1.4.6）；每次上游发新版 → 拉 tag → rebase patch 清单（§12.4；五个旧接入点 + 同步/宿主新增注册点）→ 跑门禁 → 真机 smoke → 打自己的版本号。
 - **不追 main**（开发线，半成品密集——Settings 重构 / 浮层格式条都在进行时）。
 - 通用能力继续提 PR 回上游（§12.6），每提回一条分叉面小一分。
 - 接触面收敛为三类接口：`aiTools` 贡献、`broker-files`、导航/视图注册 + i18n——**接口稳定就一直跟得动；接口破坏才是分叉时刻**。
@@ -869,7 +878,7 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 - [ ] 触发检索只返回 `active` 资产，且不返回正文。
 - [ ] 至少一条资产被下一次真实交付复用。
 - [ ] 手机端四个动作在 320px 宽度下可用。
-- [ ] Android 与 iOS 都有真机验证记录。
+- [ ] Android 有真机验证记录；iOS 由上游验收。
 
 ---
 
@@ -886,7 +895,7 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 | 贡献点 `contributions/`            | ✅ 属实                           | 40+ 文件：ai-tools、slash-commands、decorations、hover-providers、will-save / will-export、status-items、file-badges、embeds…                                                                                                                                                                                         |
 | 权限表 `api-permissions.ts`        | ✅ 属实                           | 158 行单表 + `guarded()` 运行时检查 + `PERMISSION_CALLS` 安装期代码扫描；`ai.tools` 注明「Checked in Rust」                                                                                                                                                                                                           |
 | 元数据索引 `workspace/`            | ✅ 属实                           | `metadata-cache.ts`：title / tags / aliases / frontmatter 统一解析，links / backlinks / tasks 跨文档；`metadata.search`、`metadata.tasks` 已在权限表                                                                                                                                                                  |
-| 版本化读写 `broker-files.ts`       | ✅ 属实，**名称要修正**           | 实际 API 是 **`files.processRead` / `files.processWrite`（token 版本化）**，不是 `files.process`；token 两态：打开的标签页 = `tab:<revision>`，磁盘 = Rust `fsWriteIf`；`change()` 自带 4 次重读重写循环。**另有 `files.frontmatterGet/Set`（Set 走同一条重试链）与 `files.blockId`**——资产卡读与写的原子件都是现成的 |
+| 版本化读写 `broker-files.ts`       | ✅ 属实，**名称要修正**           | 插件 API 是 **`files.process`**；宿主 broker 内部实现名是 `files.processRead` / `files.processWrite`（token 版本化）；token 两态：打开的标签页 = `tab:<revision>`，磁盘 = Rust `fsWriteIf`；`change()` 自带 4 次重读重写循环。**另有 `files.frontmatterGet/Set`（Set 走同一条重试链）与 `files.blockId`**——资产卡读与写的原子件都是现成的 |
 | 原子写入 `atomic.rs`               | ✅ 属实                           | write-then-rename：临时文件放目标同目录、fsync 文件、Unix 再 fsync 父目录；测试在 `atomic/tests.rs`                                                                                                                                                                                                                   |
 | AI / Agent 基建                    | ✅ 属实，**深于方案所述**（见下） | `src-tauri/src/ai/{agent,tools,catalog,skills,memory,workspace,live_eval,web}` + `crates/aicompat`（ToolSpec / ToolCall / ToolOutput / agent loop）                                                                                                                                                                   |
 | 保存与冲突 `docs/dev/documents.md` | ✅ 属实                           | 179 行；干净标签页在文件被外部改动后自动 reload（`useExternalChangeReload.ts`）、草稿恢复、mtime 提示                                                                                                                                                                                                                 |
@@ -907,7 +916,7 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 | `resolve_assets_for_trigger` | 同上索引 + `trigger.stage` 过滤                                                                                                  | stage 常量与排序（taskType 缺口见 B.4-①）                                   | trigger 缺失的资产不出现（契约已定义）                                                                                                                       |
 | `read_note`                  | `files.read` + `files.frontmatterGet` + `_history/` glob                                                                         | outbound / inbound 用 `metadata.backlinks` 组装                             | 大文件截断（契约已列）                                                                                                                                       |
 | `create_draft`               | `files.create` 到 `inbox/` `judgments/` `assets/` + `files.frontmatterSet` 写 schema 字段                                        | id 生成（T-YYYYMMDD-xxxx）与目录守卫                                        | 阶段 1 是约定不是保证（契约 §8 已写明，不对外宣称）                                                                                                          |
-| `propose_patch`              | **不落盘**：`files.processRead` 读现状 → 插件内算统一 diff → 存插件 store（project scope）；确认时才 `files.processWrite(token)` | diff 生成、proposal 30 分钟过期、REVISION_CONFLICT 判定（token 失效即冲突） | 与内置 propose_edit 的分工要定位：编辑器内改动走它的 margin 审阅；**文件级 / 字段级 patch 走资产插件自己的提案 store**——两者不合并，避免把资产语义塞进编辑器 |
+| `propose_patch`              | **不落盘**：`files.process` 读现状 → 插件内算统一 diff → 存插件 store（project scope）；确认时才 `files.process`（token 版本化） | diff 生成、proposal 30 分钟过期、REVISION_CONFLICT 判定（token 失效即冲突） | 与内置 propose_edit 的分工要定位：编辑器内改动走它的 margin 审阅；**文件级 / 字段级 patch 走资产插件自己的提案 store**——两者不合并，避免把资产语义塞进编辑器 |
 | `request_confirm`            | pending 存插件 store + 插件面板确认（views / panels 贡献点）；宿主在阶段 2 接管                                                  | 迁移表校验（契约 §5）、一次性确认凭证                                       | 同一卡片同一目标只留一个 pending（契约已定义）                                                                                                               |
 | `record_use`                 | `files.frontmatterGet` → 改字段 → `files.frontmatterSet`（自带 token 重试，正好处理与用户编辑的并发）                            | use log 追加文件（`_history/` 旁）                                          | frontmatterSet 是整对象替换——外部编辑器同窗口写入仍可能踩计数字段（约束见《笔记资产理论》§10 第 6 条）                                                       |
 | 审计（§7）                   | 插件 store 追加 `audit.jsonl`（project scope，库外隐藏目录）                                                                     | —                                                                           | 损坏不影响卡片读取：读文件不依赖它（契约已定义）                                                                                                             |
@@ -951,7 +960,7 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 **B.3.5 不借清单（和借清单一样重要）**
 
 - **块树 / 双链反链引擎**：资产工作台是文件 + FrontMatter 形态，搬了就把轻量 fork 变重；
-- **oplog 自建同步**：§11 已裁首版第三方；
+- **oplog 自建同步**：2026-11-19 改为 S 组内置客户端（沿用 /1 协议，不做 oplog）；
 - **语义检索 / RAG / 向量**：理论明确不做向量库，契约只要关键词检索；
 - **主题体系、Lexical、属性注册表**：架构不同，搬不动也不需要；
 - aicompat 方向是**反的**：Textus 的 AI 基建更强，将来墨契 AI 主线反过来抄它。
@@ -961,6 +970,6 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 1. **契约 `ResolveAssetsForTriggerInput.taskType` 没有对应字段**：`CardType` 只有 task / judgment / asset，卡片上只有 tags——要么删掉 taskType，要么定义它匹配 tags 的约定前缀（建议后者，如 `type:报价`）。
 2. **契约 `CardType` 缺 `theory`**：理论 §7.2 的理论卡进不了工具系统——建议声明「理论卡不走工具、是纯文件手写」（低频，不值得扩类型）。
 3. **「七行」口径两处不一致**：理论 §5.4 示例八项（情境/动作/预期/实际/偏差/边界/形态/触发）写着「七行」；本文 §0.5 列七项（无形态）。行数是 §8.4 记录癖的纪律工具，必须定死一处。
-4. **契约 §8 的 `files.process` 名称修正**：v1.4.2 实际方法是 `files.processRead` / `files.processWrite`（token 版本化）。
+4. **契约 §8 的 `files.process` 名称**：插件 API 是 `files.process`；`files.processRead/processWrite` 是宿主 broker 内部名，不要写进契约。
 
 > 以上四项已落实（2026-11-15 同日）：理论 → v0.2，契约 → v0.3。

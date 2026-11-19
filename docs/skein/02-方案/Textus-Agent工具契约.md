@@ -1,13 +1,15 @@
 # Textus Agent 工具契约
 
-> 版本：v0.3
-> 日期：2026-11-15
-> 关联：《Textus-改造方案》第 5 节与附录 B、《笔记资产理论》v0.2、《Textus-界面改造方案》v0.1
+> 版本：v0.3.1
+> 日期：2026-11-15（初版）· 2026-11-19（修订）
+> 关联：《Textus-改造方案》第 5 节与附录 B、《笔记资产理论》v0.2、《Textus-界面改造方案》v0.7
 > 状态：已评审（2026-11-15），作为实现基线随阶段推进
 
 v0.2 对齐“结果闭环”：增加结果、边界、触发与复用形态；新增 `resolve_assets_for_trigger`，把资产检索从“搜索框”改为“按动作阶段触发”。
 
-v0.3 修评审发现的不一致：`taskType` 定义匹配口径（§3.7）；理论卡不入工具系统、计数字段外部编辑约束（§2.2）；复用成功率分母口径（§3.6）；§8 方法名对齐 Textus v1.4.2 实际 API（`files.processRead` / `files.processWrite`）。
+v0.3 修评审发现的不一致：`taskType` 定义匹配口径（§3.7）；理论卡不入工具系统、计数字段外部编辑约束（§2.2）；复用成功率分母口径（§3.6）；§8 方法名对齐 Textus v1.4.2 实际 API（当时误写为 `files.processRead` / `files.processWrite`）。
+
+v0.3.1（2026-11-19）：① 修正插件 API 名称为 `files.process`（`processRead/Write` 是宿主 broker 内部名）；② 明确资产库 = 主库内子目录 `<vault>/asset-library/`，`libraryRoot` 指该子目录，主库根不暴露给工具；③ 关联《界面改造方案》升到 v0.7；④ 阶段 2 命令表标注“建议、未冻结”。
 
 ## 0. 目的与边界
 
@@ -139,7 +141,7 @@ Agent 调用时固定携带：
 export interface ToolContext {
   actor: "agent";
   sessionId: string;
-  libraryRoot: string; // 只允许操作该根目录
+  libraryRoot: string; // 资产库根 = <主库>/asset-library/（2026-11-19 用户裁）；主库根不暴露给工具
   contractVersion: 1;
   now: string; // ISO 8601
 }
@@ -148,6 +150,7 @@ export interface ToolContext {
 ### 2.2 通用规则
 
 - 所有路径必须是库内相对路径，禁止 `..` 和绝对路径。
+- **资产库是主库内的子目录 `<vault>/asset-library/`**（2026-11-19 用户裁）；`libraryRoot` 指这个子目录，主库其他目录不暴露给工具；`inbox/`、`judgments/`、`assets/` 等都相对 `libraryRoot`。
 - 所有写入必须带 `requestId`，同一 `requestId` 在 24 小时内返回同一结果。
 - 所有修改类工具必须带 `expectedRevision`。
 - 返回值不包含绝对路径、系统用户名、模型密钥。
@@ -469,7 +472,7 @@ export interface ResolveAssetsForTriggerOutput {
 
 补充：
 
-- 所有工具只能访问当前库根目录。
+- 所有工具只能访问 `libraryRoot`（资产库子目录）；主库其他目录不暴露。
 - 所有工具不能执行 shell、不能访问任意 URL、不能读写库外文件。
 - `create_draft` 只能写入 `inbox/`、`judgments/`、`assets/`，不能写入 `tasks/` 或其他目录。
 
@@ -559,8 +562,8 @@ export interface AuditEntry {
 | `read_note`                  | 读取文件并解析                                           | 大文件需要截断                   |
 | `create_draft`               | 通用文件写入到草稿目录                                   | 可绕过目录约定                   |
 | `propose_patch`              | 内存中生成 diff                                          | 无副作用                         |
-| `request_confirm`            | `ui.confirm` 后调用 `files.processWrite`（token 版本化） | 确认来自插件，不是宿主           |
-| `record_use`                 | `files.processRead` / `files.processWrite` 修改计数字段  | 可能与编辑冲突（token 重试处理） |
+| `request_confirm`            | `ui.confirm` 后调用 `files.process`（token 版本化） | 确认来自插件，不是宿主           |
+| `record_use`                 | `files.process` 修改计数字段（token 版本化）              | 可能与编辑冲突（token 重试处理） |
 
 关键说明：
 
@@ -570,7 +573,7 @@ export interface AuditEntry {
 
 ## 9. 阶段 2：宿主实现映射
 
-建议 Rust 命令：
+建议 Rust 命令（未冻结；D2 前定稿）：
 
 ```text
 assets_create_draft
