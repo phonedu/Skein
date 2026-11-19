@@ -17,7 +17,6 @@ import {
   FindActionIcon,
   SourceActionIcon,
   ShareActionIcon,
-  InboxActionIcon,
 } from "./PhoneEditorBarIcons";
 import { emitToThisWindow } from "../platform/menu-events";
 import { iosFiles } from "../platform/ios-files";
@@ -108,13 +107,6 @@ export function PhoneEditorBar({
       onSelect: () => {
         if (path) void iosFiles.share(path).catch(() => {});
       },
-    },
-    "separator",
-    {
-      label: t.phoneDocActionInbox,
-      Icon: InboxActionIcon,
-      fire: true,
-      onSelect: () => showNotice(t.phoneComingSoon),
     },
   ];
 

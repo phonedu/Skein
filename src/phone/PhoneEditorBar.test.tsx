@@ -147,8 +147,12 @@ describe("the phone's editor bar", () => {
       screen.getByRole("menuitem", { name: en.phoneDocActionOutline }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("menuitem", { name: en.phoneDocActionInbox }),
+      screen.getByRole("menuitem", { name: en.phoneDocActionShare }),
     ).toBeTruthy();
+    // The inbox is a fork feature, not part of this sheet.
+    expect(
+      screen.queryByRole("menuitem", { name: en.phoneDocActionInbox }),
+    ).toBeNull();
 
     // Find & replace rides the existing window event the desktop uses.
     const fired = vi.fn();

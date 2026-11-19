@@ -48,17 +48,6 @@ export function ShareActionIcon({ className }: { className?: string }) {
   );
 }
 
-/** A tray with a down arrow: send into the inbox. */
-export function InboxActionIcon({ className }: { className?: string }) {
-  return (
-    <svg {...baseProps(className)} aria-hidden>
-      <path d="M4 13h4l1.5 2.5h5L16 13h4" />
-      <path d="M4 13V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v6" />
-      <path d="M4 13v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
-    </svg>
-  );
-}
-
 /** Angle brackets: the document's own Markdown, source mode. */
 export function SourceActionIcon({ className }: { className?: string }) {
   return (
