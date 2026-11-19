@@ -1,4 +1,5 @@
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
+import type { ResolvedPos } from "@milkdown/kit/prose/model";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import { $prose } from "@milkdown/kit/utils";
 import { watchContentZoom } from "../engine/zoom/tab-zoom";
@@ -73,6 +74,17 @@ class DrawnCaret {
     return box && box.height > 0 ? box : null;
   }
 
+  /** The box of the empty line a block's last newline starts: the break
+   *  ProseMirror keeps for it. Null when the block draws none. */
+  private trailingBreak($head: ResolvedPos): DOMRect | null {
+    const dom = this.view.nodeDOM($head.before($head.depth));
+    if (!(dom instanceof HTMLElement)) return null;
+    const box = dom
+      .querySelector("br.ProseMirror-trailingBreak")
+      ?.getBoundingClientRect();
+    return box && box.height > 0 ? box : null;
+  }
+
   /** The box of the picture right before or after the caret, if any. */
   private pictureBeside(): DOMRect | null {
     const { $head } = this.view.state.selection;
@@ -104,9 +116,17 @@ class DrawnCaret {
     // At a line's end after a formula or a picture, the editor keeps a
     // break; the browser's caret may stand after it, on the line below,
     // and the editor's own place too: the side before it. Outside a
-    // composition, the line is the editor's to say.
+    // composition, the line is the editor's to say. A last newline is
+    // different: the empty line it starts is where the caret is, and the
+    // side before it is the line above.
     const atEnd = $head.parentOffset === $head.parent.content.size;
-    const own = view.coordsAtPos($head.pos, atEnd ? -1 : 1);
+    const newLine =
+      atEnd &&
+      $head.parent.isTextblock &&
+      $head.parent.textContent.endsWith("\n")
+        ? this.trailingBreak($head)
+        : null;
+    const own = newLine ?? view.coordsAtPos($head.pos, atEnd ? -1 : 1);
     const offLine =
       !!live &&
       !view.composing &&
