@@ -11,6 +11,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import en from "../i18n/locales/en";
 import type { Strings } from "../i18n/strings";
+import {
+  removeStatusItem,
+  setStatusItem,
+} from "../plugins/contributions/status-items";
+import { extensionsStartTab } from "../settings/pages/extensions-tab";
+import { openSettingsPage } from "../settings/settings-nav";
 import { PhoneHome } from "./PhoneHome";
 
 const phoneHomeCss = readFileSync("src/phone/PhoneHome.css", "utf8");
@@ -32,10 +38,15 @@ vi.mock("../files/FileTree", () => ({
 
 vi.mock("../platform/capabilities", () => ({
   canOpenFolder: true,
+  isDesktopApp: false,
 }));
 
 vi.mock("../platform/menu-events", () => ({
   emitToThisWindow: vi.fn(),
+}));
+
+vi.mock("../settings/settings-nav", () => ({
+  openSettingsPage: vi.fn(),
 }));
 
 // Pick a stub Sheet so the test doesn't need the SettingsProvider or the
@@ -105,7 +116,11 @@ const openFolderProp = openFolder as unknown as Parameters<
 >[0]["openFolder"];
 
 describe("the phone library home", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    removeStatusItem("test.plugin");
+    vi.mocked(openSettingsPage).mockClear();
+  });
 
   it("shows the paper library search affordance above the tree", () => {
     render(
@@ -123,6 +138,43 @@ describe("the phone library home", () => {
       screen.getByRole("searchbox", { name: en.phoneSearchPlaceholder }),
     ).toBeTruthy();
     expect(screen.getByTestId("phone-file-tree")).toBeTruthy();
+  });
+
+  it("opens Plugins from the home's top row", () => {
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={openFolderProp}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: en.pluginsTitle }));
+    expect(openSettingsPage).toHaveBeenCalledWith("extensions");
+    expect(extensionsStartTab()).toBe("plugins");
+  });
+
+  it("shows a plugin's status and opens Plugins from it", () => {
+    act(() =>
+      setStatusItem("test.plugin", "status", { text: "Synced 2m ago" }),
+    );
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={openFolderProp}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Synced 2m ago" }));
+    expect(openSettingsPage).toHaveBeenCalledWith("extensions");
+    expect(extensionsStartTab()).toBe("plugins");
   });
 
   it("lets the phone search field receive text, and clear itself", () => {

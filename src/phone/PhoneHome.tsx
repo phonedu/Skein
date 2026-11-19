@@ -14,10 +14,15 @@ import {
   ActionSheet,
   type ActionSheetItem,
 } from "../engine/controls/ActionSheet";
-import { NewDocumentIcon, NewFolderIcon } from "../engine/controls/icons";
+import {
+  NewDocumentIcon,
+  NewFolderIcon,
+  PluginsTabIcon,
+} from "../engine/controls/icons";
 import { useLongPress } from "../utils/hooks/useLongPress";
 import { Presence } from "../engine/motion/usePresence";
 import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
+import { openPhonePlugins, PhonePluginStatus } from "./PhonePluginStatus";
 import "./PhoneHome.css";
 
 const baseName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p;
@@ -128,6 +133,14 @@ export function PhoneHome({
           <button
             type="button"
             className="ph-ic"
+            aria-label={t.pluginsTitle}
+            onClick={openPhonePlugins}
+          >
+            <PluginsTabIcon />
+          </button>
+          <button
+            type="button"
+            className="ph-ic"
             aria-label={t.settingsTitle}
             onClick={() => emitToThisWindow("menu-settings")}
           >
@@ -183,6 +196,7 @@ export function PhoneHome({
           </button>
         )}
       </div>
+      <PhonePluginStatus />
       <div className="ph-tree">
         {openFolder.treeRoot ? (
           <FileTree
