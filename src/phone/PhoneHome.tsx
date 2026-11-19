@@ -53,7 +53,9 @@ export function PhoneHome({
   const fabPress = useLongPress(() => setNewSheetOpen(true));
   const startNew = (kind: "document" | "folder") => {
     setNewSheetOpen(false);
-    if (kind === "document") return onNewFile();
+    // With a library root, a named file is created there; without one, a
+    // draft is the only place a new note can live.
+    if (kind === "document" && !openFolder.treeRoot) return onNewFile();
     setDraftRequest((ask) => ({ kind, seq: (ask?.seq ?? 0) + 1 }));
   };
 
@@ -194,7 +196,7 @@ export function PhoneHome({
               title: t.phoneVaultEmptyTitle,
               hint: t.phoneVaultEmptyHint,
               label: t.menuNewFile,
-              start: onNewFile,
+              start: () => startNew("document"),
             }}
             noResults={t.phoneSearchNoResults}
             onRootCount={setTreeCount}

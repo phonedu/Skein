@@ -1,4 +1,4 @@
-import { canUseWindows } from "../platform/capabilities";
+import { canUseWindows, isMobileApp } from "../platform/capabilities";
 import { writingProviderOf } from "../prefs/settings-types";
 import { openingDocuments, useProjectTabs } from "./start-project";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -212,7 +212,9 @@ function useSaving({ shell, settings, t }: Input, folder: string | null) {
     tabs,
     tabsRef: tabState.tabsRef,
     activeTabId,
-    enabled: settings.autosave,
+    // A phone has no Save command of its own: a note that is not written
+    // after typing rests would be lost when the app leaves the screen.
+    enabled: settings.autosave || isMobileApp,
     untitledToFile: folder !== null,
     practiceTabId: tutorial.active ? tutorial.tabId : null,
     autosaveTab: saving.autosaveTab,
