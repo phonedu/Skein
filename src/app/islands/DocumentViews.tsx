@@ -2,9 +2,11 @@ import { viewKey } from "../../engine/frame/island-parts";
 import { tabZoomStyle } from "../../engine/zoom/tab-zoom";
 import { Suspense, useRef, type CSSProperties, type ReactNode } from "react";
 import { EditorKept, KeptWhileHidden } from "./kept";
+import { keepsEditorLoaded } from "./editor-shown";
 import { userHasActed } from "./user-input";
-import { PageTabContent } from "../tabs/page-tabs";
+import { PageTabContent, pageOf } from "../tabs/page-tabs";
 import { useDocumentInFront } from "../tabs/useDocumentInFront";
+import { isPhoneLayout } from "../../platform/phone-layout";
 import { EditorPane } from "../../document-view/EditorPane";
 import { lazyModule } from "../../lazy/lazy-module";
 import { lazyComponent } from "../../lazy/lazy-component";
@@ -97,6 +99,10 @@ export function DocumentViews({
   // The document in front is the AI's and draws the margin, even with an
   // AI tab or a page tab active.
   const inFront = useDocumentInFront();
+  // A phone has one island: its AI page stands where the document was, but
+  // the AI reads the document in front, so its editor stays behind it.
+  const frontTab = tabs.find((tab) => tab.id === activeTabId);
+  const aiInFront = isPhoneLayout() && pageOf(frontTab) === "ai";
   const listed = useOpeningOrder(tabs);
   return (
     <>
@@ -200,13 +206,12 @@ export function DocumentViews({
             ) : (
               <EditorKept
                 tabId={tab.id}
-                // An edited untitled draft has no file to come back from
-                // with its undo; a blank one or a guide does.
-                shown={
-                  tab.id === activeTabId ||
-                  !!pane ||
-                  (!tab.path && tab.content !== tab.savedContent)
-                }
+                shown={keepsEditorLoaded(tab, {
+                  activeTabId,
+                  inFront,
+                  pane: !!pane,
+                  aiInFront,
+                })}
               >
                 <EditorPane
                   key={`${tab.id}-${tab.reloadKey}`}
