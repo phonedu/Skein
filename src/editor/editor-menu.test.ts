@@ -261,47 +261,35 @@ describe("the editor menu", () => {
     expect(view.state.doc.nodeAt(imagePos)?.attrs.title).toBe("");
   });
 
-  it("gives the phone's More only what its toolbar lacks", () => {
-    const inTable = labels(
-      buildPhoneMoreItems(editorAt(caretIn("1")).run, options(null)),
-    );
-    expect(inTable).toContain(t.alignCenter);
-    expect(inTable).not.toContain(t.insertRowBelow);
-    expect(inTable).not.toContain(t.copy);
-    // The toolbar copies; only the menu has the plain text.
-    expect(inTable).toContain(t.copyAsPlainText);
-
-    const inText = labels(
+  it("gives the phone only the AI writing actions", () => {
+    const none = labels(
       buildPhoneMoreItems(editorAt(caretIn("text")).run, options(null)),
     );
-    // A table is the insert panel's key; Find is on the top bar.
-    expect(inText).not.toContain(t.insertTable);
-    expect(inText).not.toContain(t.findReplace);
-    expect(inText).toContain(t.selectAll);
-    expect(inText).not.toContain(t.menuBulletList);
-    expect(
-      labels(
-        buildPhoneMoreItems(editorAt(caretIn("text")).run, {
-          ...options(null),
-          aiItems: [{ label: "Ask AI", onSelect: () => {} }],
-        }),
-      ),
-    ).toContain("Ask AI");
-    // A tap only edits a link: its Open is here.
-    const link = { pos: 0, source: "[a](b.md)", href: "b.md", docPath: null };
-    expect(
-      labels(
-        buildPhoneMoreItems(editorAt(caretIn("text")).run, {
-          ...options(null),
-          link,
-        }),
-      ),
-    ).toContain(t.menuOpenLink);
+    expect(none).toEqual([]);
 
-    const onImage = labels(
-      buildPhoneMoreItems(editorAt(imageSelected).run, options(imagePos)),
+    const ai = [
+      { label: "Illustrate", onSelect: () => {} },
+      { label: "Continue", onSelect: () => {} },
+      { label: "Check grammar", onSelect: () => {} },
+    ];
+    const withAi = labels(
+      buildPhoneMoreItems(editorAt(caretIn("text")).run, {
+        ...options(null),
+        aiItems: ai,
+      }),
     );
-    expect(onImage).not.toContain(t.imageWidth50);
+    expect(withAi).toEqual(ai.map((item) => item.label));
+    // The system's selection menu has the clipboard; these are the AI's.
+    for (const label of [
+      t.cut,
+      t.copyAsPlainText,
+      t.selectAll,
+      t.findReplace,
+      t.insertTable,
+      t.menuOpenLink,
+      t.alignCenter,
+    ])
+      expect(withAi).not.toContain(label);
   });
 
   it("runs table actions by name", () => {

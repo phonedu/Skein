@@ -65,12 +65,13 @@ function useSelectionAnchor(tabId: string, enabled: boolean): Anchor | null {
           Math.max(box.left + box.width / 2, half),
           Math.max(window.innerWidth - half, half),
         );
-        // Android's own selection menu sits above the selection; put ours
-        // below it, past the selection handles, and above only near the
-        // bottom where there is no room below.
-        const below = box.bottom + 96 + 56 < window.innerHeight - 60;
+        // Android's own selection menu sits above the selection; ours sits
+        // just below it, past the selection handles (36 is enough for them),
+        // and above only near the bottom where there is no room below.
+        const gap = 36;
+        const below = box.bottom + gap + 56 < window.innerHeight - 60;
         setAnchor({
-          top: below ? box.bottom + 96 : box.top,
+          top: below ? box.bottom + gap : box.top,
           left,
           below,
         });

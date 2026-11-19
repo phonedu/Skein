@@ -4,10 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import en from "../i18n/locales/en";
 import { fill } from "../i18n/fill";
+import { AI_NAME } from "../i18n/names";
 import type { Strings } from "../i18n/strings";
 import { NO_BLOCK } from "../editor/caret-block";
 import {
   EDIT_ACTION_EVENT,
+  EDITOR_MORE_EVENT,
   INSERT_BLOCK_EVENT,
   TOGGLE_BLOCK_EVENT,
   TOGGLE_MARK_EVENT,
@@ -16,8 +18,19 @@ import { PhoneFormatBar } from "./PhoneFormatBar";
 
 vi.mock("../prefs/SettingsContext", () => ({
   useSettings: () => ({
-    settings: { language: "en", imageFolder: "assets" },
+    settings: {
+      language: "en",
+      imageFolder: "assets",
+      textusAi: true,
+      enableCompletion: true,
+      enableGrammarCheck: true,
+      enableAskAi: true,
+    },
   }),
+}));
+
+vi.mock("../ai/image-models", () => ({
+  useImageService: () => "openai",
 }));
 
 vi.mock("../engine/layout/tab-element", () => ({
@@ -59,12 +72,13 @@ function renderBar() {
 }
 
 describe("PhoneFormatBar", () => {
-  it("shows the six main keys", () => {
+  it("shows the main keys", () => {
     renderBar();
     for (const label of [
       t.menuInsertGroup,
       t.toolbarHeading,
       t.menuBulletList,
+      AI_NAME,
       t.menuUndo,
       t.menuRedo,
       t.toolbarHideKeyboard,
@@ -77,6 +91,12 @@ describe("PhoneFormatBar", () => {
     fireEvent.click(screen.getByRole("button", { name: t.menuUndo }));
     const event = dispatched.find((e) => e.type === EDIT_ACTION_EVENT);
     expect(event?.detail).toBe("undo");
+  });
+
+  it("opens the AI actions from the main bar", () => {
+    renderBar();
+    fireEvent.click(screen.getByRole("button", { name: AI_NAME }));
+    expect(dispatched.some((e) => e.type === EDITOR_MORE_EVENT)).toBe(true);
   });
 
   it("opens the heading choices just above the bar", () => {
@@ -114,7 +134,7 @@ describe("PhoneFormatBar", () => {
     ).toBeNull();
   });
 
-  it("opens the ten-key insert panel and inserts a block", () => {
+  it("opens the nine-key insert panel and inserts a block", () => {
     renderBar();
     fireEvent.click(screen.getByRole("button", { name: t.menuInsertGroup }));
     for (const label of [
@@ -127,9 +147,9 @@ describe("PhoneFormatBar", () => {
       t.menuDivider,
       t.missingImageFilter,
       t.menuInsertLink,
-      t.toolbarMore,
     ])
       expect(screen.getByRole("button", { name: label })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: t.toolbarMore })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: t.menuTable }));
     const event = dispatched.find((e) => e.type === INSERT_BLOCK_EVENT);

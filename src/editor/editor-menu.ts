@@ -32,7 +32,6 @@ import {
   htmlTableItems,
   inTable,
   moveCaretToClickedCell,
-  tableLayoutItems,
   tableMenuItems,
 } from "./editor-menu-tables";
 import {
@@ -282,40 +281,15 @@ function grouped(
 }
 
 /**
- * The iPhone's "More" sheet, standing in for the right-click menu: what it
- * offers where the caret is, less what the keyboard toolbar already carries.
- * The caller leaves Ask AI out of aiItems.
+ * The phone's AI actions: a picture for the paragraph or selection, a
+ * continuation, a grammar check. Cut, copy and Select All are the system's
+ * own selection menu; the caller leaves Ask AI out of aiItems.
  */
 export function buildPhoneMoreItems(
-  run: EditorRunner,
+  _run: EditorRunner,
   options: ContextMenuOptions,
 ): ContextMenuEntry[] {
-  const { t, imagePos } = options;
-  // The phone has no Edit menu to offer the plain text.
-  // Offered, not working, with nothing selected.
-  const disabled = run((c) => c.get(editorViewCtx).state.selection.empty);
-  const plain = options.copyAsPlainText;
-  const clipboard: ContextMenuEntry[] = [
-    { label: t.cut, disabled, onSelect: () => options.copyOrCut(true) },
-    ...(plain ? [{ label: t.copyAsPlainText, disabled, onSelect: plain }] : []),
-  ];
-  if (inTable(run)) {
-    return [
-      ...tableLayoutItems(run, t),
-      "separator",
-      ...clipboard,
-      ...phoneGeneralItems(options),
-    ];
-  }
-  if (imagePos !== null) return [...clipboard, ...phoneGeneralItems(options)];
-  // A tap only edits a link: here it opens.
-  const link = options.link ? linkMenuItems(run, t, options.link) : [];
-  return [
-    ...link,
-    ...(link.length ? ["separator" as const] : []),
-    ...clipboard,
-    ...phoneGeneralItems(options),
-  ];
+  return options.aiItems;
 }
 
 /** The groups that have items, a separator between each two. */
@@ -338,18 +312,6 @@ export function selectedText(run: EditorRunner): string {
       );
     }) ?? ""
   );
-}
-
-/** The phone's More: Select All and the AI items. Find is on the top bar,
- *  and a table is the insert panel's second key. */
-function phoneGeneralItems(options: ContextMenuOptions): ContextMenuEntry[] {
-  const { t, aiItems } = options;
-  return [
-    { label: t.selectAll, onSelect: options.selectAll },
-    ...(aiItems.length > 0
-      ? (["separator", ...aiItems] as ContextMenuEntry[])
-      : []),
-  ];
 }
 
 /** The inline styles, then (outside a table) the block the caret is in

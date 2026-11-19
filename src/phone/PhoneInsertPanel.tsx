@@ -2,7 +2,6 @@ import type { Strings } from "../i18n/strings";
 import { usePresenceProps } from "../engine/motion/usePresence";
 import { showNotice } from "../engine/controls/notices";
 import {
-  EDITOR_MORE_EVENT,
   INSERT_BLOCK_EVENT,
   INSERT_LINK_EVENT,
   INSERT_MARKDOWN_EVENT,
@@ -12,7 +11,7 @@ import { copyToImageFolder, pickImageFile } from "../editor/images/image-store";
 import { useSettings } from "../prefs/SettingsContext";
 import { focusDocument } from "./phone-format-actions";
 
-/** The ten keys of the insert panel, in its two columns. */
+/** The nine keys of the insert panel, three columns by three rows. */
 const INSERT_KEYS = [
   { id: "code-block", label: (t: Strings) => t.menuCodeBlock },
   { id: "table", label: (t: Strings) => t.menuTable },
@@ -23,7 +22,6 @@ const INSERT_KEYS = [
   { id: "rule", label: (t: Strings) => t.menuDivider },
   { id: "image", label: (t: Strings) => t.missingImageFilter },
   { id: "link", label: (t: Strings) => t.menuInsertLink },
-  { id: "more", label: (t: Strings) => t.toolbarMore },
 ] as const;
 
 async function insertPicture(
@@ -59,15 +57,11 @@ function pickInsert(
     focusDocument(tabId);
     return sendAppEvent(INSERT_LINK_EVENT);
   }
-  if (id === "more") {
-    focusDocument(tabId);
-    return sendAppEvent(EDITOR_MORE_EVENT);
-  }
   focusDocument(tabId);
   sendAppEvent(INSERT_BLOCK_EVENT, id);
 }
 
-/** The ten insert keys, two columns by five rows, in the keyboard's place.
+/** The nine insert keys, three columns by three rows, in the keyboard's place.
  *  It is chrome, not a sheet: no scrim, no grab handle, no cancel button -
  *  a key inserts, the + key closes it, or a tap on the page does. */
 export function PhoneInsertPanel({
@@ -96,7 +90,7 @@ export function PhoneInsertPanel({
       className="pf-insert-sheet"
       role="dialog"
       aria-label={t.menuInsertGroup}
-      style={height > 0 ? { maxHeight: height } : undefined}
+      style={height > 0 ? { height } : undefined}
       onMouseDown={(e) => e.preventDefault()}
     >
       <div className="pf-insert-grid">

@@ -4,6 +4,7 @@ import type { CaretBlock } from "../editor/caret-block";
 import { IconButton } from "../engine/controls/IconButton";
 import { Presence, PresenceDiv } from "../engine/motion/usePresence";
 import {
+  AssistantIcon,
   BulletListIcon,
   CheckIcon,
   HeadingIcon,
@@ -12,11 +13,16 @@ import {
   UndoIcon,
 } from "../engine/controls/icons";
 import { fill } from "../i18n/fill";
+import { AI_NAME } from "../i18n/names";
 import {
+  EDITOR_MORE_EVENT,
   INSERT_BLOCK_EVENT,
   TOGGLE_BLOCK_EVENT,
   sendAppEvent,
 } from "../utils/events";
+import { aiFeatures } from "../prefs/ai-features";
+import { useSettings } from "../prefs/SettingsContext";
+import { useImageService } from "../ai/image-models";
 import { keyboardCovered } from "../mobile/keyboard";
 import { IMAGE, REDO, TABLE, UNDO } from "./phone-format-groups";
 import { focusDocument, press } from "./phone-format-actions";
@@ -30,8 +36,8 @@ import { PhoneSelectionBar } from "./PhoneSelectionBar";
 import "./PhoneFormatBar.css";
 
 /*
- * The phone's format bar (design: phone, typing; ruling 31): a six-key main
- * bar — insert, text, list, undo, redo, done — with the text and list
+ * The phone's format bar (design: phone, typing; ruling 31): the writing
+ * keys — insert, text, list, AI, undo, redo, done — with the text and list
  * choices in panels just above it, inline formats on a floating bar over a
  * selection, and a table's or an image's own keys replacing the main bar.
  * The panels are chrome, not dialogs: no scrim, no portal, and a tap never
@@ -84,6 +90,13 @@ export function PhoneFormatBar({
   // place, and the main bar stays just above it as the keyboard goes.
   const [insertHeight, setInsertHeight] = useState(0);
   const context = block.image ? "image" : block.table ? "table" : null;
+  const { settings } = useSettings();
+  const ai = aiFeatures(settings);
+  const imageService = useImageService(settings);
+  // The same three actions the phone's AI sheet offers: a picture, a
+  // continuation, a grammar check. No action, no key.
+  const showAi =
+    ai.completion || ai.grammar || (ai.chat && imageService !== null);
 
   // The bar is hidden while the keyboard is down (format-bar.css), but the
   // insert panel closes the keyboard on purpose: `insert-open` keeps it.
@@ -177,6 +190,18 @@ export function PhoneFormatBar({
             >
               <BulletListIcon />
             </IconButton>
+            {showAi && (
+              <IconButton
+                label={AI_NAME}
+                className="pf-key"
+                onClick={() => {
+                  focusDocument(tabId);
+                  sendAppEvent(EDITOR_MORE_EVENT);
+                }}
+              >
+                <AssistantIcon />
+              </IconButton>
+            )}
             <IconButton
               label={t.menuUndo}
               className="pf-key"
