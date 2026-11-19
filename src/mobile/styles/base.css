@@ -194,3 +194,13 @@
 :root.keyboard-up {
   --safe-bottom: 0px;
 }
+
+/* No scrollbars on a touch screen: the finger is the scroll, and a bar
+   down the home list's edge read as a seam on the paper. */
+:root[data-window-chrome="mobile"] * {
+  scrollbar-width: none;
+}
+:root[data-window-chrome="mobile"] *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
