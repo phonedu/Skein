@@ -69,10 +69,12 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 | 1   | 代码块 `code-block`      | 表格 `table`                      |
 | 2   | 引用 `blockquote`        | 标注 `callout`                    |
 | 3   | 公式 `math-block`        | 待办列表 `task-list`              |
-| 4   | 分割线 `rule`            | 图片 `IMAGE_ACTION_EVENT`         |
+| 4   | 分割线 `rule`            | 图片 `pickImageFile`              |
 | 5   | 链接 `INSERT_LINK_EVENT` | 更多（完整插入菜单 / slash 菜单） |
 
 说明：`code-block` / `table` / `blockquote` / `callout` / `math-block` / `task-list` / `rule` 的 id 见 `src/editor/blocks/block-kind-list.ts`；**图片走 `pickImageFile` + `copyToImageFolder` + `INSERT_MARKDOWN_EVENT`**（已选中图片的宽度/删除仍走 `IMAGE_ACTION_EVENT`）；链接走 `INSERT_LINK_EVENT`。**若实施时发现「更多」没有现成菜单可开，则第 10 键改为「H2」（`INSERT_BLOCK_EVENT "h2"`），并在 PH1 证据里记下这一替换。**
+
+> **Android 真机发现（2026-11-19）**：系统选择器能开，但返回 `content://com.android.providers.media.documents/...`；`read_binary_file_base64` 只走 `fs::read`，图片实际插入失败。归 **H1**（content resolver 拷到缓存再走普通路径）后回 PH1 复核；选择器入口本身已验。
 
 ### 2.5 待对清单（实施前逐项核；全是「事件有没有」，不是「要不要造」）
 
