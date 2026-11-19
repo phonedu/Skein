@@ -1,5 +1,5 @@
-/* The phone's format bar (ruling 31): six keys in the sheet's foot, the
-   text/list choices in panels just above the bar, inline formats on a bar
+/* The phone's format bar: the writing keys in the sheet's foot, the
+   text/list/AI choices in panels just above the bar, inline formats on a bar
    over the selection, and a table's or an image's own keys in place of the
    main bar. Tokens only; the sheet's own foot geometry lives in
    format-bar.css. */

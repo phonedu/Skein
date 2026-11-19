@@ -38,8 +38,8 @@ import { PhoneSelectionBar } from "./PhoneSelectionBar";
 import "./PhoneFormatBar.css";
 
 /*
- * The phone's format bar (design: phone, typing; ruling 31): the writing
- * keys — insert, text, list, AI, undo, redo, done — with the text and list
+ * The phone's format bar (design: phone, typing): the writing keys —
+ * insert, text, list, AI, undo, redo, done — with the text, list and AI
  * choices in panels just above it, inline formats on a floating bar over a
  * selection, and a table's or an image's own keys replacing the main bar.
  * The panels are chrome, not dialogs: no scrim, no portal, and a tap never
