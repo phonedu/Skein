@@ -614,15 +614,24 @@ button.settings-phone-ic:active {
   --icon-scale: 1.2;
 }
 
-/* The result row is the icon and the words, one line, from the left. */
+/* The result row is the icon and the words, one line, from the left. It
+   never wraps: a longer word in another language takes the room from the
+   name (which ellipses), not a line of its own under the chip. */
 .settings-phone .settings-search-result {
   justify-content: flex-start;
   align-items: center;
+  flex-wrap: nowrap;
   gap: var(--space-3);
 }
 
+/* A result with a line of context under its name lines the chip up with
+   the name, not with the middle of the two lines. */
+.settings-phone .settings-search-result:has(.settings-row-hint) {
+  align-items: flex-start;
+}
+
 .settings-phone .settings-search-result > .settings-row-text {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
   text-align: left;
 }

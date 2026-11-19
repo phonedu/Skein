@@ -19,6 +19,13 @@ const PAGE = `
       </div>
       <label class="settings-row"><div class="settings-row-label"><span>Résumé mode</span></div></label>
       <button class="settings-row settings-link-row"><span class="settings-row-label">Ｍore themes</span></button>
+      <details class="settings-advanced">
+        <summary class="settings-row">
+          <span class="settings-row-label">Body text</span>
+          <span class="settings-row-value">Theme's</span>
+        </summary>
+        <label class="settings-row"><div class="settings-row-label"><span>Line spacing</span></div></label>
+      </details>
     </div>
   </section>
   <details class="settings-advanced">
@@ -51,6 +58,13 @@ describe("settings search", () => {
       },
       expect.objectContaining({ label: "Résumé mode", group: "Theme" }),
       expect.objectContaining({ label: "Ｍore themes", group: "Theme" }),
+      // A fold whose header is a row: named by its label, not its value.
+      expect.objectContaining({
+        kind: "row",
+        label: "Body text",
+        group: "Theme",
+      }),
+      expect.objectContaining({ label: "Line spacing", group: "Body text" }),
       expect.objectContaining({ kind: "group", label: "Advanced" }),
       expect.objectContaining({ label: "编辑动画", group: "Advanced" }),
       expect.objectContaining({ label: "Save", group: "File" }),

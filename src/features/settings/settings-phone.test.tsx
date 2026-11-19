@@ -154,4 +154,12 @@ describe("the phone's settings", () => {
     );
     expect(settingsPhoneCss).toContain("box-sizing: border-box;");
   });
+
+  it("keeps a result's chip beside its words, even with a description", () => {
+    expect(settingsPhoneCss).toContain("flex-wrap: nowrap;");
+    expect(settingsPhoneCss).toContain(
+      ".settings-search-result:has(.settings-row-hint)",
+    );
+    expect(settingsPhoneCss).toContain("flex: 1 1 0;");
+  });
 });

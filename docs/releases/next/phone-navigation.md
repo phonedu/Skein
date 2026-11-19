@@ -6,6 +6,7 @@
 ### Improved
 
 - A phone draws no scrollbars: the finger does the scrolling, and the one down the home list's edge left a seam on the paper.
+- A settings search result stays one row in any language: its icon sits beside the name (a longer English label no longer pushes the words to a second line), and a folded row is named by its name alone, not its name and its value run together.
 
 ### Fixed
 

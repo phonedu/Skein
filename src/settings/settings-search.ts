@@ -34,7 +34,12 @@ function labelText(el: Element | null | undefined): string {
 
 function groupOf(el: Element): string {
   const advanced = el.closest(".settings-advanced");
-  if (advanced) return labelText(advanced.querySelector(":scope > summary"));
+  const summary = advanced?.querySelector(":scope > summary");
+  // A fold's own row belongs to the group around the fold; the rows it
+  // holds belong to the fold, named by its label (a summary row carries a
+  // value too, which is not part of its name).
+  if (summary && summary !== el)
+    return labelText(summary.querySelector(".settings-row-label") ?? summary);
   const fixed = el.closest(".shortcut-fixed-section");
   if (fixed) return labelText(fixed.querySelector(".shortcut-fixed-title"));
   const group = el.closest(".settings-group");
@@ -53,7 +58,12 @@ interface Found {
 /** Every findable thing on a rendered page, in page order. */
 function* walk(root: Element): Generator<Found> {
   for (const el of root.querySelectorAll<HTMLElement>(FINDABLE)) {
-    if (el.matches(".settings-group-title, summary")) {
+    // A fold's own header is a group; a row's own fold (a summary that is
+    // a settings-row, carrying a value) is that row.
+    if (
+      !el.matches(".settings-row") &&
+      el.matches(".settings-group-title, summary")
+    ) {
       const label = labelText(el);
       if (label)
         yield { el, entry: { kind: "group", label, group: "", help: "" } };
