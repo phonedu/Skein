@@ -5,6 +5,7 @@ description = "Everything Textus's iOS and Android document access needs."
 permissions = [
   "allow-pick-document",
   "allow-pick-folder",
+  "allow-pick-image",
   "allow-create-document",
   "allow-read-text",
   "allow-read-data",

@@ -6,6 +6,7 @@ Everything Textus's iOS and Android document access needs.
 
 - `allow-pick-document`
 - `allow-pick-folder`
+- `allow-pick-image`
 - `allow-create-document`
 - `allow-read-text`
 - `allow-read-data`
@@ -286,6 +287,32 @@ Enables the pick_folder command without any pre-configured scope.
 <td>
 
 Denies the pick_folder command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`textus-files:allow-pick-image`
+
+</td>
+<td>
+
+Enables the pick_image command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`textus-files:deny-pick-image`
+
+</td>
+<td>
+
+Denies the pick_image command without any pre-configured scope.
 
 </td>
 </tr>

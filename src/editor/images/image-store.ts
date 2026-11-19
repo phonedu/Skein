@@ -5,6 +5,9 @@ import { closeHistory } from "@milkdown/kit/prose/history";
 import { resolveStrings } from "../../i18n/strings";
 import { showMessage } from "../../engine/controls/app-dialog";
 import { fs } from "../../platform/ipc";
+import { isIOSApp, isMobileApp } from "../../platform/capabilities";
+import { iosFiles } from "../../platform/ios-files";
+import { basename } from "../../utils/path";
 import type { Settings, ImageNamingMode } from "../../prefs/SettingsContext";
 import { IMAGE_FILE_EXTENSIONS, imageMimeForPath } from "./pasted-files";
 import { unwrittenImageSrcs } from "../markdown/markdown-output";
@@ -300,19 +303,21 @@ export function pastedImages(sources: {
   ];
 }
 
-/** An image file on disk, read through the backend once it's stored. */
+/** An image file on disk, read through the backend once it's stored. A
+ *  content:// pick is named by the mobile picker, so its extension is known. */
 export function fileImage(path: string): PastedImage {
+  const name = basename(path);
   return {
-    name: path.slice(
-      Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")) + 1,
-    ),
-    type: imageMimeForPath(path) ?? "",
+    name,
+    type: imageMimeForPath(name) ?? "",
     base64: () => fs.readBinaryFileBase64(path),
   };
 }
 
-/** Asks for an image file in the native picker; null when cancelled. */
+/** Asks for an image file in the native picker; null when cancelled. On
+ *  Android the content:// picker names the file (Rust reads plain paths). */
 export function pickImageFile(language: Settings["language"]) {
+  if (isMobileApp && !isIOSApp) return iosFiles.pickImage();
   return fs.openImageFileDialog(
     resolveStrings(language).missingImageFilter,
     IMAGE_FILE_EXTENSIONS,

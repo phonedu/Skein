@@ -53,6 +53,7 @@ mod native {
     forwarded! {
         pick_document => "pickDocument",
         pick_folder => "pickFolder",
+        pick_image => "pickImage",
         create_document => "createDocument",
         read_text => "readText",
         read_data => "readData",
@@ -74,6 +75,7 @@ mod native {
             .invoke_handler(tauri::generate_handler![
                 pick_document,
                 pick_folder,
+                pick_image,
                 create_document,
                 read_text,
                 read_data,

@@ -4,6 +4,7 @@
 const COMMANDS: &[&str] = &[
     "pick_document",
     "pick_folder",
+    "pick_image",
     "create_document",
     "read_text",
     "read_data",

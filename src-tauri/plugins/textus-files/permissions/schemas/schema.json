@@ -415,6 +415,18 @@
           "markdownDescription": "Denies the pick_folder command without any pre-configured scope."
         },
         {
+          "description": "Enables the pick_image command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-pick-image",
+          "markdownDescription": "Enables the pick_image command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the pick_image command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-pick-image",
+          "markdownDescription": "Denies the pick_image command without any pre-configured scope."
+        },
+        {
           "description": "Enables the read_data command without any pre-configured scope.",
           "type": "string",
           "const": "allow-read-data",
@@ -487,10 +499,10 @@
           "markdownDescription": "Denies the write_text command without any pre-configured scope."
         },
         {
-          "description": "Everything Textus's iOS and Android document access needs.\n#### This default permission set includes:\n\n- `allow-pick-document`\n- `allow-pick-folder`\n- `allow-create-document`\n- `allow-read-text`\n- `allow-read-data`\n- `allow-write-text`\n- `allow-list-folder`\n- `allow-create-entry`\n- `allow-rename-entry`\n- `allow-move-entry`\n- `allow-delete-entry`\n- `allow-remembered`\n- `allow-begin-access`\n- `allow-share`\n- `allow-haptic`\n- `allow-appearance`",
+          "description": "Everything Textus's iOS and Android document access needs.\n#### This default permission set includes:\n\n- `allow-pick-document`\n- `allow-pick-folder`\n- `allow-pick-image`\n- `allow-create-document`\n- `allow-read-text`\n- `allow-read-data`\n- `allow-write-text`\n- `allow-list-folder`\n- `allow-create-entry`\n- `allow-rename-entry`\n- `allow-move-entry`\n- `allow-delete-entry`\n- `allow-remembered`\n- `allow-begin-access`\n- `allow-share`\n- `allow-haptic`\n- `allow-appearance`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "Everything Textus's iOS and Android document access needs.\n#### This default permission set includes:\n\n- `allow-pick-document`\n- `allow-pick-folder`\n- `allow-create-document`\n- `allow-read-text`\n- `allow-read-data`\n- `allow-write-text`\n- `allow-list-folder`\n- `allow-create-entry`\n- `allow-rename-entry`\n- `allow-move-entry`\n- `allow-delete-entry`\n- `allow-remembered`\n- `allow-begin-access`\n- `allow-share`\n- `allow-haptic`\n- `allow-appearance`"
+          "markdownDescription": "Everything Textus's iOS and Android document access needs.\n#### This default permission set includes:\n\n- `allow-pick-document`\n- `allow-pick-folder`\n- `allow-pick-image`\n- `allow-create-document`\n- `allow-read-text`\n- `allow-read-data`\n- `allow-write-text`\n- `allow-list-folder`\n- `allow-create-entry`\n- `allow-rename-entry`\n- `allow-move-entry`\n- `allow-delete-entry`\n- `allow-remembered`\n- `allow-begin-access`\n- `allow-share`\n- `allow-haptic`\n- `allow-appearance`"
         }
       ]
     }

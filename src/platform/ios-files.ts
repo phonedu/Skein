@@ -57,6 +57,10 @@ export const iosFiles = {
   /** The Files app's document picker; null when cancelled. */
   pickDocument: async (): Promise<string | null> =>
     inDocuments(named(await call<Picked>("pick_document")).url),
+  /** Android's image picker, named so the image store knows its extension;
+   *  null when cancelled. */
+  pickImage: async (): Promise<string | null> =>
+    named(await call<Picked>("pick_image")).url,
   /** Android's Save As for a new document: where and under what name, in
    *  the system's picker; null when cancelled. */
   createDocument: async (name: string): Promise<string | null> =>

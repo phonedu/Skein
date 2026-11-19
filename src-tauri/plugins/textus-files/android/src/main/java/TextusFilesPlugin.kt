@@ -100,6 +100,15 @@ class TextusFilesPlugin(private val activity: Activity) : Plugin(activity) {
     startActivityForResult(invoke, intent, "documentPicked")
   }
 
+  /** An image to put in a document, named so its extension is known. */
+  @Command
+  fun pickImage(invoke: Invoke) {
+    val intent = opening(Intent.ACTION_OPEN_DOCUMENT)
+      .addCategory(Intent.CATEGORY_OPENABLE)
+      .setType("image/*")
+    startActivityForResult(invoke, intent, "imagePicked")
+  }
+
   @Command
   fun pickFolder(invoke: Invoke) {
     startActivityForResult(invoke, opening(Intent.ACTION_OPEN_DOCUMENT_TREE), "folderPicked")
@@ -118,6 +127,13 @@ class TextusFilesPlugin(private val activity: Activity) : Plugin(activity) {
 
   @ActivityCallback
   fun documentPicked(invoke: Invoke, result: ActivityResult) {
+    val uri = result.data?.data ?: return invoke.resolve(JSObject().put("url", null))
+    keep(uri)
+    invoke.resolve(item(uri, false))
+  }
+
+  @ActivityCallback
+  fun imagePicked(invoke: Invoke, result: ActivityResult) {
     val uri = result.data?.data ?: return invoke.resolve(JSObject().put("url", null))
     keep(uri)
     invoke.resolve(item(uri, false))

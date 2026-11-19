@@ -123,7 +123,9 @@ export const fs = {
    *  the drafts'. Desktop only. */
   openWordDocument: (path: string) => command("open_word_document", path),
   readBinaryFileBase64: (path: string) =>
-    command("read_binary_file_base64", path),
+    isScopedUrl(path)
+      ? iosFiles.readBase64(path)
+      : command("read_binary_file_base64", path),
   savePastedImage: (
     docPath: string | null,
     dataBase64: string,
