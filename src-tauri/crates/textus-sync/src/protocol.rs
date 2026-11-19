@@ -17,6 +17,18 @@ pub const MAX_MANIFEST_SIZE: usize = 8 * 1024 * 1024;
 pub const MAX_HISTORY_SIZE: usize = 8 * 1024 * 1024;
 pub const MAX_VERSIONS: usize = 200;
 pub const KEEP_DAYS: [u32; 4] = [30, 90, 365, 0];
+pub const HEAD_KEY: &str = "v1/head.json";
+pub const HISTORY_KEY: &str = "v1/history.json";
+pub const LOCK_KEY: &str = "v1/lock.json";
+
+pub fn snapshot_key(revision: &str) -> String {
+    format!("v1/snapshots/{revision}.json")
+}
+
+pub fn block_key(hash: &str) -> String {
+    let shard = hash.get(..2).unwrap_or("00");
+    format!("v1/blocks/{shard}/{hash}")
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Block {
