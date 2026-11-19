@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { scaledPx } from "../engine/tokens/chrome-scale";
 import { onBack } from "./back";
 import { OPEN_SETTINGS_PAGE_EVENT } from "../settings/settings-nav";
-import { androidBridge } from "../platform/android-bridge";
 import { across, swipeClaimed } from "../utils/gesture";
 
 /** How far a finger moves across before it counts as a swipe, and how near
@@ -78,8 +77,6 @@ export function usePushedSidebar(
       setOpen(false);
       return true;
     });
-    // Android keeps its back gesture off the edge the sidebar comes from.
-    androidBridge()?.setEdgeSwipe(true);
     // A Settings page picked from it (the same tab): shown, not covered.
     const picked = () => setOpen(false);
     window.addEventListener(OPEN_SETTINGS_PAGE_EVENT, picked);
@@ -94,7 +91,6 @@ export function usePushedSidebar(
       window.removeEventListener("touchend", up);
       window.removeEventListener(OPEN_SETTINGS_PAGE_EVENT, picked);
       offBack();
-      androidBridge()?.setEdgeSwipe(false);
     };
   }, [phone, setOpen]);
 }

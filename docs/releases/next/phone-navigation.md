@@ -10,5 +10,6 @@
 
 ### Fixed
 
+- Android's left-edge Back gesture reaches the app again: the phone layout no longer reserves a band of the left edge for a sidebar it does not show. Both edges step back now.
 - Android's Back steps back through the app instead of leaving it: an open sheet or the find bar closes, the AI page returns to the document, the document to the library, and Settings' pages go back to its list. From the library, Back puts the app away as before.
 - With the AI page over a document on a phone, Textus AI reads that document: it stays loaded behind the page, so a review is sent with the document rather than without one.
