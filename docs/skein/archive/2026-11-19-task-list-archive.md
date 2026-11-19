@@ -65,6 +65,7 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 
 ### 1.7 宿主前置已完成
 
+- **H1 Android 默认库 = App Documents（2026-11-19，完成）**：清装首启首页直接显示 `getExternalFilesDir(Documents)`（`/storage/emulated/0/Android/data/com.catvinci.textus/files/Documents`），无 SAF 授权；空库 CTA 直接命名建文件、2s 自动保存、行菜单重命名/删除均过；图片 content URI 已由 `textus-files` `pick_image` + `read_data` 解决。手机无 Save 命令，自动保存强制开启。
 - **H6 打开文件处理（2026-11-19 核）**：`useExternalChangeReload` 已在 `FILE_WRITTEN_EVENT` 时只读相关 tab；干净 tab 经 `takeDiskText` 原地重载（一次 undo，AI 对话保留），脏 tab 继续 defer；`external-change.test.ts` 覆盖插件通知与 patch。无代码改动，任务本身早已落地。
 
 ---
