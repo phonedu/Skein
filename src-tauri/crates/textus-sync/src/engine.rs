@@ -380,6 +380,12 @@ async fn download_entry(
     Ok(out)
 }
 
+/// The bytes of one entry, for the history page's restore action: the same
+/// block checks a download makes, with no local file involved.
+pub async fn read_entry(store: &dyn ObjectStore, entry: &Entry) -> Result<Vec<u8>> {
+    download_entry(store, entry, &mut BTreeMap::new()).await
+}
+
 async fn history_for(store: &dyn ObjectStore, head: Option<&Manifest>) -> Result<Option<History>> {
     let Some(head) = head else {
         return Ok(None);

@@ -114,6 +114,9 @@ export const commands = {
 	sync_settings_save: (root: string, config: string, credentials: string) => __TAURI_INVOKE<null>("sync_settings_save", { root, config, credentials }),
 	sync_settings_forget: (root: string) => __TAURI_INVOKE<null>("sync_settings_forget", { root }),
 	sync_status: (root: string) => __TAURI_INVOKE<string>("sync_status", { root }),
+	sync_conflicts: (root: string) => __TAURI_INVOKE<string>("sync_conflicts", { root }),
+	sync_history: (root: string) => __TAURI_INVOKE<string>("sync_history", { root }),
+	sync_restore: (root: string, path: string, hash: string) => __TAURI_INVOKE<string>("sync_restore", { root, path, hash }),
 	/**
 	 *  Where an Obsidian image embed's file is, as an absolute path for the asset
 	 *  protocol; None when it isn't an image or isn't in the vault.

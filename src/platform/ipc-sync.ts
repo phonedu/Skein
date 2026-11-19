@@ -85,3 +85,42 @@ export const syncRunSaved = (
   commands
     .sync_run_saved(root, allowEmptyScan, allowBulkDelete)
     .then((json) => parse<SyncReply>(json));
+
+export interface SyncConflict {
+  path: string;
+  name: string;
+  size: number;
+  modifiedMs?: number | null;
+}
+
+export interface SyncHistoryVersion {
+  hash: string;
+  size: number;
+  at: string;
+  device?: string | null;
+  until?: string | null;
+}
+
+export interface SyncHistory {
+  format: string;
+  current: Record<string, { at: string; device?: string | null }>;
+  versions: Record<string, SyncHistoryVersion[]>;
+  head?: string | null;
+  previous?: string | null;
+  keep: { days: number; at: string };
+}
+
+export const syncConflicts = (root: string): Promise<SyncConflict[]> =>
+  commands.sync_conflicts(root).then((json) => parse<SyncConflict[]>(json));
+
+export const syncHistory = (root: string): Promise<SyncHistory | null> =>
+  commands.sync_history(root).then((json) => parse<SyncHistory | null>(json));
+
+export const syncRestore = (
+  root: string,
+  path: string,
+  hash: string,
+): Promise<{ path: string }> =>
+  commands
+    .sync_restore(root, path, hash)
+    .then((json) => parse<{ path: string }>(json));

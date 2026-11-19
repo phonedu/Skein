@@ -13,7 +13,7 @@ pub mod s3;
 pub mod store;
 pub mod webdav;
 
-pub use engine::{sync, SyncOptions, SyncOutcome, SyncResult};
+pub use engine::{read_entry, sync, SyncOptions, SyncOutcome, SyncResult};
 pub use error::{Result, SyncError};
 pub use local::{LocalFiles, MemoryLocal};
 pub use planner::{plan, Action, Kind};

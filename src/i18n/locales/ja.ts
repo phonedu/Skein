@@ -1946,4 +1946,10 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncErrorBulk: "この同期は多くのファイルを削除します。何も削除していません。",
   syncErrorConfig: "接続項目を確認してください。",
   syncErrorOther: "同期に失敗しました：{reason}",
+  syncConflictsTitle: "競合コピー",
+  syncHistoryTitle: "クラウド履歴",
+  syncNoConflicts: "競合コピーはありません。",
+  syncNoHistory: "クラウド履歴はまだありません。",
+  syncRestore: "復元",
+  syncRestored: "復元しました：{path}",
 } satisfies Translation;

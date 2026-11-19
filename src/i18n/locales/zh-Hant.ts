@@ -1850,4 +1850,10 @@ export default {
   syncErrorOther: "同步失敗：{reason}",
   syncWebdav: "WebDAV",
   syncS3: "S3",
+  syncConflictsTitle: "衝突副本",
+  syncHistoryTitle: "雲端歷史",
+  syncNoConflicts: "沒有衝突副本。",
+  syncNoHistory: "還沒有雲端歷史。",
+  syncRestore: "恢復",
+  syncRestored: "已恢復：{path}",
 } satisfies Translation;

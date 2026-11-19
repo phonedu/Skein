@@ -7,8 +7,15 @@ use crate::sync::local::{LocalSync, TrashFile};
 use crate::sync::store::{self, Config, Credentials, LastRun};
 use chrono::{SecondsFormat, Utc};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::sync::Arc;
-use textus_sync::{probe, sync, Base, ObjectStore, S3Store, SyncOptions, SyncResult, WebDavStore};
+use std::time::UNIX_EPOCH;
+use textus_sync::path::conflict_path;
+use textus_sync::protocol::HISTORY_KEY;
+use textus_sync::{
+    probe, read_entry, sync, Base, History, LocalFiles, ObjectStore, S3Store, SyncOptions,
+    SyncResult, WebDavStore,
+};
 
 #[derive(Deserialize)]
 struct Request {
@@ -274,4 +281,115 @@ pub async fn sync_run_saved(
             Err(error)
         }
     }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Conflict {
+    path: String,
+    name: String,
+    size: u64,
+    modified_ms: Option<u64>,
+}
+
+fn walk_conflicts(dir: &Path, root: &Path, out: &mut Vec<Conflict>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Ok(metadata) = std::fs::symlink_metadata(&path) else {
+            continue;
+        };
+        if metadata.file_type().is_symlink() {
+            continue;
+        }
+        if metadata.is_dir() {
+            walk_conflicts(&path, root, out);
+            continue;
+        }
+        let relative = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .to_string_lossy()
+            .replace('\\', "/");
+        out.push(Conflict {
+            name: entry.file_name().to_string_lossy().into_owned(),
+            path: relative,
+            size: metadata.len(),
+            modified_ms: metadata
+                .modified()
+                .ok()
+                .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+                .map(|duration| duration.as_millis() as u64),
+        });
+    }
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub fn sync_conflicts(root: String) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    let mut conflicts = Vec::new();
+    walk_conflicts(&root.join("Sync conflicts"), &root, &mut conflicts);
+    conflicts.sort_by(|a, b| a.path.cmp(&b.path));
+    serde_json::to_string(&conflicts).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn sync_history(app: tauri::AppHandle, root: String) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    let Some((config, credentials)) = store::load(&app, &root)? else {
+        return Err(crate::errors::error("notConfigured"));
+    };
+    let store = store_for(&config, &credentials)?;
+    let Some(raw) = store.get(HISTORY_KEY).await.map_err(|e| e.to_string())? else {
+        return Ok("null".to_string());
+    };
+    let history = History::parse(&raw).map_err(|e| e.to_string())?;
+    serde_json::to_string(&history).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn sync_restore(
+    app: tauri::AppHandle,
+    root: String,
+    path: String,
+    hash: String,
+) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    let Some((config, credentials)) = store::load(&app, &root)? else {
+        return Err(crate::errors::error("notConfigured"));
+    };
+    let store = store_for(&config, &credentials)?;
+    let raw = store
+        .get(HISTORY_KEY)
+        .await
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| crate::errors::error("notFound"))?;
+    let history = History::parse(&raw).map_err(|e| e.to_string())?;
+    let version = history
+        .versions
+        .get(&path)
+        .and_then(|versions| versions.iter().find(|version| version.entry.hash == hash))
+        .ok_or_else(|| crate::errors::error("notFound"))?;
+    let bytes = read_entry(store.as_ref(), &version.entry)
+        .await
+        .map_err(|e| e.to_string())?;
+    let local = LocalSync::new(root.clone(), trash_for(&app, &root)).map_err(|e| e.to_string())?;
+    let target = match local.read(&path).await.map_err(|e| e.to_string())? {
+        Some(existing) if textus_sync::chunk::hash_hex(&existing) == hash => path.clone(),
+        Some(_) => conflict_path(&path, &hash),
+        None => path.clone(),
+    };
+    if !local
+        .apply(&target, bytes)
+        .await
+        .map_err(|e| e.to_string())?
+    {
+        return Err(crate::errors::error("fileOpen"));
+    }
+    Ok(serde_json::json!({ "path": target }).to_string())
 }

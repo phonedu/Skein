@@ -5,13 +5,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { fill } from "../../i18n/fill";
 import {
+  syncConflicts,
+  syncHistory,
+  syncRestore,
   syncRunSaved,
   syncSettingsForget,
   syncSettingsGet,
   syncSettingsSave,
   syncStatus,
   type SyncConfig,
+  type SyncConflict,
   type SyncCredentials,
+  type SyncHistory,
   type SyncStatus,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
@@ -56,11 +61,18 @@ function errorText(t: SettingsPageProps["t"], reason: string): string {
 const folderName = (path: string) =>
   path.split(/[\\/]/).filter(Boolean).pop() ?? path;
 
-export function SyncPage({ t, folderRoot, indexing }: SettingsPageProps) {
+export function SyncPage({
+  t,
+  folderRoot,
+  indexing,
+  onOpenFile,
+}: SettingsPageProps) {
   const [config, setConfig] = useState<SyncConfig>(EMPTY);
   const [credentials, setCredentials] =
     useState<SyncCredentials>(EMPTY_CREDENTIALS);
   const [status, setStatus] = useState<SyncStatus | null>(null);
+  const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
+  const [history, setHistory] = useState<SyncHistory | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ error: boolean; text: string } | null>(
@@ -77,6 +89,12 @@ export function SyncPage({ t, folderRoot, indexing }: SettingsPageProps) {
       if (settings.config) setConfig(settings.config);
       setSaved(settings.configured && !!settings.hasCredentials);
       setStatus(current);
+      const [foundConflicts, foundHistory] = await Promise.all([
+        syncConflicts(folderRoot).catch(() => []),
+        syncHistory(folderRoot).catch(() => null),
+      ]);
+      setConflicts(foundConflicts);
+      setHistory(foundHistory);
     } catch (error) {
       setNote({ error: true, text: String(error) });
     }
@@ -145,6 +163,27 @@ export function SyncPage({ t, folderRoot, indexing }: SettingsPageProps) {
     }
   };
 
+  const fullPath = (relative: string) =>
+    `${folderRoot.replace(/[\\/]$/, "")}/${relative}`;
+
+  const restore = async (path: string, hash: string) => {
+    setBusy(true);
+    setNote(null);
+    try {
+      const restored = await syncRestore(folderRoot, path, hash);
+      await reload();
+      setNote({
+        error: false,
+        text: fill(t.syncRestored, { path: restored.path }),
+      });
+      onOpenFile?.(fullPath(restored.path));
+    } catch (error) {
+      setNote({ error: true, text: errorText(t, String(error)) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const last = status?.last;
   const statusText = !status?.configured
     ? t.syncNotConfigured
@@ -154,6 +193,13 @@ export function SyncPage({ t, folderRoot, indexing }: SettingsPageProps) {
         ? t.syncDone
         : t.syncNever;
   const isS3 = config.provider === "s3";
+  const historyRows = history
+    ? Object.entries(history.versions)
+        .flatMap(([path, versions]) =>
+          versions.slice(0, 3).map((version) => ({ path, ...version })),
+        )
+        .slice(0, 40)
+    : [];
 
   return (
     <>
@@ -321,6 +367,55 @@ export function SyncPage({ t, folderRoot, indexing }: SettingsPageProps) {
           )}
         </div>
       </SettingsGroup>
+      {status?.configured && (
+        <SettingsGroup title={t.syncConflictsTitle}>
+          {conflicts.length === 0 ? (
+            <p className="tx-list-note">{t.syncNoConflicts}</p>
+          ) : (
+            conflicts.map((conflict) => (
+              <div className="sync-list-row" key={conflict.path}>
+                <span className="sync-list-text">{conflict.path}</span>
+                <button
+                  type="button"
+                  className="text-button settings-inline-button"
+                  onClick={() => onOpenFile?.(fullPath(conflict.path))}
+                >
+                  {t.treeOpen}
+                </button>
+              </div>
+            ))
+          )}
+        </SettingsGroup>
+      )}
+      {status?.configured && (
+        <SettingsGroup title={t.syncHistoryTitle}>
+          {historyRows.length === 0 ? (
+            <p className="tx-list-note">{t.syncNoHistory}</p>
+          ) : (
+            historyRows.map((version) => (
+              <div
+                className="sync-list-row"
+                key={`${version.path}-${version.hash}`}
+              >
+                <span className="sync-list-text">
+                  {version.path}
+                  <span className="sync-last">
+                    {new Date(version.at).toLocaleString()}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className="text-button settings-inline-button"
+                  disabled={busy}
+                  onClick={() => void restore(version.path, version.hash)}
+                >
+                  {t.syncRestore}
+                </button>
+              </div>
+            ))
+          )}
+        </SettingsGroup>
+      )}
     </>
   );
 }

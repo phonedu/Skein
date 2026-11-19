@@ -217,6 +217,9 @@ pub(crate) fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Sen
         commands::sync::sync_settings_save,
         commands::sync::sync_settings_forget,
         commands::sync::sync_status,
+        commands::sync::sync_conflicts,
+        commands::sync::sync_history,
+        commands::sync::sync_restore,
         #[cfg(desktop)]
         commands::recents::add_recent_folder,
         #[cfg(desktop)]

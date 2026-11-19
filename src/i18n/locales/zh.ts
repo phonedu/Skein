@@ -1845,4 +1845,10 @@ export default {
   syncErrorOther: "同步失败：{reason}",
   syncWebdav: "WebDAV",
   syncS3: "S3",
+  syncConflictsTitle: "冲突副本",
+  syncHistoryTitle: "云端历史",
+  syncNoConflicts: "没有冲突副本。",
+  syncNoHistory: "还没有云端历史。",
+  syncRestore: "恢复",
+  syncRestored: "已恢复：{path}",
 } satisfies Translation;

@@ -1928,4 +1928,10 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
     "이 동기화는 많은 파일을 삭제합니다. 아무것도 삭제하지 않았습니다.",
   syncErrorConfig: "연결 항목을 확인하세요.",
   syncErrorOther: "동기화 실패: {reason}",
+  syncConflictsTitle: "충돌 사본",
+  syncHistoryTitle: "클라우드 기록",
+  syncNoConflicts: "충돌 사본이 없습니다.",
+  syncNoHistory: "아직 클라우드 기록이 없습니다.",
+  syncRestore: "복원",
+  syncRestored: "복원됨: {path}",
 } satisfies Translation;

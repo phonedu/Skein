@@ -1979,6 +1979,12 @@ type /name in a conversation to use one.
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
   syncErrorOther: "Sync failed: {reason}",
+  syncConflictsTitle: "Conflicts",
+  syncHistoryTitle: "Cloud history",
+  syncNoConflicts: "No conflict copies.",
+  syncNoHistory: "No cloud history yet.",
+  syncRestore: "Restore",
+  syncRestored: "Restored: {path}",
 } satisfies Record<string, string | Plural>;
 
 export default en;
