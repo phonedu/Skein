@@ -65,6 +65,7 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 
 ### 1.7 宿主前置已完成
 
+- **H7 S3 403/ListBucket + 重定向策略（2026-11-19，完成）**：插件 README 写清 prefix 条件化的 `s3:ListBucket` 与对象权限，403 由 `permissionRead/Write` 给可操作错误；重定向已由宿主 `plugins/http.rs` 的 reqwest 策略限制（≤5 跳、目标必须在 `network:` grant 内，跨 host 即停），无需插件参数。
 - **H4 锁 create 修复（2026-11-19，完成于插件源）**：`create(LOCK)` 移入 `try`，异常/412 读回锁，只接管自己 id 的锁；`engine.test` 覆盖“create 写后抛 412 接管”与“他人锁不抢”；`textus-plugins` 本地 `skein-sync-prep` 提交 `0aaac07`，上游 PR/fork 待授权。
 - **H5 状态修正（2026-11-19，完成于插件源）**：`status.ts` 在冲突后、时间前返回 `statusPartial`；十语言 manifest 已补；`status.test` 2/2；host 已持久化 `last:<key>`；同提交 `0aaac07`。
 - **H2 移动端 App 管理 trash（2026-11-19，完成）**：`src-tauri/src/trash.rs` 把删除移到 App 私有 `trash/<id>/` + `record.json`（original/root/name/is_dir/deleted_at），同卷 rename、跨卷 copy→remove；`tree_trash_entry` 与 `plugin_fs_trash` 移动端共用，桌面仍系统回收站；真机行菜单删除后 Documents 无文件、trash 记录正确；单测 2/2。
