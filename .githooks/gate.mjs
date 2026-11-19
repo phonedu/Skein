@@ -452,7 +452,8 @@ function scanIdentities(base, head, findings) {
 // The fork-clean commit deletes upstream files this fork does not carry;
 // CONFIG.absentPaths is its manifest (directory entries cover future
 // upstream additions in those places too). Checked against the head tree
-// on every push, in both modes.
+// on a fork push: an upstream-bound branch carries upstream's own tree, so
+// those paths being there is the point, not a resurrection.
 function absentFindings(head, findings) {
   const tree = git("ls-tree", "-r", "--name-only", "-z", head)
     .split("\0")
@@ -554,7 +555,7 @@ if (mode[0] === "upstream") {
 scanDiff(contentBase, head, mode[0], findings);
 scanMessages(logArgs, mode[0], findings);
 scanIdentities(base, head, findings);
-absentFindings(head, findings);
+if (mode[0] === "fork") absentFindings(head, findings);
 
 for (const warning of warnings) {
   console.error(`gate: WARNING ${warning}`);
