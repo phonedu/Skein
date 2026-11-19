@@ -1,0 +1,39 @@
+.sync-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.sync-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sync-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+.sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.sync-actions .danger {
+  color: var(--ui-danger);
+}
+
+.sync-last {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}

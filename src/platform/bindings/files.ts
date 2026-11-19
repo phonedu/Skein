@@ -104,7 +104,16 @@ export const commands = {
 	 *  deleting it, and refuses the folder the tree is showing.
 	 */
 	tree_trash_entry: (path: string, root: string) => __TAURI_INVOKE<null>("tree_trash_entry", { path, root }),
+	/**
+	 *  A one-off run with the connection in the request; used by built-app
+	 *  checks and the first migration path. Settings uses the saved commands.
+	 */
 	sync_run: (request: string) => __TAURI_INVOKE<string>("sync_run", { request }),
+	sync_run_saved: (root: string, allowEmptyScan: boolean, allowBulkDelete: boolean) => __TAURI_INVOKE<string>("sync_run_saved", { root, allowEmptyScan, allowBulkDelete }),
+	sync_settings_get: (root: string) => __TAURI_INVOKE<string>("sync_settings_get", { root }),
+	sync_settings_save: (root: string, config: string, credentials: string) => __TAURI_INVOKE<null>("sync_settings_save", { root, config, credentials }),
+	sync_settings_forget: (root: string) => __TAURI_INVOKE<null>("sync_settings_forget", { root }),
+	sync_status: (root: string) => __TAURI_INVOKE<string>("sync_status", { root }),
 	/**
 	 *  Where an Obsidian image embed's file is, as an absolute path for the asset
 	 *  protocol; None when it isn't an image or isn't in the vault.

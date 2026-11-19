@@ -43,6 +43,8 @@ export interface SettingsPanelProps {
   onFilesDeleted?: (paths: string[]) => void;
   /** The document in front, for what its project sets. */
   docPath?: string | null;
+  /** The library the sync page works on, or null. */
+  folderRoot?: string | null;
   /** The shortcuts that can't be changed, listed under the ones that can. */
   fixedShortcuts?: FixedShortcutGroup[];
   /** The commands plugins add, under Shortcuts' own. */
@@ -89,6 +91,7 @@ export function SettingsPanel({
   onOpenFile,
   onFilesDeleted,
   docPath = null,
+  folderRoot = null,
   fixedShortcuts = [],
   pluginCommands = [],
   initialCategory = "general",
@@ -140,6 +143,7 @@ export function SettingsPanel({
     onOpenFile,
     onFilesDeleted,
     docPath,
+    folderRoot,
     onClose,
     fixedShortcuts,
     pluginCommands,

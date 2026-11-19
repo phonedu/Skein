@@ -40,6 +40,8 @@ export interface SettingsPageProps {
   onFilesDeleted?: (paths: string[]) => void;
   /** The document in front, for what its project sets. */
   docPath?: string | null;
+  /** The folder the sync page works on: the open library, or null. */
+  folderRoot: string | null;
   /** The shortcuts that can't be changed. */
   fixedShortcuts: FixedShortcutGroup[];
   /** The commands plugins add, whose keys can be set. */
@@ -65,6 +67,7 @@ export function pageProps(
     openHelp: () => {},
     onOpenFile: () => {},
     onClose: () => {},
+    folderRoot: null,
     fixedShortcuts: [],
     pluginCommands: [],
     ...given,

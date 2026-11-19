@@ -179,6 +179,8 @@ function App() {
     onOpenFile: (path: string) => void openFile(path),
     onFilesDeleted: skillFilesDeleted,
     docPath: activeTab.path,
+    folderRoot:
+      openFolder.folder || openFolder.treeRoot || docs.documentsFolder || null,
     fixedShortcuts: fixedShortcutGroups(t, platformName()),
     pluginCommands: commands()
       // Textus's own (Save, Close Tab) have their keys under File.

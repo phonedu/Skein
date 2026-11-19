@@ -80,6 +80,8 @@ export function SettingsHost(props: {
   onFilesDeleted?: (paths: string[]) => void;
   /** The document in front, for what its project sets. */
   docPath?: string | null;
+  /** The open library, for the sync page. */
+  folderRoot?: string | null;
   fixedShortcuts?: FixedShortcutGroup[];
   pluginCommands?: ShortcutCommand[];
 }) {
@@ -129,6 +131,7 @@ export function SettingsHost(props: {
           onOpenPage={() => {}}
           onClose={props.onClose}
           marginAvailable={marginAvailable}
+          folderRoot={props.folderRoot ?? null}
           fixedShortcuts={props.fixedShortcuts}
           pluginCommands={props.pluginCommands}
           {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
@@ -151,6 +154,7 @@ export function SettingsHost(props: {
                 onOpenPage={() => {}}
                 onClose={props.onClose}
                 marginAvailable={marginAvailable}
+                folderRoot={props.folderRoot ?? null}
               />
             ),
           },
@@ -228,6 +232,7 @@ export function SettingsHost(props: {
             onOpenPage={setPageId}
             onClose={props.onClose}
             marginAvailable={marginAvailable}
+            folderRoot={props.folderRoot ?? null}
             fixedShortcuts={props.fixedShortcuts}
             pluginCommands={props.pluginCommands}
             {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}

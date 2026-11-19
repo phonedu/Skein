@@ -130,6 +130,7 @@ describe.each(LANGS.filter((lang) => lang !== "en"))("%s", (lang) => {
   // Names that stay as written in every language: brands, file formats,
   // placeholders.
   const AS_WRITTEN = new Set([
+    "syncWebdav",
     "phonePageAi",
     "apiKeyPlaceholder",
     "customBaseUrlPlaceholder",

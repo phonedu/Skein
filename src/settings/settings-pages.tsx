@@ -9,6 +9,7 @@ import {
 import { lucide } from "../engine/controls/icons";
 import {
   Brain,
+  Cloud,
   Cpu,
   Image,
   Info,
@@ -121,6 +122,11 @@ const BUILT_IN: SettingsPageDef[] = [
     label: (t) => t.navExtensions,
     Icon: lucide(Puzzle, NAV_ICON),
     available: () => isMobileApp,
+  },
+  {
+    id: "sync",
+    label: (t) => t.navSync,
+    Icon: lucide(Cloud, NAV_ICON),
   },
   {
     id: "shortcuts",

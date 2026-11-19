@@ -14,6 +14,7 @@ import { ProvidersPage } from "./pages/ProvidersPage";
 import { MemoryPage } from "./pages/MemoryPage";
 import { McpPage } from "./pages/McpPage";
 import { ShortcutsPage } from "./pages/ShortcutsPage";
+import { SyncPage } from "./pages/SyncPage";
 import { PrivacySection } from "./sections/privacy";
 import type { SettingsPageDef } from "./settings-pages";
 import type { SettingsPageProps } from "./pages/types";
@@ -43,6 +44,7 @@ const BUILT_IN: Record<string, ComponentType<SettingsPageProps>> = {
   memory: MemoryPage,
   mcp: McpPage,
   extensions: ExtensionsPage,
+  sync: SyncPage,
   shortcuts: ShortcutsPage,
   privacy: ({ t }) => <PrivacySection t={t} />,
   about: AboutPage,
