@@ -58,6 +58,53 @@
   （现在纯词代号按词边界匹配）；git 对中文文件名的 quotepath 转义曾经让路径
   黑名单漏判（现在按 `-z`/解码处理）。
 
+## 上游工单（动手前先写，写进汇报开头）
+
+给上游开 issue、改代码、开 PR、回 review，都先写这一段并贴进汇报；缺哪行先补
+哪行，不先动文件。**用户没点明仓、分支、文件时，这段就是 AI 的默认归属声明**
+——推断不出来或与用户原话冲突，先问，不猜。
+
+```text
+目标：issue / 代码 / PR / review 回复（可多选）
+仓：C:\Project\Textus-upstream（上游唯一工作克隆）
+基线：git fetch origin 后的 origin/main @ <commit>
+分支：pr/<slug>（从基线新开；不复用旧 PR 分支；不推 main）
+关联：上游 issue #N（有就写）；fork 对应提交 <hash> / 发布 <tag>
+文件：确切路径，逐个列
+行为：用户可见的变化；哪些现有行为不能变
+验证：命令 / 测试 / 人工步骤
+```
+
+**默认归属**（用户没说"改哪里"时按此判断，仍要先写出推断）：
+
+| 用户说的                         | 仓                           | 分支             | 基线                           |
+| -------------------------------- | ---------------------------- | ---------------- | ------------------------------ |
+| 我们这边、手机、界面、设置、打包 | `C:\Project\Textus`          | 当前分支         | 当前 HEAD                      |
+| 上游、给上游、PR、issue          | `C:\Project\Textus-upstream` | 新建 `pr/<slug>` | fetch 后的 `origin/main`       |
+| 两边都要                         | 先在上游克隆做               | `pr/<slug>`      | `origin/main`；合并后回灌 fork |
+
+例（2026-11-19 的 #735）：
+
+```text
+目标：代码 + PR
+仓：C:\Project\Textus-upstream
+基线：origin/main @ 8b911c18
+分支：pr/code-block-caret
+关联：fork 提交 6de73418；上游 PR #735
+文件：src/editor/drawn-caret-plugin.ts、e2e/drawn-caret.spec.ts、
+      docs/releases/next/code-block-caret.md
+行为：代码块回车后自绘光标落在新行；公式/图片后的光标位置不变
+验证：e2e/drawn-caret.spec.ts；tsc；ESLint/Prettier；闸门
+```
+
+**issue / 分支 / PR 的对应**（一个主题一份，不混）：
+
+- bug 修复：可直接开 PR；上游已有 issue 就写 `Fixes #N`。
+- 新功能或行为变更：先开 issue，达成一致再开分支（上游 CONTRIBUTING 的路子）；
+  没把握就开 draft PR。
+- 分支名 `pr/<slug>`，一题一分支；两个修复就两个 PR（先例：2026-11-19 的
+  #734 格式嵌套、#735 代码块光标）。
+
 ## 上游 PR 的唯一流程
 
 **不在本仓里开上游分支，也绝不从特性分支直接开 PR**——本仓历史混着私有提交，
@@ -79,29 +126,46 @@ git switch -c pr/<主题>
 git apply C:/Project/pr-<主题>.patch
 ```
 
-然后：
+然后按固定九步走，顺序不改：
 
-1. 按逻辑拆成几个提交，**提交信息英文**（风格见克隆里的 `git log`）。
-2. 公共文件若引用了私有内容，把那几个 hunk 手工剥掉再提交——闸门会拦住
+1. **写「上游工单」**（上一节）；`git fetch origin` 后从 `origin/main` 新开
+   `pr/<slug>`。旧克隆里的同名分支可能落后，不接用旧分支；不推 `main`。
+2. **移植前先比基线**：`git diff origin/main:<file>` 与 fork `HEAD:<file>`
+   不同，就按上游当前代码手工移植（2026-11-19 的 `drawn-caret-plugin.ts`
+   就是上游已重构过），PR 里注明 `ported from fork <hash>`；**禁止整文件覆盖**。
+3. 按逻辑拆成几个提交，**提交信息英文**（风格见克隆里的 `git log`）。
+4. 公共文件若引用了私有内容，把那几个 hunk 手工剥掉再提交——闸门会拦住
    提醒（先例：`docs/README.md` 加过指向私有文档的链接；`.gitignore`、
    `.prettierignore` 里的 `.ryugi/` 行同理）。
-3. 用户可见的行为变化补 `docs/releases/next/` 下的 release note（英文，
+5. 用户可见的行为变化补 `docs/releases/next/` 下的 release note（英文，
    新文件，不是改 `docs/releases/X.Y.Z.md`）。
-4. 克隆里没有 pre-push 钩子，**手动跑闸门**（借本仓的脚本；克隆里上游就是
+6. **验证**：相关单测 + `npx tsc --noEmit` + ESLint/Prettier；碰到界面或
+   e2e 的跑对应 spec。新增行为先确认「没有修复时测试会失败」。
+7. 克隆里没有 pre-push 钩子，**手动跑闸门**（借本仓的脚本；克隆里上游就是
    `origin`）：
    ```bash
-   node C:/Project/Textus/.githooks/gate.mjs upstream --range "origin/main..pr/<主题>"
+   node C:/Project/Textus/.githooks/gate.mjs upstream --range "origin/main..pr/<slug>"
    ```
-5. 推到 fork 作为 PR head，再开 PR（fork 的 SSH 地址见「拓扑」表；闸门的
+8. 推到 fork 作为 PR head，再开 PR（fork 的 SSH 地址见「拓扑」表；闸门的
    邮箱规则会把命令行里的 `git@…` 当邮箱拦下，所以这里写占位符）：
    ```bash
    git remote add fork <Skein 的 SSH 地址>   # 一次性
-   git push fork pr/<主题>
+   git push fork pr/<slug>
    gh pr create --repo CatVinci-Studio/Textus --base main \
-     --head phonedu:pr/<主题> --title "..." --body-file ...
+     --head phonedu:pr/<slug> --title "..." --body-file ...
    ```
-   英文描述，bug 附**复现步骤**，PR 里说明验证过什么（`npm run check`、
-   构建方式）。
+   英文描述：bug 附**复现步骤**、根因、验证过什么；有 issue 写 `Fixes #N`。
+9. **合并后回填**：在上游 issue/PR 里留 fork 的对应提交/发布；fork 的
+   《任务清单》或提交信息写上 upstream `#N`。fork 也需要同一改动而还没带的，
+   从上游拿过来——**不再手写第二版**。
+
+**禁止**：
+
+- 从 fork 的特性分支直接开 PR，或在 fork 仓里建上游分支。
+- 没 `git fetch` 就在旧的 `origin/main` 上开分支。
+- `git apply` 前不比基线、整文件覆盖上游。
+- 一个分支混多个主题；同一修复在两边各写一版、互不引用。
+- 在克隆里改 `docs/skein/`、`.githooks/`、`.ryugi/` 等私有内容。
 
 ## 永不上上游的清单
 
