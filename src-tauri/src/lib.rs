@@ -4,6 +4,8 @@
 mod ai;
 mod app_identity;
 mod atomic;
+#[cfg(any(mobile, test))]
+mod trash;
 mod auth;
 #[cfg(desktop)]
 mod background;

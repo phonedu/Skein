@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useMemo } from "react";
-import { useIOSDocumentsFolder } from "../platform/ios-files";
+import { useAppDocumentsFolder } from "../platform/ios-files";
 import { rememberIOSDocument } from "../document/ios-recents";
 import { countWords } from "../utils/word-count";
 import { PAUSE_FEATURES_THRESHOLD } from "../editor/large-doc";
@@ -27,9 +27,9 @@ export function useActiveDocument(
 ) {
   const activeTab =
     tabs.find((tab) => tab.id === activeTabId) ?? tabs[0] ?? NO_TAB;
-  // With no file open the tree is empty, except on iOS, where the app's
-  // Documents folder is home.
-  const documentsFolder = useIOSDocumentsFolder();
+  // With no file open the tree is empty, except on a phone/tablet, where
+  // the app's Documents folder is home.
+  const documentsFolder = useAppDocumentsFolder();
   useEffect(() => {
     void rememberIOSDocument(activeTab.path);
   }, [activeTab.path]);

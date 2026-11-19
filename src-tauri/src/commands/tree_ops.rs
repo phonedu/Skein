@@ -223,22 +223,34 @@ async fn rename_entry(path: String, name: String) -> Result<String, String> {
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
 pub async fn tree_trash_entry(
+    app: tauri::AppHandle,
     window: tauri::WebviewWindow,
     path: String,
     root: String,
 ) -> Result<(), String> {
-    trash_entry(path.clone(), root).await?;
+    trash_entry(app, path.clone(), root).await?;
     tell_windows(&window, None, Some(path));
     Ok(())
 }
 
-async fn trash_entry(path: String, root: String) -> Result<(), String> {
+async fn trash_entry(
+    app: tauri::AppHandle,
+    path: String,
+    root: String,
+) -> Result<(), String> {
     let target = itself(&path)?;
     tauri::async_runtime::spawn_blocking(move || {
+        #[cfg(all(mobile, not(test)))]
+        return crate::trash::to_app_trash(&app, &target, Path::new(&root));
         #[cfg(desktop)]
         return crate::atomic::user_file_to_trash(&target, Some(Path::new(&root)));
-        #[cfg(mobile)]
-        delete_document(&target, Path::new(&root))
+        #[cfg(all(mobile, test))]
+        return delete_document(&target, Path::new(&root));
+        #[allow(unreachable_code)]
+        {
+            let _ = (&app, &target, &root);
+            Ok(())
+        }
     })
     .await
     .map_err(|e| e.to_string())?
@@ -358,6 +370,6 @@ mod tests {
             .unwrap();
         let folder = rename_entry(sub, "Part One".into()).await.unwrap();
         assert!(folder.ends_with("Part One"));
-        assert!(trash_entry(root.clone(), root).await.is_err());
+        assert!(delete_document(Path::new(&root), Path::new(&root)).is_err());
     }
 }

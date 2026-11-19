@@ -52,6 +52,21 @@ E0–E4 全部完成；规格已归档 [2026-11-17-collect-plugin.md](2026-11-17
 - **PH1c 手机工具栏手感修正（2026-11-19，完成）**：选中浮条离选区 96 → 36px；`+` 面板撤「更多」改 3×3 九键；主条加 AI 键（配图 / 续写 / 检查语法），AI 走与文本/列表相同的 `.pf-panel` 就地面板、不再弹窗；剪切 / 全选 / 复制纯文本交回系统选区菜单；`buildPhoneMoreItems` 只返回 `aiItems`。真机通过，桌面右键不动。
 - **PH1b 工具栏面板形态返工（2026-11-19）**：按《手机端工具栏改造方案》§2.6 完成——文本/列表改就地面板（本地 `panel` state、`.pf-panel` 浮主条上方 6px、键盘不退选区不丢、同键收/另一键切/点正文收、`aria-expanded`）；插入面板撤 `Sheet`/抓取条/取消钮，改 fixed chrome 层占键盘位（`keyboardCovered()` 快照、`insert-open` 豁免 `.keyboard-up`、主条抬起）；主条与面板 `onMouseDown` 保焦点；「更多」菜单减插入表格/查找替换（AI 两样留）。真机华为 PKT0220512001548 五项验收过；附 `SourceEditor` focus 注册 + `focusDocument` 显式回焦、选中浮条左缘 `half=156`。证据并入 PH1 条。
 
+### 1.6 同步设计件（S0，2026-11-19）
+
+| # | 产物 | 结论 |
+| --- | --- | --- |
+| S0a | [同步 supersede 裁决](../01-纪律/同步supersede裁决.md) | 内置同步是 fork 产品能力，不推翻上游；插件先多端、内置后接管；六条安全线 + 四个退出条件 |
+| S0b | [同步协议 v1](../02-方案/同步协议-v1.md) | `/1` 冻结：布局、常量、JSON、scope、写入不变量、发布顺序、锁、加密、签名 best-effort、v2 硬切条件 |
+| S0c | [插件 spike 计划](../02-方案/同步插件spike计划.md) | 三条轨（App Documents / 所有文件 / SAF 边界）、通过标准、华为清单、S3 → WebDAV、H9 仅轨 B 触发 |
+| S0d | [同步方案](../02-方案/同步方案.md) | 内置架构、多库、transport、宿主钩子、迁移/回滚、UX、安全、验收矩阵、S2–S6 阶段；收口 06 开放问题 |
+
+S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest 加 Android 为前置。
+
+### 1.7 宿主前置已完成
+
+- **H6 打开文件处理（2026-11-19 核）**：`useExternalChangeReload` 已在 `FILE_WRITTEN_EVENT` 时只读相关 tab；干净 tab 经 `takeDiskText` 原地重载（一次 undo，AI 对话保留），脏 tab 继续 defer；`external-change.test.ts` 覆盖插件通知与 patch。无代码改动，任务本身早已落地。
+
 ---
 
 ## 2. 封存 / 不推进

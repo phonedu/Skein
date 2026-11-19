@@ -5,7 +5,7 @@ import { closeHistory } from "@milkdown/kit/prose/history";
 import { resolveStrings } from "../../i18n/strings";
 import { showMessage } from "../../engine/controls/app-dialog";
 import { fs } from "../../platform/ipc";
-import { isIOSApp, isMobileApp } from "../../platform/capabilities";
+import { isAndroidPlatform } from "../../platform/os";
 import { iosFiles } from "../../platform/ios-files";
 import { basename } from "../../utils/path";
 import type { Settings, ImageNamingMode } from "../../prefs/SettingsContext";
@@ -317,7 +317,7 @@ export function fileImage(path: string): PastedImage {
 /** Asks for an image file in the native picker; null when cancelled. On
  *  Android the content:// picker names the file (Rust reads plain paths). */
 export function pickImageFile(language: Settings["language"]) {
-  if (isMobileApp && !isIOSApp) return iosFiles.pickImage();
+  if (isAndroidPlatform()) return iosFiles.pickImage();
   return fs.openImageFileDialog(
     resolveStrings(language).missingImageFilter,
     IMAGE_FILE_EXTENSIONS,

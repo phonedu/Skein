@@ -307,7 +307,10 @@ export function useWindowDocuments(input: Input) {
     },
   );
   const help = useHelpAndTyping(input);
-  const { saving, flushAutosave } = useSaving(input, openFolder.folder);
+  const { saving, flushAutosave } = useSaving(
+    input,
+    openFolder.folder ?? active.documentsFolder,
+  );
   const { zen, modes } = useViewModes(tabState);
   const { removeTab, requestCloseTab, closeFolder, replaceFolder } =
     useFolderClosing(input, {

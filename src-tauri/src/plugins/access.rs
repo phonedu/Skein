@@ -299,7 +299,18 @@ pub async fn plugin_fs_trash(
 ) -> Result<(), String> {
     let path = granted_path(&app, &id, "files.write", &root, &path)?;
     tauri::async_runtime::spawn_blocking(move || {
-        crate::atomic::user_file_to_trash(&path, Some(Path::new(&root)))
+        #[cfg(all(mobile, not(test)))]
+        return crate::trash::to_app_trash(&app, &path, Path::new(&root));
+        #[cfg(desktop)]
+        return {
+            let _ = &app;
+            crate::atomic::user_file_to_trash(&path, Some(Path::new(&root)))
+        };
+        #[allow(unreachable_code)]
+        {
+            let _ = (&app, &path, &root);
+            Ok(())
+        }
     })
     .await
     .map_err(|e| e.to_string())?

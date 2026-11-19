@@ -179,12 +179,13 @@ export async function restoreFolderAccess(): Promise<void> {
   );
 }
 
-/** The app's Documents folder ("On My iPhone > Textus"); null until it
- *  resolves, and always on desktop. */
-export function useIOSDocumentsFolder(): string | null {
+/** The app's Documents folder ("On My iPhone > Textus", and on Android the
+ *  app's external files Documents); null until it resolves, and always on
+ *  desktop. */
+export function useAppDocumentsFolder(): string | null {
   const [dir, setDir] = useState<string | null>(null);
   useEffect(() => {
-    if (!isIOSApp) return;
+    if (!isMobileApp) return;
     let alive = true;
     void documentsDir().then((path) => alive && setDir(path.slice(0, -1)));
     return () => {
@@ -195,14 +196,14 @@ export function useIOSDocumentsFolder(): string | null {
 }
 
 /**
- * Where "Save" puts a new document on iOS, with no save panel to ask: the
- * Documents folder, numbered ("Notes 2.md") rather than overwriting.
+ * Where "Save" puts a new document with no save panel to ask: `dir`,
+ * numbered ("Notes 2.md") rather than overwriting.
  */
-export async function newDocumentPath(
+export async function newDocumentPathIn(
+  dir: string,
   defaultName: string,
   exists: (path: string) => Promise<boolean>,
 ): Promise<string> {
-  const dir = await documentsDir();
   const dot = defaultName.lastIndexOf(".");
   const stem = dot > 0 ? defaultName.slice(0, dot) : defaultName;
   const ext = dot > 0 ? defaultName.slice(dot) : ".md";
@@ -213,6 +214,14 @@ export async function newDocumentPath(
     );
     if (!(await exists(path))) return path;
   }
+}
+
+/** Where "Save" puts a new document on the app's Documents folder. */
+export async function newDocumentPath(
+  defaultName: string,
+  exists: (path: string) => Promise<boolean>,
+): Promise<string> {
+  return newDocumentPathIn(await documentsDir(), defaultName, exists);
 }
 
 /** Renames a file in the app's own Documents folder; the new path. */

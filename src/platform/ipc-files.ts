@@ -5,10 +5,19 @@ import {
 import type { ImageHost } from "../prefs/SettingsContext";
 import type * as Generated from "./bindings/files";
 import { isIOSApp, isMobileApp } from "./capabilities";
-import { iosFiles, isScopedUrl, newDocumentPath } from "./ios-files";
+import {
+  iosFiles,
+  isScopedUrl,
+  newDocumentPath,
+  newDocumentPathIn,
+} from "./ios-files";
 import { parentDir } from "../utils/path";
 import { scopedFolder } from "./scoped-folder";
 import { command, desktopActionCommand, desktopQueryCommand } from "./ipc-call";
+
+/** Whether a plain path is already taken on this device. */
+const fileExists = async (path: string) =>
+  (await command("file_mtime_ms", path)) !== null;
 
 /**
  * Backend commands for files and what the app keeps on disk: documents,
@@ -53,11 +62,12 @@ export const fs = {
     !isMobileApp
       ? command("save_file_dialog", defaultName, defaultDir)
       : !isIOSApp
-        ? iosFiles.createDocument(defaultName)
-        : newDocumentPath(
-            defaultName,
-            async (path) => (await command("file_mtime_ms", path)) !== null,
-          ),
+        ? defaultDir && !isScopedUrl(defaultDir)
+          ? newDocumentPathIn(defaultDir, defaultName, fileExists)
+          : defaultDir
+            ? iosFiles.createDocument(defaultName)
+            : newDocumentPath(defaultName, fileExists)
+        : newDocumentPath(defaultName, fileExists),
   listDir: (path: string): Promise<DirEntryInfo[]> =>
     isScopedUrl(path) ? iosFiles.listFolder(path) : command("list_dir", path),
   /** The sidebar tree's New Document, New Folder and drag-to-move. Each
