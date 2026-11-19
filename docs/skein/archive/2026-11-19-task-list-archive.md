@@ -65,6 +65,8 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 
 ### 1.7 宿主前置已完成
 
+- **H2 移动端 App 管理 trash（2026-11-19，完成）**：`src-tauri/src/trash.rs` 把删除移到 App 私有 `trash/<id>/` + `record.json`（original/root/name/is_dir/deleted_at），同卷 rename、跨卷 copy→remove；`tree_trash_entry` 与 `plugin_fs_trash` 移动端共用，桌面仍系统回收站；真机行菜单删除后 Documents 无文件、trash 记录正确；单测 2/2。
+- **D0 Android 真机读写验证（2026-11-19，完成）**：Documents 普通路径（无权限）下新建/改/删/重命名全过；自动保存 2s 落盘；删除进 App trash + record.json；外部改文件触发「文件已在磁盘上被修改」取消/重新加载/覆盖，自动保存不覆盖；不支持项 = 后台同步、SAF 任意目录、系统 Trash、插件多端。
 - **H1 Android 默认库 = App Documents（2026-11-19，完成）**：清装首启首页直接显示 `getExternalFilesDir(Documents)`（`/storage/emulated/0/Android/data/com.catvinci.textus/files/Documents`），无 SAF 授权；空库 CTA 直接命名建文件、2s 自动保存、行菜单重命名/删除均过；图片 content URI 已由 `textus-files` `pick_image` + `read_data` 解决。手机无 Save 命令，自动保存强制开启。
 - **H6 打开文件处理（2026-11-19 核）**：`useExternalChangeReload` 已在 `FILE_WRITTEN_EVENT` 时只读相关 tab；干净 tab 经 `takeDiskText` 原地重载（一次 undo，AI 对话保留），脏 tab 继续 defer；`external-change.test.ts` 覆盖插件通知与 patch。无代码改动，任务本身早已落地。
 
