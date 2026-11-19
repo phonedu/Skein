@@ -1,6 +1,6 @@
 # S3 服务商兼容性（S1b 选型）
 
-> **结论**：S1b 先用 **缤纷云 S4（Bitiful）** 跑真实 S3；七牛云 Kodo 第二；阿里云 OSS 需要专门的 `x-oss-forbid-overwrite` 适配，放到适配阶段，不作为第一台真机远端。
+> **结论**：**缤纷云 S4（Bitiful）已实测通过 S1b**（2026-11-19，华为真机，专用测试桶 / 测试 prefix）；七牛云 Kodo 第二；阿里云 OSS 需要专门的 `x-oss-forbid-overwrite` 适配，放到适配阶段。
 >
 > 协议要求见[同步协议 v1](../../02-方案/同步协议-v1.md)；插件当前 S3 transport 见 `textus-plugins/development/cloud-sync/src/transport.ts`。
 
@@ -19,19 +19,20 @@
 
 ## 2. 三家对比
 
-| 服务                     | S3 兼容          | Endpoint / Region                                                                     | 寻址                                         | 条件写                                                                                                                                                             | 结论                                                      |
-| ------------------------ | ---------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| **缤纷云 S4（Bitiful）** | 标准 S3 + SigV4  | `https://s3.bitiful.net` / `cn-east-1`                                                | virtual-host 默认，path-style 可用           | 标准 S3 语义；**需实测 412**                                                                                                                                       | **S1b 首选**：接口最接近标准 S3，单区域，免费额度够 spike |
-| **七牛云 Kodo**          | 官方 S3 兼容 API | `https://s3.<region>.qiniucs.com`，如 `s3.cn-east-1.qiniucs.com` / region `cn-east-1` | path-style 与 virtual-host 都支持            | S3 `If-None-Match` **官方未明确**；原生上传用 `insertOnly=1`（上传凭证，不是 S3 头）                                                                               | 第二：先实测 412；不行就要加七牛原生上传适配              |
-| **阿里云 OSS**           | S3 兼容 API      | `https://<bucket>.oss-<region>.aliyuncs.com` / 对应 region                            | **只支持 virtual-hosted，不支持 path-style** | **不支持 `If-None-Match` PutObject**（400 NotImplemented）；用 `x-oss-forbid-overwrite: true`，已存在返回 **409 FileAlreadyExists**；开启/暂停过版本控制后该头失效 | 第三：需要 OSS 专用适配，不能直接走当前 S3 create         |
+| 服务                     | S3 兼容          | Endpoint / Region                                                                     | 寻址                                         | 条件写                                                                                                                                                             | 结论                                                        |
+| ------------------------ | ---------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| **缤纷云 S4（Bitiful）** | 标准 S3 + SigV4  | `https://s3.bitiful.net` / `cn-east-1`                                                | virtual-host 默认，path-style 可用           | **已实测：第二次 `If-None-Match: *` PUT 返回 412**                                                                                                                 | **S1b 已通过**：接口最接近标准 S3，单区域，免费额度够 spike |
+| **七牛云 Kodo**          | 官方 S3 兼容 API | `https://s3.<region>.qiniucs.com`，如 `s3.cn-east-1.qiniucs.com` / region `cn-east-1` | path-style 与 virtual-host 都支持            | S3 `If-None-Match` **官方未明确**；原生上传用 `insertOnly=1`（上传凭证，不是 S3 头）                                                                               | 第二：先实测 412；不行就要加七牛原生上传适配                |
+| **阿里云 OSS**           | S3 兼容 API      | `https://<bucket>.oss-<region>.aliyuncs.com` / 对应 region                            | **只支持 virtual-hosted，不支持 path-style** | **不支持 `If-None-Match` PutObject**（400 NotImplemented）；用 `x-oss-forbid-overwrite: true`，已存在返回 **409 FileAlreadyExists**；开启/暂停过版本控制后该头失效 | 第三：需要 OSS 专用适配，不能直接走当前 S3 create           |
 
 ### 2.1 各家的额外注意
 
 **缤纷云 S4**
 
 - Endpoint 不要带桶名；桶名走 virtual-host 或 path-style。
+- **桶名按 S3 规范用小写**：控制台可见名称可能与 S3 bucket 名不同（控制台显示名与 S3 bucket 名可能不同，以实际 bucket 名为准）。
 - 官方称标准 S3；当前预览阶段不支持生命周期、服务端加密、WORM、多版本——同步协议不依赖这些。
-- 先验证：同一 key 第二次 `If-None-Match: *` PUT 必须 412；再跑锁接管/删除/冲突。
+- 实测（2026-11-19）：条件写第二次返回 412；首次同步 5 个文件（含 16 MiB PDF）、32 MiB 随机 PDF 16 块哈希全对、冲突副本、删除、杀进程留锁 + `清除遗留锁` 后重跑全部通过。
 
 **七牛云 Kodo**
 
@@ -47,13 +48,12 @@
 - ETag 大小写、分片 ETag 算法与 S3 不同；插件只把 ETag 当不透明值，问题不大。
 - Node/`aws4fetch` 默认不做 chunked encoding，避开了 OSS 的 chunked 限制。
 
-## 3. S1b 执行顺序
+## 3. S1b 结果与后续
 
-1. **缤纷云 S4**：建桶 + 子账号 AK/SK（只给该桶读写删）；填 `endpoint=https://s3.bitiful.net`、`region=cn-east-1`、`pathStyle=false`；先 `测试连接`。
-2. 测试连接必须过“两次 create，第二次 412”的探测；不过就记录 `unsafeServer` 并停止。
-3. 通过后跑 S1 同款五项：首次、改、删、冲突、杀进程；再加 16 MiB 文件。
-4. 七牛云 Kodo 同流程；S3 条件写不生效就记录，不硬改协议。
-5. 阿里云 OSS 等适配层：在 transport 里按 provider 加 `x-oss-forbid-overwrite` 与 409 映射，单独测试，不混进 S1b 首轮。
+1. **缤纷云 S4（已通过，2026-11-19）**：专用测试桶、子账号 AK/SK；`endpoint=https://s3.bitiful.net`、`region=cn-east-1`、`pathStyle=true`；`测试连接` 通过“两次 create，第二次 412”。
+2. 通过后跑 S1 同款：首次（5 个文件）、改、删、冲突、杀进程；再加 16 MiB 和 32 MiB 随机 PDF；32 MiB 的 16 个块逐块 SHA-256 校验一致。
+3. 七牛云 Kodo 待跑（同流程；S3 条件写不生效就记录，不硬改协议）。
+4. 阿里云 OSS 待适配：在 transport 里按 provider 加 `x-oss-forbid-overwrite` 与 409 映射，单独测试，不混进 S1b 首轮。
 
 ## 4. 适配层要改哪里
 
@@ -76,7 +76,7 @@ return true;
 
 ## 5. 结论
 
-- **S1b 第一家用缤纷云 S4**；它是三家最接近标准 S3 的，最能把“协议/插件问题”和“服务商差异”分开。
-- 七牛云 Kodo 作为第二家，重点验条件写。
-- 阿里云 OSS 作为适配目标，不污染首轮 spike。
+- **S1b 已用缤纷云 S4 通过**；它是三家最接近标准 S3 的，把“协议/插件问题”和“服务商差异”分开了。
+- 七牛云 Kodo 作为第二家，重点验条件写，尚未跑。
+- 阿里云 OSS 作为适配目标，不污染首轮 spike，尚未跑。
 - 三家都只给专用桶/子账号，AK/SK 不进仓库、不进日志。

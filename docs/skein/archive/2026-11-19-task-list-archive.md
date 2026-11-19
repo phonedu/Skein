@@ -95,6 +95,20 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 | 未做 | 编辑器页状态（首页已满足 H8 的“首页/编辑器”二选一）；正式 open-docs 注册表留 S2 |
 | 测试 | `PhoneHome.test` 14/14；Android debug APK 真机验收 |
 
+### 1.10 真实 S3 轨（S1b，缤纷云 S4，2026-11-19）
+
+| 项 | 证据 |
+| --- | --- |
+| 条件写 | 同一 key 第二次 `If-None-Match: *` PUT 返回 412；插件 `测试连接` 通过 |
+| 首次同步 | 5 个文件（含 16 MiB PDF）；16 MiB 的 8 个块同哈希，只存 1 个块 |
+| 修改 / 下载 | 手机改 → 远端 revision 更新；模拟桌面改 → 手机下载到新文本 |
+| 冲突 | 本地保留原位，远端进 `Sync conflicts/phone-note3 (b3eabdb7).md` |
+| 删除 | 本地删除后同步，head 移除该文件 |
+| 杀进程 | 远端留锁；重启提示锁；`清除遗留锁` 后重跑完成 |
+| 32 MiB 随机 PDF | 16 块，逐块 SHA-256 与 head 一致 |
+| 配置 | `https://s3.bitiful.net`、`cn-east-1`、专用测试桶、测试 prefix、path-style |
+| 未跑 | 七牛云 Kodo、阿里云 OSS（转 S3b） |
+
 ---
 
 ## 2. 封存 / 不推进
