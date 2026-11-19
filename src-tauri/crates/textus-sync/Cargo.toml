@@ -1,0 +1,16 @@
+[package]
+name = "textus-sync"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "textus_sync"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+unicode-normalization = "0.1"
+uuid = { version = "1", features = ["v4"] }

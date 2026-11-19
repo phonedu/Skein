@@ -6,7 +6,7 @@ authors = ["CatVinci Studio"]
 edition = "2021"
 
 [workspace]
-members = ["crates/aicompat", "plugins/textus-files"]
+members = ["crates/aicompat", "crates/textus-sync", "plugins/textus-files"]
 exclude = ["patches/wry"]
 resolver = "2"
 
