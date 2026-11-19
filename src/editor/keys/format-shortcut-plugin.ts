@@ -4,7 +4,7 @@ import {
   type EditorState,
   type Transaction,
 } from "@milkdown/kit/prose/state";
-import type { Node as ProseNode } from "@milkdown/kit/prose/model";
+import type { Node as ProseNode, ResolvedPos } from "@milkdown/kit/prose/model";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import { $prose } from "@milkdown/kit/utils";
 import { isEnclosureName } from "../marks/enclosure-runs";
@@ -211,6 +211,13 @@ export function toggleFormat(view: EditorView, spec: FormatSpec): boolean {
   return true;
 }
 
+/** The textblock `pos` sits in, inside any spans; null when it is in none. */
+function textblockAt($pos: ResolvedPos): ProseNode | null {
+  for (let d = $pos.depth; d > 0; d--)
+    if ($pos.node(d).isTextblock) return $pos.node(d);
+  return null;
+}
+
 /** Both ends of the selection in one textblock, at any depth of spans. */
 function sameTextblock(state: EditorState): boolean {
   const { $from, $to } = state.selection;
@@ -237,12 +244,18 @@ function wrapMerged(
   const from = outOfSpans(state, range.from, -1, spec);
   const to = outOfSpans(state, range.to, 1, spec);
   const $from = state.doc.resolve(from);
+  const $to = state.doc.resolve(to);
   const parent = $from.parent;
+  // A selection inside another span nests the new one there, as the source
+  // editor writes it inside the delimiters it is already between. Code and
+  // enclosures have no spans to nest in: their text is source.
+  const block = textblockAt($from);
   if (
-    !$from.sameParent(state.doc.resolve(to)) ||
-    !parent.isTextblock ||
-    parent.type.spec.code ||
-    isEnclosureName(parent.type.name)
+    !$from.sameParent($to) ||
+    !block ||
+    block.type.spec.code ||
+    isEnclosureName(block.type.name) ||
+    !(parent === block || parent.type.name === "md_span")
   )
     return null;
   const content = mergedContent(state.doc.slice(from, to).content, spec);
