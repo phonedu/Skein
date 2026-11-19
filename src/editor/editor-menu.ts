@@ -304,19 +304,17 @@ export function buildPhoneMoreItems(
       ...tableLayoutItems(run, t),
       "separator",
       ...clipboard,
-      ...generalItems(options),
+      ...phoneGeneralItems(options),
     ];
   }
-  if (imagePos !== null) return [...clipboard, ...generalItems(options)];
+  if (imagePos !== null) return [...clipboard, ...phoneGeneralItems(options)];
   // A tap only edits a link: here it opens.
   const link = options.link ? linkMenuItems(run, t, options.link) : [];
   return [
     ...link,
     ...(link.length ? ["separator" as const] : []),
-    { label: t.insertTable, onSelect: options.openTableDialog },
-    "separator",
     ...clipboard,
-    ...generalItems(options),
+    ...phoneGeneralItems(options),
   ];
 }
 
@@ -342,13 +340,12 @@ export function selectedText(run: EditorRunner): string {
   );
 }
 
-/** Select All, Find, and the AI items: offered wherever the caret is. */
-function generalItems(options: ContextMenuOptions): ContextMenuEntry[] {
+/** The phone's More: Select All and the AI items. Find is on the top bar,
+ *  and a table is the insert panel's second key. */
+function phoneGeneralItems(options: ContextMenuOptions): ContextMenuEntry[] {
   const { t, aiItems } = options;
   return [
     { label: t.selectAll, onSelect: options.selectAll },
-    "separator",
-    { label: t.findReplace, onSelect: options.openFindReplace },
     ...(aiItems.length > 0
       ? (["separator", ...aiItems] as ContextMenuEntry[])
       : []),

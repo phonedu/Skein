@@ -1,31 +1,32 @@
-import type { CaretBlock } from "../editor/caret-block";
+import type { Button } from "../app/format-buttons";
 import type { TableAction } from "../editor/editor-menu-tables";
-import type { Strings } from "../i18n/strings";
 import { TableEditIcon, TrashIcon, UndoIcon } from "../engine/controls/icons";
+import { IMAGE_WIDTHS } from "../editor/images/image-widths";
 import {
   EDIT_ACTION_EVENT,
   IMAGE_ACTION_EVENT,
   TABLE_ACTION_EVENT,
 } from "../utils/events";
-import { GROUPS, type Button } from "./format-buttons";
-import { IMAGE_WIDTHS } from "../editor/images/image-widths";
+import { RedoActionIcon } from "./PhoneEditorBarIcons";
 
-/*
- * The format bar on a phone (design: phone, typing): undo first, as a phone
- * has no ⌘Z, and in a table or on an image that block's own buttons in place
- * of the text formats, none of which apply there.
- */
-
-const UNDO: Button = {
+/** Undo, the first key wherever the caret is. */
+export const UNDO: Button = {
   label: (t) => t.menuUndo,
   Icon: UndoIcon,
   event: EDIT_ACTION_EVENT,
   detail: "undo",
 };
 
+export const REDO: Button = {
+  label: (t) => t.menuRedo,
+  Icon: RedoActionIcon,
+  event: EDIT_ACTION_EVENT,
+  detail: "redo",
+};
+
 function tableButton(
   action: TableAction,
-  label: (t: Strings) => string,
+  label: (t: Parameters<Button["label"]>[0]) => string,
 ): Button {
   return {
     label,
@@ -35,7 +36,7 @@ function tableButton(
   };
 }
 
-const TABLE: Button[][] = [
+export const TABLE: Button[][] = [
   [
     tableButton("row-below", (t) => t.insertRowBelow),
     tableButton("row-above", (t) => t.insertRowAbove),
@@ -49,7 +50,7 @@ const TABLE: Button[][] = [
   ],
 ];
 
-const IMAGE: Button[][] = [
+export const IMAGE: Button[][] = [
   [
     {
       label: (t) => t.imageWidthAuto,
@@ -75,9 +76,3 @@ const IMAGE: Button[][] = [
     },
   ],
 ];
-
-/** The phone's groups for where the caret is. */
-export function phoneGroups(block: CaretBlock): Button[][] {
-  const context = block.image ? IMAGE : block.table ? TABLE : GROUPS;
-  return [[UNDO], ...context];
-}

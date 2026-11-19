@@ -1,0 +1,240 @@
+/* The phone's format bar (ruling 31): six keys in the sheet's foot, the
+   text/list choices in panels just above the bar, inline formats on a bar
+   over the selection, and a table's or an image's own keys in place of the
+   main bar. Tokens only; the sheet's own foot geometry lives in
+   format-bar.css. */
+
+.phone-format-bar {
+  gap: 0;
+}
+
+/* The board's 46px main bar; the sheet's own foot rule sets 48. */
+:root[data-window-chrome="mobile"] .split-pane > .format-bar.phone-format-bar {
+  height: 46px;
+}
+
+/* The insert panel takes the keyboard's place: the bar stays above it, at
+   the height the keyboard had when the panel opened. */
+:root[data-window-chrome="mobile"]
+  .split-pane
+  > .format-bar.phone-format-bar.insert-open {
+  bottom: var(--pf-kb, 0px);
+}
+
+.pf-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  height: 100%;
+}
+
+.pf-key {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: transparent;
+  color: var(--ui-text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-key svg {
+  width: 20px;
+  height: 20px;
+}
+
+.pf-key:active,
+.pf-key.is-on,
+.pf-key[aria-pressed="true"] {
+  background: var(--ui-hover);
+}
+
+/* A table's or an image's keys: undo and redo first, the rest scrolling
+   when they outrun the phone. */
+.pf-context {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pf-context::-webkit-scrollbar {
+  display: none;
+}
+
+/* The text and list choices: a row just above the bar, on the chrome layer.
+   The keyboard and the selection stay where they are. */
+.pf-panel {
+  position: fixed;
+  right: 8px;
+  bottom: calc(46px + 6px);
+  left: 8px;
+  z-index: var(--z-lift);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-popover);
+  transform-origin: bottom center;
+  animation: motion-rise-in var(--dur-base) var(--ease-out);
+}
+
+.pf-panel[data-state="closing"] {
+  animation: motion-sink-out var(--dur-fast) var(--ease-in) forwards;
+}
+
+.pf-panel-key {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-size: var(--text-footnote);
+  font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-panel-key svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pf-panel-key:active,
+.pf-panel-key.is-on {
+  background: var(--ui-hover);
+}
+
+.pf-panel-sep {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  margin: 0 2px;
+  background: var(--ui-border);
+}
+
+/* Inline formats, over the selection, clear of the finger. */
+.pf-selection {
+  position: fixed;
+  z-index: var(--z-lift);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  transform: translate(-50%, calc(-100% - 8px));
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-popover);
+}
+
+.pf-selection[data-below] {
+  transform: translate(-50%, 0);
+}
+
+.pf-sel-key {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: transparent;
+  color: var(--ui-text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-sel-key svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pf-sel-key:active {
+  background: var(--ui-hover);
+}
+
+.pf-clear {
+  font-size: var(--text-footnote);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* The insert panel: ten keys, two columns by five rows, in the keyboard's
+   place. It is chrome, not a sheet: no scrim, no grab handle, no cancel. */
+.pf-insert-sheet {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-lift);
+  max-height: min(68vh, calc(100vh - 8px));
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-2)
+    calc(var(--space-2) + var(--safe-bottom));
+  border-top: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-popover);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  animation: motion-sheet-in var(--dur-base) var(--ease-out);
+}
+
+.pf-insert-sheet[data-state="closing"] {
+  animation: motion-sheet-out var(--dur-fast) var(--ease-in) forwards;
+}
+
+.pf-insert-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.pf-insert-key {
+  min-height: 56px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--shape-m);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-size: var(--text-secondary);
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pf-insert-key:active {
+  background: var(--ui-hover);
+}
+
+@supports (height: 100dvh) {
+  .pf-insert-sheet {
+    max-height: min(68dvh, calc(100dvh - 8px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-selection,
+  .pf-panel,
+  .pf-insert-sheet {
+    animation: none;
+    transition: none;
+  }
+}

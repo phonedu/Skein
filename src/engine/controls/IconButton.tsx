@@ -16,6 +16,7 @@ export function IconButton({
   onClick,
   opens,
   pressed,
+  expanded,
   disabled,
   className = "tx-icon-button",
   children,
@@ -29,6 +30,8 @@ export function IconButton({
   opens?: ReturnType<typeof useMenuButton>["button"];
   /** For a toggle: whether it is on. */
   pressed?: boolean;
+  /** For a button that opens a panel: whether it is showing. */
+  expanded?: boolean;
   disabled?: boolean;
   className?: string;
   children: ReactNode;
@@ -40,6 +43,7 @@ export function IconButton({
         className={className}
         aria-label={label}
         aria-pressed={pressed}
+        aria-expanded={expanded}
         disabled={disabled}
         onClick={onClick}
         {...opens}

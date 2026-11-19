@@ -274,7 +274,12 @@ export function DocumentIslands({
           above={(tab) =>
             (formatBar || phone) &&
             formatsShown(tab) && (
-              <FormatBar t={t} tabId={tab.id} side={formatBar ?? "top"} />
+              <FormatBar
+                t={t}
+                tabId={tab.id}
+                docPath={tab.path}
+                side={formatBar ?? "top"}
+              />
             )
           }
           t={t}

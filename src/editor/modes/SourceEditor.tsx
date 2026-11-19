@@ -219,6 +219,11 @@ export function SourceEditor({
     const stopFlush = tabId
       ? registerTabEditor(tabId, "flush", report)
       : undefined;
+    // The phone's format bar asks the tab for its editor, which is this one
+    // in source mode.
+    const stopFocus = tabId
+      ? registerTabEditor(tabId, "focus", () => view.focus())
+      : undefined;
     const onEdit = (event: Event) => {
       const action = (event as CustomEvent<SourceEdit>).detail;
       if (action === "undo" || action === "redo" || action === "select-all")
@@ -247,6 +252,7 @@ export function SourceEditor({
           scroll: place ?? view.scrollSnapshot(),
         });
       stopFlush?.();
+      stopFocus?.();
       stopZoomPane?.();
       stopElastic();
       stopFormat();

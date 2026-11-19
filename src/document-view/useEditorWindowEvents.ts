@@ -3,10 +3,13 @@ import { editorInUse } from "../editor/editor-in-use";
 import { useCallback, useEffect } from "react";
 import { insertMarkdown } from "../editor/markdown/parse-markdown-source";
 import { editorViewCtx } from "@milkdown/kit/core";
+import { sinkListItem, liftListItem } from "@milkdown/kit/prose/schema-list";
 import { undoCommand, redoCommand } from "@milkdown/kit/plugin/history";
 import type { EditorRunner } from "../editor/useEditorRunner";
 import type { EditorClipboard } from "../editor/clipboard/useEditorClipboard";
 import { applyBlockKind, runCommand } from "../editor/blocks/block-kinds";
+import { makeTasks } from "../editor/insert-blocks";
+import { clearSpans } from "../editor/marks/span-commands";
 import {
   deleteImage,
   selectedImagePos,
@@ -51,6 +54,7 @@ import {
   INSERT_MARKDOWN_EVENT,
   TOGGLE_BLOCK_EVENT,
   TOGGLE_MARK_EVENT,
+  CLEAR_FORMAT_EVENT,
   SHOW_REPLACE_EVENT,
   FIND_NEXT_EVENT,
   INSERT_LINK_EVENT,
@@ -150,6 +154,25 @@ function useFindKeys(events: Events) {
 
 /** Formatting from the native Format menu, the heading shortcuts and the
  *  iPhone keyboard toolbar: each as its key or the right-click menu does it. */
+function listAt(view: EditorView): {
+  inList: boolean;
+  task: boolean;
+  ordered: boolean;
+} {
+  const { $from } = view.state.selection;
+  const item = view.state.schema.nodes.list_item;
+  for (let d = $from.depth; d > 0; d--) {
+    const node = $from.node(d);
+    if (node.type !== item) continue;
+    return {
+      inList: true,
+      task: node.attrs.checked != null,
+      ordered: $from.node(d - 1).type.name === "ordered_list",
+    };
+  }
+  return { inList: false, task: false, ordered: false };
+}
+
 function useFormatEvents(events: Events) {
   const { run, openTableDialog, isOnScreen } = events;
   // Native Format menu clicks and the heading shortcuts ("paragraph" for
@@ -171,6 +194,23 @@ function useFormatEvents(events: Events) {
       else if (kind === "bullet-list") toggleList(view, "bullet_list");
       else if (kind === "ordered-list") toggleList(view, "ordered_list");
       else if (kind === "blockquote") toggleBlockquote(view);
+      else if (kind === "task-list") {
+        const list = listAt(view);
+        // A task item comes out; an ordered list becomes a bullet list; a
+        // bullet list becomes tasks; a paragraph is wrapped first.
+        if (list.task) toggleList(view, "bullet_list");
+        else if (list.inList && !list.ordered) makeTasks(view);
+        else {
+          if (list.ordered || !list.inList) toggleList(view, "bullet_list");
+          makeTasks(view);
+        }
+      } else if (kind === "sink-list-item") {
+        const item = view.state.schema.nodes.list_item;
+        if (item) sinkListItem(item)(view.state, view.dispatch);
+      } else if (kind === "lift-list-item") {
+        const item = view.state.schema.nodes.list_item;
+        if (item) liftListItem(item)(view.state, view.dispatch);
+      }
       view.focus();
     });
   });
@@ -197,6 +237,15 @@ function useFormatEvents(events: Events) {
       view.dispatch(
         insertMarkdown(view.state.tr, ctx, markdown).scrollIntoView(),
       );
+      view.focus();
+    });
+  });
+  useWindowEvent(CLEAR_FORMAT_EVENT, () => {
+    if (!isOnScreen()) return;
+    run((ctx) => {
+      const view = ctx.get(editorViewCtx);
+      flushDomSelection(view);
+      clearSpans(view);
       view.focus();
     });
   });

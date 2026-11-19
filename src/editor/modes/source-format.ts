@@ -81,6 +81,27 @@ export function toggleSourceMark(view: EditorView, mark: string): boolean {
   return true;
 }
 
+/** Takes off the mark wrapped around the selection, where one is: the
+ *  selection's own pair, or the markers just outside it. */
+export function clearSourceMarks(view: EditorView): boolean {
+  const { state } = view;
+  const range = state.selection.main;
+  const text = state.sliceDoc(range.from, range.to);
+  for (const [mark, marker] of Object.entries(MARKERS)) {
+    const n = marker.length;
+    const before = state.sliceDoc(Math.max(0, range.from - n), range.from);
+    const after = state.sliceDoc(
+      range.to,
+      Math.min(state.doc.length, range.to + n),
+    );
+    const wrapped =
+      (before === marker && after === marker) ||
+      (text.length > 2 * n && text.startsWith(marker) && text.endsWith(marker));
+    if (wrapped) return toggleSourceMark(view, mark);
+  }
+  return false;
+}
+
 /** A line's block prefix: its quote, heading, list or task marker. */
 const PREFIX =
   /^(\s*)(>\s?|#{1,6}\s+|[-*+]\s+\[[ xX]\]\s+|[-*+]\s+|\d+[.)]\s+)?/;

@@ -274,8 +274,19 @@ describe("the editor menu", () => {
     const inText = labels(
       buildPhoneMoreItems(editorAt(caretIn("text")).run, options(null)),
     );
-    expect(inText).toContain(t.insertTable);
+    // A table is the insert panel's key; Find is on the top bar.
+    expect(inText).not.toContain(t.insertTable);
+    expect(inText).not.toContain(t.findReplace);
+    expect(inText).toContain(t.selectAll);
     expect(inText).not.toContain(t.menuBulletList);
+    expect(
+      labels(
+        buildPhoneMoreItems(editorAt(caretIn("text")).run, {
+          ...options(null),
+          aiItems: [{ label: "Ask AI", onSelect: () => {} }],
+        }),
+      ),
+    ).toContain("Ask AI");
     // A tap only edits a link: its Open is here.
     const link = { pos: 0, source: "[a](b.md)", href: "b.md", docPath: null };
     expect(

@@ -1,6 +1,6 @@
 # Textus 手机端格式工具栏改造方案（墨契三件套移植）
 
-> **状态**：**已裁待实施（2026-11-18，用户裁）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界。**任务 = 任务清单 PH1。**
+> **状态**：**第一片 + PH1b 已完成（2026-11-19）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界，**§2.6 = 第一片形态返工单（已完成，任务 PH1b ✅）**；PH1 余清除格式 / 图片实际插入 / 选中浮条真机复核。**任务 = 任务清单 PH1 ＋ PH1b（返工）。**
 > **对象**：本仓 `src/app/FormatBar.tsx`（手机分支）· `format-bar-phone.tsx` · `format-buttons.ts` · `format-bar.css`；墨契侧规格 = `C:\Project\Moqi\project-b\docs\10-移动端UI与交互规范.md` §6.3（2026-10-24 减法批定稿）。
 > **读法 · 寿命**：实施手机端格式工具时按 § 跳入；上游发布浮层格式条时回 §5 看冲突处理。
 > **规范的家**：裁决在《界面改造方案》§4.8；任务状态在《任务清单》。
@@ -12,13 +12,13 @@
 
 ## 1. 现状与病灶（代码读数，2026-11-18）
 
-| 事实 | 位置 | 读数 |
-| --- | --- | --- |
-| 手机键集 | `format-bar-phone.tsx` `phoneGroups()` | `[[UNDO], ...context]`：文本态 = UNDO ＋ **12 键**（heading / bold / italic / strike / highlight / inlineCode / link / bullet / ordered / quote / codeBlock / table）挤一条横滑排 |
-| 横滑实证 | `format-bar.css:179` | `overflow-x: auto; scrollbar-width: none`——滚动条藏掉、靠手势横滑，表格 / 代码块在最尾 |
-| 无层级 | 同上 | 桌面态有 fit 折叠（⋯），手机态**滚动不折叠**；heading 是内联 picker 没有就地面板；插入类与行内格式混一排 |
-| 无选中浮条 | 全仓 | 行内格式只在常驻排里；「选中文本 → 浮条 → 格式」的路径不存在 |
-| 好消息 | `FormatBar.tsx` | 整条栏是**菜单事件的皮**：`press()` = `sendAppEvent(b.event, b.detail)`，caret 态点亮；`headingItems()`（正文 / H1–H6）与 `HideKeyboardIcon`（收键盘）已有现成原料 |
+| 事实       | 位置                                   | 读数                                                                                                                                                                              |
+| ---------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 手机键集   | `format-bar-phone.tsx` `phoneGroups()` | `[[UNDO], ...context]`：文本态 = UNDO ＋ **12 键**（heading / bold / italic / strike / highlight / inlineCode / link / bullet / ordered / quote / codeBlock / table）挤一条横滑排 |
+| 横滑实证   | `format-bar.css:179`                   | `overflow-x: auto; scrollbar-width: none`——滚动条藏掉、靠手势横滑，表格 / 代码块在最尾                                                                                            |
+| 无层级     | 同上                                   | 桌面态有 fit 折叠（⋯），手机态**滚动不折叠**；heading 是内联 picker 没有就地面板；插入类与行内格式混一排                                                                          |
+| 无选中浮条 | 全仓                                   | 行内格式只在常驻排里；「选中文本 → 浮条 → 格式」的路径不存在                                                                                                                      |
+| 好消息     | `FormatBar.tsx`                        | 整条栏是**菜单事件的皮**：`press()` = `sendAppEvent(b.event, b.detail)`，caret 态点亮；`headingItems()`（正文 / H1–H6）与 `HideKeyboardIcon`（收键盘）已有现成原料                |
 
 **病灶诊断**：不是功能少（13 键比墨契主条六键还多），是**没有层级**——13 键平铺一条横滑排，每个键都难找到；插入类沉在最右端；行内格式占六个位却没有「选中才出现」的时机感。用户原话：「左右横滑非常不方便」「快图标就只有三个功能（体感）」「选择文档也没有我们那种感觉」「实在太丑了」。
 
@@ -28,14 +28,14 @@
 
 ### 2.1 常驻主条（键盘顶 46px，六键定死）
 
-| 键 | 墨契语义 | Textus 实现（既有事件，不新增内核行为） |
-| --- | --- | --- |
-| `plus 插入` | 开插入面板（占键盘位） | 打开 PhoneInsertPanel（§2.4） |
-| `heading 文本` | 就地面板：正文 / H₁–H₆ | `headingItems()` 原料已有 → 提为面板 |
-| `list 列表` | 就地面板：无序 / 有序 / 待办 / 缩进 / 反缩进 | bullet / ordered = `TOGGLE_BLOCK_EVENT`；待办与缩进见 §2.5 待办① |
-| `undo` | 撤销 | `EDIT_ACTION_EVENT "undo"`（phoneGroups 已在用） |
-| `redo` | 重做 | `EDIT_ACTION_EVENT "redo"` |
-| `check 完成` | 收键盘 / 退出编辑态 | `HideKeyboardIcon` 已有，提为常驻末键 |
+| 键             | 墨契语义                                     | Textus 实现（既有事件，不新增内核行为）                          |
+| -------------- | -------------------------------------------- | ---------------------------------------------------------------- |
+| `plus 插入`    | 开插入面板（占键盘位）                       | 打开 PhoneInsertPanel（§2.4）                                    |
+| `heading 文本` | 就地面板：正文 / H₁–H₆                       | `headingItems()` 原料已有 → 提为面板                             |
+| `list 列表`    | 就地面板：无序 / 有序 / 待办 / 缩进 / 反缩进 | bullet / ordered = `TOGGLE_BLOCK_EVENT`；待办与缩进见 §2.5 待办① |
+| `undo`         | 撤销                                         | `EDIT_ACTION_EVENT "undo"`（phoneGroups 已在用）                 |
+| `redo`         | 重做                                         | `EDIT_ACTION_EVENT "redo"`                                       |
+| `check 完成`   | 收键盘 / 退出编辑态                          | `HideKeyboardIcon` 已有，提为常驻末键                            |
 
 **行内格式（B/I/S/U/代码/高亮/链接）全部退出主条**——只住选中浮条（§2.3）。这是墨契 2026-10-24 减法批的同一条裁决，不是新发明。
 
@@ -49,12 +49,14 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 
 ### 2.3 选中浮条（非空选区浮出）
 
-| 键 | 事件 |
-| --- | --- |
-| B / I / S / U / 代码 / 高亮 | `TOGGLE_MARK_EVENT`（toggle 语义：再按同格式 = 取消） |
-| 链接 | `INSERT_LINK_EVENT` |
-| `格式 ▸` | Aa 面板（屏窄时的紧凑态） |
-| 清除格式 | 编辑菜单已有 `menuClearFormatting`（`editor-menu.test.ts:136` 证） |
+| 键                      | 事件                                                           |
+| ----------------------- | -------------------------------------------------------------- |
+| B / I / S / 代码 / 高亮 | `TOGGLE_MARK_EVENT`（toggle 语义：再按同格式 = 取消）          |
+| 链接                    | `INSERT_LINK_EVENT`                                            |
+| `格式 ▸`                | Aa 面板（屏窄时的紧凑态）                                      |
+| 清除格式                | 新增 `CLEAR_FORMAT_EVENT`（菜单层走 `clearSpans`；非内核改动） |
+
+**U（下划线）不新增**：Textus 内核没有下划线 mark；零内核改动的边界优先，若以后内核加了下划线再补。
 
 驱动：`selectionchange` ＋ 非空选区 → 浮出；光标合拢 → 收回。作用范围 = 选区 ＋ 接下来输入的字（墨契同款语义）。
 
@@ -62,41 +64,61 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 
 10 键定死如下（全部走既有事件；第 10 键「更多」打开完整插入菜单，不新增内核行为）：
 
-| 行 | 左 | 右 |
-| --- | --- | --- |
-| 1 | 代码块 `code-block` | 表格 `table` |
-| 2 | 引用 `blockquote` | 标注 `callout` |
-| 3 | 公式 `math-block` | 待办列表 `task-list` |
-| 4 | 分割线 `rule` | 图片 `IMAGE_ACTION_EVENT` |
-| 5 | 链接 `INSERT_LINK_EVENT` | 更多（完整插入菜单 / slash 菜单） |
+| 行  | 左                       | 右                                |
+| --- | ------------------------ | --------------------------------- |
+| 1   | 代码块 `code-block`      | 表格 `table`                      |
+| 2   | 引用 `blockquote`        | 标注 `callout`                    |
+| 3   | 公式 `math-block`        | 待办列表 `task-list`              |
+| 4   | 分割线 `rule`            | 图片 `IMAGE_ACTION_EVENT`         |
+| 5   | 链接 `INSERT_LINK_EVENT` | 更多（完整插入菜单 / slash 菜单） |
 
-说明：`code-block` / `table` / `blockquote` / `callout` / `math-block` / `task-list` / `rule` 的 id 见 `src/editor/blocks/block-kind-list.ts`；图片与链接走既有事件。**若实施时发现「更多」没有现成菜单可开，则第 10 键改为「H2」（`INSERT_BLOCK_EVENT "h2"`），并在 PH1 证据里记下这一替换。**
+说明：`code-block` / `table` / `blockquote` / `callout` / `math-block` / `task-list` / `rule` 的 id 见 `src/editor/blocks/block-kind-list.ts`；**图片走 `pickImageFile` + `copyToImageFolder` + `INSERT_MARKDOWN_EVENT`**（已选中图片的宽度/删除仍走 `IMAGE_ACTION_EVENT`）；链接走 `INSERT_LINK_EVENT`。**若实施时发现「更多」没有现成菜单可开，则第 10 键改为「H2」（`INSERT_BLOCK_EVENT "h2"`），并在 PH1 证据里记下这一替换。**
 
 ### 2.5 待对清单（实施前逐项核；全是「事件有没有」，不是「要不要造」）
 
 > **这四项并入任务清单 PH1 验收**：每项在 PH1 证据里给出「有 / 无、补了什么菜单层」的结论；不是另开任务。
 
-1. 待办列表（task list）toggle 与缩进 / 反缩进（sink / lift list item）是否已在 `editor-menu` 暴露；无则**菜单层补发**（仍非内核改动）
-2. `INSERT_BLOCK_EVENT` 的 detail 全集（分割线 / 图片插入路径）；§2.4 的 10 键按此核对
+1. 待办列表 toggle 与缩进 / 反缩进：**已补**——`TOGGLE_BLOCK_EVENT` 新增 `task-list`、`sink-list-item`、`lift-list-item`（菜单层，非内核）；真机再核。
+2. `INSERT_BLOCK_EVENT` 的 detail 全集：已按 `src/editor/blocks/block-kind-list.ts` 核对；图片插入改用 picker（见 §2.4），不走 `IMAGE_ACTION_EVENT`。
 3. `selectionchange` 在 Tauri Android WebView 的频率与节流（墨契 Android 学费清单同族，见《改造方案》附录 B.3.3）
 4. 原生块菜单缺「剪切块」（`block-menu.ts` 只有 copy/duplicate/delete）——补一条菜单项是小活，裁完再动
+
+### 2.6 形态修正单（2026-11-19 · 第一片返工 = 任务 PH1b）
+
+第一片已落（主条 / 上下文排 / 事件通路 / 键集全对），但**三处面板做成了底部弹窗**——heading / list 走 `useMenuButton → ContextMenu` 手机分支 = `ActionSheet`（遮罩＋抓取条＋抢焦点塌键盘），插入面板用 `Sheet role="menu"`（还带取消钮）。**根因**：顺手拿了仓里现成弹出件，**部件类别选错**——三件套的面板是编辑器 chrome（fixed 定位、不进 portal、不挂遮罩、不抢焦点），不是对话框；本文 §3 原「走 `ActionSheet` / `Presence` 运动体系」被误读成组件本体，已改写（§3）。
+
+| 面                                | 现状（错）                   | 应然（§2 定稿）                          |
+| --------------------------------- | ---------------------------- | ---------------------------------------- |
+| heading / list 面板               | `ActionSheet` 底部弹窗       | 就地面板：浮主条正上方，键盘不退选区不丢 |
+| 插入面板                          | `Sheet` 弹窗＋抓取条＋取消钮 | 收键盘、占键盘位，无遮罩无取消钮         |
+| 主条 / 上下文排 / 选中浮条 / 事件 | 对                           | 不动                                     |
+
+**改法三条**（几何数值抄墨契参照实现 `project-b/packages/editor/src/touch/MobileFmtBar.tsx` ＋ `project-b/app/src/ui/app.css` 808–832 行，真机验过）：
+
+1. **就地面板**：本地 `panel: "text" | "list" | null` state 替掉 `useMenuButton`；`.pf-panel` div 作主条兄弟节点（同一 fragment，`role="toolbar"`，不进 portal），fixed 钉在主条正上方 6px、左右 8px；**开合三条路** = 再点同键收 / 点另一键切 / 点正文收（capture 阶段 `pointerdown` ＋ `closest(".pf-panel, .phone-format-bar, .pf-selection")`；判定用 `Element` 不是 `HTMLElement`——面板键里是 SVG，后者把点图标当外点）；当前值 `is-on` 点亮、主条键 `aria-expanded`。事件一个不改。
+2. **插入面板**：撤 `Sheet` / `pf-grab` / `pf-insert-cancel`，改 fixed chrome 层（`bottom: 0`，`max-height = 键盘高快照`——快照取 `mobile/keyboard.ts` 的 covered 值或 open 前视口差，兜底 68dvh 且须放得下 2×5 十格）；点「＋」显式 blur 收键盘；**主条显隐豁免**：根元素加 `insert-open` 类放行 `format-bar.css:170` 的 `.keyboard-up` 门、主条 `bottom` 抬到快照高（墨契 `.mbar.is-insert` 同款，视觉不跳）；退出三条路 = 选格（插入＋ `focusDocument` 恢复键盘焦点）/ 再点「＋」/ 点正文。`INSERT_KEYS` 十格与 `pickInsert` 不动。
+3. **保焦点铁律**：主条与两面板的**每个按钮** `onMouseDown={e => e.preventDefault()}`——焦点不离开正文根，键盘不塌、光标不丢，click 照常派发（墨契 2026-10-16 真机「工具栏没法点」即缺此手）。就地面板绝不 blur；插入面板的收键盘是显式动作，两者必须分清。
+
+**「更多」菜单减法**（唯一内容改动）：手机光标菜单（`buildPhoneMoreItems`，`editor-menu.ts:289`）删「插入表格」（`:316`——「更多」键就在插入面板上，同屏第 2 格就是表格，一格之隔的重复）与「查找和替换」（`generalItems` `:346` 手机侧不再整段复用，内联只留「全选」；顶栏动作单 `PhoneEditorBar` 已有「查找」→ `TOGGLE_FIND_REPLACE_EVENT`）；**AI 续写 / 检查语法留**（`EditorContextMenu.tsx:145-155`）——六键主条已裁死无 AI 键位、Quick Ask 是对话入口不管写作动作、光标菜单 = 「光标处能做的事」的语义家（桌面右键同款）；「检查语法」日后若嫌它像文档级动作，候选去处 = 顶栏动作单（与大纲 / 分享同类），这次不做。减完手机侧 = 链接项 ── 剪切 / 复制纯文本 ── 全选 ── AI。`editor-menu.test.ts` 跟改；桌面右键三样都在。
+
+**完成（2026-11-19，真机华为 PKT0220512001548，1.4.5 debug）**：§6⑧ 五条全过——文本面板浮主条上方、键盘不退，H₂ 全程键盘在场；＋ 收键盘占位、无遮罩、主条抬起点亮，选「分割线」插入后键盘回来；同键收 / 另一键切 / 点正文收均成立；文本→H₂→列表→待办→缩进键盘不塌、无弹窗闪现；「更多」= 剪切 / 全选 / AI 三样，无插入表格 / 查找替换。另补两处：① `SourceEditor` 注册 `focus`、`focusDocument` 在 `takeKeys` 不应答时显式 `editor.focus()`——否则源码模式和插入面板关闭后键盘不回；② 选中浮条最左选区会出屏（`half=78` 只够四键），改 `half=156`。插入面板兜底高写 `68vh`，`dvh` 放 `@supports`（WebView 105 规则）；事件、键集、桌面 FormatBar 未动。
 
 ## 3. 视觉（纸墨画板同语言）
 
 - 主条 46px 贴键盘顶；纸墨 token（暖纸底 / 石墨字），**fire 只给 active writing state**（沿用手机纸墨 token 与 `PhoneEditorBarIcons` 族）
-- 六键线条图标 20px / 2px，与 `PhoneEditorBarIcons` 族一致；面板 / 浮层走 `ActionSheet` / `Presence` 既有运动体系
+- 六键线条图标 20px / 2px，与 `PhoneEditorBarIcons` 族一致；开合运动沿用 `Presence` 既有体系（时长 / 缓动）——**面板本体是 chrome 层（fixed 定位），不走 `ActionSheet` / `Sheet` 组件**（第一片误读本行做成弹窗，见 §2.6 根因）
 - 横滑排与隐藏滚动条（`format-bar.css:179`）随本次**退役**
 
 ## 4. 实施边界（哪里改哪里不动）
 
-| 面 | 动不动 |
-| --- | --- |
-| 编辑器内核 / Milkdown / 序列化 | **不动**——新 UI 只发既有菜单事件，`press()` 通路原样 |
-| `format-buttons.ts` 事件定义 | 不动（键位重组在 phone 侧新组件里挑用） |
-| 桌面 FormatBar | **零改动**（`usePhoneLayout()` 分支改为渲染新手机组件） |
-| 新文件 | `src/phone/PhoneFormatBar.tsx/.css` · `PhoneSelectionBar` · `PhoneInsertPanel`；图标扩 `PhoneEditorBarIcons` |
-| md 保真门禁 | 不受影响（命令层不触序列化）；`markdown-roundtrip` 照跑 |
-| i18n | `Strings` 补少数字（完成 / 插入面板标题等），中英同步 |
+| 面                             | 动不动                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| 编辑器内核 / Milkdown / 序列化 | **不动**——新 UI 只发既有菜单事件，`press()` 通路原样                                                         |
+| `format-buttons.ts` 事件定义   | 不动（键位重组在 phone 侧新组件里挑用）                                                                      |
+| 桌面 FormatBar                 | **零改动**（`usePhoneLayout()` 分支改为渲染新手机组件）                                                      |
+| 新文件                         | `src/phone/PhoneFormatBar.tsx/.css` · `PhoneSelectionBar` · `PhoneInsertPanel`；图标扩 `PhoneEditorBarIcons` |
+| md 保真门禁                    | 不受影响（命令层不触序列化）；`markdown-roundtrip` 照跑                                                      |
+| i18n                           | `Strings` 补少数字（完成 / 插入面板标题等），中英同步                                                        |
 
 ## 5. 与 §7.8 / 上游的关系（改判记录）
 
@@ -113,11 +135,14 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 4. 插入面板 2×5：每键发对事件、落盘 md 正确
 5. `npx vitest run src/phone/` 全绿 ＋ `npm run check:quick` ＋ Android 截图对比（画板一致）
 6. md-corpus 抽测一篇：打开 → 格式操作 → 保存 → 字节一致
+7. Android 真机：主条 / 文本面板 / 列表面板 / 插入面板 / 选中浮条 / 表格排 / 图片排 / 任务列表 / 缩进；启动 chunk < 1.00MB（手机条 lazy）。
+8. **形态补条（§2.6，2026-11-19；同日真机通过，见 §2.6 完成注）**：① 打字中点「文本」键盘不闪、光标不丢，面板浮主条上方，点 H₂ 全程键盘在场；② 点「＋」键盘收、面板占键盘位、无遮罩不变暗、主条可见且点亮，选格后键盘焦点回来；③ 再点同键收起 / 点另一键切换 / 点正文收起，`aria-expanded` 正确；④ 真机一条龙 文本→H₂→列表→待办→缩进 键盘不塌无弹窗闪现；⑤ 「更多」无「插入表格」无「查找和替换」、顶栏查找仍可达、AI 续写 / 检查语法在列、桌面右键三样都在。
 
 ## 7. 决议记录
 
-| # | 裁决 | 日期 |
-| --- | --- | --- |
-| 1 | 横滑格式栏**废**；手机端格式工具按墨契三件套重建（主条六键 ＋ 就地面板 ＋ 选中浮条 ＋ 插入面板）；路线 = 自建 | 2026-11-18 用户裁 |
-| 2 | §7.8 范围澄清为桌面；手机端归裁决 30 / 31 延长线 | 2026-11-18 |
-| 3 | 「等上游浮层格式条」撤销（不等了）；桌面 = 停靠格式栏基底＋按墨契桌面体系补缺（需求驱动）；主力 = 手机端（裁决 31） | 2026-11-18 用户裁 |
+| #   | 裁决                                                                                                                                    | 日期              |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| 1   | 横滑格式栏**废**；手机端格式工具按墨契三件套重建（主条六键 ＋ 就地面板 ＋ 选中浮条 ＋ 插入面板）；路线 = 自建                           | 2026-11-18 用户裁 |
+| 2   | §7.8 范围澄清为桌面；手机端归裁决 30 / 31 延长线                                                                                        | 2026-11-18        |
+| 3   | 「等上游浮层格式条」撤销（不等了）；桌面 = 停靠格式栏基底＋按墨契桌面体系补缺（需求驱动）；主力 = 手机端（裁决 31）                     | 2026-11-18 用户裁 |
+| 4   | 第一片三处面板做成底部弹窗 = 走样，按 §2.6 返工（任务 PH1b）；「更多」菜单减「插入表格 / 查找和替换」两项，AI 续写 / 检查语法留光标菜单 | 2026-11-19 用户裁 |

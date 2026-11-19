@@ -44,12 +44,16 @@ export const INSERT_BLOCK_EVENT = "textus:insert-block";
  *  as its Show Only This Folder does: a plugin's import going into what it made. */
 export const SHOW_FOLDER_EVENT = "textus:show-folder";
 
-/// detail: "heading" | "bullet-list" | "ordered-list" | "blockquote"; these
-/// toggle rather than only insert.
+/// detail: "heading" | "bullet-list" | "ordered-list" | "blockquote" |
+/// "task-list" | "sink-list-item" | "lift-list-item"; these toggle or move
+/// the block rather than only insert.
 export const TOGGLE_BLOCK_EVENT = "textus:toggle-block";
 
 /// detail: "bold" | "italic" | "highlight": toggles the mark on the selection.
 export const TOGGLE_MARK_EVENT = "textus:toggle-mark";
+
+/// Clears the marks on the selection (Format › Clear Formatting).
+export const CLEAR_FORMAT_EVENT = "textus:clear-format";
 
 /// detail: a TableAction ("row-below", "delete-column"…) for the table under the caret.
 export const TABLE_ACTION_EVENT = "textus:table-action";
@@ -139,6 +143,7 @@ interface AppEvents {
   [SHOW_FOLDER_EVENT]: string;
   [TOGGLE_BLOCK_EVENT]: string;
   [TOGGLE_MARK_EVENT]: string;
+  [CLEAR_FORMAT_EVENT]: undefined;
   [TABLE_ACTION_EVENT]: string;
   [IMAGE_ACTION_EVENT]: string;
   [EDITOR_MORE_EVENT]: undefined;

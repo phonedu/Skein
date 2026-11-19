@@ -1,11 +1,15 @@
 import type { EditorView } from "@codemirror/view";
+import { indentLess, indentMore } from "@codemirror/commands";
 import { editorInUse } from "../editor-in-use";
 import {
+  CLEAR_FORMAT_EVENT,
   INSERT_BLOCK_EVENT,
   INSERT_LINK_EVENT,
+  TOGGLE_BLOCK_EVENT,
   TOGGLE_MARK_EVENT,
 } from "../../utils/events";
 import {
+  clearSourceMarks,
   insertSourceLink,
   setSourceBlock,
   toggleSourceMark,
@@ -27,12 +31,26 @@ export function followFormatMenu(view: EditorView): () => void {
     const done =
       e.type === TOGGLE_MARK_EVENT
         ? toggleSourceMark(view, detail)
-        : e.type === INSERT_BLOCK_EVENT
-          ? setSourceBlock(view, detail)
-          : (insertSourceLink(view), true);
+        : e.type === TOGGLE_BLOCK_EVENT
+          ? detail === "sink-list-item"
+            ? indentMore(view)
+            : detail === "lift-list-item"
+              ? indentLess(view)
+              : setSourceBlock(view, detail)
+          : e.type === INSERT_BLOCK_EVENT
+            ? setSourceBlock(view, detail)
+            : e.type === CLEAR_FORMAT_EVENT
+              ? clearSourceMarks(view)
+              : (insertSourceLink(view), true);
     if (done) view.focus();
   };
-  const types = [TOGGLE_MARK_EVENT, INSERT_BLOCK_EVENT, INSERT_LINK_EVENT];
+  const types = [
+    TOGGLE_MARK_EVENT,
+    TOGGLE_BLOCK_EVENT,
+    INSERT_BLOCK_EVENT,
+    INSERT_LINK_EVENT,
+    CLEAR_FORMAT_EVENT,
+  ];
   for (const type of types) window.addEventListener(type, run);
   return () => {
     for (const type of types) window.removeEventListener(type, run);

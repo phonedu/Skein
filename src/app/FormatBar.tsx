@@ -1,9 +1,8 @@
 import { focusTabEditor } from "../editor/tab-editor";
 import { tabElement } from "../engine/layout/tab-element";
-import { tabInUse } from "../engine/layout/store";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import type { Strings } from "../i18n/strings";
-import { caretBlock, NO_BLOCK, type CaretBlock } from "../editor/caret-block";
+import type { CaretBlock } from "../editor/caret-block";
 import { IconButton } from "../engine/controls/IconButton";
 import { useFitItems } from "../engine/controls/fit-steps";
 import { useMenuButton } from "../engine/controls/useMenuButton";
@@ -13,17 +12,26 @@ import type {
   ContextMenuItem,
 } from "../engine/controls/ContextMenu";
 import { fill } from "../i18n/fill";
-import { HideKeyboardIcon, MoreIcon } from "../engine/controls/icons";
+import { MoreIcon } from "../engine/controls/icons";
 import { formatCombo } from "../utils/shortcuts";
-import {
-  EDITOR_MORE_EVENT,
-  INSERT_BLOCK_EVENT,
-  sendAppEvent,
-} from "../utils/events";
+import { INSERT_BLOCK_EVENT, sendAppEvent } from "../utils/events";
 import { GROUPS, type Button } from "./format-buttons";
-import { phoneGroups } from "./format-bar-phone";
+import { useCaretBlock } from "./use-caret-block";
+import { lazyComponent } from "../lazy/lazy-component";
+import { lazyModule } from "../lazy/lazy-module";
 import type { FormatBarSide } from "../prefs/settings-values";
 import "./format-bar.css";
+
+// The phone's bar pulls in its sheets, picture picker and selection bar;
+// keep it out of the startup chunk, which a desktop never needs.
+const phoneFormatBar = lazyModule(
+  "phone-format-bar",
+  () => import("../phone/PhoneFormatBar"),
+);
+const PhoneFormatBar = lazyComponent(
+  phoneFormatBar,
+  (module) => module.PhoneFormatBar,
+);
 
 /**
  * The format bar (View › Format Bar): a row under the title bar with what the
@@ -74,31 +82,6 @@ function headingItems(
   ];
 }
 
-/** What is on at the caret of one document, kept current: nothing while
- *  the caret is in another. */
-function useCaretBlock(tabId: string): CaretBlock {
-  const [block, setBlock] = useState<CaretBlock>(NO_BLOCK);
-  useEffect(() => {
-    let frame = 0;
-    // The DOM settles after ProseMirror's update; read it a frame later.
-    const read = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() =>
-        setBlock(caretBlock(tabInUse() === tabId ? tabElement(tabId) : null)),
-      );
-    };
-    read();
-    document.addEventListener("selectionchange", read);
-    document.addEventListener("input", read);
-    return () => {
-      cancelAnimationFrame(frame);
-      document.removeEventListener("selectionchange", read);
-      document.removeEventListener("input", read);
-    };
-  }, [tabId]);
-  return block;
-}
-
 /** Another island's bar: its document takes the keys first, at the
  *  selection it kept, so the format lands there. */
 function focusDocument(tabId: string) {
@@ -106,40 +89,49 @@ function focusDocument(tabId: string) {
   if (editor && !editor.contains(document.activeElement)) focusTabEditor(tabId);
 }
 
-export function FormatBar({
-  t,
-  tabId,
-  side,
-}: {
+type FormatBarProps = {
   t: Strings;
   /** The document's edge it sits on; a phone's is always its foot. */
   side: FormatBarSide;
   /** The document it formats: a press brings it into use first (its
    *  island's pointerdown), so the menu's events reach it. */
   tabId: string;
-}) {
+  /** The document on disk, for the phone's picture picker. */
+  docPath?: string | null;
+};
+
+export function FormatBar({ t, tabId, side, docPath = null }: FormatBarProps) {
   const block = useCaretBlock(tabId);
   const phone = usePhoneLayout();
-  // A phone's follows the caret into a table or onto an image, and scrolls
-  // rather than folding: its "⋯" is the editor's menu (PhoneEnd).
-  const groups = phone ? phoneGroups(block) : GROUPS;
+  if (phone)
+    return (
+      <PhoneFormatBar t={t} tabId={tabId} docPath={docPath} block={block} />
+    );
+  return <DesktopFormatBar t={t} tabId={tabId} side={side} block={block} />;
+}
+
+function DesktopFormatBar({
+  t,
+  tabId,
+  side,
+  block,
+}: {
+  t: Strings;
+  tabId: string;
+  side: FormatBarSide;
+  block: CaretBlock;
+}) {
   // Narrower than its buttons, it keeps as many as fit and folds the rest,
   // from the end, into "⋯".
   const row = useRef<HTMLDivElement>(null);
-  const column = !phone && side !== "top";
+  const column = side !== "top";
   useFitItems(row, ".format-bar-more", column);
   // Tooltips and menus open toward the page, clear of the next button.
   const toward = column ? (side === "left" ? "right" : "left") : undefined;
   const headings = () => headingItems(t, tabId, block.heading);
-  // On a phone, closed without a pick, the document takes the keys back:
-  // the keyboard stays up. Elsewhere the focus goes back to the button.
-  const refocus = () => {
-    if (phone) focusDocument(tabId);
-  };
   const heading = useMenuButton(headings, {
     title: t.toolbarHeading,
     beside: toward,
-    onClosed: refocus,
   });
   const more = useMenuButton(
     () =>
@@ -148,7 +140,7 @@ export function FormatBar({
           ? { label: b.label(t), items: headings() }
           : { label: b.label(t), onSelect: () => press(tabId, b) },
       ),
-    { alignEnd: true, beside: toward, onClosed: refocus },
+    { alignEnd: true, beside: toward },
   );
   return (
     <div
@@ -161,7 +153,7 @@ export function FormatBar({
       onMouseDown={(e) => e.preventDefault()}
     >
       <div ref={row} className="format-bar-row">
-        {groups.map((group, g) => (
+        {GROUPS.map((group, g) => (
           <div key={g} className="format-bar-group">
             {group.map((b) => {
               const label = b.label(t);
@@ -169,7 +161,7 @@ export function FormatBar({
                 <span
                   key={label}
                   className="format-bar-item"
-                  data-fit-item={phone ? undefined : ALL.indexOf(b)}
+                  data-fit-item={ALL.indexOf(b)}
                 >
                   <IconButton
                     label={label}
@@ -187,42 +179,17 @@ export function FormatBar({
             })}
           </div>
         ))}
-        {!phone && (
-          <IconButton
-            label={t.toolbarMore}
-            hintSide={toward}
-            className="tx-icon-button format-bar-more"
-            opens={more.button}
-          >
-            <MoreIcon />
-          </IconButton>
-        )}
+        <IconButton
+          label={t.toolbarMore}
+          hintSide={toward}
+          className="tx-icon-button format-bar-more"
+          opens={more.button}
+        >
+          <MoreIcon />
+        </IconButton>
       </div>
-      {phone && <PhoneEnd t={t} />}
       {heading.menu}
       {more.menu}
     </div>
-  );
-}
-
-/** The phone's strip, shown only while typing, ends with the editor's
- *  menu for where the caret is (it has no right-click) and a key that puts
- *  the keyboard away. */
-function PhoneEnd({ t }: { t: Strings }) {
-  return (
-    <>
-      <IconButton
-        label={t.toolbarMore}
-        onClick={() => sendAppEvent(EDITOR_MORE_EVENT)}
-      >
-        <MoreIcon />
-      </IconButton>
-      <IconButton
-        label={t.toolbarHideKeyboard}
-        onClick={() => (document.activeElement as HTMLElement | null)?.blur()}
-      >
-        <HideKeyboardIcon />
-      </IconButton>
-    </>
   );
 }

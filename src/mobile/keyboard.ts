@@ -51,6 +51,14 @@ export function keyboardUp(): boolean {
   return up();
 }
 
+/** How many px the keyboard covers right now: 0 when it is down. The app's
+ *  own figure when it has given one, else what the window lost. */
+export function keyboardCovered(): number {
+  track();
+  if (covered !== null && covered >= KEYBOARD_MIN) return covered;
+  return Math.max(0, tallest - window.innerHeight);
+}
+
 /**
  * Runs `then` once the keyboard is down - at once if it is - or after
  * `timeout` ms whatever the window says. Returns a cancel.
