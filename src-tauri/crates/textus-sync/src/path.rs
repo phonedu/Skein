@@ -99,7 +99,7 @@ fn ignored_folder(part: &str) -> bool {
         .any(|folder| part.eq_ignore_ascii_case(folder))
 }
 
-fn is_obsidian_setting(path: &str) -> bool {
+pub(crate) fn is_obsidian_setting(path: &str) -> bool {
     path.strip_prefix(".obsidian/")
         .is_some_and(|name| OBSIDIAN_SETTINGS.contains(&name))
 }
