@@ -106,12 +106,14 @@ export const syncConnectionUpdate = (
   connectionId: string,
   config: SyncConfig,
   credentials: SyncCredentials,
+  defaultPrefix: string | null = null,
 ): Promise<{ changed: boolean; vaults: number }> =>
   commands
     .sync_connection_update(
       connectionId,
       JSON.stringify(config),
       JSON.stringify(credentials),
+      defaultPrefix,
     )
     .then((json) => parse<{ changed: boolean; vaults: number }>(json));
 

@@ -55,6 +55,8 @@ const EMPTY_CREDENTIALS: SyncCredentials = {
 
 function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("vaultCopied")) return t.syncErrorVaultCopied;
+  if (reason.includes("alreadyRunning") || reason.includes("busy"))
+    return t.syncErrorBusy;
   if (reason.includes("remoteMissing")) return t.syncErrorRemote;
   if (reason.includes("lockLost")) return t.syncErrorLockLost;
   if (reason.includes("locked")) return t.syncErrorLocked;
@@ -115,6 +117,7 @@ export function SyncPage({
   const [connections, setConnections] = useState<SyncConnection[]>([]);
   const [vaults, setVaults] = useState<SyncVault[]>([]);
   const [editShared, setEditShared] = useState(false);
+  const [connectionPrefix, setConnectionPrefix] = useState("");
   const [lock, setLock] = useState<SyncLock | null>(null);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
@@ -198,6 +201,7 @@ export function SyncPage({
 
   const chooseConnection = (id: string) => {
     setEditShared(false);
+    setConnectionPrefix("");
     if (!id) {
       setConfig({
         ...EMPTY,
@@ -237,6 +241,7 @@ export function SyncPage({
           currentConnection.id,
           { ...config, prefix: currentConnection.prefix },
           credentials,
+          connectionPrefix,
         );
         setEditShared(false);
       }
@@ -475,7 +480,10 @@ export function SyncPage({
             <button
               type="button"
               className="text-button settings-inline-button"
-              onClick={() => setEditShared(true)}
+              onClick={() => {
+                setConnectionPrefix(currentConnection.prefix);
+                setEditShared(true);
+              }}
             >
               {t.syncConnectionEdit}
             </button>
@@ -493,6 +501,7 @@ export function SyncPage({
               className="text-button settings-inline-button"
               onClick={() => {
                 setEditShared(false);
+                setConnectionPrefix("");
                 if (savedConfig) setConfig(savedConfig);
                 setCredentials(EMPTY_CREDENTIALS);
               }}
@@ -500,6 +509,19 @@ export function SyncPage({
               {t.cancel}
             </button>
           </>
+        )}
+        {shared && editShared && (
+          <label className="sync-field">
+            <span className="settings-field-label">
+              {t.syncConnectionPrefixLabel}
+            </span>
+            <input
+              className="settings-text-input"
+              spellCheck={false}
+              value={connectionPrefix}
+              onChange={(event) => setConnectionPrefix(event.target.value)}
+            />
+          </label>
         )}
         <SettingRow label={t.syncProviderLabel}>
           <Select

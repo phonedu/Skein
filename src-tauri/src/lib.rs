@@ -91,6 +91,7 @@ fn desktop_builder(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri:
         .manage(background::tray::TrayPlugins::default())
         .manage(mcp::McpHub::default())
         .manage(agents::Agents::default())
+        .manage(sync::runners::SyncRunners::default())
         .manage(cli::app::CliBridge::default())
         .plugin(tauri_plugin_deep_link::init())
         .on_window_event(|window, event| {

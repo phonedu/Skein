@@ -1826,10 +1826,12 @@ export default {
   syncConnectionNew: "新建连接",
   syncConnectionShared: "此连接已被 {count} 个库使用；地址与凭据不在这里修改。",
   syncConnectionEdit: "编辑连接",
+  syncConnectionPrefixLabel: "新库的默认前缀",
   syncConnectionEditWarning:
     "更改将影响 {count} 个库。地址变化时，会重建这些库的本地同步基线。",
   syncAutoPrefix: "留空则为此文件夹创建子仓库。",
   syncErrorRepository: "另一个库已在使用该远端仓库。请选择其他连接或远端目录。",
+  syncErrorBusy: "另一个同步正在运行，请等它结束。",
   syncEndpointLabel: "服务器地址",
   syncBucketLabel: "存储桶",
   syncRegionLabel: "区域",

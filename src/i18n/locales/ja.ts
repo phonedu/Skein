@@ -1929,12 +1929,14 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncConnectionShared:
     "この接続は {count} 個のライブラリで使われています。アドレスと認証情報はここでは変更されません。",
   syncConnectionEdit: "接続を編集",
+  syncConnectionPrefixLabel: "新しいライブラリの既定のプレフィックス",
   syncConnectionEditWarning:
     "変更は {count} 個のライブラリに適用されます。アドレスが変わると、各ライブラリのローカル同期ベースが再構築されます。",
   syncAutoPrefix:
     "空欄にすると、このフォルダー用のサブリポジトリを作成します。",
   syncErrorRepository:
     "別のライブラリがこのリモートリポジトリを使用しています。別の接続かリモートフォルダーを選んでください。",
+  syncErrorBusy: "別の同期が実行中です。完了するまでお待ちください。",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "サーバーアドレス",

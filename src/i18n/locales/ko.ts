@@ -1909,11 +1909,13 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncConnectionShared:
     "이 연결은 라이브러리 {count}개에서 사용 중입니다. 주소와 자격 증명은 여기서 변경되지 않습니다.",
   syncConnectionEdit: "연결 편집",
+  syncConnectionPrefixLabel: "새 라이브러리의 기본 접두사",
   syncConnectionEditWarning:
     "변경 사항은 라이브러리 {count}개에 적용됩니다. 주소가 바뀌면 각 라이브러리의 로컬 동기화 기준이 다시 만들어집니다.",
   syncAutoPrefix: "비워 두면 이 폴더의 하위 저장소를 만듭니다.",
   syncErrorRepository:
     "다른 라이브러리가 이미 이 원격 저장소를 사용 중입니다. 다른 연결이나 원격 폴더를 선택하세요.",
+  syncErrorBusy: "다른 동기화가 이미 실행 중입니다. 끝날 때까지 기다리세요.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "서버 주소",

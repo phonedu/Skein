@@ -131,6 +131,10 @@ struct Binding {
     prefix: String,
     #[serde(default)]
     vault_id: String,
+    /// The remote repository this binding writes to; a new one follows a
+    /// connection or prefix change, and the local base is named after it.
+    #[serde(default)]
+    repository_id: String,
     #[serde(default = "keep")]
     keep_days: u32,
     #[serde(default)]
@@ -223,6 +227,21 @@ struct StorePaths {
 impl StorePaths {
     fn base(&self, root: &Path) -> PathBuf {
         self.data.join(format!("base-{}.json", root_key(root)))
+    }
+
+    /// The base of a bound vault. A vault with an identity and repository
+    /// keeps it when its folder moves; older bindings fall back to the
+    /// folder's key until their next save.
+    fn base_for(&self, root: &Path, binding: Option<&Binding>) -> PathBuf {
+        match binding {
+            Some(binding) if !binding.vault_id.is_empty() && !binding.repository_id.is_empty() => {
+                self.data.join(format!(
+                    "base-{}-{}.json",
+                    binding.vault_id, binding.repository_id
+                ))
+            }
+            _ => self.base(root),
+        }
     }
 
     fn last(&self, root: &Path) -> PathBuf {
@@ -323,6 +342,7 @@ fn migrate(legacy: LegacyConfigs, secrets: LegacySecrets) -> (StoreFile, SecretF
                 connection_id: id.clone(),
                 prefix: config.prefix,
                 vault_id: String::new(),
+                repository_id: String::new(),
                 keep_days: config.keep_days,
                 keep_chosen: config.keep_chosen,
             },
@@ -338,18 +358,21 @@ fn identity_path(root: &Path) -> PathBuf {
     root.join(".textus").join("sync-vault.json")
 }
 
-fn vault_id(root: &Path) -> String {
+fn read_identity(root: &Path) -> Option<String> {
     #[derive(Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct Identity {
         vault_id: String,
     }
-    if let Some(identity) = read_json::<Identity>(&identity_path(root)).ok().flatten() {
-        if !identity.vault_id.is_empty() {
-            return identity.vault_id;
-        }
-    }
-    Uuid::new_v4().simple().to_string()
+    read_json::<Identity>(&identity_path(root))
+        .ok()
+        .flatten()
+        .map(|identity| identity.vault_id)
+        .filter(|id| !id.is_empty())
+}
+
+fn vault_id(root: &Path) -> String {
+    read_identity(root).unwrap_or_else(|| Uuid::new_v4().simple().to_string())
 }
 
 fn write_identity_file(root: &Path, id: &str) {
@@ -427,6 +450,23 @@ fn fork_at(paths: &StorePaths, root: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// The binding for `root`: its own, or the one whose folder this is after
+/// a move (the old folder is gone, the identity file came along).
+fn resolved_binding(store: &StoreFile, root: &Path) -> Option<(String, Binding)> {
+    let key = root_key(root);
+    if let Some(binding) = store.vaults.get(&key) {
+        if Path::new(&binding.root) == root {
+            return Some((key, binding.clone()));
+        }
+    }
+    let id = read_identity(root)?;
+    store
+        .vaults
+        .iter()
+        .find(|(_, binding)| binding.vault_id == id && !Path::new(&binding.root).exists())
+        .map(|(key, binding)| (key.clone(), binding.clone()))
+}
+
 pub fn canonical_root(root: &str) -> Result<PathBuf, String> {
     let path = PathBuf::from(root)
         .canonicalize()
@@ -442,14 +482,10 @@ pub fn load(app: &tauri::AppHandle, root: &Path) -> Result<Option<(Config, Crede
 }
 
 fn load_at(paths: &StorePaths, root: &Path) -> Result<Option<(Config, Credentials)>, String> {
-    let key = root_key(root);
     let (store, secrets) = read_state(paths)?;
-    let Some(binding) = store.vaults.get(&key) else {
+    let Some((_, binding)) = resolved_binding(&store, root) else {
         return Ok(None);
     };
-    if Path::new(&binding.root) != root {
-        return Ok(None);
-    }
     let Some(connection) = store.connections.get(&binding.connection_id) else {
         return Ok(None);
     };
@@ -497,7 +533,18 @@ fn save_at(
 ) -> Result<(), String> {
     let key = root_key(root);
     let (mut store, mut secrets) = read_state(paths)?;
-    let existing = store.vaults.get(&key).cloned();
+    let mut existing = store.vaults.get(&key).cloned();
+    // A folder that moved keeps its identity file; the old path is gone,
+    // so follow the identity instead of treating it as a new vault.
+    let moved_from = if existing.is_none() {
+        resolved_binding(&store, root).map(|(old_key, binding)| {
+            store.vaults.remove(&old_key);
+            existing = Some(binding);
+            old_key
+        })
+    } else {
+        None
+    };
     let requested = config.connection_id.trim().to_string();
     let connection_id = if requested == "new" {
         // The page's "new connection" choice must not fall back to the
@@ -611,28 +658,56 @@ fn save_at(
     }) {
         return Err(SyncError::new("repositoryInUse").to_string());
     }
-    if let Some(binding) = &existing {
-        if binding.connection_id != connection_id || binding.prefix != prefix {
-            // A different remote repository: the old base would plan
-            // against the wrong head.
-            let _ = std::fs::remove_file(paths.base(root));
-            let _ = std::fs::remove_file(paths.last(root));
+    let remote_changed = existing
+        .as_ref()
+        .is_some_and(|binding| binding.connection_id != connection_id || binding.prefix != prefix);
+    let repository_id = existing
+        .as_ref()
+        .map(|binding| binding.repository_id.clone())
+        .filter(|id| !id.is_empty() && !remote_changed)
+        .unwrap_or_else(|| Uuid::new_v4().simple().to_string());
+    let binding = Binding {
+        root: root.to_string_lossy().into_owned(),
+        connection_id: connection_id.clone(),
+        prefix,
+        vault_id,
+        repository_id,
+        keep_days,
+        keep_chosen,
+    };
+    let existing_base = existing
+        .as_ref()
+        .map(|old| paths.base_for(Path::new(&old.root), Some(old)));
+    let new_base = paths.base_for(root, Some(&binding));
+    if remote_changed {
+        // A different remote repository: the old base would plan against
+        // the wrong head.
+        if let Some(old) = existing_base {
+            let _ = std::fs::remove_file(old);
+        }
+        let _ = std::fs::remove_file(&new_base);
+        let _ = std::fs::remove_file(paths.last(root));
+    } else if let Some(old) = existing_base {
+        if old != new_base && old.exists() && !new_base.exists() {
+            let _ = std::fs::create_dir_all(paths.data.as_path());
+            let _ = std::fs::rename(&old, &new_base);
+        }
+    }
+    if moved_from.is_some() {
+        let old_last = existing
+            .as_ref()
+            .map(|old| paths.last(Path::new(&old.root)))
+            .filter(|old| *old != paths.last(root));
+        if let Some(old_last) = old_last {
+            if old_last.exists() && !paths.last(root).exists() {
+                let _ = std::fs::rename(&old_last, paths.last(root));
+            }
         }
     }
 
-    write_identity(root, &vault_id);
+    write_identity(root, &binding.vault_id);
     store.connections.insert(connection_id.clone(), connection);
-    store.vaults.insert(
-        key,
-        Binding {
-            root: root.to_string_lossy().into_owned(),
-            connection_id: connection_id.clone(),
-            prefix,
-            vault_id,
-            keep_days,
-            keep_chosen,
-        },
-    );
+    store.vaults.insert(key, binding);
     secrets
         .connections
         .insert(connection_id.clone(), credentials);
@@ -662,8 +737,12 @@ pub fn forget(app: &tauri::AppHandle, root: &Path) -> Result<(), String> {
 }
 
 fn forget_at(paths: &StorePaths, root: &Path) -> Result<(), String> {
-    let key = root_key(root);
     let (mut store, mut secrets) = read_state(paths)?;
+    let Some((key, binding)) = resolved_binding(&store, root) else {
+        return Ok(());
+    };
+    let base = paths.base_for(root, Some(&binding));
+    let old_last = paths.last(Path::new(&binding.root));
     let connection = store
         .vaults
         .remove(&key)
@@ -679,7 +758,8 @@ fn forget_at(paths: &StorePaths, root: &Path) -> Result<(), String> {
         }
     }
     write_state(paths, &store, &secrets)?;
-    let _ = std::fs::remove_file(paths.base(root));
+    let _ = std::fs::remove_file(base);
+    let _ = std::fs::remove_file(&old_last);
     let _ = std::fs::remove_file(paths.last(root));
     Ok(())
 }
@@ -689,7 +769,9 @@ pub fn load_base(app: &tauri::AppHandle, root: &Path) -> Result<Base, String> {
 }
 
 fn load_base_at(paths: &StorePaths, root: &Path) -> Result<Base, String> {
-    let path = paths.base(root);
+    let (store, _) = read_state(paths)?;
+    let binding = resolved_binding(&store, root).map(|(_, binding)| binding);
+    let path = paths.base_for(root, binding.as_ref());
     match std::fs::read(&path) {
         Ok(bytes) => Base::parse(&bytes).map_err(|e| e.to_string()),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(Base::empty()),
@@ -702,8 +784,10 @@ pub fn save_base(app: &tauri::AppHandle, root: &Path, base: &Base) -> Result<(),
 }
 
 fn save_base_at(paths: &StorePaths, root: &Path, base: &Base) -> Result<(), String> {
+    let (store, _) = read_state(paths)?;
+    let binding = resolved_binding(&store, root).map(|(_, binding)| binding);
     crate::atomic::write_sync(
-        &paths.base(root),
+        &paths.base_for(root, binding.as_ref()),
         base.to_json().map_err(|e| e.to_string())?,
     )
     .map_err(|e| e.to_string())
@@ -728,12 +812,8 @@ pub fn connection_list(
 }
 
 fn connection_list_at(paths: &StorePaths, root: &Path) -> Result<Vec<serde_json::Value>, String> {
-    let key = root_key(root);
     let (store, secrets) = read_state(paths)?;
-    let current = store
-        .vaults
-        .get(&key)
-        .map(|binding| binding.connection_id.as_str());
+    let current = resolved_binding(&store, root).map(|(_, binding)| binding.connection_id);
     let mut list: Vec<serde_json::Value> = store
         .connections
         .values()
@@ -759,7 +839,7 @@ fn connection_list_at(paths: &StorePaths, root: &Path) -> Result<Vec<serde_json:
                 "prefix": connection.prefix,
                 "usedBy": used_by,
                 "hasCredentials": credentials.has_for(&connection.provider),
-                "current": current == Some(connection.id.as_str()),
+                "current": current.as_deref() == Some(connection.id.as_str()),
             })
         })
         .collect();
@@ -780,9 +860,16 @@ pub fn update_connection(
     connection_id: &str,
     config: Config,
     credentials: Credentials,
+    default_prefix: Option<String>,
 ) -> Result<String, String> {
     let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
-    update_connection_at(&store_paths(app)?, connection_id, config, credentials)
+    update_connection_at(
+        &store_paths(app)?,
+        connection_id,
+        config,
+        credentials,
+        default_prefix.as_deref(),
+    )
 }
 
 fn update_connection_at(
@@ -790,6 +877,7 @@ fn update_connection_at(
     connection_id: &str,
     config: Config,
     credentials: Credentials,
+    default_prefix: Option<&str>,
 ) -> Result<String, String> {
     let (mut store, mut secrets) = read_state(paths)?;
     let Some(existing) = store.connections.get(connection_id).cloned() else {
@@ -802,6 +890,14 @@ fn update_connection_at(
     connection.region = config.region;
     connection.path_style = config.path_style;
     connection.s3_flavor = config.s3_flavor;
+    let remote_changed = connection != existing;
+    if let Some(prefix) = default_prefix {
+        let prefix = prefix.trim_matches('/').to_string();
+        if !prefix.is_empty() && !relative_path(&prefix) {
+            return Err(SyncError::new("invalidPrefix").to_string());
+        }
+        connection.prefix = prefix;
+    }
     validate_connection(&connection)?;
     if connection.provider == "s3"
         && (connection.bucket.trim().is_empty() || connection.region.trim().is_empty())
@@ -833,14 +929,14 @@ fn update_connection_at(
     secrets
         .connections
         .insert(connection_id.to_string(), credentials);
-    if changed {
+    if remote_changed {
         for binding in store
             .vaults
             .values()
             .filter(|binding| binding.connection_id == connection_id)
         {
             let root = Path::new(&binding.root);
-            let _ = std::fs::remove_file(paths.base(root));
+            let _ = std::fs::remove_file(paths.base_for(root, Some(binding)));
             let _ = std::fs::remove_file(paths.last(root));
         }
     }
@@ -1042,6 +1138,12 @@ mod tests {
         }
     }
 
+    fn base_of(paths: &StorePaths, root: &Path) -> PathBuf {
+        let (store, _) = read_state(paths).unwrap();
+        let (_, binding) = resolved_binding(&store, root).unwrap();
+        paths.base_for(root, Some(&binding))
+    }
+
     fn webdav_config() -> Config {
         Config {
             connection_id: String::new(),
@@ -1113,12 +1215,12 @@ mod tests {
         let paths = test_paths(dir.path());
         save_at(&paths, &root, webdav_config(), webdav_credentials()).unwrap();
         save_base_at(&paths, &root, &Base::empty()).unwrap();
-        assert!(paths.base(&root).exists());
+        assert!(base_of(&paths, &root).exists());
 
         let (mut config, credentials) = load_at(&paths, &root).unwrap().unwrap();
         config.prefix = "another/repository".to_string();
         save_at(&paths, &root, config, credentials).unwrap();
-        assert!(!paths.base(&root).exists());
+        assert!(!base_of(&paths, &root).exists());
     }
 
     #[test]
@@ -1199,12 +1301,17 @@ mod tests {
 
         let mut moved = webdav_config();
         moved.endpoint = "https://other.example.com".to_string();
-        let outcome =
-            update_connection_at(&paths, &saved.connection_id, moved, Credentials::default())
-                .unwrap();
+        let outcome = update_connection_at(
+            &paths,
+            &saved.connection_id,
+            moved,
+            Credentials::default(),
+            None,
+        )
+        .unwrap();
         assert!(outcome.contains("\"changed\":true"), "{outcome}");
-        assert!(!paths.base(&first).exists());
-        assert!(!paths.base(&second).exists());
+        assert!(!base_of(&paths, &first).exists());
+        assert!(!base_of(&paths, &second).exists());
         let (after, credentials) = load_at(&paths, &second).unwrap().unwrap();
         assert_eq!(after.endpoint, "https://other.example.com");
         assert_eq!(after.prefix, before.prefix);
@@ -1218,11 +1325,76 @@ mod tests {
         };
         let mut same = webdav_config();
         same.endpoint = "https://other.example.com".to_string();
-        let outcome = update_connection_at(&paths, &saved.connection_id, same, rotated).unwrap();
+        let outcome =
+            update_connection_at(&paths, &saved.connection_id, same, rotated, None).unwrap();
         assert!(outcome.contains("\"changed\":false"), "{outcome}");
-        assert!(paths.base(&second).exists());
+        assert!(base_of(&paths, &second).exists());
         let (_, credentials) = load_at(&paths, &second).unwrap().unwrap();
         assert_eq!(credentials.password, "new");
+
+        let mut same = webdav_config();
+        same.endpoint = "https://other.example.com".to_string();
+        update_connection_at(
+            &paths,
+            &saved.connection_id,
+            same,
+            Credentials::default(),
+            Some("newbase"),
+        )
+        .unwrap();
+        assert!(base_of(&paths, &second).exists());
+        let (store, _) = read_state(&paths).unwrap();
+        assert_eq!(store.connections[&saved.connection_id].prefix, "newbase");
+    }
+
+    #[test]
+    fn an_old_root_keyed_base_moves_to_the_repository_name_on_save() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        save_at(&paths, &root, webdav_config(), webdav_credentials()).unwrap();
+        let (mut store, secrets) = read_state(&paths).unwrap();
+        let key = root_key(&root);
+        store.vaults.get_mut(&key).unwrap().vault_id.clear();
+        store.vaults.get_mut(&key).unwrap().repository_id.clear();
+        write_state(&paths, &store, &secrets).unwrap();
+        save_base_at(&paths, &root, &Base::empty()).unwrap();
+        assert!(paths.base(&root).exists());
+
+        let (config, credentials) = load_at(&paths, &root).unwrap().unwrap();
+        save_at(&paths, &root, config, credentials).unwrap();
+        assert!(!paths.base(&root).exists());
+        assert!(base_of(&paths, &root).exists());
+    }
+
+    #[test]
+    fn a_moved_vault_keeps_its_base_and_rebinds_to_the_new_folder() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = dir.path().join("vault");
+        let moved = dir.path().join("vault moved");
+        std::fs::create_dir_all(&first).unwrap();
+        let paths = test_paths(dir.path());
+        save_at(&paths, &first, webdav_config(), webdav_credentials()).unwrap();
+        save_base_at(&paths, &first, &Base::empty()).unwrap();
+        let old_key = root_key(&first);
+        let (store, _) = read_state(&paths).unwrap();
+        let old_repository = store.vaults[&old_key].repository_id.clone();
+        let base = base_of(&paths, &first);
+        assert!(base.exists());
+
+        std::fs::rename(&first, &moved).unwrap();
+        let (config, credentials) = load_at(&paths, &moved).unwrap().unwrap();
+        assert_eq!(base_of(&paths, &moved), base);
+        assert!(base.exists());
+
+        save_at(&paths, &moved, config, credentials).unwrap();
+        let (store, _) = read_state(&paths).unwrap();
+        assert!(!store.vaults.contains_key(&old_key));
+        let binding = &store.vaults[&root_key(&moved)];
+        assert_eq!(Path::new(&binding.root), moved.as_path());
+        assert_eq!(binding.repository_id, old_repository);
+        assert!(base.exists());
     }
 
     #[test]

@@ -1962,11 +1962,13 @@ type /name in a conversation to use one.
   syncConnectionShared:
     "This connection is used by {count} vaults; its address and credentials are not changed here.",
   syncConnectionEdit: "Edit connection",
+  syncConnectionPrefixLabel: "Default prefix for new vaults",
   syncConnectionEditWarning:
     "Changes apply to {count} vaults. If the address changes, their local sync baselines are rebuilt.",
   syncAutoPrefix: "Leave empty to create a sub-repository for this folder.",
   syncErrorRepository:
     "Another vault already uses this remote repository. Choose a different connection or remote folder.",
+  syncErrorBusy: "Another sync is already running. Wait for it to finish.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

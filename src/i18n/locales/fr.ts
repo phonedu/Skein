@@ -2065,11 +2065,14 @@ utiliser une.
   syncConnectionShared:
     "Cette connexion est utilisée par {count} bibliothèques ; son adresse et ses identifiants ne se modifient pas ici.",
   syncConnectionEdit: "Modifier la connexion",
+  syncConnectionPrefixLabel: "Préfixe par défaut des nouvelles bibliothèques",
   syncConnectionEditWarning:
     "Les changements concernent {count} bibliothèques. Si l’adresse change, leurs bases de synchronisation locales seront reconstruites.",
   syncAutoPrefix: "Laissez vide pour créer un sous-dépôt pour ce dossier.",
   syncErrorRepository:
     "Une autre bibliothèque utilise déjà ce dépôt distant. Choisissez une autre connexion ou un autre dossier distant.",
+  syncErrorBusy:
+    "Une autre synchronisation est déjà en cours. Attendez qu’elle se termine.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

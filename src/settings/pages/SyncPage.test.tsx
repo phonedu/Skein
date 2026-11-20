@@ -201,12 +201,19 @@ it("lets a shared connection be edited on purpose", async () => {
   ) as HTMLInputElement;
   expect(endpoint.disabled).toBe(false);
   expect(screen.getByLabelText(t.syncAccountLabel)).toBeTruthy();
+  const prefix = screen.getByLabelText(
+    t.syncConnectionPrefixLabel,
+  ) as HTMLInputElement;
+  expect(prefix.value).toBe("work");
   fireEvent.change(endpoint, { target: { value: "https://new.example.com" } });
+  fireEvent.change(prefix, { target: { value: "team" } });
   fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
   await waitFor(() => expect(syncConnectionUpdate).toHaveBeenCalledOnce());
-  const [id, updated] = vi.mocked(syncConnectionUpdate).mock.calls[0];
+  const [id, updated, , defaultPrefix] =
+    vi.mocked(syncConnectionUpdate).mock.calls[0];
   expect(id).toBe("c1");
   expect(updated.endpoint).toBe("https://new.example.com");
+  expect(defaultPrefix).toBe("team");
 });
 
 it("offers to fork a copied vault and saves it again", async () => {

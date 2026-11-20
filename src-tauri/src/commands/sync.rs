@@ -138,12 +138,13 @@ pub fn sync_connection_update(
     connection_id: String,
     config: String,
     credentials: String,
+    default_prefix: Option<String>,
 ) -> Result<String, String> {
     let config: Config =
         serde_json::from_str(&config).map_err(|_| crate::errors::error("invalidConfig"))?;
     let credentials: Credentials =
         serde_json::from_str(&credentials).map_err(|_| crate::errors::error("invalidConfig"))?;
-    store::update_connection(&app, &connection_id, config, credentials)
+    store::update_connection(&app, &connection_id, config, credentials, default_prefix)
 }
 
 #[tauri::command]
@@ -243,12 +244,16 @@ pub async fn sync_unlock(
 #[cfg_attr(test, specta::specta)]
 pub async fn sync_run_saved(
     app: tauri::AppHandle,
+    runners: tauri::State<'_, crate::sync::runners::SyncRunners>,
     root: String,
     allow_empty_scan: bool,
     allow_bulk_delete: bool,
     open_paths: Vec<String>,
 ) -> Result<String, String> {
     let root = store::canonical_root(&root)?;
+    let _run = runners.enter(&textus_sync::chunk::hash_hex(
+        root.to_string_lossy().as_bytes(),
+    ))?;
     let Some((config, credentials)) = store::load(&app, &root)? else {
         return Err(crate::errors::error("notConfigured"));
     };

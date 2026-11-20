@@ -1831,10 +1831,12 @@ export default {
   syncConnectionNew: "新增連線",
   syncConnectionShared: "此連線已被 {count} 個庫使用；位址與憑證不在這裡修改。",
   syncConnectionEdit: "編輯連線",
+  syncConnectionPrefixLabel: "新庫的預設前綴",
   syncConnectionEditWarning:
     "變更將影響 {count} 個庫。位址變更時，會重建這些庫的本機同步基準。",
   syncAutoPrefix: "留空則為此資料夾建立子倉庫。",
   syncErrorRepository: "另一個庫已在使用該遠端倉庫。請選擇其他連線或遠端目錄。",
+  syncErrorBusy: "另一個同步正在執行，請等它結束。",
   syncEndpointLabel: "伺服器位址",
   syncBucketLabel: "儲存桶",
   syncRegionLabel: "區域",

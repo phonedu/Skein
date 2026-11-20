@@ -2050,12 +2050,14 @@ para usar una.
   syncConnectionShared:
     "Esta conexión la usan {count} bibliotecas; su dirección y credenciales no se cambian aquí.",
   syncConnectionEdit: "Editar conexión",
+  syncConnectionPrefixLabel: "Prefijo predeterminado para nuevas bibliotecas",
   syncConnectionEditWarning:
     "Los cambios afectan a {count} bibliotecas. Si cambia la dirección, se reconstruirán sus bases de sincronización locales.",
   syncAutoPrefix:
     "Déjalo vacío para crear un subrepositorio para esta carpeta.",
   syncErrorRepository:
     "Otra biblioteca ya usa este repositorio remoto. Elige otra conexión u otra carpeta remota.",
+  syncErrorBusy: "Ya hay otra sincronización en curso. Espera a que termine.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

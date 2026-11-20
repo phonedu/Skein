@@ -2029,11 +2029,13 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncConnectionShared:
     "Esta ligação é usada por {count} bibliotecas; o endereço e as credenciais não são alterados aqui.",
   syncConnectionEdit: "Editar ligação",
+  syncConnectionPrefixLabel: "Prefixo predefinido para novas bibliotecas",
   syncConnectionEditWarning:
     "As alterações aplicam-se a {count} bibliotecas. Se o endereço mudar, as bases de sincronização locais serão reconstruídas.",
   syncAutoPrefix: "Deixe vazio para criar um sub-repositório para esta pasta.",
   syncErrorRepository:
     "Outra biblioteca já usa este repositório remoto. Escolha outra ligação ou outra pasta remota.",
+  syncErrorBusy: "Já há outra sincronização em curso. Aguarde que termine.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

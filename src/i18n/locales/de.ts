@@ -2006,12 +2006,15 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncConnectionShared:
     "Diese Verbindung wird von {count} Bibliotheken genutzt; Adresse und Zugangsdaten werden hier nicht geändert.",
   syncConnectionEdit: "Verbindung bearbeiten",
+  syncConnectionPrefixLabel: "Standard-Präfix für neue Bibliotheken",
   syncConnectionEditWarning:
     "Änderungen gelten für {count} Bibliotheken. Ändert sich die Adresse, werden ihre lokalen Synchronisierungsbasen neu aufgebaut.",
   syncAutoPrefix:
     "Leer lassen, um für diesen Ordner ein Unter-Repository anzulegen.",
   syncErrorRepository:
     "Eine andere Bibliothek nutzt bereits dieses entfernte Repository. Wähle eine andere Verbindung oder einen anderen entfernten Ordner.",
+  syncErrorBusy:
+    "Eine andere Synchronisierung läuft bereits. Warte, bis sie fertig ist.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",
