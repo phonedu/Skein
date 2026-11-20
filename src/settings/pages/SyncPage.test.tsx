@@ -21,6 +21,7 @@ vi.mock("../../platform/ipc-sync", () => ({
   syncHistory: vi.fn(),
   syncVaults: vi.fn(),
   syncPreview: vi.fn(),
+  syncPluginImport: vi.fn(),
   syncConnectionUpdate: vi.fn(),
   syncForkVault: vi.fn(),
 }));
@@ -36,6 +37,7 @@ import {
   syncConnectionUpdate,
   syncForkVault,
   syncPreview,
+  syncPluginImport,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 
@@ -305,4 +307,28 @@ it("shows what a first sync would do", async () => {
   );
   fireEvent.click(button);
   expect(await screen.findByText(/Would upload 3/)).toBeTruthy();
+});
+
+it("imports a Cloud Sync connection after confirmation", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncPluginImport).mockResolvedValue({
+    provider: "webdav",
+    prefix: "notes/work",
+    encrypted: true,
+    files: 4,
+  });
+  vi.mocked(showConfirm).mockResolvedValue(true);
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  fireEvent.click(screen.getByRole("button", { name: t.syncImportPlugin }));
+  await waitFor(() => expect(syncPluginImport).toHaveBeenCalledOnce());
 });

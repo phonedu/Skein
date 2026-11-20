@@ -138,6 +138,16 @@ export const syncConnectionUpdate = (
     )
     .then((json) => parse<{ changed: boolean; vaults: number }>(json));
 
+export interface PluginImport {
+  provider: "webdav" | "s3";
+  prefix: string;
+  encrypted: boolean;
+  files: number;
+}
+
+export const syncPluginImport = (root: string): Promise<PluginImport> =>
+  commands.sync_plugin_import(root).then((json) => parse<PluginImport>(json));
+
 export const syncForkVault = (root: string): Promise<void> =>
   commands.sync_fork_vault(root).then(() => undefined);
 

@@ -107,6 +107,11 @@ export const commands = {
 	sync_run_saved: (root: string, allowEmptyScan: boolean, allowBulkDelete: boolean, openPaths: string[]) => __TAURI_INVOKE<string>("sync_run_saved", { root, allowEmptyScan, allowBulkDelete, openPaths }),
 	sync_settings_get: (root: string) => __TAURI_INVOKE<string>("sync_settings_get", { root }),
 	sync_vaults: () => __TAURI_INVOKE<string>("sync_vaults"),
+	/**
+	 *  Imports the Cloud Sync plugin's connection, credentials and baseline
+	 *  for this folder. The page asks first; the plugin's own data stays.
+	 */
+	sync_plugin_import: (root: string) => __TAURI_INVOKE<string>("sync_plugin_import", { root }),
 	sync_fork_vault: (root: string) => __TAURI_INVOKE<null>("sync_fork_vault", { root }),
 	sync_connection_update: (connectionId: string, config: string, credentials: string, defaultPrefix: string | null) => __TAURI_INVOKE<string>("sync_connection_update", { connectionId, config, credentials, defaultPrefix }),
 	sync_settings_save: (root: string, config: string, credentials: string) => __TAURI_INVOKE<null>("sync_settings_save", { root, config, credentials }),

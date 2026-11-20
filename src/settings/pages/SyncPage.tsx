@@ -16,6 +16,7 @@ import {
   syncSettingsSave,
   syncConnectionUpdate,
   syncForkVault,
+  syncPluginImport,
   syncStatus,
   syncUnlock,
   syncVaults,
@@ -59,6 +60,8 @@ const EMPTY_CREDENTIALS: SyncCredentials = {
 
 function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("vaultCopied")) return t.syncErrorVaultCopied;
+  if (reason.includes("pluginNotFound")) return t.syncImportNotFound;
+  if (reason.includes("alreadyConfigured")) return t.syncImportAlready;
   if (reason.includes("syncPasswordRequired"))
     return t.syncErrorEncryptionPassword;
   if (
@@ -301,6 +304,25 @@ export function SyncPage({
         return;
       }
       setNote({ error: true, text: errorText(t, reason) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const importPlugin = async () => {
+    const ok = await showConfirm(t.syncImportPluginAsk, {
+      okLabel: t.syncImportPlugin,
+      cancelLabel: t.cancel,
+    });
+    if (!ok) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      await syncPluginImport(folderRoot);
+      await reload();
+      setNote({ error: false, text: t.syncImported });
+    } catch (error) {
+      setNote({ error: true, text: errorText(t, String(error)) });
     } finally {
       setBusy(false);
     }
@@ -752,6 +774,16 @@ export function SyncPage({
           )}
         </div>
         <div className="sync-actions">
+          {!status?.configured && (
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              disabled={busy}
+              onClick={() => void importPlugin()}
+            >
+              {t.syncImportPlugin}
+            </button>
+          )}
           <button
             type="button"
             className="text-button settings-inline-button"

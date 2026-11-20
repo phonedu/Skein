@@ -1869,6 +1869,12 @@ export default {
     "將上傳 {uploaded}（{uploadBytes} 位元組）、下載 {downloaded}（{downloadBytes} 位元組）、刪除遠端 {removedRemote} / 本機 {removedLocal}、衝突 {conflicts}、移動 {moved}。",
   syncPreviewEmptyScan: "資料夾看起來是空的；執行會刪除遠端檔案。",
   syncPreviewBulk: "本次執行將刪除大量檔案。",
+  syncImportPlugin: "從 Cloud Sync 匯入",
+  syncImportPluginAsk:
+    "從 Cloud Sync 外掛匯入這個資料夾的連線與同步基準？在確認首次同步前，外掛維持原樣。",
+  syncImported: "已從 Cloud Sync 匯入。",
+  syncImportNotFound: "沒有找到這個資料夾的 Cloud Sync 設定。",
+  syncImportAlready: "這個資料夾已設定。",
   syncDisconnect: "中斷",
   syncDisconnectAsk:
     "中斷「{folder}」？檔案仍留在本機和雲端，只刪除本機的連線與 base。",

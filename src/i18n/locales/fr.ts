@@ -2113,6 +2113,13 @@ utiliser une.
   syncPreviewEmptyScan:
     "Le dossier semble vide ; l’exécution supprimerait des fichiers distants.",
   syncPreviewBulk: "Cette exécution supprimerait beaucoup de fichiers.",
+  syncImportPlugin: "Importer depuis Cloud Sync",
+  syncImportPluginAsk:
+    "Importer la connexion et la base de synchronisation de ce dossier depuis le plugin Cloud Sync ? Le plugin reste intact jusqu’à la vérification de la première synchronisation.",
+  syncImported: "Importé depuis Cloud Sync.",
+  syncImportNotFound:
+    "Aucune configuration Cloud Sync n’a été trouvée pour ce dossier.",
+  syncImportAlready: "Ce dossier est déjà configuré.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

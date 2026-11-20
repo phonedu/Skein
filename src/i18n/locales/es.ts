@@ -2099,6 +2099,13 @@ para usar una.
   syncPreviewEmptyScan:
     "La carpeta parece vacía; la ejecución borraría archivos remotos.",
   syncPreviewBulk: "Esta ejecución borraría muchos archivos.",
+  syncImportPlugin: "Importar desde Cloud Sync",
+  syncImportPluginAsk:
+    "¿Importar la conexión y la base de sincronización de esta carpeta desde el plugin Cloud Sync? El plugin no se toca hasta comprobar la primera sincronización.",
+  syncImported: "Importado desde Cloud Sync.",
+  syncImportNotFound:
+    "No se encontró ninguna configuración de Cloud Sync para esta carpeta.",
+  syncImportAlready: "Esta carpeta ya está configurada.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

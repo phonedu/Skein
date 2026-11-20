@@ -2101,6 +2101,12 @@ export default {
     "Будет загружено {uploaded} ({uploadBytes} байт), скачано {downloaded} ({downloadBytes} байт), удалено удалённых {removedRemote} / локальных {removedLocal}, конфликтов {conflicts}, перемещений {moved}.",
   syncPreviewEmptyScan: "Папка выглядит пустой; запуск удалит удалённые файлы.",
   syncPreviewBulk: "Этот запуск удалит много файлов.",
+  syncImportPlugin: "Импортировать из Cloud Sync",
+  syncImportPluginAsk:
+    "Импортировать подключение и базу синхронизации этой папки из плагина Cloud Sync? Плагин останется нетронутым до проверки первой синхронизации.",
+  syncImported: "Импортировано из Cloud Sync.",
+  syncImportNotFound: "Для этой папки не найдена настройка Cloud Sync.",
+  syncImportAlready: "Эта папка уже настроена.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

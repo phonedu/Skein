@@ -1864,6 +1864,12 @@ export default {
     "将上传 {uploaded}（{uploadBytes} 字节）、下载 {downloaded}（{downloadBytes} 字节）、删除远端 {removedRemote} / 本地 {removedLocal}、冲突 {conflicts}、移动 {moved}。",
   syncPreviewEmptyScan: "文件夹看起来是空的；执行会删除远端文件。",
   syncPreviewBulk: "本次执行将删除大量文件。",
+  syncImportPlugin: "从 Cloud Sync 导入",
+  syncImportPluginAsk:
+    "从 Cloud Sync 插件导入这个文件夹的连接和同步基线？在确认首次同步前，插件保持原样。",
+  syncImported: "已从 Cloud Sync 导入。",
+  syncImportNotFound: "没有找到这个文件夹的 Cloud Sync 设置。",
+  syncImportAlready: "这个文件夹已配置。",
   syncDisconnect: "断开",
   syncDisconnectAsk:
     "断开“{folder}”？文件仍留在本机和云端，只删除本机的连接与 base。",

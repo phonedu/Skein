@@ -2010,6 +2010,12 @@ type /name in a conversation to use one.
   syncPreviewEmptyScan:
     "The folder looks empty; the run would delete remote files.",
   syncPreviewBulk: "This run would delete many files.",
+  syncImportPlugin: "Import from Cloud Sync",
+  syncImportPluginAsk:
+    "Import this folder's connection and sync baseline from the Cloud Sync plugin? The plugin is left untouched until the first sync is checked.",
+  syncImported: "Imported from Cloud Sync.",
+  syncImportNotFound: "No Cloud Sync setup was found for this folder.",
+  syncImportAlready: "This folder is already configured.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

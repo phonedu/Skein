@@ -2056,6 +2056,13 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncPreviewEmptyScan:
     "Der Ordner wirkt leer; der Lauf würde entfernte Dateien löschen.",
   syncPreviewBulk: "Dieser Lauf würde viele Dateien löschen.",
+  syncImportPlugin: "Von Cloud Sync importieren",
+  syncImportPluginAsk:
+    "Verbindung und Synchronisierungsbasis dieses Ordners aus dem Cloud-Sync-Plugin importieren? Das Plugin bleibt unverändert, bis die erste Synchronisierung geprüft ist.",
+  syncImported: "Von Cloud Sync importiert.",
+  syncImportNotFound:
+    "Für diesen Ordner wurde keine Cloud-Sync-Einrichtung gefunden.",
+  syncImportAlready: "Dieser Ordner ist bereits eingerichtet.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

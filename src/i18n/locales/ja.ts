@@ -1976,6 +1976,12 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncPreviewEmptyScan:
     "フォルダーが空のようです。実行するとリモートのファイルが削除されます。",
   syncPreviewBulk: "この実行では多くのファイルが削除されます。",
+  syncImportPlugin: "Cloud Sync からインポート",
+  syncImportPluginAsk:
+    "このフォルダーの接続と同期ベースを Cloud Sync プラグインからインポートしますか？最初の同期を確認するまでプラグインはそのまま残ります。",
+  syncImported: "Cloud Sync からインポートしました。",
+  syncImportNotFound: "このフォルダーの Cloud Sync 設定が見つかりません。",
+  syncImportAlready: "このフォルダーはすでに設定されています。",
   syncDisconnect: "切断",
   syncDisconnectAsk:
     "「{folder}」を切断しますか？ファイルは端末とクラウドに残り、この端末の接続と base だけを削除します。",

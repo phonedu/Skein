@@ -2076,6 +2076,13 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncPreviewEmptyScan:
     "A pasta parece vazia; a execução eliminaria ficheiros remotos.",
   syncPreviewBulk: "Esta execução eliminaria muitos ficheiros.",
+  syncImportPlugin: "Importar do Cloud Sync",
+  syncImportPluginAsk:
+    "Importar a ligação e a base de sincronização desta pasta do plugin Cloud Sync? O plugin fica intacto até a primeira sincronização ser verificada.",
+  syncImported: "Importado do Cloud Sync.",
+  syncImportNotFound:
+    "Não foi encontrada nenhuma configuração do Cloud Sync para esta pasta.",
+  syncImportAlready: "Esta pasta já está configurada.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

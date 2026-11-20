@@ -1954,6 +1954,12 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncPreviewEmptyScan:
     "폴더가 비어 있는 것 같습니다. 실행하면 원격 파일이 삭제됩니다.",
   syncPreviewBulk: "이번 실행에서 많은 파일이 삭제됩니다.",
+  syncImportPlugin: "Cloud Sync에서 가져오기",
+  syncImportPluginAsk:
+    "이 폴더의 연결과 동기화 기준을 Cloud Sync 플러그인에서 가져올까요? 첫 동기화를 확인할 때까지 플러그인은 그대로 둡니다.",
+  syncImported: "Cloud Sync에서 가져왔습니다.",
+  syncImportNotFound: "이 폴더의 Cloud Sync 설정을 찾지 못했습니다.",
+  syncImportAlready: "이 폴더는 이미 설정되어 있습니다.",
   syncDisconnect: "연결 해제",
   syncDisconnectAsk:
     "“{folder}” 연결을 해제할까요? 파일은 기기와 클라우드에 남고, 이 기기의 연결과 base만 삭제됩니다.",

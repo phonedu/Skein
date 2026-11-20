@@ -186,6 +186,37 @@ pub fn sync_connection_update(
     store::update_connection(&app, &connection_id, config, credentials, default_prefix)
 }
 
+/// Imports the Cloud Sync plugin's connection, credentials and baseline
+/// for this folder. The page asks first; the plugin's own data stays.
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub fn sync_plugin_import(app: tauri::AppHandle, root: String) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    if store::load(&app, &root)?.is_some() {
+        return Err("alreadyConfigured".to_string());
+    }
+    let Some(imported) = crate::sync::plugin::find(&app, &root)? else {
+        return Err("pluginNotFound".to_string());
+    };
+    let summary = serde_json::json!({
+        "provider": imported.config.provider,
+        "prefix": imported.config.prefix,
+        "encrypted": imported.config.encrypted,
+        "files": imported.base.files.len(),
+    });
+    store::save(&app, &root, imported.config, imported.credentials)?;
+    if let Err(error) = store::save_base(&app, &root, &imported.base) {
+        let _ = store::forget(&app, &root);
+        return Err(error);
+    }
+    if !imported.pin.is_empty() {
+        if let Some((config, _)) = store::load(&app, &root)? {
+            store::save_vault_pin(&app, &config.vault_id, &imported.pin)?;
+        }
+    }
+    Ok(summary.to_string())
+}
+
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
 pub fn sync_fork_vault(app: tauri::AppHandle, root: String) -> Result<(), String> {

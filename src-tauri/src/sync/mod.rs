@@ -3,5 +3,6 @@
 //! and planning live in `crates/textus-sync`.
 
 pub mod local;
+pub mod plugin;
 pub mod runners;
 pub mod store;
