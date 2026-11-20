@@ -17,6 +17,7 @@ import {
   syncUnlock,
   type SyncConfig,
   type SyncConflict,
+  type SyncConnection,
   type SyncCredentials,
   type SyncHistory,
   type SyncLock,
@@ -30,6 +31,7 @@ import type { SettingsPageProps } from "./types";
 import "./SyncPage.css";
 
 const EMPTY: SyncConfig = {
+  connectionId: "",
   provider: "webdav",
   endpoint: "",
   bucket: "",
@@ -56,6 +58,7 @@ function errorText(t: SettingsPageProps["t"], reason: string): string {
     return t.syncErrorIntegrity;
   if (reason.includes("conditionalWriteUnsupported"))
     return t.syncErrorConditional;
+  if (reason.includes("repositoryInUse")) return t.syncErrorRepository;
   if (reason.includes("fileOpen")) return t.syncErrorFileOpen;
   if (reason.includes("notFound")) return t.syncErrorVersionGone;
   if (reason.includes("emptyScan")) return t.syncErrorEmpty;
@@ -74,6 +77,19 @@ function errorText(t: SettingsPageProps["t"], reason: string): string {
 const folderName = (path: string) =>
   path.split(/[\\/]/).filter(Boolean).pop() ?? path;
 
+function connectionLabel(connection: SyncConnection): string {
+  let where = connection.bucket;
+  if (connection.provider === "webdav") {
+    try {
+      where = new URL(connection.endpoint).host;
+    } catch {
+      where = connection.endpoint;
+    }
+  }
+  const base = connection.prefix ? ` · ${connection.prefix}` : "";
+  return `${connection.provider === "s3" ? "S3" : "WebDAV"} · ${where || connection.endpoint}${base}`;
+}
+
 export function SyncPage({
   t,
   folderRoot,
@@ -86,6 +102,7 @@ export function SyncPage({
     useState<SyncCredentials>(EMPTY_CREDENTIALS);
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const [savedConfig, setSavedConfig] = useState<SyncConfig | null>(null);
+  const [connections, setConnections] = useState<SyncConnection[]>([]);
   const [lock, setLock] = useState<SyncLock | null>(null);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
@@ -102,7 +119,9 @@ export function SyncPage({
         syncSettingsGet(folderRoot),
         syncStatus(folderRoot),
       ]);
-      if (settings.config) setConfig(settings.config);
+      setConfig(settings.config ?? EMPTY);
+      setCredentials(EMPTY_CREDENTIALS);
+      setConnections(settings.connections ?? []);
       setSavedConfig(settings.config ?? null);
       setSaved(settings.configured && !!settings.hasCredentials);
       setStatus(current);
@@ -133,6 +152,42 @@ export function SyncPage({
     );
   }
 
+  const currentConnection =
+    connections.find((connection) => connection.id === config.connectionId) ??
+    null;
+  const shared = !!currentConnection && currentConnection.usedBy > 1;
+
+  const chooseConnection = (id: string) => {
+    if (!id) {
+      setConfig({
+        ...EMPTY,
+        keepDays: config.keepDays,
+        keepChosen: config.keepChosen,
+      });
+      setCredentials(EMPTY_CREDENTIALS);
+      return;
+    }
+    const connection = connections.find((candidate) => candidate.id === id);
+    if (!connection) return;
+    if (savedConfig?.connectionId === id) {
+      setConfig(savedConfig);
+    } else {
+      setConfig({
+        connectionId: id,
+        provider: connection.provider,
+        endpoint: connection.endpoint,
+        bucket: connection.bucket,
+        prefix: "",
+        region: connection.region,
+        pathStyle: connection.pathStyle,
+        s3Flavor: connection.s3Flavor ?? "standard",
+        keepDays: config.keepDays,
+        keepChosen: config.keepChosen,
+      });
+    }
+    setCredentials(EMPTY_CREDENTIALS);
+  };
+
   const save = async () => {
     setBusy(true);
     setNote(null);
@@ -145,7 +200,7 @@ export function SyncPage({
             config.keepChosen ||
             (savedConfig ? savedConfig.keepDays !== config.keepDays : false),
         },
-        credentials,
+        shared ? EMPTY_CREDENTIALS : credentials,
       );
       setCredentials(EMPTY_CREDENTIALS);
       setSaved(true);
@@ -330,11 +385,34 @@ export function SyncPage({
             </button>
           </div>
         )}
+        <SettingRow label={t.syncConnectionLabel}>
+          <Select
+            className="settings-select"
+            aria-label={t.syncConnectionLabel}
+            value={currentConnection ? currentConnection.id : ""}
+            onChange={(event) => chooseConnection(event.target.value)}
+          >
+            <option value="">{t.syncConnectionNew}</option>
+            {connections.map((connection) => (
+              <option value={connection.id} key={connection.id}>
+                {connectionLabel(connection)}
+              </option>
+            ))}
+          </Select>
+        </SettingRow>
+        {shared && (
+          <p className="tx-list-note">
+            {fill(t.syncConnectionShared, {
+              count: currentConnection.usedBy,
+            })}
+          </p>
+        )}
         <SettingRow label={t.syncProviderLabel}>
           <Select
             className="settings-select"
             aria-label={t.syncProviderLabel}
             value={config.provider}
+            disabled={!!currentConnection}
             onChange={(event) => {
               setConfig({
                 ...config,
@@ -356,6 +434,7 @@ export function SyncPage({
               type="url"
               spellCheck={false}
               placeholder="https://"
+              disabled={shared}
               value={config.endpoint}
               onChange={(event) =>
                 setConfig({ ...config, endpoint: event.target.value })
@@ -371,6 +450,7 @@ export function SyncPage({
                 <input
                   className="settings-text-input"
                   spellCheck={false}
+                  disabled={shared}
                   value={config.bucket}
                   onChange={(event) =>
                     setConfig({ ...config, bucket: event.target.value })
@@ -384,6 +464,7 @@ export function SyncPage({
                 <input
                   className="settings-text-input"
                   spellCheck={false}
+                  disabled={shared}
                   value={config.region}
                   onChange={(event) =>
                     setConfig({ ...config, region: event.target.value })
@@ -397,55 +478,64 @@ export function SyncPage({
             <input
               className="settings-text-input"
               spellCheck={false}
+              placeholder={currentConnection && !shared ? t.syncAutoPrefix : ""}
               value={config.prefix}
               onChange={(event) =>
                 setConfig({ ...config, prefix: event.target.value })
               }
             />
           </label>
-          <label className="sync-field">
-            <span className="settings-field-label">
-              {isS3 ? t.syncAccessKeyLabel : t.syncAccountLabel}
-            </span>
-            <input
-              className="settings-text-input"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder={saved ? t.syncSavedPlaceholder : ""}
-              value={isS3 ? credentials.accessKey : credentials.username}
-              onChange={(event) =>
-                setCredentials({
-                  ...credentials,
-                  ...(isS3
-                    ? { accessKey: event.target.value }
-                    : { username: event.target.value }),
-                })
-              }
-            />
-          </label>
-          <label className="sync-field">
-            <span className="settings-field-label">
-              {isS3 ? t.syncSecretKeyLabel : t.syncSecretLabel}
-            </span>
-            <MaskedKeyInput
-              className="settings-text-input"
-              label={isS3 ? t.syncSecretKeyLabel : t.syncSecretLabel}
-              placeholder={saved ? t.syncSavedPlaceholder : ""}
-              value={isS3 ? credentials.secretKey : credentials.password}
-              onChange={(value) =>
-                setCredentials({
-                  ...credentials,
-                  ...(isS3 ? { secretKey: value } : { password: value }),
-                })
-              }
-            />
-          </label>
+          {currentConnection && !config.prefix && !shared && (
+            <p className="tx-list-note">{t.syncAutoPrefix}</p>
+          )}
+          {!shared && (
+            <>
+              <label className="sync-field">
+                <span className="settings-field-label">
+                  {isS3 ? t.syncAccessKeyLabel : t.syncAccountLabel}
+                </span>
+                <input
+                  className="settings-text-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder={saved ? t.syncSavedPlaceholder : ""}
+                  value={isS3 ? credentials.accessKey : credentials.username}
+                  onChange={(event) =>
+                    setCredentials({
+                      ...credentials,
+                      ...(isS3
+                        ? { accessKey: event.target.value }
+                        : { username: event.target.value }),
+                    })
+                  }
+                />
+              </label>
+              <label className="sync-field">
+                <span className="settings-field-label">
+                  {isS3 ? t.syncSecretKeyLabel : t.syncSecretLabel}
+                </span>
+                <MaskedKeyInput
+                  className="settings-text-input"
+                  label={isS3 ? t.syncSecretKeyLabel : t.syncSecretLabel}
+                  placeholder={saved ? t.syncSavedPlaceholder : ""}
+                  value={isS3 ? credentials.secretKey : credentials.password}
+                  onChange={(value) =>
+                    setCredentials({
+                      ...credentials,
+                      ...(isS3 ? { secretKey: value } : { password: value }),
+                    })
+                  }
+                />
+              </label>
+            </>
+          )}
           {isS3 && (
             <>
               <SettingRow label={t.syncS3FlavorLabel}>
                 <Select
                   className="settings-select"
                   aria-label={t.syncS3FlavorLabel}
+                  disabled={shared}
                   value={config.s3Flavor ?? "standard"}
                   onChange={(event) =>
                     setConfig({
@@ -461,6 +551,7 @@ export function SyncPage({
               <label className="sync-check">
                 <input
                   type="checkbox"
+                  disabled={shared}
                   checked={config.pathStyle}
                   onChange={(event) =>
                     setConfig({ ...config, pathStyle: event.target.checked })

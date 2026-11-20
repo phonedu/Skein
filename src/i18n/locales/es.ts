@@ -2038,6 +2038,14 @@ para usar una.
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
+  syncConnectionLabel: "Conexión",
+  syncConnectionNew: "Nueva conexión",
+  syncConnectionShared:
+    "Esta conexión la usan {count} bibliotecas; su dirección y credenciales no se cambian aquí.",
+  syncAutoPrefix:
+    "Déjalo vacío para crear un subrepositorio para esta carpeta.",
+  syncErrorRepository:
+    "Otra biblioteca ya usa este repositorio remoto. Elige otra conexión u otra carpeta remota.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

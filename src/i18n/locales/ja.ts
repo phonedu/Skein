@@ -1917,6 +1917,14 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncFolderLabel: "フォルダー",
   syncNoFolder: "先にフォルダーを開いてください。",
   syncProviderLabel: "サービス",
+  syncConnectionLabel: "接続",
+  syncConnectionNew: "新しい接続",
+  syncConnectionShared:
+    "この接続は {count} 個のライブラリで使われています。アドレスと認証情報はここでは変更されません。",
+  syncAutoPrefix:
+    "空欄にすると、このフォルダー用のサブリポジトリを作成します。",
+  syncErrorRepository:
+    "別のライブラリがこのリモートリポジトリを使用しています。別の接続かリモートフォルダーを選んでください。",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "サーバーアドレス",

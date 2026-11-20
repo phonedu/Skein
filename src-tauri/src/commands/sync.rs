@@ -117,13 +117,16 @@ fn suffixed(path: &str) -> String {
 #[cfg_attr(test, specta::specta)]
 pub fn sync_settings_get(app: tauri::AppHandle, root: String) -> Result<String, String> {
     let root = store::canonical_root(&root)?;
+    let connections = store::connection_list(&app, &root)?;
     let Some((config, credentials)) = store::load(&app, &root)? else {
-        return Ok(serde_json::json!({ "configured": false }).to_string());
+        return Ok(serde_json::json!({
+            "configured": false,
+            "connections": connections,
+        })
+        .to_string());
     };
-    let mut value = store::settings_json(
-        &config,
-        !credentials.username.is_empty() || !credentials.access_key.is_empty(),
-    );
+    let mut value =
+        store::settings_json(&config, credentials.has_for(&config.provider), &connections);
     value["configured"] = serde_json::Value::Bool(true);
     Ok(value.to_string())
 }

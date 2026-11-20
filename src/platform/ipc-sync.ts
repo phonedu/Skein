@@ -4,6 +4,8 @@
 import { commands } from "./bindings/files";
 
 export interface SyncConfig {
+  /** The connection this vault binds to; empty or "new" makes one. */
+  connectionId?: string;
   provider: "webdav" | "s3";
   endpoint: string;
   bucket: string;
@@ -41,10 +43,25 @@ export interface SyncLast {
   error?: string | null;
 }
 
+export interface SyncConnection {
+  id: string;
+  provider: "webdav" | "s3";
+  endpoint: string;
+  bucket: string;
+  region: string;
+  pathStyle: boolean;
+  s3Flavor?: "standard" | "oss";
+  prefix: string;
+  usedBy: number;
+  hasCredentials: boolean;
+  current: boolean;
+}
+
 export interface SyncSettings {
   configured: boolean;
   config?: SyncConfig;
   hasCredentials?: boolean;
+  connections?: SyncConnection[];
 }
 
 export interface SyncStatus {

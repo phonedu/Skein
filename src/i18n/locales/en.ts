@@ -1950,6 +1950,13 @@ type /name in a conversation to use one.
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
+  syncConnectionLabel: "Connection",
+  syncConnectionNew: "New connection",
+  syncConnectionShared:
+    "This connection is used by {count} vaults; its address and credentials are not changed here.",
+  syncAutoPrefix: "Leave empty to create a sub-repository for this folder.",
+  syncErrorRepository:
+    "Another vault already uses this remote repository. Choose a different connection or remote folder.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

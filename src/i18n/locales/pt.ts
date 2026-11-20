@@ -2017,6 +2017,13 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
+  syncConnectionLabel: "Ligação",
+  syncConnectionNew: "Nova ligação",
+  syncConnectionShared:
+    "Esta ligação é usada por {count} bibliotecas; o endereço e as credenciais não são alterados aqui.",
+  syncAutoPrefix: "Deixe vazio para criar um sub-repositório para esta pasta.",
+  syncErrorRepository:
+    "Outra biblioteca já usa este repositório remoto. Escolha outra ligação ou outra pasta remota.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

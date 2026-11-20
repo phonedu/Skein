@@ -2053,6 +2053,13 @@ utiliser une.
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
+  syncConnectionLabel: "Connexion",
+  syncConnectionNew: "Nouvelle connexion",
+  syncConnectionShared:
+    "Cette connexion est utilisée par {count} bibliothèques ; son adresse et ses identifiants ne se modifient pas ici.",
+  syncAutoPrefix: "Laissez vide pour créer un sous-dépôt pour ce dossier.",
+  syncErrorRepository:
+    "Une autre bibliothèque utilise déjà ce dépôt distant. Choisissez une autre connexion ou un autre dossier distant.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",

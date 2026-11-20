@@ -2042,6 +2042,14 @@ export default {
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
+  syncConnectionLabel: "Подключение",
+  syncConnectionNew: "Новое подключение",
+  syncConnectionShared:
+    "Это подключение используют библиотек: {count}; адрес и учётные данные здесь не меняются.",
+  syncAutoPrefix:
+    "Оставьте пустым, чтобы создать подрепозиторий для этой папки.",
+  syncErrorRepository:
+    "Другая библиотека уже использует этот удалённый репозиторий. Выберите другое подключение или другую удалённую папку.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncEndpointLabel: "Server address",
