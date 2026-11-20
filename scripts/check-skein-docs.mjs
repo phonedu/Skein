@@ -47,11 +47,11 @@ for (const file of files) {
   if (!named) problems.push(`not named by any other doc: ${rel(file)}`);
 }
 
-// The interface plan's §4 is the one numbered ruling record; a number that
-// repeats or goes backwards makes every later reference ambiguous.
+// The interface plan's §4 holds numbered entries; a number that repeats or
+// goes backwards makes every later reference ambiguous.
 const plan = join(skein, "02-方案/Textus-界面改造方案.md");
 const text = readFileSync(plan, "utf8");
-const section = text.split(/^## 4\. 裁决记录/m)[1]?.split(/^## 5\./m)[0] ?? "";
+const section = text.split(/^## 4\./m)[1]?.split(/^## 5\./m)[0] ?? "";
 const numbers = [...section.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((match) =>
   Number(match[1]),
 );
