@@ -1,8 +1,11 @@
 //! The engine over the in-memory store and folder: first sync, download,
 //! conflict, lock, empty scan and deletion.
 
+use chrono::Utc;
 use textus_sync::chunk::{describe, hash_hex};
-use textus_sync::protocol::{block_key, new_revision, Lock, HEAD_KEY, HISTORY_KEY, LOCK_KEY};
+use textus_sync::protocol::{
+    block_key, new_revision, Lock, Trashed, HEAD_KEY, HISTORY_KEY, LOCK_KEY,
+};
 use textus_sync::{
     sync, Base, History, LocalFiles, Manifest, MemoryLocal, MemoryStore, ObjectStore, SyncOptions,
 };
@@ -302,4 +305,93 @@ async fn another_devices_keep_setting_is_not_reset_by_a_default_run() {
     let changed = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
     assert_eq!(changed.keep.days, 30);
     assert_ne!(chosen.result.revision, settled.result.revision);
+}
+
+#[tokio::test]
+async fn a_head_written_after_the_history_is_folded_in() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    let old = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+
+    // An older client writes a head without a history (or a run died
+    // between the two writes).
+    let next = describe(b"two").unwrap();
+    store
+        .put(&block_key(&next.blocks[0].hash), b"two".to_vec())
+        .await
+        .unwrap();
+    let mut head = old.clone();
+    head.files.insert("a.md".to_string(), next.clone());
+    head.revision = new_revision();
+    head.updated_at = "2026-11-20T00:00:00.000Z".to_string();
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    let outcome = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(
+        history.head.as_deref(),
+        Some(outcome.result.revision.as_str())
+    );
+    let versions = &history.versions["a.md"];
+    let hashes: Vec<&str> = versions.iter().map(|v| v.entry.hash.as_str()).collect();
+    assert_eq!(hashes, [hash_hex(b"one").as_str()]);
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].hash, hash_hex(b"two"));
+}
+
+#[tokio::test]
+async fn old_trash_entries_age_out_of_the_head() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let entry = head.files["a.md"].clone();
+    head.trash = vec![
+        Trashed {
+            path: "old.md".to_string(),
+            deleted_at: "2020-01-01T00:00:00.000Z".to_string(),
+            entry: entry.clone(),
+        },
+        Trashed {
+            path: "new.md".to_string(),
+            deleted_at: Utc::now().to_rfc3339(),
+            entry,
+        },
+    ];
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.trash.len(), 1);
+    assert_eq!(head.trash[0].path, "new.md");
+}
+
+#[tokio::test]
+async fn case_folded_twins_between_devices_stop_before_transfer() {
+    let store = MemoryStore::new();
+    let upper = local(&[("A.md", "upper")]);
+    sync(&store, &upper, options()).await.unwrap();
+    let lower = local(&[("a.md", "lower")]);
+    let error = sync(&store, &lower, options()).await.unwrap_err();
+    assert_eq!(error.code, "caseCollision");
+    assert_eq!(lower.read("a.md").await.unwrap(), Some(b"lower".to_vec()));
 }

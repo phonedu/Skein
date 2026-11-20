@@ -290,6 +290,28 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn an_open_document_is_deferred() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.md"), b"old").unwrap();
+        let (local, trashed) = local(dir.path());
+        let local = local.with_open(Arc::new(|path: &Path| {
+            path.file_name().and_then(|name| name.to_str()) == Some("a.md")
+        }));
+        let expected = textus_sync::chunk::hash_hex(b"old");
+        assert!(!local
+            .apply("a.md", b"new".to_vec(), Some(&expected))
+            .await
+            .unwrap());
+        assert!(!local.remove("a.md", &expected).await.unwrap());
+        assert!(!local.move_file("a.md", "b.md", &expected).await.unwrap());
+        assert_eq!(
+            std::fs::read(dir.path().join("a.md")).unwrap(),
+            b"old".to_vec()
+        );
+        assert!(trashed.lock().unwrap().is_empty());
+    }
+
+    #[tokio::test]
     async fn writes_replace_and_removals_go_to_the_trash() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("a.md"), b"old").unwrap();
