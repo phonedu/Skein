@@ -306,7 +306,8 @@ it("shows what a first sync would do", async () => {
     expect((button as HTMLButtonElement).disabled).toBe(false),
   );
   fireEvent.click(button);
-  expect(await screen.findByText(/Would upload 3/)).toBeTruthy();
+  const summary = await screen.findByText(/Would upload 3/);
+  expect(summary.textContent).not.toContain("{");
 });
 
 it("imports a Cloud Sync connection after confirmation", async () => {

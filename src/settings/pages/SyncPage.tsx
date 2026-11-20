@@ -823,7 +823,7 @@ export function SyncPage({
           <div className="tx-list-note">
             {fill(t.syncPreviewSummary, {
               uploaded: preview.uploaded,
-              download: preview.downloaded,
+              downloaded: preview.downloaded,
               uploadBytes: preview.uploadBytes,
               downloadBytes: preview.downloadBytes,
               removedRemote: preview.removedRemote,
