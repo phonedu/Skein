@@ -3,6 +3,8 @@
 //! app's adapter and the transports sit above this crate.
 
 pub mod chunk;
+pub mod encrypted_store;
+pub mod encryption;
 pub mod engine;
 pub mod error;
 pub mod history;
@@ -14,6 +16,7 @@ pub mod s3;
 pub mod store;
 pub mod webdav;
 
+pub use encrypted_store::{open_encrypted_store, EncryptedStore};
 pub use engine::{read_entry, sync, SyncOptions, SyncOutcome, SyncResult};
 pub use error::{Result, SyncError};
 pub use local::{LocalFiles, MemoryLocal};
