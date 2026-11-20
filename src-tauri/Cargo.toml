@@ -78,6 +78,9 @@ tokio = { version = "1", features = ["fs", "sync", "macros", "rt", "rt-multi-thr
 futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 base64 = "0.22"
 sha2 = "0.10"
+# Random ids: a notification's click name (src/schedule/notify/) and the
+# sync store's vault/repository ids, which mobile also writes.
+uuid = { version = "1", features = ["v4"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls", "http2"] }
 aicompat = { path = "crates/aicompat" }
 textus-sync = { path = "crates/textus-sync" }
@@ -168,9 +171,9 @@ tauri-plugin-deep-link = "2"
 # A picture an accepted AI picture replaced goes to the system's Trash or
 # Recycle Bin when the user says so (commands/images.rs) - never deleted.
 trash = "5"
-# A notification's id, which its click names (src/schedule/notify/): random,
-# so a textus:// link from a web page can't name one. In the tree through tauri.
-uuid = { version = "1", features = ["v4"] }
+# A notification's id, which its click names (src/schedule/notify/):
+# random, so a textus:// link from a web page can't name one. In the tree
+# through tauri.
 
 # macOS-native PDF export (commands/export.rs): the themed document is
 # rendered in an offscreen WKWebView with createPDF and cut into A4 sheets

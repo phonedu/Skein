@@ -572,6 +572,18 @@
   background: color-mix(in srgb, var(--phone-fire) 88%, black);
 }
 
+.ph-empty-cta-quiet {
+  margin-top: var(--space-3);
+  border: 1px solid var(--phone-rule);
+  background: transparent;
+  color: var(--phone-ink);
+  box-shadow: none;
+}
+
+.ph-empty-cta-quiet:active {
+  background: color-mix(in srgb, var(--phone-ink) 8%, transparent);
+}
+
 .ph-fab {
   /* Fixed to the viewport, not the home page: a sheet (createPortal to
      body, z-index --z-sheet = 500) stacks above --z-floating (200) in the

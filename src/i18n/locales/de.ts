@@ -708,6 +708,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   phoneHomeEmptyTitle: "Wähle einen Ordner, um zu beginnen",
   phoneHomeEmptyHint:
     "Textus bewahrt deine Notizen als Markdown-Dateien in einem Ordner deiner Wahl auf.",
+  phoneUseAppDocuments: "App-Dokumente verwenden",
   menuDocuments: "Dokumente",
   docListTitle: "Dokumente",
   docListClose: "Schließen",
@@ -1993,6 +1994,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
+  syncMobileDocumentsOnly:
+    "Die interne Synchronisierung unterstützt vorerst nur den App-Dokumente-Ordner. Für einen anders gewählten Ordner nutze das Cloud-Sync-Plugin.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Verbindung",
   syncVaultsTitle: "Synchronisierte Bibliotheken",

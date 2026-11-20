@@ -91,7 +91,6 @@ fn desktop_builder(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri:
         .manage(background::tray::TrayPlugins::default())
         .manage(mcp::McpHub::default())
         .manage(agents::Agents::default())
-        .manage(sync::runners::SyncRunners::default())
         .manage(cli::app::CliBridge::default())
         .plugin(tauri_plugin_deep_link::init())
         .on_window_event(|window, event| {
@@ -244,6 +243,9 @@ pub fn run() {
         .manage(plugins::uri::PendingUris::default())
         .manage(plugins::ai_tools::PluginAiTools::default())
         .manage(plugins::metadata::MetadataIndex::default())
+        // Two syncs at once per app, one per vault: the phone needs the same
+        // guard the desktop has.
+        .manage(sync::runners::SyncRunners::default())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(PendingOpenPaths(Mutex::new(Vec::new())));

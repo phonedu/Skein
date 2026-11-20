@@ -680,6 +680,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   phoneHomeEmptyTitle: "フォルダーを選んで始めましょう",
   phoneHomeEmptyHint:
     "Textus はあなたのノートを、選んだフォルダーに Markdown ファイルとして保存します。",
+  phoneUseAppDocuments: "アプリの書類を使う",
   menuDocuments: "書類",
   docListTitle: "書類",
   docListClose: "閉じる",
@@ -1916,6 +1917,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   navSync: "同期",
   syncFolderLabel: "フォルダー",
   syncNoFolder: "先にフォルダーを開いてください。",
+  syncMobileDocumentsOnly:
+    "内蔵同期は今のところアプリの書類フォルダーのみ対応しています。別の場所のフォルダーは Cloud Sync プラグインを使ってください。",
   syncProviderLabel: "サービス",
   syncConnectionLabel: "接続",
   syncVaultsTitle: "同期済みのライブラリ",

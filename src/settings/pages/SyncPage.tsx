@@ -33,6 +33,9 @@ import {
 import { showConfirm } from "../../engine/controls/app-dialog";
 import { Select } from "../../engine/controls/Select";
 import { isMobileApp } from "../../platform/capabilities";
+import { resolvedDocumentPath } from "../../platform/documents-path";
+import { useAppDocumentsFolder } from "../../platform/ios-files";
+import { getUiState } from "../../storage/ui-state";
 import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../../utils/events";
 import { SettingsGroup } from "./SettingsGroup";
 import { MaskedKeyInput, SettingRow } from "../sections/controls";
@@ -124,13 +127,33 @@ function connectionLabel(connection: ConnectionRef): string {
 
 export function SyncPage({
   t,
-  folderRoot,
+  folderRoot: givenFolderRoot,
   openPaths,
   indexing,
   onOpenFile,
   onClose,
   openPage,
 }: SettingsPageProps) {
+  // The phone's home shows its own Documents when no folder was picked; the
+  // page it opens from there gets no folder prop, so it syncs that folder.
+  const appDocuments = useAppDocumentsFolder();
+  // The settings sheet's own copy of the folder can lag behind the phone's
+  // home; the stored open folder is the one the tree is showing.
+  const storedFolder = isMobileApp ? getUiState("openFolder") : null;
+  const phoneFolder =
+    typeof storedFolder === "string" && storedFolder
+      ? resolvedDocumentPath(storedFolder, appDocuments ?? "")
+      : appDocuments;
+  const folderRoot = isMobileApp
+    ? (phoneFolder ?? givenFolderRoot)
+    : givenFolderRoot;
+  // SAF folders are granted to the editor, not to the sync engine's plain
+  // file access: v1 syncs folders under the app's own external storage only.
+  const unsupportedRoot =
+    isMobileApp &&
+    !!folderRoot &&
+    /^\/storage\/emulated\/\d+\//.test(folderRoot) &&
+    !/\/Android\/(data|media)\//.test(folderRoot);
   const [config, setConfig] = useState<SyncConfig>(EMPTY);
   const [credentials, setCredentials] =
     useState<SyncCredentials>(EMPTY_CREDENTIALS);
@@ -506,6 +529,9 @@ export function SyncPage({
         <p className="tx-list-note">
           {t.syncFolderLabel}: {folderRoot}
         </p>
+        {unsupportedRoot && (
+          <p className="settings-error">{t.syncMobileDocumentsOnly}</p>
+        )}
         <div className={note?.error ? "settings-error" : "settings-success"}>
           {note?.text ?? statusText}
           {last?.at && !note ? (
@@ -824,7 +850,7 @@ export function SyncPage({
             <button
               type="button"
               className="text-button settings-inline-button"
-              disabled={busy}
+              disabled={busy || unsupportedRoot}
               onClick={() => void importPlugin()}
             >
               {t.syncImportPlugin}
@@ -833,7 +859,7 @@ export function SyncPage({
           <button
             type="button"
             className="text-button settings-inline-button"
-            disabled={busy}
+            disabled={busy || unsupportedRoot}
             onClick={() => void save()}
           >
             {t.syncSave}
@@ -841,7 +867,7 @@ export function SyncPage({
           <button
             type="button"
             className="text-button settings-inline-button"
-            disabled={busy || !status?.configured || dirty}
+            disabled={busy || !status?.configured || dirty || unsupportedRoot}
             onClick={() => void previewRun()}
           >
             {t.syncPreview}
@@ -849,7 +875,7 @@ export function SyncPage({
           <button
             type="button"
             className="text-button settings-inline-button"
-            disabled={busy || !status?.configured || dirty}
+            disabled={busy || !status?.configured || dirty || unsupportedRoot}
             onClick={() => void run()}
           >
             {t.syncNow}

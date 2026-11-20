@@ -726,6 +726,7 @@ export default {
   phoneHomeEmptyTitle: "Выберите папку, чтобы начать",
   phoneHomeEmptyHint:
     "Textus хранит ваши заметки в виде файлов Markdown в выбранной вами папке.",
+  phoneUseAppDocuments: "Использовать «Документы» приложения",
   menuDocuments: "Документы",
   docListTitle: "Документы",
   docListClose: "Закрыть",
@@ -2041,6 +2042,8 @@ export default {
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
+  syncMobileDocumentsOnly:
+    "Встроенная синхронизация пока поддерживает только папку «Документы» приложения. Для папки, выбранной в другом месте, используйте плагин Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Подключение",
   syncVaultsTitle: "Синхронизированные библиотеки",

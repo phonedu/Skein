@@ -41,6 +41,14 @@ vi.mock("../platform/capabilities", () => ({
   isDesktopApp: false,
 }));
 
+vi.mock("../platform/ios-files", () => ({
+  useAppDocumentsFolder: () => "/app/Documents",
+}));
+
+vi.mock("../platform/ipc-sync", () => ({
+  syncStatus: vi.fn().mockResolvedValue({ configured: false, last: null }),
+}));
+
 vi.mock("../platform/menu-events", () => ({
   emitToThisWindow: vi.fn(),
 }));
@@ -201,6 +209,30 @@ describe("the phone library home", () => {
     expect((input as HTMLInputElement).value).toBe("guide");
     fireEvent.click(screen.getByRole("button", { name: en.phoneSearchClear }));
     expect((input as HTMLInputElement).value).toBe("");
+  });
+
+  it("opens the app's own Documents from the empty state", () => {
+    const empty = {
+      ...openFolder,
+      folder: null,
+      treeRoot: null,
+      openFolder: vi.fn(),
+    } as unknown as Parameters<typeof PhoneHome>[0]["openFolder"];
+    render(
+      <PhoneHome
+        t={en as Strings}
+        openFolder={empty}
+        activePath={null}
+        onOpenFile={vi.fn()}
+        onNewFile={vi.fn()}
+        onEntryMoved={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: en.phoneUseAppDocuments }),
+    );
+    expect(empty.openFolder).toHaveBeenCalledWith("/app/Documents");
   });
 
   it("steps the floating action aside over an empty library", () => {

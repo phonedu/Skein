@@ -731,6 +731,7 @@ utiliser une.
   phoneHomeEmptyTitle: "Choisissez un dossier pour commencer",
   phoneHomeEmptyHint:
     "Textus conserve vos notes sous forme de fichiers Markdown dans le dossier de votre choix.",
+  phoneUseAppDocuments: "Utiliser les documents de l’app",
   menuDocuments: "Documents",
   docListTitle: "Documents",
   docListClose: "Fermer",
@@ -2052,6 +2053,8 @@ utiliser une.
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
+  syncMobileDocumentsOnly:
+    "La synchronisation intégrée ne prend pour l’instant en charge que le dossier Documents de l’app. Pour un dossier choisi ailleurs, utilisez le plugin Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Connexion",
   syncVaultsTitle: "Bibliothèques synchronisées",

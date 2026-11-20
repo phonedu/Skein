@@ -729,6 +729,7 @@ para usar una.
   phoneHomeEmptyTitle: "Elige una carpeta para empezar",
   phoneHomeEmptyHint:
     "Textus guarda tus notas como archivos Markdown en la carpeta que elijas.",
+  phoneUseAppDocuments: "Usar Documentos de la app",
   menuDocuments: "Documentos",
   docListTitle: "Documentos",
   docListClose: "Cerrar",
@@ -2037,6 +2038,8 @@ para usar una.
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
+  syncMobileDocumentsOnly:
+    "La sincronización integrada solo admite por ahora la carpeta Documentos de la app. Para una carpeta elegida en otro lugar, usa el plugin Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Conexión",
   syncVaultsTitle: "Bibliotecas sincronizadas",

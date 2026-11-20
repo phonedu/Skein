@@ -633,6 +633,7 @@ export default {
   phoneHomeEmptyTitle: "選一個資料夾開始",
   phoneHomeEmptyHint:
     "Textus 將你的筆記以 Markdown 檔案的形式存放在你選的資料夾中。",
+  phoneUseAppDocuments: "使用應用文件",
   menuDocuments: "文件",
   docListTitle: "文件",
   docListClose: "關閉",
@@ -1820,6 +1821,8 @@ export default {
   navSync: "同步",
   syncFolderLabel: "資料夾",
   syncNoFolder: "先開啟一個資料夾。",
+  syncMobileDocumentsOnly:
+    "內建同步目前只支援應用文件資料夾。其他位置選取的資料夾請使用 Cloud Sync 外掛。",
   syncProviderLabel: "服務",
   syncConnectionLabel: "連線",
   syncVaultsTitle: "已同步的庫",

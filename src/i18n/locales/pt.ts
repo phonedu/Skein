@@ -716,6 +716,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   phoneHomeEmptyTitle: "Escolha uma pasta para começar",
   phoneHomeEmptyHint:
     "O Textus guarda suas notas como arquivos Markdown na pasta que você escolher.",
+  phoneUseAppDocuments: "Usar Documentos do app",
   menuDocuments: "Documentos",
   docListTitle: "Documentos",
   docListClose: "Fechar",
@@ -2016,6 +2017,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
+  syncMobileDocumentsOnly:
+    "A sincronização integrada só suporta, por enquanto, a pasta Documentos do app. Para uma pasta escolhida em outro lugar, use o plugin Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Ligação",
   syncVaultsTitle: "Bibliotecas sincronizadas",

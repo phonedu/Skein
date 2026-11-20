@@ -693,6 +693,7 @@ type /name in a conversation to use one.
   phoneHomeEmptyTitle: "Pick a folder to begin",
   phoneHomeEmptyHint:
     "Textus keeps your notes as Markdown files in a folder of your choice.",
+  phoneUseAppDocuments: "Use App Documents",
   menuDocuments: "Documents",
   docListTitle: "Documents",
   docListClose: "Close",
@@ -1949,6 +1950,8 @@ type /name in a conversation to use one.
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
+  syncMobileDocumentsOnly:
+    "Built-in sync supports the app's Documents folder for now. Use the Cloud Sync plugin for a folder picked elsewhere.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Connection",
   syncVaultsTitle: "Synced vaults",

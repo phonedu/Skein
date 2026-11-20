@@ -9,6 +9,7 @@ import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
 import { FileTree } from "../files/FileTree";
 import { canOpenFolder } from "../platform/capabilities";
+import { useAppDocumentsFolder } from "../platform/ios-files";
 import { emitToThisWindow } from "../platform/menu-events";
 import {
   ActionSheet,
@@ -23,6 +24,7 @@ import { useLongPress } from "../utils/hooks/useLongPress";
 import { Presence } from "../engine/motion/usePresence";
 import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
 import { openPhonePlugins, PhonePluginStatus } from "./PhonePluginStatus";
+import { PhoneSyncStatus } from "./PhoneSyncStatus";
 import "./PhoneHome.css";
 
 const baseName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p;
@@ -44,6 +46,9 @@ export function PhoneHome({
   onEntryMoved: (from: string, to: string) => void;
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
+  // The app's own Documents folder: a plain path (no SAF), which is what the
+  // built-in sync can read and write on a phone.
+  const appDocuments = useAppDocumentsFolder();
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   // The root's entry count, as the tree loads it: over an empty library the
@@ -196,6 +201,7 @@ export function PhoneHome({
           </button>
         )}
       </div>
+      <PhoneSyncStatus folder={place || null} t={t} />
       <PhonePluginStatus />
       <div className="ph-tree">
         {openFolder.treeRoot ? (
@@ -242,6 +248,15 @@ export function PhoneHome({
             >
               {t.menuOpenFolder}
             </button>
+            {appDocuments && (
+              <button
+                type="button"
+                className="ph-empty-cta ph-empty-cta-quiet"
+                onClick={() => openFolder.openFolder(appDocuments)}
+              >
+                {t.phoneUseAppDocuments}
+              </button>
+            )}
           </div>
         )}
       </div>

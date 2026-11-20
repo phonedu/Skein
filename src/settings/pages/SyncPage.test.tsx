@@ -31,6 +31,18 @@ vi.mock("../../engine/controls/app-dialog", () => ({
   showConfirm: vi.fn(),
 }));
 
+vi.mock("../../platform/ios-files", () => ({
+  useAppDocumentsFolder: vi.fn(() => null),
+}));
+
+const flags = vi.hoisted(() => ({ mobile: false }));
+
+vi.mock("../../platform/capabilities", () => ({
+  get isMobileApp() {
+    return flags.mobile;
+  },
+}));
+
 import {
   syncSettingsGet,
   syncSettingsSave,
@@ -43,6 +55,7 @@ import {
   syncPluginImport,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
+import { useAppDocumentsFolder } from "../../platform/ios-files";
 
 vi.mocked(syncVaults).mockResolvedValue([]);
 vi.mocked(syncConnectionUpdate).mockResolvedValue({
@@ -335,6 +348,37 @@ it("imports a Cloud Sync connection after confirmation", async () => {
   render(page());
   fireEvent.click(screen.getByRole("button", { name: t.syncImportPlugin }));
   await waitFor(() => expect(syncPluginImport).toHaveBeenCalledOnce());
+});
+
+it("falls back to the phone's own Documents when no folder is passed", async () => {
+  flags.mobile = true;
+  vi.mocked(useAppDocumentsFolder).mockReturnValue("/app/Documents");
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(
+    <SyncPage
+      {...pageProps({
+        t,
+        settings: {} as never,
+        setSettings: (() => {}) as never,
+        folderRoot: null,
+      })}
+    />,
+  );
+  await waitFor(() =>
+    expect(syncSettingsGet).toHaveBeenCalledWith("/app/Documents"),
+  );
+  vi.mocked(useAppDocumentsFolder).mockReturnValue(null);
+  flags.mobile = false;
 });
 
 it("does not warn before built-in sync is configured", async () => {
