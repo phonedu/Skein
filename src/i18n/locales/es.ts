@@ -2103,6 +2103,15 @@ para usar una.
   syncImportPluginAsk:
     "¿Importar la conexión y la base de sincronización de esta carpeta desde el plugin Cloud Sync? El plugin no se toca hasta comprobar la primera sincronización.",
   syncImported: "Importado desde Cloud Sync.",
+  syncPluginStillRunning:
+    "El plugin Cloud Sync todavía sincroniza esta carpeta. Desactiva su sincronización para esta carpeta y comprueba que la sincronización integrada funciona antes de desinstalarlo: dos sincronizaciones a la vez guardan registros distintos y pueden crear copias de conflicto duplicadas. Al desinstalar el plugin solo se borran sus registros locales de sincronización, no los archivos en la nube.",
+  syncPluginStopped:
+    "El plugin Cloud Sync está detenido para esta carpeta. Desinstálalo cuando la sincronización integrada haya funcionado con normalidad; al desinstalarlo solo se borran sus registros locales de sincronización, no los archivos en la nube.",
+  syncPluginOpen: "Abrir plugins",
+  syncPluginRunAsk:
+    "El plugin Cloud Sync sigue activo para esta carpeta. Sincronizar ahora ejecuta un segundo motor con su propio registro, que puede crear copias de conflicto duplicadas. ¿Sincronizar igualmente?",
+  syncPluginRollback:
+    "Para volver al plugin, desconecta: se eliminan la conexión y el registro integrados, mientras que los archivos en la nube y la configuración del plugin se quedan como están.",
   syncImportNotFound:
     "No se encontró ninguna configuración de Cloud Sync para esta carpeta.",
   syncImportAlready: "Esta carpeta ya está configurada.",

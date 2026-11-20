@@ -2060,6 +2060,15 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncImportPluginAsk:
     "Verbindung und Synchronisierungsbasis dieses Ordners aus dem Cloud-Sync-Plugin importieren? Das Plugin bleibt unverändert, bis die erste Synchronisierung geprüft ist.",
   syncImported: "Von Cloud Sync importiert.",
+  syncPluginStillRunning:
+    "Das Cloud-Sync-Plugin synchronisiert diesen Ordner noch. Schalte seine Synchronisierung für diesen Ordner aus und prüfe die interne Synchronisierung, bevor du es deinstallierst: Zwei Synchronisierungen gleichzeitig führen getrennte Aufzeichnungen und können doppelte Konfliktkopien erzeugen. Beim Deinstallieren werden nur die lokalen Synchronisierungsdaten des Plugins gelöscht, nicht die Dateien in der Cloud.",
+  syncPluginStopped:
+    "Das Cloud-Sync-Plugin ist für diesen Ordner gestoppt. Deinstalliere es, sobald die interne Synchronisierung normal gelaufen ist; beim Deinstallieren werden nur die lokalen Synchronisierungsdaten des Plugins gelöscht, nicht die Dateien in der Cloud.",
+  syncPluginOpen: "Plugins öffnen",
+  syncPluginRunAsk:
+    "Das Cloud-Sync-Plugin ist für diesen Ordner noch aktiv. Eine Synchronisierung startet jetzt eine zweite Engine mit eigener Aufzeichnung, die doppelte Konfliktkopien erzeugen kann. Trotzdem synchronisieren?",
+  syncPluginRollback:
+    "Um zum Plugin zurückzukehren, trenne die Verbindung: Die interne Verbindung und Aufzeichnung werden entfernt, die Dateien in der Cloud und die Einstellungen des Plugins bleiben unverändert.",
   syncImportNotFound:
     "Für diesen Ordner wurde keine Cloud-Sync-Einrichtung gefunden.",
   syncImportAlready: "Dieser Ordner ist bereits eingerichtet.",

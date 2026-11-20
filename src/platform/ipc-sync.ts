@@ -84,6 +84,10 @@ export interface SyncSettings {
 export interface SyncStatus {
   configured: boolean;
   last?: SyncLast | null;
+  /** The Cloud Sync plugin still holds a connection for this folder. */
+  pluginConfigured?: boolean;
+  /** …and is switched on: the two syncs would write different bases. */
+  pluginRunning?: boolean;
 }
 
 export interface SyncPreview {

@@ -2117,6 +2117,15 @@ utiliser une.
   syncImportPluginAsk:
     "Importer la connexion et la base de synchronisation de ce dossier depuis le plugin Cloud Sync ? Le plugin reste intact jusqu’à la vérification de la première synchronisation.",
   syncImported: "Importé depuis Cloud Sync.",
+  syncPluginStillRunning:
+    "Le plugin Cloud Sync synchronise encore ce dossier. Désactivez sa synchronisation pour ce dossier et vérifiez que la synchronisation intégrée fonctionne avant de le désinstaller : deux synchronisations simultanées tiennent des registres séparés et peuvent créer des copies de conflit en double. La désinstallation ne supprime que les registres de synchronisation locaux du plugin, pas les fichiers dans le cloud.",
+  syncPluginStopped:
+    "Le plugin Cloud Sync est arrêté pour ce dossier. Désinstallez-le une fois que la synchronisation intégrée a fonctionné normalement ; la désinstallation ne supprime que les registres de synchronisation locaux du plugin, pas les fichiers dans le cloud.",
+  syncPluginOpen: "Ouvrir les plugins",
+  syncPluginRunAsk:
+    "Le plugin Cloud Sync est encore actif pour ce dossier. Synchroniser maintenant lance un second moteur avec son propre registre, ce qui peut créer des copies de conflit en double. Synchroniser quand même ?",
+  syncPluginRollback:
+    "Pour revenir au plugin, déconnectez : la connexion et le registre intégrés sont supprimés, tandis que les fichiers dans le cloud et les réglages du plugin restent tels quels.",
   syncImportNotFound:
     "Aucune configuration Cloud Sync n’a été trouvée pour ce dossier.",
   syncImportAlready: "Ce dossier est déjà configuré.",

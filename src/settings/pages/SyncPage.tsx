@@ -32,6 +32,8 @@ import {
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 import { Select } from "../../engine/controls/Select";
+import { isMobileApp } from "../../platform/capabilities";
+import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../../utils/events";
 import { SettingsGroup } from "./SettingsGroup";
 import { MaskedKeyInput, SettingRow } from "../sections/controls";
 import type { SettingsPageProps } from "./types";
@@ -126,6 +128,8 @@ export function SyncPage({
   openPaths,
   indexing,
   onOpenFile,
+  onClose,
+  openPage,
 }: SettingsPageProps) {
   const [config, setConfig] = useState<SyncConfig>(EMPTY);
   const [credentials, setCredentials] =
@@ -341,7 +345,25 @@ export function SyncPage({
     }
   };
 
+  const openPlugins = () => {
+    if (isMobileApp) {
+      openPage("extensions");
+      return;
+    }
+    sendAppEvent(SHOW_SIDEBAR_TAB_EVENT, "plugins");
+    onClose?.();
+  };
+
   const run = async (allowEmpty = false, allowBulk = false) => {
+    // A manual run is allowed while the plugin is on (the remote lock still
+    // serializes it), but not silently: both engines keep their own base.
+    if (!allowEmpty && !allowBulk && status?.pluginRunning) {
+      const ok = await showConfirm(t.syncPluginRunAsk, {
+        okLabel: t.syncContinue,
+        cancelLabel: t.cancel,
+      });
+      if (!ok) return;
+    }
     setBusy(true);
     setPreview(null);
     setNote({ error: false, text: t.syncRunning });
@@ -494,6 +516,30 @@ export function SyncPage({
             </span>
           ) : null}
         </div>
+        {status?.pluginConfigured && status.configured && (
+          <div className="sync-plugin-note">
+            <p
+              className={
+                status.pluginRunning ? "settings-error" : "tx-list-note"
+              }
+            >
+              {status.pluginRunning
+                ? t.syncPluginStillRunning
+                : t.syncPluginStopped}
+            </p>
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              disabled={busy}
+              onClick={openPlugins}
+            >
+              {t.syncPluginOpen}
+            </button>
+          </div>
+        )}
+        {status?.pluginConfigured && status.configured && (
+          <p className="tx-list-note">{t.syncPluginRollback}</p>
+        )}
         {dirty && !note ? (
           <p className="tx-list-note">{t.syncSaveFirst}</p>
         ) : null}

@@ -4,6 +4,7 @@
 //! bindings stay small and no credential is logged.
 
 use crate::sync::local::{LocalSync, TrashFile};
+use crate::sync::plugin;
 use crate::sync::store::{self, Config, Credentials, LastRun};
 use chrono::{SecondsFormat, Utc};
 use serde::Serialize;
@@ -259,7 +260,13 @@ pub fn sync_status(app: tauri::AppHandle, root: String) -> Result<String, String
     let root = store::canonical_root(&root)?;
     let configured = store::load(&app, &root)?.is_some();
     let last = store::load_last(&app, &root)?;
-    Ok(serde_json::json!({ "configured": configured, "last": last }).to_string())
+    Ok(serde_json::json!({
+        "configured": configured,
+        "last": last,
+        "pluginConfigured": plugin::configured(&app, &root),
+        "pluginRunning": plugin::running(&app)
+    })
+    .to_string())
 }
 
 /// What a first sync would do, without writing anything.

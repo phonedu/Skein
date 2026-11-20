@@ -1868,6 +1868,15 @@ export default {
   syncImportPluginAsk:
     "从 Cloud Sync 插件导入这个文件夹的连接和同步基线？在确认首次同步前，插件保持原样。",
   syncImported: "已从 Cloud Sync 导入。",
+  syncPluginStillRunning:
+    "Cloud Sync 插件仍在同步这个文件夹。请先关闭插件对这个文件夹的同步，确认内置同步正常后再卸载插件：两套同步同时运行会各留一份记录，可能产生重复的冲突副本。卸载插件只会删除它的本地同步记录，不会删除云端文件。",
+  syncPluginStopped:
+    "Cloud Sync 插件已对这个文件夹停用。内置同步正常运行后即可卸载插件；卸载只会删除插件的本地同步记录，不会删除云端文件。",
+  syncPluginOpen: "打开插件",
+  syncPluginRunAsk:
+    "Cloud Sync 插件仍在为这个文件夹同步。现在同步会再运行一套引擎，它有自己的记录，可能产生重复的冲突副本。仍要同步？",
+  syncPluginRollback:
+    "要回退到插件，请点“断开”：内置连接与同步记录会被删除，云端文件和插件自己的设置保持原样。",
   syncImportNotFound: "没有找到这个文件夹的 Cloud Sync 设置。",
   syncImportAlready: "这个文件夹已配置。",
   syncDisconnect: "断开",

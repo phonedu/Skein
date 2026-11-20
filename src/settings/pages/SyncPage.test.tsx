@@ -16,6 +16,7 @@ vi.mock("../../platform/ipc-sync", () => ({
   syncSettingsGet: vi.fn(),
   syncSettingsSave: vi.fn(),
   syncStatus: vi.fn(),
+  syncRunSaved: vi.fn(),
   syncLock: vi.fn(),
   syncConflicts: vi.fn(),
   syncHistory: vi.fn(),
@@ -33,6 +34,8 @@ vi.mock("../../engine/controls/app-dialog", () => ({
 import {
   syncSettingsGet,
   syncSettingsSave,
+  syncStatus,
+  syncRunSaved,
   syncVaults,
   syncConnectionUpdate,
   syncForkVault,
@@ -332,4 +335,98 @@ it("imports a Cloud Sync connection after confirmation", async () => {
   render(page());
   fireEvent.click(screen.getByRole("button", { name: t.syncImportPlugin }));
   await waitFor(() => expect(syncPluginImport).toHaveBeenCalledOnce());
+});
+
+it("does not warn before built-in sync is configured", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  const { syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({
+    configured: false,
+    last: null,
+    pluginConfigured: true,
+    pluginRunning: true,
+  });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  await screen.findByText(t.syncNotConfigured);
+  expect(screen.queryByText(t.syncPluginStillRunning)).toBeNull();
+});
+
+it("warns while the Cloud Sync plugin still runs for the folder", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  const { syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({
+    configured: true,
+    last: null,
+    pluginConfigured: true,
+    pluginRunning: true,
+  });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  const onClose = vi.fn();
+  render(
+    <SyncPage
+      {...pageProps({
+        t,
+        settings: {} as never,
+        setSettings: (() => {}) as never,
+        folderRoot: "/vault",
+        onClose,
+      })}
+    />,
+  );
+  await screen.findByText(t.syncPluginStillRunning);
+  expect(screen.getByText(t.syncPluginRollback)).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: t.syncPluginOpen }));
+  expect(onClose).toHaveBeenCalledOnce();
+});
+
+it("asks before syncing while the plugin is still on", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  const { syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({
+    configured: true,
+    last: null,
+    pluginConfigured: true,
+    pluginRunning: true,
+  });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+  vi.mocked(showConfirm).mockResolvedValue(false);
+
+  render(page());
+  const button = screen.getByRole("button", { name: t.syncNow });
+  await waitFor(() =>
+    expect((button as HTMLButtonElement).disabled).toBe(false),
+  );
+  fireEvent.click(button);
+  await waitFor(() =>
+    expect(showConfirm).toHaveBeenCalledWith(t.syncPluginRunAsk, {
+      okLabel: t.syncContinue,
+      cancelLabel: t.cancel,
+    }),
+  );
+  expect(syncRunSaved).not.toHaveBeenCalled();
 });

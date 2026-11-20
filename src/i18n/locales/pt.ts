@@ -2080,6 +2080,15 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncImportPluginAsk:
     "Importar a ligação e a base de sincronização desta pasta do plugin Cloud Sync? O plugin fica intacto até a primeira sincronização ser verificada.",
   syncImported: "Importado do Cloud Sync.",
+  syncPluginStillRunning:
+    "O plugin Cloud Sync ainda sincroniza esta pasta. Desative a sincronização dele para esta pasta e confirme que a sincronização integrada funciona antes de desinstalá-lo: duas sincronizações ao mesmo tempo mantêm registros separados e podem criar cópias de conflito duplicadas. Desinstalar o plugin apaga apenas os registros locais de sincronização dele, não os arquivos na nuvem.",
+  syncPluginStopped:
+    "O plugin Cloud Sync está parado para esta pasta. Desinstale-o depois que a sincronização integrada tiver funcionado normalmente; desinstalar apaga apenas os registros locais de sincronização do plugin, não os arquivos na nuvem.",
+  syncPluginOpen: "Abrir plugins",
+  syncPluginRunAsk:
+    "O plugin Cloud Sync ainda está ativo para esta pasta. Sincronizar agora executa um segundo motor com registro próprio, o que pode criar cópias de conflito duplicadas. Sincronizar mesmo assim?",
+  syncPluginRollback:
+    "Para voltar ao plugin, desconecte: a conexão e o registro integrados são removidos, enquanto os arquivos na nuvem e as configurações do plugin permanecem como estão.",
   syncImportNotFound:
     "Não foi encontrada nenhuma configuração do Cloud Sync para esta pasta.",
   syncImportAlready: "Esta pasta já está configurada.",

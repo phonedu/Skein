@@ -1873,6 +1873,15 @@ export default {
   syncImportPluginAsk:
     "從 Cloud Sync 外掛匯入這個資料夾的連線與同步基準？在確認首次同步前，外掛維持原樣。",
   syncImported: "已從 Cloud Sync 匯入。",
+  syncPluginStillRunning:
+    "Cloud Sync 外掛仍在同步這個資料夾。請先關閉外掛對這個資料夾的同步，確認內建同步正常後再解除安裝外掛：兩套同步同時執行會各留一份記錄，可能產生重複的衝突副本。解除安裝外掛只會刪除它的本機同步記錄，不會刪除雲端檔案。",
+  syncPluginStopped:
+    "Cloud Sync 外掛已對這個資料夾停用。內建同步正常執行後即可解除安裝外掛；解除安裝只會刪除外掛的本機同步記錄，不會刪除雲端檔案。",
+  syncPluginOpen: "開啟外掛",
+  syncPluginRunAsk:
+    "Cloud Sync 外掛仍在為這個資料夾同步。現在同步會再執行一套引擎，它有自己的記錄，可能產生重複的衝突副本。仍要同步？",
+  syncPluginRollback:
+    "要回退到外掛，請點「中斷」：內建連線與同步記錄會被刪除，雲端檔案和外掛自己的設定保持原樣。",
   syncImportNotFound: "沒有找到這個資料夾的 Cloud Sync 設定。",
   syncImportAlready: "這個資料夾已設定。",
   syncDisconnect: "中斷",

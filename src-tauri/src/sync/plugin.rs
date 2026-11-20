@@ -31,6 +31,36 @@ pub fn find(app: &tauri::AppHandle, root: &Path) -> Result<Option<Imported>, Str
     find_at(&plugin, &secrets, root)
 }
 
+/// Whether the plugin still has this folder configured, whether or not it
+/// has credentials. Read to warn that two syncs would write different bases.
+pub fn configured(app: &tauri::AppHandle, root: &Path) -> bool {
+    let Ok(global) = crate::ai::workspace::global_agent_dir(app) else {
+        return false;
+    };
+    configured_at(&global.join("plugins").join(PLUGIN_ID), root)
+}
+
+/// Whether the plugin is installed and switched on. A stopped plugin does
+/// not run, so the warning can say only that it is safe to uninstall.
+pub fn running(app: &tauri::AppHandle) -> bool {
+    crate::plugins::state::read(app).runs(PLUGIN_ID)
+}
+
+fn configured_at(plugin: &Path, root: &Path) -> bool {
+    roots(root).iter().any(|root_text| {
+        let config_key = format!("config:{}", hash_hex(root_text.as_bytes()));
+        read_kv(&plugin.join("kv"), &config_key)
+            .ok()
+            .flatten()
+            .is_some_and(|config| {
+                matches!(
+                    config["provider"].as_str().unwrap_or_default(),
+                    "s3" | "webdav" | "nutstore"
+                )
+            })
+    })
+}
+
 fn find_at(plugin: &Path, secrets_path: &Path, root: &Path) -> Result<Option<Imported>, String> {
     for root_text in roots(root) {
         let config_key = format!("config:{}", hash_hex(root_text.as_bytes()));
@@ -258,5 +288,29 @@ mod tests {
         assert_eq!(imported.credentials.sync_password, "correct horse battery");
         assert_eq!(imported.base.files.len(), 1);
         assert_eq!(imported.pin, "b".repeat(64));
+    }
+
+    #[test]
+    fn a_configured_folder_is_detected_without_its_secrets() {
+        let dir = tempfile::tempdir().unwrap();
+        let plugin = dir.path().join("plugin");
+        let kv = plugin.join("kv");
+        std::fs::create_dir_all(&kv).unwrap();
+        let root = "C:/Vault";
+        let config_key = format!("config:{}", hash_hex(root.as_bytes()));
+        let config = serde_json::json!({
+            "provider": "s3",
+            "endpoint": "https://s3.example.com",
+            "bucket": "notes",
+            "prefix": "work"
+        });
+        std::fs::write(
+            kv.join(key_file(&config_key)),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+
+        assert!(configured_at(&plugin, Path::new(root)));
+        assert!(!configured_at(&plugin, Path::new("C:/Other")));
     }
 }

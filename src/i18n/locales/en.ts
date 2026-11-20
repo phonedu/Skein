@@ -2014,6 +2014,15 @@ type /name in a conversation to use one.
   syncImportPluginAsk:
     "Import this folder's connection and sync baseline from the Cloud Sync plugin? The plugin is left untouched until the first sync is checked.",
   syncImported: "Imported from Cloud Sync.",
+  syncPluginStillRunning:
+    "The Cloud Sync plugin is still syncing this folder. Turn its sync off for this folder and check that built-in sync works before uninstalling it: two syncs at once keep separate records and can make duplicate conflict copies. Uninstalling the plugin deletes its local sync records, not the cloud files.",
+  syncPluginStopped:
+    "The Cloud Sync plugin is stopped for this folder. Uninstall it once built-in sync has run normally; uninstalling deletes its local sync records, not the cloud files.",
+  syncPluginOpen: "Open plugins",
+  syncPluginRunAsk:
+    "The Cloud Sync plugin is still on for this folder. Syncing now runs a second engine with its own record, which can create duplicate conflict copies. Sync anyway?",
+  syncPluginRollback:
+    "To go back to the plugin, disconnect: the built-in connection and sync record are removed, while the cloud files and the plugin's own settings stay as they are.",
   syncImportNotFound: "No Cloud Sync setup was found for this folder.",
   syncImportAlready: "This folder is already configured.",
   syncDisconnect: "Disconnect",
