@@ -1822,6 +1822,8 @@ export default {
   syncNoFolder: "先開啟一個資料夾。",
   syncProviderLabel: "服務",
   syncConnectionLabel: "連線",
+  syncVaultsTitle: "已同步的庫",
+  syncNoVaults: "還沒有同步的庫。",
   syncConnectionNew: "新增連線",
   syncConnectionShared: "此連線已被 {count} 個庫使用；位址與憑證不在這裡修改。",
   syncAutoPrefix: "留空則為此資料夾建立子倉庫。",

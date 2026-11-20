@@ -1817,6 +1817,8 @@ export default {
   syncNoFolder: "先打开一个文件夹。",
   syncProviderLabel: "服务",
   syncConnectionLabel: "连接",
+  syncVaultsTitle: "已同步的库",
+  syncNoVaults: "还没有同步的库。",
   syncConnectionNew: "新建连接",
   syncConnectionShared: "此连接已被 {count} 个库使用；地址与凭据不在这里修改。",
   syncAutoPrefix: "留空则为此文件夹创建子仓库。",

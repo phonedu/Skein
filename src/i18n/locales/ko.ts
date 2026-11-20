@@ -1898,6 +1898,8 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncNoFolder: "먼저 폴더를 여세요.",
   syncProviderLabel: "서비스",
   syncConnectionLabel: "연결",
+  syncVaultsTitle: "동기화된 라이브러리",
+  syncNoVaults: "아직 동기화된 라이브러리가 없습니다.",
   syncConnectionNew: "새 연결",
   syncConnectionShared:
     "이 연결은 라이브러리 {count}개에서 사용 중입니다. 주소와 자격 증명은 여기서 변경되지 않습니다.",

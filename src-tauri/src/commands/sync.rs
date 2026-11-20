@@ -133,6 +133,12 @@ pub fn sync_settings_get(app: tauri::AppHandle, root: String) -> Result<String, 
 
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
+pub fn sync_vaults(app: tauri::AppHandle) -> Result<String, String> {
+    serde_json::to_string(&store::vault_list(&app)?).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
 pub fn sync_settings_save(
     app: tauri::AppHandle,
     root: String,

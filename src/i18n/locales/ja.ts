@@ -1918,6 +1918,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncNoFolder: "先にフォルダーを開いてください。",
   syncProviderLabel: "サービス",
   syncConnectionLabel: "接続",
+  syncVaultsTitle: "同期済みのライブラリ",
+  syncNoVaults: "同期しているライブラリはまだありません。",
   syncConnectionNew: "新しい接続",
   syncConnectionShared:
     "この接続は {count} 個のライブラリで使われています。アドレスと認証情報はここでは変更されません。",

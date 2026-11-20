@@ -1951,6 +1951,8 @@ type /name in a conversation to use one.
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Connection",
+  syncVaultsTitle: "Synced vaults",
+  syncNoVaults: "No vaults are synced yet.",
   syncConnectionNew: "New connection",
   syncConnectionShared:
     "This connection is used by {count} vaults; its address and credentials are not changed here.",

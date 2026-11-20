@@ -2043,6 +2043,8 @@ export default {
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Подключение",
+  syncVaultsTitle: "Синхронизированные библиотеки",
+  syncNoVaults: "Пока нет синхронизированных библиотек.",
   syncConnectionNew: "Новое подключение",
   syncConnectionShared:
     "Это подключение используют библиотек: {count}; адрес и учётные данные здесь не меняются.",

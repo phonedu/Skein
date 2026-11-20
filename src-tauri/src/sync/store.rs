@@ -744,6 +744,33 @@ fn connection_list_at(paths: &StorePaths, root: &Path) -> Result<Vec<serde_json:
     Ok(list)
 }
 
+/// Every vault and the repository string it writes to. The settings page
+/// uses this to answer "which remote folder is this library?".
+pub fn vault_list(app: &tauri::AppHandle) -> Result<Vec<serde_json::Value>, String> {
+    let (store, _) = read_state(&store_paths(app)?)?;
+    let mut list: Vec<serde_json::Value> = store
+        .vaults
+        .values()
+        .map(|binding| {
+            let connection = store.connections.get(&binding.connection_id);
+            serde_json::json!({
+                "root": binding.root,
+                "name": Path::new(&binding.root)
+                    .file_name()
+                    .map(|name| name.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| binding.root.clone()),
+                "connectionId": binding.connection_id,
+                "provider": connection.map(|connection| connection.provider.clone()).unwrap_or_default(),
+                "endpoint": connection.map(|connection| connection.endpoint.clone()).unwrap_or_default(),
+                "bucket": connection.map(|connection| connection.bucket.clone()).unwrap_or_default(),
+                "prefix": binding.prefix,
+            })
+        })
+        .collect();
+    list.sort_by(|a, b| a["name"].as_str().cmp(&b["name"].as_str()));
+    Ok(list)
+}
+
 fn validate_connection(connection: &Connection) -> Result<(), String> {
     if !matches!(connection.provider.as_str(), "webdav" | "s3") {
         return Err(SyncError::new("invalidConfig").to_string());

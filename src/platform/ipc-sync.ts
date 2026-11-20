@@ -57,6 +57,16 @@ export interface SyncConnection {
   current: boolean;
 }
 
+export interface SyncVault {
+  root: string;
+  name: string;
+  connectionId: string;
+  provider: "webdav" | "s3";
+  endpoint: string;
+  bucket: string;
+  prefix: string;
+}
+
 export interface SyncSettings {
   configured: boolean;
   config?: SyncConfig;
@@ -94,6 +104,9 @@ export const syncSettingsSave = (
 
 export const syncSettingsForget = (root: string): Promise<void> =>
   commands.sync_settings_forget(root).then(() => undefined);
+
+export const syncVaults = (): Promise<SyncVault[]> =>
+  commands.sync_vaults().then((json) => parse<SyncVault[]>(json));
 
 export const syncStatus = (root: string): Promise<SyncStatus> =>
   commands.sync_status(root).then((json) => parse<SyncStatus>(json));

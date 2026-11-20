@@ -106,6 +106,7 @@ export const commands = {
 	tree_trash_entry: (path: string, root: string) => __TAURI_INVOKE<null>("tree_trash_entry", { path, root }),
 	sync_run_saved: (root: string, allowEmptyScan: boolean, allowBulkDelete: boolean, openPaths: string[]) => __TAURI_INVOKE<string>("sync_run_saved", { root, allowEmptyScan, allowBulkDelete, openPaths }),
 	sync_settings_get: (root: string) => __TAURI_INVOKE<string>("sync_settings_get", { root }),
+	sync_vaults: () => __TAURI_INVOKE<string>("sync_vaults"),
 	sync_settings_save: (root: string, config: string, credentials: string) => __TAURI_INVOKE<null>("sync_settings_save", { root, config, credentials }),
 	sync_settings_forget: (root: string) => __TAURI_INVOKE<null>("sync_settings_forget", { root }),
 	sync_status: (root: string) => __TAURI_INVOKE<string>("sync_status", { root }),

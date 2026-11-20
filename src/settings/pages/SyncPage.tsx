@@ -15,6 +15,7 @@ import {
   syncSettingsSave,
   syncStatus,
   syncUnlock,
+  syncVaults,
   type SyncConfig,
   type SyncConflict,
   type SyncConnection,
@@ -22,6 +23,7 @@ import {
   type SyncHistory,
   type SyncLock,
   type SyncStatus,
+  type SyncVault,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 import { Select } from "../../engine/controls/Select";
@@ -77,7 +79,12 @@ function errorText(t: SettingsPageProps["t"], reason: string): string {
 const folderName = (path: string) =>
   path.split(/[\\/]/).filter(Boolean).pop() ?? path;
 
-function connectionLabel(connection: SyncConnection): string {
+type ConnectionRef = Pick<
+  SyncConnection,
+  "provider" | "endpoint" | "bucket" | "prefix"
+>;
+
+function connectionLabel(connection: ConnectionRef): string {
   let where = connection.bucket;
   if (connection.provider === "webdav") {
     try {
@@ -103,6 +110,7 @@ export function SyncPage({
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const [savedConfig, setSavedConfig] = useState<SyncConfig | null>(null);
   const [connections, setConnections] = useState<SyncConnection[]>([]);
+  const [vaults, setVaults] = useState<SyncVault[]>([]);
   const [lock, setLock] = useState<SyncLock | null>(null);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
@@ -113,6 +121,10 @@ export function SyncPage({
   );
 
   const reload = useCallback(async () => {
+    // The library list is global, so it loads even with no folder open.
+    void syncVaults()
+      .then(setVaults)
+      .catch(() => {});
     if (!folderRoot || indexing) return;
     try {
       const [settings, current] = await Promise.all([
@@ -144,11 +156,33 @@ export function SyncPage({
     void reload();
   }, [reload]);
 
+  const vaultsGroup = (
+    <SettingsGroup title={t.syncVaultsTitle}>
+      {vaults.length === 0 ? (
+        <p className="tx-list-note">{t.syncNoVaults}</p>
+      ) : (
+        vaults.map((vault) => (
+          <div className="sync-list-row" key={vault.root}>
+            <span className="sync-list-text">
+              {vault.name}
+              <span className="sync-last">
+                {connectionLabel(vault)} → {vault.prefix || "/"}
+              </span>
+            </span>
+          </div>
+        ))
+      )}
+    </SettingsGroup>
+  );
+
   if (!folderRoot) {
     return (
-      <SettingsGroup title={t.navSync}>
-        <p className="tx-list-note">{t.syncNoFolder}</p>
-      </SettingsGroup>
+      <>
+        <SettingsGroup title={t.navSync}>
+          <p className="tx-list-note">{t.syncNoFolder}</p>
+        </SettingsGroup>
+        {vaultsGroup}
+      </>
     );
   }
 
@@ -640,6 +674,7 @@ export function SyncPage({
           )}
         </SettingsGroup>
       )}
+      {vaultsGroup}
     </>
   );
 }

@@ -2054,6 +2054,8 @@ utiliser une.
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Connexion",
+  syncVaultsTitle: "Bibliothèques synchronisées",
+  syncNoVaults: "Aucune bibliothèque synchronisée pour le moment.",
   syncConnectionNew: "Nouvelle connexion",
   syncConnectionShared:
     "Cette connexion est utilisée par {count} bibliothèques ; son adresse et ses identifiants ne se modifient pas ici.",

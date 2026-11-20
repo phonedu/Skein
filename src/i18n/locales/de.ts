@@ -1995,6 +1995,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Verbindung",
+  syncVaultsTitle: "Synchronisierte Bibliotheken",
+  syncNoVaults: "Noch keine Bibliothek synchronisiert.",
   syncConnectionNew: "Neue Verbindung",
   syncConnectionShared:
     "Diese Verbindung wird von {count} Bibliotheken genutzt; Adresse und Zugangsdaten werden hier nicht geändert.",

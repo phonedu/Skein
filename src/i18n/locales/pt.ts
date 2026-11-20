@@ -2018,6 +2018,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncNoFolder: "Open a folder first.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Ligação",
+  syncVaultsTitle: "Bibliotecas sincronizadas",
+  syncNoVaults: "Ainda não há bibliotecas sincronizadas.",
   syncConnectionNew: "Nova ligação",
   syncConnectionShared:
     "Esta ligação é usada por {count} bibliotecas; o endereço e as credenciais não são alterados aqui.",
