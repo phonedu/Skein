@@ -51,8 +51,15 @@ impl LocalSync {
         // of the repository, even though the relative path looks safe.
         let mut path = self.root.clone();
         let parts: Vec<&str> = relative.split('/').collect();
+        // Keep pushing after the first missing part: the rest of the path
+        // cannot exist yet, but the caller needs the whole intended target,
+        // not the parent directory it stopped at.
+        let mut missing = false;
         for (index, part) in parts.iter().enumerate() {
             path.push(part);
+            if missing {
+                continue;
+            }
             match std::fs::symlink_metadata(&path) {
                 Ok(metadata) => {
                     if metadata.file_type().is_symlink() {
@@ -62,7 +69,7 @@ impl LocalSync {
                         return Err(SyncError::new("invalidPath"));
                     }
                 }
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => break,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => missing = true,
                 Err(_) => return Err(SyncError::new("localReadError")),
             }
         }
@@ -332,6 +339,26 @@ mod tests {
             .unwrap());
         assert!(!dir.path().join("a.md").exists());
         assert_eq!(trashed.lock().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn a_new_nested_folder_is_created_for_the_whole_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let (local, _) = local(dir.path());
+
+        assert!(local
+            .apply(
+                "Sync conflicts/Notes/a (01234567).md",
+                b"remote".to_vec(),
+                None
+            )
+            .await
+            .unwrap());
+        assert_eq!(
+            std::fs::read(dir.path().join("Sync conflicts/Notes/a (01234567).md")).unwrap(),
+            b"remote".to_vec()
+        );
+        assert!(!dir.path().join("Sync conflicts").is_file());
     }
 
     #[tokio::test]
