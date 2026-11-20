@@ -1,4 +1,4 @@
-# 任务清单归档（2026-11-19）
+# 任务清单归档（2026-11-19，2026-11-20 追加 S2 主体与 H3）
 
 > 来源：`docs/skein/05-状态/Textus-改造任务清单.md` v1.10。
 > 本文只作历史，不再维护；新任务与进度回[任务清单](../05-状态/Textus-改造任务清单.md)。
@@ -108,6 +108,36 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 | 32 MiB 随机 PDF | 16 块，逐块 SHA-256 与 head 一致 |
 | 配置 | `https://s3.bitiful.net`、`cn-east-1`、专用测试桶、测试 prefix、path-style |
 | 未跑 | 七牛云 Kodo、阿里云 OSS（转 S3b） |
+
+### 1.11 同步内置桌面主体（S2 第一至七片，2026-11-20）
+
+> S2 尚未完成验收（built app 实跑、20k/弱网、真机跨端），这里只归档已落地的实现片段；未完成项留在任务清单 §3。
+
+| 片 | 已完成 | 证据 |
+| --- | --- | --- |
+| 第一片 | `src-tauri/crates/textus-sync`（无 Tauri）：Manifest/History/Lock/Base/Entry、路径 scope、2 MiB 分块/SHA-256、冲突命名 | wire 测试 15/15 |
+| 第二片 | `ObjectStore` + `MemoryStore` + `WebDavStore`（父目录 MKCOL、临时 PUT + MOVE create、probe）；planner 三路矩阵与远端 rename | 24 单测 + WebDAV 真服务 round-trip |
+| 第三片 | 引擎（锁、head/history、三路 plan、块传输、冲突、发布顺序、释放锁、空扫描/批量删除闸）；`S3Store` SigV4 条件 create | 33 单测 + WebDAV/S3 真服务 round-trip |
+| 第四片 | 文件系统 `LocalFiles`（scope、原子写、系统/App trash、move）；portable built app 对真实 WebDAV 上传/下载 | 构建记录 |
+| 第五片 | 设置 › 同步页；`sync.json` + 所有者-only `sync_secrets.json`；base/last 按文件夹持久化 | built app WebDAV 保存后上传 |
+| 第六片 | 冲突副本列表、云端历史版本列表与恢复 | built app WebDAV 验证 |
+| 第七片 | 四路审计后的阻塞修复：冲突保留本地并上传、`remoteMissing`、WebDAV prefix 父目录、HTTP 仅回环/禁重定向/超时、锁读回/own-lock/字节读回 + `sync_lock`/`sync_unlock`、history 稀释/限额/keep/损坏即停、块读回、expected-hash 与打开页延后、restore 语义、大小写冲突、trash 老化、no-op 不发布、移除 `sync_run` 凭据后门；设置页解锁/脏表单/provider 凭据/Android 参数/错误映射/十语 | `23f7738f`、`c62b035e`、`5bb727bb`、`7f991874`；[任务清单 v4.1–v4.3 记录](../05-状态/Textus-改造任务清单.md) |
+| 引擎级差分互通 | 插件 `MemoryStore` 写库 → Rust 读出并下载 3 文件字节一致；Rust 写库 → 插件读出并下载一致（中文路径、`.textus/agent.md`、附件） | 2026-11-20 临时夹具（双向通过，夹具已删） |
+| 故障注入单测 | head 写失败 → `publishFailed` 且锁保留，重试不重复历史；块损坏 → `missingBlock` 不落盘；假锁 → `lockLost` 不写 head | `5bb727bb` |
+| S3b 内置适配 | `S3Flavor::Oss`（`x-oss-forbid-overwrite`、409→已存在、400→`conditionalWriteUnsupported`）；设置页 S3 兼容方式 | `7f991874`；阿里云/七牛真桶未实测 |
+
+### 1.12 空扫描 / 大批删除保护内置侧（H3，2026-11-20）
+
+- 引擎与插件同判据：base 非空而 scan 为 0 → `emptyScan`；删除 >20% 或 >50 个 → `bulkDelete`；单个删除不算批量；改名不误判。
+- 设置页在 `emptyScan` / `bulkDelete` 后弹「仍要同步」二次确认，确认后同一轮带 `allowEmptyScan` / `allowBulkDelete` 重跑。
+- 插件侧 2026-11-19 已完成（`dcb19b1`，156/156）；内置侧单测覆盖。
+- 交互验收（built app 实际点击「仍要同步」）并入任务清单 §3 的 S2 验收尾项，不重复立任务。
+
+### 1.13 已决事项（从待审移出）
+
+| 项 | 原问题 | 结论 |
+| --- | --- | --- |
+| U16 | S2 UI 范围：只 Settings + notice，还是含状态/冲突/历史 | 已执行：Settings + 状态/冲突/历史（S2 第五、六片，`9da3efb9`、`7ba2655a`） |
 
 ---
 

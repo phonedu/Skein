@@ -1,6 +1,6 @@
 # S3 服务商兼容性（S1b 选型）
 
-> **结论**：**缤纷云 S4（Bitiful）已实测通过 S1b**（2026-11-19，华为真机，专用测试桶 / 测试 prefix）；七牛云 Kodo 第二；阿里云 OSS 需要专门的 `x-oss-forbid-overwrite` 适配，放到适配阶段。
+> **结论（2026-11-20 更新）**：**缤纷云 S4（Bitiful）已实测通过 S1b**；内置 Rust 已加 `S3Flavor::Oss`（`x-oss-forbid-overwrite`，409/400 映射）并在设置页可选；**阿里云 OSS / 七牛 Kodo 真桶仍未实测**。
 >
 > 协议要求见[同步协议 v1](../../02-方案/同步协议-v1.md)；插件当前 S3 transport 见 `textus-plugins/development/cloud-sync/src/transport.ts`。
 
