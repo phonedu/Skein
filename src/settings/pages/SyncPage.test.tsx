@@ -20,15 +20,21 @@ vi.mock("../../platform/ipc-sync", () => ({
   syncConflicts: vi.fn(),
   syncHistory: vi.fn(),
   syncVaults: vi.fn(),
+  syncConnectionUpdate: vi.fn(),
 }));
 
 import {
   syncSettingsGet,
   syncSettingsSave,
   syncVaults,
+  syncConnectionUpdate,
 } from "../../platform/ipc-sync";
 
 vi.mocked(syncVaults).mockResolvedValue([]);
+vi.mocked(syncConnectionUpdate).mockResolvedValue({
+  changed: false,
+  vaults: 2,
+});
 
 const t = resolveStrings("en");
 
@@ -82,6 +88,10 @@ it("binds a shared connection without offering its address or credentials", asyn
   });
   vi.mocked(syncSettingsSave).mockResolvedValue();
   vi.mocked(syncVaults).mockResolvedValue([]);
+  vi.mocked(syncConnectionUpdate).mockResolvedValue({
+    changed: false,
+    vaults: 2,
+  });
   const { syncStatus } = await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
   const { syncLock, syncConflicts, syncHistory } =
@@ -159,4 +169,34 @@ it("names the remote folder of every synced vault", async () => {
   expect(await screen.findByText("Work")).toBeTruthy();
   expect(screen.getByText(/notes\/work-1a2b3c4d/)).toBeTruthy();
   expect(screen.getByText(/dav\.example\.com/)).toBeTruthy();
+});
+
+it("lets a shared connection be edited on purpose", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  await screen.findByText(t.syncConnectionShared.replace("{count}", "2"));
+  fireEvent.click(screen.getByRole("button", { name: t.syncConnectionEdit }));
+  const endpoint = screen.getByLabelText(
+    t.syncEndpointLabel,
+  ) as HTMLInputElement;
+  expect(endpoint.disabled).toBe(false);
+  expect(screen.getByLabelText(t.syncAccountLabel)).toBeTruthy();
+  fireEvent.change(endpoint, { target: { value: "https://new.example.com" } });
+  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  await waitFor(() => expect(syncConnectionUpdate).toHaveBeenCalledOnce());
+  const [id, updated] = vi.mocked(syncConnectionUpdate).mock.calls[0];
+  expect(id).toBe("c1");
+  expect(updated.endpoint).toBe("https://new.example.com");
 });

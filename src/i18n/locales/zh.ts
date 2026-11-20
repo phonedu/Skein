@@ -1821,6 +1821,9 @@ export default {
   syncNoVaults: "还没有同步的库。",
   syncConnectionNew: "新建连接",
   syncConnectionShared: "此连接已被 {count} 个库使用；地址与凭据不在这里修改。",
+  syncConnectionEdit: "编辑连接",
+  syncConnectionEditWarning:
+    "更改将影响 {count} 个库。地址变化时，会重建这些库的本地同步基线。",
   syncAutoPrefix: "留空则为此文件夹创建子仓库。",
   syncErrorRepository: "另一个库已在使用该远端仓库。请选择其他连接或远端目录。",
   syncEndpointLabel: "服务器地址",

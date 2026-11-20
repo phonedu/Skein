@@ -1923,6 +1923,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncConnectionNew: "新しい接続",
   syncConnectionShared:
     "この接続は {count} 個のライブラリで使われています。アドレスと認証情報はここでは変更されません。",
+  syncConnectionEdit: "接続を編集",
+  syncConnectionEditWarning:
+    "変更は {count} 個のライブラリに適用されます。アドレスが変わると、各ライブラリのローカル同期ベースが再構築されます。",
   syncAutoPrefix:
     "空欄にすると、このフォルダー用のサブリポジトリを作成します。",
   syncErrorRepository:

@@ -2059,6 +2059,9 @@ utiliser une.
   syncConnectionNew: "Nouvelle connexion",
   syncConnectionShared:
     "Cette connexion est utilisée par {count} bibliothèques ; son adresse et ses identifiants ne se modifient pas ici.",
+  syncConnectionEdit: "Modifier la connexion",
+  syncConnectionEditWarning:
+    "Les changements concernent {count} bibliothèques. Si l’adresse change, leurs bases de synchronisation locales seront reconstruites.",
   syncAutoPrefix: "Laissez vide pour créer un sous-dépôt pour ce dossier.",
   syncErrorRepository:
     "Une autre bibliothèque utilise déjà ce dépôt distant. Choisissez une autre connexion ou un autre dossier distant.",

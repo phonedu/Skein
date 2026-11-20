@@ -133,6 +133,21 @@ pub fn sync_settings_get(app: tauri::AppHandle, root: String) -> Result<String, 
 
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
+pub fn sync_connection_update(
+    app: tauri::AppHandle,
+    connection_id: String,
+    config: String,
+    credentials: String,
+) -> Result<String, String> {
+    let config: Config =
+        serde_json::from_str(&config).map_err(|_| crate::errors::error("invalidConfig"))?;
+    let credentials: Credentials =
+        serde_json::from_str(&credentials).map_err(|_| crate::errors::error("invalidConfig"))?;
+    store::update_connection(&app, &connection_id, config, credentials)
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
 pub fn sync_vaults(app: tauri::AppHandle) -> Result<String, String> {
     serde_json::to_string(&store::vault_list(&app)?).map_err(|e| e.to_string())
 }

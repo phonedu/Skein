@@ -1956,6 +1956,9 @@ type /name in a conversation to use one.
   syncConnectionNew: "New connection",
   syncConnectionShared:
     "This connection is used by {count} vaults; its address and credentials are not changed here.",
+  syncConnectionEdit: "Edit connection",
+  syncConnectionEditWarning:
+    "Changes apply to {count} vaults. If the address changes, their local sync baselines are rebuilt.",
   syncAutoPrefix: "Leave empty to create a sub-repository for this folder.",
   syncErrorRepository:
     "Another vault already uses this remote repository. Choose a different connection or remote folder.",

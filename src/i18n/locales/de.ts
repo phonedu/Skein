@@ -2000,6 +2000,9 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncConnectionNew: "Neue Verbindung",
   syncConnectionShared:
     "Diese Verbindung wird von {count} Bibliotheken genutzt; Adresse und Zugangsdaten werden hier nicht geändert.",
+  syncConnectionEdit: "Verbindung bearbeiten",
+  syncConnectionEditWarning:
+    "Änderungen gelten für {count} Bibliotheken. Ändert sich die Adresse, werden ihre lokalen Synchronisierungsbasen neu aufgebaut.",
   syncAutoPrefix:
     "Leer lassen, um für diesen Ordner ein Unter-Repository anzulegen.",
   syncErrorRepository:

@@ -2048,6 +2048,9 @@ export default {
   syncConnectionNew: "Новое подключение",
   syncConnectionShared:
     "Это подключение используют библиотек: {count}; адрес и учётные данные здесь не меняются.",
+  syncConnectionEdit: "Изменить подключение",
+  syncConnectionEditWarning:
+    "Изменения затронут библиотек: {count}. Если адрес изменится, локальные базы синхронизации будут пересозданы.",
   syncAutoPrefix:
     "Оставьте пустым, чтобы создать подрепозиторий для этой папки.",
   syncErrorRepository:

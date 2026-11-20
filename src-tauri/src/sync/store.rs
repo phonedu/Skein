@@ -103,7 +103,7 @@ impl Credentials {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Connection {
     id: String,
@@ -744,6 +744,82 @@ fn connection_list_at(paths: &StorePaths, root: &Path) -> Result<Vec<serde_json:
     Ok(list)
 }
 
+/// Changes a connection used by one or more vaults. The bound vaults keep
+/// their own prefixes; if the remote address changes, each one's base is
+/// dropped so the next run plans against the new repository.
+pub fn update_connection(
+    app: &tauri::AppHandle,
+    connection_id: &str,
+    config: Config,
+    credentials: Credentials,
+) -> Result<String, String> {
+    let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    update_connection_at(&store_paths(app)?, connection_id, config, credentials)
+}
+
+fn update_connection_at(
+    paths: &StorePaths,
+    connection_id: &str,
+    config: Config,
+    credentials: Credentials,
+) -> Result<String, String> {
+    let (mut store, mut secrets) = read_state(paths)?;
+    let Some(existing) = store.connections.get(connection_id).cloned() else {
+        return Err(SyncError::new("notFound").to_string());
+    };
+    let mut connection = existing.clone();
+    connection.provider = config.provider;
+    connection.endpoint = config.endpoint;
+    connection.bucket = config.bucket;
+    connection.region = config.region;
+    connection.path_style = config.path_style;
+    connection.s3_flavor = config.s3_flavor;
+    validate_connection(&connection)?;
+    if connection.provider == "s3"
+        && (connection.bucket.trim().is_empty() || connection.region.trim().is_empty())
+    {
+        return Err(SyncError::new("invalidConfig").to_string());
+    }
+    let old = secrets
+        .connections
+        .get(connection_id)
+        .cloned()
+        .unwrap_or_default();
+    // A provider change must not carry the other provider's fields.
+    let old = if existing.provider == connection.provider {
+        old
+    } else {
+        Credentials::default()
+    };
+    let credentials = credentials.merge(&old);
+    validate_credentials(&connection.provider, &credentials)?;
+    let changed = connection != existing;
+    let vaults = store
+        .vaults
+        .values()
+        .filter(|binding| binding.connection_id == connection_id)
+        .count();
+    store
+        .connections
+        .insert(connection_id.to_string(), connection);
+    secrets
+        .connections
+        .insert(connection_id.to_string(), credentials);
+    if changed {
+        for binding in store
+            .vaults
+            .values()
+            .filter(|binding| binding.connection_id == connection_id)
+        {
+            let root = Path::new(&binding.root);
+            let _ = std::fs::remove_file(paths.base(root));
+            let _ = std::fs::remove_file(paths.last(root));
+        }
+    }
+    write_state(paths, &store, &secrets)?;
+    Ok(serde_json::json!({ "changed": changed, "vaults": vaults }).to_string())
+}
+
 /// Every vault and the repository string it writes to. The settings page
 /// uses this to answer "which remote folder is this library?".
 pub fn vault_list(app: &tauri::AppHandle) -> Result<Vec<serde_json::Value>, String> {
@@ -1072,6 +1148,53 @@ mod tests {
         let saved: AnyStore =
             serde_json::from_slice(&std::fs::read(&paths.config).unwrap()).unwrap();
         assert!(matches!(saved, AnyStore::Current(_)));
+    }
+
+    #[test]
+    fn editing_a_shared_connection_keeps_bindings_but_rebuilds_their_bases() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = dir.path().join("vault");
+        let second = dir.path().join("vault2");
+        std::fs::create_dir_all(&first).unwrap();
+        std::fs::create_dir_all(&second).unwrap();
+        let paths = test_paths(dir.path());
+        let mut base = webdav_config();
+        base.prefix = "work".to_string();
+        save_at(&paths, &first, base, webdav_credentials()).unwrap();
+        let (saved, _) = load_at(&paths, &first).unwrap().unwrap();
+        let mut shared = webdav_config();
+        shared.connection_id = saved.connection_id.clone();
+        save_at(&paths, &second, shared, Credentials::default()).unwrap();
+        save_base_at(&paths, &first, &Base::empty()).unwrap();
+        save_base_at(&paths, &second, &Base::empty()).unwrap();
+        let (before, _) = load_at(&paths, &second).unwrap().unwrap();
+
+        let mut moved = webdav_config();
+        moved.endpoint = "https://other.example.com".to_string();
+        let outcome =
+            update_connection_at(&paths, &saved.connection_id, moved, Credentials::default())
+                .unwrap();
+        assert!(outcome.contains("\"changed\":true"), "{outcome}");
+        assert!(!paths.base(&first).exists());
+        assert!(!paths.base(&second).exists());
+        let (after, credentials) = load_at(&paths, &second).unwrap().unwrap();
+        assert_eq!(after.endpoint, "https://other.example.com");
+        assert_eq!(after.prefix, before.prefix);
+        assert_eq!(credentials.username, "u");
+
+        save_base_at(&paths, &second, &Base::empty()).unwrap();
+        let rotated = Credentials {
+            username: "u".to_string(),
+            password: "new".to_string(),
+            ..Credentials::default()
+        };
+        let mut same = webdav_config();
+        same.endpoint = "https://other.example.com".to_string();
+        let outcome = update_connection_at(&paths, &saved.connection_id, same, rotated).unwrap();
+        assert!(outcome.contains("\"changed\":false"), "{outcome}");
+        assert!(paths.base(&second).exists());
+        let (_, credentials) = load_at(&paths, &second).unwrap().unwrap();
+        assert_eq!(credentials.password, "new");
     }
 
     #[test]

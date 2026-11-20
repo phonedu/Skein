@@ -2044,6 +2044,9 @@ para usar una.
   syncConnectionNew: "Nueva conexión",
   syncConnectionShared:
     "Esta conexión la usan {count} bibliotecas; su dirección y credenciales no se cambian aquí.",
+  syncConnectionEdit: "Editar conexión",
+  syncConnectionEditWarning:
+    "Los cambios afectan a {count} bibliotecas. Si cambia la dirección, se reconstruirán sus bases de sincronización locales.",
   syncAutoPrefix:
     "Déjalo vacío para crear un subrepositorio para esta carpeta.",
   syncErrorRepository:

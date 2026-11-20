@@ -102,6 +102,19 @@ export const syncSettingsSave = (
     )
     .then(() => undefined);
 
+export const syncConnectionUpdate = (
+  connectionId: string,
+  config: SyncConfig,
+  credentials: SyncCredentials,
+): Promise<{ changed: boolean; vaults: number }> =>
+  commands
+    .sync_connection_update(
+      connectionId,
+      JSON.stringify(config),
+      JSON.stringify(credentials),
+    )
+    .then((json) => parse<{ changed: boolean; vaults: number }>(json));
+
 export const syncSettingsForget = (root: string): Promise<void> =>
   commands.sync_settings_forget(root).then(() => undefined);
 

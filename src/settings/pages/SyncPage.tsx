@@ -13,6 +13,7 @@ import {
   syncSettingsForget,
   syncSettingsGet,
   syncSettingsSave,
+  syncConnectionUpdate,
   syncStatus,
   syncUnlock,
   syncVaults,
@@ -111,6 +112,7 @@ export function SyncPage({
   const [savedConfig, setSavedConfig] = useState<SyncConfig | null>(null);
   const [connections, setConnections] = useState<SyncConnection[]>([]);
   const [vaults, setVaults] = useState<SyncVault[]>([]);
+  const [editShared, setEditShared] = useState(false);
   const [lock, setLock] = useState<SyncLock | null>(null);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
@@ -190,8 +192,10 @@ export function SyncPage({
     connections.find((connection) => connection.id === config.connectionId) ??
     null;
   const shared = !!currentConnection && currentConnection.usedBy > 1;
+  const locked = shared && !editShared;
 
   const chooseConnection = (id: string) => {
+    setEditShared(false);
     if (!id) {
       setConfig({
         ...EMPTY,
@@ -226,6 +230,14 @@ export function SyncPage({
     setBusy(true);
     setNote(null);
     try {
+      if (shared && editShared && currentConnection) {
+        await syncConnectionUpdate(
+          currentConnection.id,
+          { ...config, prefix: currentConnection.prefix },
+          credentials,
+        );
+        setEditShared(false);
+      }
       await syncSettingsSave(
         folderRoot,
         {
@@ -237,6 +249,7 @@ export function SyncPage({
         shared ? EMPTY_CREDENTIALS : credentials,
       );
       setCredentials(EMPTY_CREDENTIALS);
+      setEditShared(false);
       setSaved(true);
       setNote({ error: false, text: t.syncSaved });
       await reload();
@@ -434,19 +447,48 @@ export function SyncPage({
             ))}
           </Select>
         </SettingRow>
-        {shared && (
-          <p className="tx-list-note">
-            {fill(t.syncConnectionShared, {
-              count: currentConnection.usedBy,
-            })}
-          </p>
+        {shared && !editShared && (
+          <>
+            <p className="tx-list-note">
+              {fill(t.syncConnectionShared, {
+                count: currentConnection.usedBy,
+              })}
+            </p>
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              onClick={() => setEditShared(true)}
+            >
+              {t.syncConnectionEdit}
+            </button>
+          </>
+        )}
+        {shared && editShared && (
+          <>
+            <p className="tx-list-note">
+              {fill(t.syncConnectionEditWarning, {
+                count: currentConnection.usedBy,
+              })}
+            </p>
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              onClick={() => {
+                setEditShared(false);
+                if (savedConfig) setConfig(savedConfig);
+                setCredentials(EMPTY_CREDENTIALS);
+              }}
+            >
+              {t.cancel}
+            </button>
+          </>
         )}
         <SettingRow label={t.syncProviderLabel}>
           <Select
             className="settings-select"
             aria-label={t.syncProviderLabel}
             value={config.provider}
-            disabled={!!currentConnection}
+            disabled={!!currentConnection && !editShared}
             onChange={(event) => {
               setConfig({
                 ...config,
@@ -468,7 +510,7 @@ export function SyncPage({
               type="url"
               spellCheck={false}
               placeholder="https://"
-              disabled={shared}
+              disabled={locked}
               value={config.endpoint}
               onChange={(event) =>
                 setConfig({ ...config, endpoint: event.target.value })
@@ -484,7 +526,7 @@ export function SyncPage({
                 <input
                   className="settings-text-input"
                   spellCheck={false}
-                  disabled={shared}
+                  disabled={locked}
                   value={config.bucket}
                   onChange={(event) =>
                     setConfig({ ...config, bucket: event.target.value })
@@ -498,7 +540,7 @@ export function SyncPage({
                 <input
                   className="settings-text-input"
                   spellCheck={false}
-                  disabled={shared}
+                  disabled={locked}
                   value={config.region}
                   onChange={(event) =>
                     setConfig({ ...config, region: event.target.value })
@@ -512,17 +554,17 @@ export function SyncPage({
             <input
               className="settings-text-input"
               spellCheck={false}
-              placeholder={currentConnection && !shared ? t.syncAutoPrefix : ""}
+              placeholder={currentConnection && !locked ? t.syncAutoPrefix : ""}
               value={config.prefix}
               onChange={(event) =>
                 setConfig({ ...config, prefix: event.target.value })
               }
             />
           </label>
-          {currentConnection && !config.prefix && !shared && (
+          {currentConnection && !config.prefix && !locked && (
             <p className="tx-list-note">{t.syncAutoPrefix}</p>
           )}
-          {!shared && (
+          {!locked && (
             <>
               <label className="sync-field">
                 <span className="settings-field-label">
@@ -569,7 +611,7 @@ export function SyncPage({
                 <Select
                   className="settings-select"
                   aria-label={t.syncS3FlavorLabel}
-                  disabled={shared}
+                  disabled={locked}
                   value={config.s3Flavor ?? "standard"}
                   onChange={(event) =>
                     setConfig({
@@ -585,7 +627,7 @@ export function SyncPage({
               <label className="sync-check">
                 <input
                   type="checkbox"
-                  disabled={shared}
+                  disabled={locked}
                   checked={config.pathStyle}
                   onChange={(event) =>
                     setConfig({ ...config, pathStyle: event.target.checked })
