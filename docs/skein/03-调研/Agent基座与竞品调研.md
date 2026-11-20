@@ -2,7 +2,7 @@
 
 > 版本：v0.2
 > 日期：2026-11-15（v0.2 补记 2026-11-16）
-> 关联：《Textus-改造方案》v1.2 /《Textus-Agent工具契约》v0.3 /《笔记资产理论》v0.2
+> 关联：《Textus-改造方案》v1.2 /《Textus-Agent工具契约》v0.3 /《笔记资产理论》v0.2；outl 专项对照见 [outl-对照与吸收.md](outl-对照与吸收.md)
 > 回答两个问题：① **Textus 基座能不能做成一个成熟的 Agent？** ② happy-friday-lite / ima / WorkBuddy 三个参照各借什么、怎么借。
 > 调研方法：happy-friday-lite 为**源码级**调研（clone 于 `C:\Project\ref\happy-friday-lite`）；Textus 侧为 v1.4.2 逐文件核对结论（见《改造方案》附录 B）；ima / WorkBuddy 为公开资料调研。
 
