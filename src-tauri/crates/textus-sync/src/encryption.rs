@@ -103,6 +103,16 @@ fn unhex(value: &str) -> Vec<u8> {
         .collect()
 }
 
+/// Whether a remote head is an encryption descriptor, even a damaged one;
+/// the caller then asks for a password instead of treating it as a plain
+/// manifest.
+pub fn is_encryption_descriptor(raw: &[u8]) -> bool {
+    serde_json::from_slice::<serde_json::Value>(raw)
+        .ok()
+        .and_then(|value| value.get("format")?.as_str().map(str::to_string))
+        .is_some_and(|format| format.starts_with("textus-cloud-sync-e2ee/"))
+}
+
 pub fn validate_password(password: &str) -> Result<()> {
     let length = password.encode_utf16().count();
     if !(12..=1024).contains(&length) || password.trim().is_empty() {

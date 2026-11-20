@@ -27,6 +27,10 @@ impl EncryptedStore {
         }
     }
 
+    pub fn fingerprint(&self) -> &str {
+        &self.fingerprint
+    }
+
     async fn verify_descriptor(&self) -> Result<()> {
         let descriptor = self
             .raw
@@ -216,7 +220,31 @@ async fn initialize(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::local::MemoryLocal;
     use crate::store::MemoryStore;
+    use crate::{sync, Base, LocalFiles, SyncOptions};
+    use std::sync::Arc;
+
+    struct Shared(Arc<MemoryStore>);
+
+    #[async_trait]
+    impl ObjectStore for Shared {
+        async fn get(&self, key: &str) -> Result<Option<Vec<u8>>> {
+            self.0.get(key).await
+        }
+        async fn has(&self, key: &str) -> Result<bool> {
+            self.0.has(key).await
+        }
+        async fn put(&self, key: &str, bytes: Vec<u8>) -> Result<()> {
+            self.0.put(key, bytes).await
+        }
+        async fn create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
+            self.0.create(key, bytes).await
+        }
+        async fn delete(&self, key: &str) -> Result<()> {
+            self.0.delete(key).await
+        }
+    }
 
     fn password() -> &'static str {
         "correct horse battery"
@@ -275,5 +303,53 @@ mod tests {
         assert!(!physical.contains(&key));
         assert_eq!(store.physical(HEAD_KEY).unwrap(), ENCRYPTED_HEAD);
         assert_eq!(store.physical(LOCK_KEY).unwrap(), LOCK_KEY);
+    }
+
+    #[tokio::test]
+    async fn the_engine_syncs_over_an_encrypted_store() {
+        let raw = Arc::new(MemoryStore::new());
+        let first_store = open_encrypted_store(Box::new(Shared(raw.clone())), password(), None)
+            .await
+            .unwrap();
+        let fingerprint = first_store.fingerprint().to_string();
+        let first = MemoryLocal::new([("a.md".to_string(), b"one".to_vec())]);
+        sync(
+            &first_store,
+            &first,
+            SyncOptions {
+                base: Base::empty(),
+                device: "encrypted-a".to_string(),
+                keep_days: 90,
+                keep_chosen: false,
+                allow_empty_scan: false,
+                allow_bulk_delete: false,
+            },
+        )
+        .await
+        .unwrap();
+
+        let second_store = open_encrypted_store(
+            Box::new(Shared(raw.clone())),
+            password(),
+            Some(&fingerprint),
+        )
+        .await
+        .unwrap();
+        let second = MemoryLocal::new(Vec::new());
+        sync(
+            &second_store,
+            &second,
+            SyncOptions {
+                base: Base::empty(),
+                device: "encrypted-b".to_string(),
+                keep_days: 90,
+                keep_chosen: false,
+                allow_empty_scan: false,
+                allow_bulk_delete: false,
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(second.read("a.md").await.unwrap(), Some(b"one".to_vec()));
     }
 }

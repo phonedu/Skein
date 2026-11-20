@@ -1831,6 +1831,11 @@ export default {
     "更改将影响 {count} 个库。地址变化时，会重建这些库的本地同步基线。",
   syncAutoPrefix: "留空则为此文件夹创建子仓库。",
   syncErrorRepository: "另一个库已在使用该远端仓库。请选择其他连接或远端目录。",
+  syncErrorEncryptionPassword: "请输入加密密码（至少 12 个字符）。",
+  syncErrorEncryptionWrong: "加密密码错误，或加密数据已损坏。",
+  syncErrorEncryptionChanged: "仓库的加密描述已变化。请检查密码或远端。",
+  syncErrorLegacyRemote: "该远端是明文仓库。请关闭加密或使用新仓库。",
+  syncErrorEncryptionMissing: "该仓库缺少加密描述。",
   syncErrorBusy: "另一个同步正在运行，请等它结束。",
   syncEndpointLabel: "服务器地址",
   syncBucketLabel: "存储桶",
@@ -1840,6 +1845,11 @@ export default {
   syncS3FlavorLabel: "S3 兼容方式",
   syncS3Standard: "标准 S3",
   syncS3Oss: "阿里云 OSS",
+  syncEncryptionLabel: "加密此仓库",
+  syncEncryptionPasswordLabel: "加密密码",
+  syncEncryptionPasswordNote: "至少 12 个字符。丢失后无法恢复。",
+  syncEncryptionHint:
+    "加密方式在创建仓库时确定；对已有明文仓库开启不会转换它。",
   syncErrorConditional:
     "该服务不支持同步所需的条件写入。请尝试 OSS 模式或其他服务。",
   syncAccountLabel: "用户名",

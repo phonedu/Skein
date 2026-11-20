@@ -1836,6 +1836,11 @@ export default {
     "變更將影響 {count} 個庫。位址變更時，會重建這些庫的本機同步基準。",
   syncAutoPrefix: "留空則為此資料夾建立子倉庫。",
   syncErrorRepository: "另一個庫已在使用該遠端倉庫。請選擇其他連線或遠端目錄。",
+  syncErrorEncryptionPassword: "請輸入加密密碼（至少 12 個字元）。",
+  syncErrorEncryptionWrong: "加密密碼錯誤，或加密資料已損壞。",
+  syncErrorEncryptionChanged: "倉庫的加密描述已變更。請檢查密碼或遠端。",
+  syncErrorLegacyRemote: "該遠端是明文倉庫。請關閉加密或使用新倉庫。",
+  syncErrorEncryptionMissing: "該倉庫缺少加密描述。",
   syncErrorBusy: "另一個同步正在執行，請等它結束。",
   syncEndpointLabel: "伺服器位址",
   syncBucketLabel: "儲存桶",
@@ -1845,6 +1850,11 @@ export default {
   syncS3FlavorLabel: "S3 相容方式",
   syncS3Standard: "標準 S3",
   syncS3Oss: "阿里雲 OSS",
+  syncEncryptionLabel: "加密此倉庫",
+  syncEncryptionPasswordLabel: "加密密碼",
+  syncEncryptionPasswordNote: "至少 12 個字元。遺失後無法復原。",
+  syncEncryptionHint:
+    "加密方式在建立倉庫時確定；對已有明文倉庫開啟不會轉換它。",
   syncErrorConditional:
     "該服務不支援同步所需的條件寫入。請嘗試 OSS 模式或其他服務。",
   syncAccountLabel: "使用者名稱",

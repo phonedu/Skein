@@ -44,6 +44,7 @@ const EMPTY: SyncConfig = {
   pathStyle: true,
   s3Flavor: "standard",
   keepDays: 90,
+  encrypted: true,
 };
 
 const EMPTY_CREDENTIALS: SyncCredentials = {
@@ -51,10 +52,22 @@ const EMPTY_CREDENTIALS: SyncCredentials = {
   password: "",
   accessKey: "",
   secretKey: "",
+  syncPassword: "",
 };
 
 function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("vaultCopied")) return t.syncErrorVaultCopied;
+  if (reason.includes("syncPasswordRequired"))
+    return t.syncErrorEncryptionPassword;
+  if (
+    reason.includes("invalidSyncPassword") ||
+    reason.includes("encryptedDataInvalid")
+  )
+    return t.syncErrorEncryptionWrong;
+  if (reason.includes("encryptionChanged")) return t.syncErrorEncryptionChanged;
+  if (reason.includes("legacyRemote")) return t.syncErrorLegacyRemote;
+  if (reason.includes("encryptionMetadataMissing"))
+    return t.syncErrorEncryptionMissing;
   if (reason.includes("alreadyRunning") || reason.includes("busy"))
     return t.syncErrorBusy;
   if (reason.includes("remoteMissing")) return t.syncErrorRemote;
@@ -122,6 +135,7 @@ export function SyncPage({
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
   const [saved, setSaved] = useState(false);
+  const [savedPassword, setSavedPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ error: boolean; text: string } | null>(
     null,
@@ -143,6 +157,7 @@ export function SyncPage({
       setConnections(settings.connections ?? []);
       setSavedConfig(settings.config ?? null);
       setSaved(settings.configured && !!settings.hasCredentials);
+      setSavedPassword(!!settings.hasEncryptionPassword);
       setStatus(current);
       const [foundLock, foundConflicts, foundHistory] = await Promise.all([
         settings.configured
@@ -227,6 +242,7 @@ export function SyncPage({
         s3Flavor: connection.s3Flavor ?? "standard",
         keepDays: config.keepDays,
         keepChosen: config.keepChosen,
+        encrypted: config.encrypted,
       });
     }
     setCredentials(EMPTY_CREDENTIALS);
@@ -253,7 +269,12 @@ export function SyncPage({
             config.keepChosen ||
             (savedConfig ? savedConfig.keepDays !== config.keepDays : false),
         },
-        shared ? EMPTY_CREDENTIALS : credentials,
+        shared
+          ? {
+              ...EMPTY_CREDENTIALS,
+              syncPassword: credentials.syncPassword ?? "",
+            }
+          : credentials,
       );
       setCredentials(EMPTY_CREDENTIALS);
       setEditShared(false);
@@ -384,7 +405,8 @@ export function SyncPage({
       credentials.username !== "" ||
       credentials.password !== "" ||
       credentials.accessKey !== "" ||
-      credentials.secretKey !== "");
+      credentials.secretKey !== "" ||
+      (credentials.syncPassword ?? "") !== "");
   const summary = last?.result
     ? fill(t.syncSummary, {
         uploaded: last.result.uploaded,
@@ -603,6 +625,39 @@ export function SyncPage({
           </label>
           {currentConnection && !config.prefix && !locked && (
             <p className="tx-list-note">{t.syncAutoPrefix}</p>
+          )}
+          <label className="sync-check">
+            <input
+              type="checkbox"
+              checked={!!config.encrypted}
+              disabled={!!savedConfig?.encrypted}
+              onChange={(event) =>
+                setConfig({ ...config, encrypted: event.target.checked })
+              }
+            />
+            {t.syncEncryptionLabel}
+          </label>
+          {config.encrypted && (
+            <label className="sync-field">
+              <span className="settings-field-label">
+                {t.syncEncryptionPasswordLabel}
+              </span>
+              <MaskedKeyInput
+                className="settings-text-input"
+                label={t.syncEncryptionPasswordLabel}
+                placeholder={savedPassword ? t.syncSavedPlaceholder : ""}
+                value={credentials.syncPassword ?? ""}
+                onChange={(value) =>
+                  setCredentials({ ...credentials, syncPassword: value })
+                }
+              />
+            </label>
+          )}
+          {config.encrypted && (
+            <p className="tx-list-note">{t.syncEncryptionPasswordNote}</p>
+          )}
+          {savedConfig && !savedConfig.encrypted && config.encrypted && (
+            <p className="tx-list-note">{t.syncEncryptionHint}</p>
           )}
           {!locked && (
             <>

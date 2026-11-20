@@ -239,3 +239,32 @@ it("offers to fork a copied vault and saves it again", async () => {
   await waitFor(() => expect(syncForkVault).toHaveBeenCalledOnce());
   expect(syncSettingsSave).toHaveBeenCalledTimes(2);
 });
+
+it("defaults a new repository to encryption and saves its password", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncSettingsSave).mockClear();
+  vi.mocked(syncSettingsSave).mockResolvedValue();
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  const encrypt = screen.getByLabelText(
+    t.syncEncryptionLabel,
+  ) as HTMLInputElement;
+  expect(encrypt.checked).toBe(true);
+  fireEvent.change(screen.getByLabelText(t.syncEncryptionPasswordLabel), {
+    target: { value: "correct horse battery" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
+  const [, config, credentials] = vi.mocked(syncSettingsSave).mock.calls[0];
+  expect(config.encrypted).toBe(true);
+  expect(credentials.syncPassword).toBe("correct horse battery");
+});

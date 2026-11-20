@@ -1915,6 +1915,14 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncAutoPrefix: "비워 두면 이 폴더의 하위 저장소를 만듭니다.",
   syncErrorRepository:
     "다른 라이브러리가 이미 이 원격 저장소를 사용 중입니다. 다른 연결이나 원격 폴더를 선택하세요.",
+  syncErrorEncryptionPassword: "암호화 비밀번호(12자 이상)를 입력하세요.",
+  syncErrorEncryptionWrong:
+    "암호화 비밀번호가 틀렸거나 암호화 데이터가 손상되었습니다.",
+  syncErrorEncryptionChanged:
+    "저장소의 암호화 설명이 바뀌었습니다. 비밀번호나 원격을 확인하세요.",
+  syncErrorLegacyRemote:
+    "이 원격은 평문 저장소입니다. 암호화를 끄거나 새 저장소를 사용하세요.",
+  syncErrorEncryptionMissing: "이 저장소에는 암호화 설명이 없습니다.",
   syncErrorBusy: "다른 동기화가 이미 실행 중입니다. 끝날 때까지 기다리세요.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
@@ -1926,6 +1934,11 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncS3FlavorLabel: "S3 호환 모드",
   syncS3Standard: "표준 S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "이 저장소 암호화",
+  syncEncryptionPasswordLabel: "암호화 비밀번호",
+  syncEncryptionPasswordNote: "12자 이상. 잃어버리면 복구할 수 없습니다.",
+  syncEncryptionHint:
+    "암호화는 저장소를 만들 때 선택합니다. 기존 평문 저장소에서 켜도 변환되지 않습니다.",
   syncErrorConditional:
     "이 서비스는 동기화에 필요한 조건부 쓰기를 지원하지 않습니다. OSS 모드나 다른 서비스를 사용해 보세요.",
   syncAccountLabel: "사용자 이름",

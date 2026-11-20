@@ -2057,6 +2057,16 @@ para usar una.
     "Déjalo vacío para crear un subrepositorio para esta carpeta.",
   syncErrorRepository:
     "Otra biblioteca ya usa este repositorio remoto. Elige otra conexión u otra carpeta remota.",
+  syncErrorEncryptionPassword:
+    "Introduce la contraseña de cifrado (al menos 12 caracteres).",
+  syncErrorEncryptionWrong:
+    "La contraseña de cifrado es incorrecta o los datos cifrados están dañados.",
+  syncErrorEncryptionChanged:
+    "El descriptor de cifrado del repositorio ha cambiado. Revisa la contraseña o el remoto.",
+  syncErrorLegacyRemote:
+    "Este remoto es un repositorio de texto plano. Desactiva el cifrado o usa un repositorio nuevo.",
+  syncErrorEncryptionMissing:
+    "A este repositorio le falta el descriptor de cifrado.",
   syncErrorBusy: "Ya hay otra sincronización en curso. Espera a que termine.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
@@ -2068,6 +2078,12 @@ para usar una.
   syncS3FlavorLabel: "Compatibilidad S3",
   syncS3Standard: "S3 estándar",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "Cifrar este repositorio",
+  syncEncryptionPasswordLabel: "Contraseña de cifrado",
+  syncEncryptionPasswordNote:
+    "Al menos 12 caracteres. No se puede recuperar si se pierde.",
+  syncEncryptionHint:
+    "El cifrado se elige al crear el repositorio. Activarlo en un repositorio de texto plano existente no lo convierte.",
   syncErrorConditional:
     "Este servicio no admite la escritura condicional que necesita la sincronización. Prueba el modo OSS u otro servicio.",
   syncAccountLabel: "Username",

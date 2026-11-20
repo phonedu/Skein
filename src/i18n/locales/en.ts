@@ -1968,6 +1968,16 @@ type /name in a conversation to use one.
   syncAutoPrefix: "Leave empty to create a sub-repository for this folder.",
   syncErrorRepository:
     "Another vault already uses this remote repository. Choose a different connection or remote folder.",
+  syncErrorEncryptionPassword:
+    "Enter the encryption password (at least 12 characters).",
+  syncErrorEncryptionWrong:
+    "The encryption password is wrong, or the encrypted data is damaged.",
+  syncErrorEncryptionChanged:
+    "The repository encryption descriptor changed. Check the password or the remote.",
+  syncErrorLegacyRemote:
+    "This remote is a plaintext repository. Turn encryption off or use a new repository.",
+  syncErrorEncryptionMissing:
+    "This repository is missing its encryption descriptor.",
   syncErrorBusy: "Another sync is already running. Wait for it to finish.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
@@ -1979,6 +1989,12 @@ type /name in a conversation to use one.
   syncS3FlavorLabel: "S3 compatibility",
   syncS3Standard: "Standard S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "Encrypt this repository",
+  syncEncryptionPasswordLabel: "Encryption password",
+  syncEncryptionPasswordNote:
+    "At least 12 characters. It cannot be recovered if lost.",
+  syncEncryptionHint:
+    "Encryption is chosen when the repository is created. Turning it on for an existing plaintext repository will not convert it.",
   syncErrorConditional:
     "This service does not support the conditional write sync needs. Try the OSS mode, or another service.",
   syncAccountLabel: "Username",

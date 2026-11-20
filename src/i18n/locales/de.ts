@@ -2013,6 +2013,16 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Leer lassen, um für diesen Ordner ein Unter-Repository anzulegen.",
   syncErrorRepository:
     "Eine andere Bibliothek nutzt bereits dieses entfernte Repository. Wähle eine andere Verbindung oder einen anderen entfernten Ordner.",
+  syncErrorEncryptionPassword:
+    "Gib das Verschlüsselungspasswort ein (mindestens 12 Zeichen).",
+  syncErrorEncryptionWrong:
+    "Das Verschlüsselungspasswort ist falsch oder die verschlüsselten Daten sind beschädigt.",
+  syncErrorEncryptionChanged:
+    "Die Verschlüsselungsbeschreibung des Repositorys hat sich geändert. Prüfe das Passwort oder das Remote.",
+  syncErrorLegacyRemote:
+    "Dieses Remote ist ein Klartext-Repository. Schalte die Verschlüsselung aus oder nutze ein neues Repository.",
+  syncErrorEncryptionMissing:
+    "Diesem Repository fehlt die Verschlüsselungsbeschreibung.",
   syncErrorBusy:
     "Eine andere Synchronisierung läuft bereits. Warte, bis sie fertig ist.",
   syncWebdav: "WebDAV",
@@ -2025,6 +2035,12 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncS3FlavorLabel: "S3-Kompatibilität",
   syncS3Standard: "Standard-S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "Dieses Repository verschlüsseln",
+  syncEncryptionPasswordLabel: "Verschlüsselungspasswort",
+  syncEncryptionPasswordNote:
+    "Mindestens 12 Zeichen. Es kann bei Verlust nicht wiederhergestellt werden.",
+  syncEncryptionHint:
+    "Die Verschlüsselung wird beim Anlegen des Repositorys gewählt. Nachträgliches Einschalten für ein bestehendes Klartext-Repository konvertiert es nicht.",
   syncErrorConditional:
     "Dieser Dienst unterstützt das für die Sperre nötige bedingte Schreiben nicht. Versuche den OSS-Modus oder einen anderen Dienst.",
   syncAccountLabel: "Username",

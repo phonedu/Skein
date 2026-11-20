@@ -2035,6 +2035,15 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncAutoPrefix: "Deixe vazio para criar um sub-repositório para esta pasta.",
   syncErrorRepository:
     "Outra biblioteca já usa este repositório remoto. Escolha outra ligação ou outra pasta remota.",
+  syncErrorEncryptionPassword:
+    "Introduza a palavra-passe de cifra (pelo menos 12 caracteres).",
+  syncErrorEncryptionWrong:
+    "A palavra-passe de cifra está errada ou os dados cifrados estão danificados.",
+  syncErrorEncryptionChanged:
+    "O descritor de cifra do repositório mudou. Verifique a palavra-passe ou o remoto.",
+  syncErrorLegacyRemote:
+    "Este remoto é um repositório de texto simples. Desative a cifra ou use um repositório novo.",
+  syncErrorEncryptionMissing: "Falta o descritor de cifra neste repositório.",
   syncErrorBusy: "Já há outra sincronização em curso. Aguarde que termine.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
@@ -2046,6 +2055,12 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncS3FlavorLabel: "Compatibilidade S3",
   syncS3Standard: "S3 padrão",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "Cifrar este repositório",
+  syncEncryptionPasswordLabel: "Palavra-passe de cifra",
+  syncEncryptionPasswordNote:
+    "Pelo menos 12 caracteres. Não pode ser recuperada se for perdida.",
+  syncEncryptionHint:
+    "A cifra é escolhida ao criar o repositório. Ativá-la num repositório de texto simples existente não o converte.",
   syncErrorConditional:
     "Este serviço não suporta a escrita condicional necessária à sincronização. Experimente o modo OSS ou outro serviço.",
   syncAccountLabel: "Username",

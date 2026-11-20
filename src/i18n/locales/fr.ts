@@ -2071,6 +2071,15 @@ utiliser une.
   syncAutoPrefix: "Laissez vide pour créer un sous-dépôt pour ce dossier.",
   syncErrorRepository:
     "Une autre bibliothèque utilise déjà ce dépôt distant. Choisissez une autre connexion ou un autre dossier distant.",
+  syncErrorEncryptionPassword:
+    "Saisissez le mot de passe de chiffrement (au moins 12 caractères).",
+  syncErrorEncryptionWrong:
+    "Le mot de passe de chiffrement est faux ou les données chiffrées sont endommagées.",
+  syncErrorEncryptionChanged:
+    "Le descripteur de chiffrement du dépôt a changé. Vérifiez le mot de passe ou le dépôt distant.",
+  syncErrorLegacyRemote:
+    "Ce dépôt distant est en clair. Désactivez le chiffrement ou utilisez un nouveau dépôt.",
+  syncErrorEncryptionMissing: "Ce dépôt n’a pas de descripteur de chiffrement.",
   syncErrorBusy:
     "Une autre synchronisation est déjà en cours. Attendez qu’elle se termine.",
   syncWebdav: "WebDAV",
@@ -2083,6 +2092,12 @@ utiliser une.
   syncS3FlavorLabel: "Compatibilité S3",
   syncS3Standard: "S3 standard",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "Chiffrer ce dépôt",
+  syncEncryptionPasswordLabel: "Mot de passe de chiffrement",
+  syncEncryptionPasswordNote:
+    "Au moins 12 caractères. Il ne peut pas être récupéré en cas de perte.",
+  syncEncryptionHint:
+    "Le chiffrement est choisi à la création du dépôt. L’activer sur un dépôt en clair existant ne le convertit pas.",
   syncErrorConditional:
     "Ce service ne prend pas en charge l’écriture conditionnelle nécessaire à la synchronisation. Essayez le mode OSS ou un autre service.",
   syncAccountLabel: "Username",

@@ -44,6 +44,13 @@ pub struct Config {
     /// replace the folder's). Set when the value changes or on request.
     #[serde(default)]
     pub keep_chosen: bool,
+    /// Whether this vault's repository is end-to-end encrypted.
+    #[serde(default)]
+    pub encrypted: bool,
+    /// The local vault identity; secrets are keyed by it, so a moved
+    /// folder keeps its password.
+    #[serde(default)]
+    pub vault_id: String,
 }
 
 fn keep() -> u32 {
@@ -65,6 +72,9 @@ pub struct Credentials {
     pub access_key: String,
     #[serde(default)]
     pub secret_key: String,
+    /// Per-vault encryption password; never stored with the connection.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub sync_password: String,
 }
 
 impl Credentials {
@@ -90,6 +100,7 @@ impl Credentials {
             } else {
                 self.secret_key.clone()
             },
+            sync_password: String::new(),
         }
     }
 
@@ -139,6 +150,8 @@ struct Binding {
     keep_days: u32,
     #[serde(default)]
     keep_chosen: bool,
+    #[serde(default)]
+    encrypted: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -167,6 +180,18 @@ struct SecretFile {
     version: u32,
     #[serde(default)]
     connections: BTreeMap<String, Credentials>,
+    /// Password and descriptor pin, per local vault identity.
+    #[serde(default)]
+    vaults: BTreeMap<String, VaultSecret>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultSecret {
+    #[serde(default)]
+    pub sync_password: String,
+    #[serde(default)]
+    pub pin: String,
 }
 
 impl SecretFile {
@@ -174,6 +199,7 @@ impl SecretFile {
         Self {
             version: STORE_VERSION,
             connections: BTreeMap::new(),
+            vaults: BTreeMap::new(),
         }
     }
 }
@@ -286,6 +312,7 @@ fn read_state(paths: &StorePaths) -> Result<(StoreFile, SecretFile), String> {
             SecretFile {
                 version: STORE_VERSION,
                 connections: secrets.0,
+                vaults: BTreeMap::new(),
             },
         ),
         (Some(AnyStore::Current(store)), None) => (store, SecretFile::empty()),
@@ -302,6 +329,7 @@ fn read_state(paths: &StorePaths) -> Result<(StoreFile, SecretFile), String> {
             SecretFile {
                 version: STORE_VERSION,
                 connections: secrets.0,
+                vaults: BTreeMap::new(),
             },
         ),
         (None, None) => (StoreFile::empty(), SecretFile::empty()),
@@ -345,6 +373,7 @@ fn migrate(legacy: LegacyConfigs, secrets: LegacySecrets) -> (StoreFile, SecretF
                 repository_id: String::new(),
                 keep_days: config.keep_days,
                 keep_chosen: config.keep_chosen,
+                encrypted: false,
             },
         );
         if let Some(credentials) = secrets.0.get(&key) {
@@ -467,6 +496,26 @@ fn resolved_binding(store: &StoreFile, root: &Path) -> Option<(String, Binding)>
         .map(|(key, binding)| (key.clone(), binding.clone()))
 }
 
+pub fn load_vault_secret(app: &tauri::AppHandle, vault_id: &str) -> Result<VaultSecret, String> {
+    if vault_id.is_empty() {
+        return Ok(VaultSecret::default());
+    }
+    let (_, secrets) = read_state(&store_paths(app)?)?;
+    Ok(secrets.vaults.get(vault_id).cloned().unwrap_or_default())
+}
+
+pub fn save_vault_pin(app: &tauri::AppHandle, vault_id: &str, pin: &str) -> Result<(), String> {
+    if vault_id.is_empty() {
+        return Ok(());
+    }
+    let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    let paths = store_paths(app)?;
+    let (_, mut secrets) = read_state(&paths)?;
+    secrets.vaults.entry(vault_id.to_string()).or_default().pin = pin.to_string();
+    let json = serde_json::to_string(&secrets).map_err(|e| e.to_string())?;
+    crate::atomic::write_secret_sync(&paths.secrets, json).map_err(|e| e.to_string())
+}
+
 pub fn canonical_root(root: &str) -> Result<PathBuf, String> {
     let path = PathBuf::from(root)
         .canonicalize()
@@ -506,6 +555,8 @@ fn load_at(paths: &StorePaths, root: &Path) -> Result<Option<(Config, Credential
             s3_flavor: connection.s3_flavor.clone(),
             keep_days: binding.keep_days,
             keep_chosen: binding.keep_chosen,
+            encrypted: binding.encrypted,
+            vault_id: binding.vault_id.clone(),
         },
         credentials,
     )))
@@ -599,7 +650,10 @@ fn save_at(
         .get(&connection_id)
         .cloned()
         .unwrap_or_default();
-    let credentials = credentials.merge(&old_credentials);
+    let sync_password = credentials.sync_password.clone();
+    let mut connection_credentials = credentials;
+    connection_credentials.sync_password.clear();
+    let credentials = connection_credentials.merge(&old_credentials);
     validate_credentials(&connection.provider, &credentials)?;
 
     let vault_id = existing
@@ -661,6 +715,21 @@ fn save_at(
     let remote_changed = existing
         .as_ref()
         .is_some_and(|binding| binding.connection_id != connection_id || binding.prefix != prefix);
+    let previous_secret = secrets.vaults.get(&vault_id).cloned().unwrap_or_default();
+    let sync_password = if sync_password.is_empty() {
+        previous_secret.sync_password
+    } else {
+        sync_password
+    };
+    if config.encrypted {
+        textus_sync::encryption::validate_password(&sync_password)
+            .map_err(|error| error.to_string())?;
+    }
+    let pin = if remote_changed || existing.is_none() {
+        String::new()
+    } else {
+        previous_secret.pin
+    };
     let repository_id = existing
         .as_ref()
         .map(|binding| binding.repository_id.clone())
@@ -670,10 +739,11 @@ fn save_at(
         root: root.to_string_lossy().into_owned(),
         connection_id: connection_id.clone(),
         prefix,
-        vault_id,
+        vault_id: vault_id.clone(),
         repository_id,
         keep_days,
         keep_chosen,
+        encrypted: config.encrypted,
     };
     let existing_base = existing
         .as_ref()
@@ -711,6 +781,9 @@ fn save_at(
     secrets
         .connections
         .insert(connection_id.clone(), credentials);
+    secrets
+        .vaults
+        .insert(vault_id.clone(), VaultSecret { sync_password, pin });
     // A vault that moved to another connection leaves no orphan behind.
     if let Some(previous) = existing
         .as_ref()
@@ -743,10 +816,12 @@ fn forget_at(paths: &StorePaths, root: &Path) -> Result<(), String> {
     };
     let base = paths.base_for(root, Some(&binding));
     let old_last = paths.last(Path::new(&binding.root));
+    let vault_id = binding.vault_id.clone();
     let connection = store
         .vaults
         .remove(&key)
         .map(|binding| binding.connection_id);
+    secrets.vaults.remove(&vault_id);
     if let Some(connection) = connection {
         if !store
             .vaults
@@ -994,11 +1069,13 @@ fn validate_credentials(provider: &str, credentials: &Credentials) -> Result<(),
 pub fn settings_json(
     config: &Config,
     has_credentials: bool,
+    has_encryption_password: bool,
     connections: &[serde_json::Value],
 ) -> serde_json::Value {
     serde_json::json!({
         "config": config,
         "hasCredentials": has_credentials,
+        "hasEncryptionPassword": has_encryption_password,
         "connections": connections,
     })
 }
@@ -1025,6 +1102,8 @@ mod tests {
                     s3_flavor: "standard".to_string(),
                     keep_days: 90,
                     keep_chosen: false,
+                    encrypted: false,
+                    vault_id: String::new(),
                 },
             },
         );
@@ -1156,6 +1235,8 @@ mod tests {
             s3_flavor: "standard".to_string(),
             keep_days: 90,
             keep_chosen: false,
+            encrypted: false,
+            vault_id: String::new(),
         }
     }
 
@@ -1395,6 +1476,42 @@ mod tests {
         assert_eq!(Path::new(&binding.root), moved.as_path());
         assert_eq!(binding.repository_id, old_repository);
         assert!(base.exists());
+    }
+
+    #[test]
+    fn an_encrypted_vault_keeps_its_password_out_of_the_connection() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        let mut config = webdav_config();
+        config.encrypted = true;
+        let credentials = Credentials {
+            sync_password: "correct horse battery".to_string(),
+            ..webdav_credentials()
+        };
+        save_at(&paths, &root, config, credentials).unwrap();
+        let (saved, connection_credentials) = load_at(&paths, &root).unwrap().unwrap();
+        assert!(saved.encrypted);
+        assert!(connection_credentials.sync_password.is_empty());
+        let (_, secrets) = read_state(&paths).unwrap();
+        assert_eq!(
+            secrets.vaults[&saved.vault_id].sync_password,
+            "correct horse battery"
+        );
+
+        let mut again = webdav_config();
+        again.encrypted = true;
+        save_at(&paths, &root, again, webdav_credentials()).unwrap();
+        let (_, secrets) = read_state(&paths).unwrap();
+        assert_eq!(
+            secrets.vaults[&saved.vault_id].sync_password,
+            "correct horse battery"
+        );
+
+        forget_at(&paths, &root).unwrap();
+        let (_, secrets) = read_state(&paths).unwrap();
+        assert!(secrets.vaults.is_empty());
     }
 
     #[test]

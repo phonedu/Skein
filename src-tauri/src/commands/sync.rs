@@ -10,6 +10,7 @@ use serde::Serialize;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::UNIX_EPOCH;
+use textus_sync::open_encrypted_store;
 use textus_sync::path::conflict_path;
 use textus_sync::protocol::{HEAD_KEY, HISTORY_KEY, LOCK_KEY};
 use textus_sync::{
@@ -53,6 +54,39 @@ fn store_for(config: &Config, credentials: &Credentials) -> Result<Box<dyn Objec
         )),
         _ => Err(crate::errors::error("invalidConfig")),
     }
+}
+
+/// The transport, wrapped in the encrypted store when this vault (or the
+/// remote descriptor) says the repository is encrypted. A read-only caller
+/// with no remote head gets the raw store: there is nothing encrypted to
+/// open yet.
+async fn open_store(
+    app: &tauri::AppHandle,
+    config: &Config,
+    credentials: &Credentials,
+    create: bool,
+) -> Result<Box<dyn ObjectStore>, String> {
+    let raw = store_for(config, credentials)?;
+    let descriptor = raw.get(HEAD_KEY).await.map_err(|e| e.to_string())?;
+    let remote_encrypted = descriptor
+        .as_deref()
+        .is_some_and(textus_sync::encryption::is_encryption_descriptor);
+    if !config.encrypted && !remote_encrypted {
+        return Ok(raw);
+    }
+    if !create && descriptor.is_none() {
+        return Ok(raw);
+    }
+    let secret = store::load_vault_secret(app, &config.vault_id)?;
+    if secret.sync_password.is_empty() {
+        return Err("syncPasswordRequired".to_string());
+    }
+    let pin = (!secret.pin.is_empty()).then_some(secret.pin.as_str());
+    let store = open_encrypted_store(raw, &secret.sync_password, pin)
+        .await
+        .map_err(|e| e.to_string())?;
+    store::save_vault_pin(app, &config.vault_id, store.fingerprint())?;
+    Ok(Box::new(store))
 }
 
 fn trash_for(app: &tauri::AppHandle, root: &std::path::Path) -> TrashFile {
@@ -125,8 +159,13 @@ pub fn sync_settings_get(app: tauri::AppHandle, root: String) -> Result<String, 
         })
         .to_string());
     };
-    let mut value =
-        store::settings_json(&config, credentials.has_for(&config.provider), &connections);
+    let secret = store::load_vault_secret(&app, &config.vault_id)?;
+    let mut value = store::settings_json(
+        &config,
+        credentials.has_for(&config.provider),
+        !secret.sync_password.is_empty(),
+        &connections,
+    );
     value["configured"] = serde_json::Value::Bool(true);
     Ok(value.to_string())
 }
@@ -258,7 +297,7 @@ pub async fn sync_run_saved(
         return Err(crate::errors::error("notConfigured"));
     };
     let run = async {
-        let store = store_for(&config, &credentials)?;
+        let store = open_store(&app, &config, &credentials, true).await?;
         probe(store.as_ref()).await.map_err(|e| e.to_string())?;
         let base = store::load_base(&app, &root)?;
         let local = LocalSync::new(root.clone(), trash_for(&app, &root))
@@ -392,7 +431,7 @@ pub async fn sync_history(app: tauri::AppHandle, root: String) -> Result<String,
     let Some((config, credentials)) = store::load(&app, &root)? else {
         return Err(crate::errors::error("notConfigured"));
     };
-    let store = store_for(&config, &credentials)?;
+    let store = open_store(&app, &config, &credentials, false).await?;
     let Some(raw) = store.get(HISTORY_KEY).await.map_err(|e| e.to_string())? else {
         return Ok("null".to_string());
     };
@@ -413,7 +452,7 @@ pub async fn sync_restore(
     let Some((config, credentials)) = store::load(&app, &root)? else {
         return Err(crate::errors::error("notConfigured"));
     };
-    let store = store_for(&config, &credentials)?;
+    let store = open_store(&app, &config, &credentials, false).await?;
     let raw = store
         .get(HISTORY_KEY)
         .await

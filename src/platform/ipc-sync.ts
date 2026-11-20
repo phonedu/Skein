@@ -17,6 +17,10 @@ export interface SyncConfig {
   keepDays: number;
   /** Whether this device chose keepDays; only then does it replace the folder's. */
   keepChosen?: boolean;
+  /** Whether this vault's repository is end-to-end encrypted. */
+  encrypted?: boolean;
+  /** Local vault identity; the encryption password is keyed by it. */
+  vaultId?: string;
 }
 
 export interface SyncCredentials {
@@ -24,6 +28,8 @@ export interface SyncCredentials {
   password: string;
   accessKey: string;
   secretKey: string;
+  /** Per-vault encryption password; never a connection credential. */
+  syncPassword?: string;
 }
 
 export interface SyncResult {
@@ -71,6 +77,7 @@ export interface SyncSettings {
   configured: boolean;
   config?: SyncConfig;
   hasCredentials?: boolean;
+  hasEncryptionPassword?: boolean;
   connections?: SyncConnection[];
 }
 

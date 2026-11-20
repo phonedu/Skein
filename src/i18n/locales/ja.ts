@@ -1936,6 +1936,15 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
     "空欄にすると、このフォルダー用のサブリポジトリを作成します。",
   syncErrorRepository:
     "別のライブラリがこのリモートリポジトリを使用しています。別の接続かリモートフォルダーを選んでください。",
+  syncErrorEncryptionPassword:
+    "暗号化パスワード（12 文字以上）を入力してください。",
+  syncErrorEncryptionWrong:
+    "暗号化パスワードが違うか、暗号化データが破損しています。",
+  syncErrorEncryptionChanged:
+    "リポジトリの暗号化記述が変わりました。パスワードかリモートを確認してください。",
+  syncErrorLegacyRemote:
+    "このリモートは平文リポジトリです。暗号化をオフにするか、新しいリポジトリを使ってください。",
+  syncErrorEncryptionMissing: "このリポジトリには暗号化記述がありません。",
   syncErrorBusy: "別の同期が実行中です。完了するまでお待ちください。",
   syncWebdav: "WebDAV",
   syncS3: "S3",
@@ -1947,6 +1956,11 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncS3FlavorLabel: "S3 互換モード",
   syncS3Standard: "標準 S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncEncryptionLabel: "このリポジトリを暗号化",
+  syncEncryptionPasswordLabel: "暗号化パスワード",
+  syncEncryptionPasswordNote: "12 文字以上。忘れると復元できません。",
+  syncEncryptionHint:
+    "暗号化はリポジトリ作成時に選びます。既存の平文リポジトリでオンにしても変換されません。",
   syncErrorConditional:
     "このサービスは同期に必要な条件付き書き込みに対応していません。OSS モードか別のサービスをお試しください。",
   syncAccountLabel: "ユーザー名",
