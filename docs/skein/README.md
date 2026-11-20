@@ -42,6 +42,7 @@
 | 同步：协议 v1（冻结）                         | [02-方案/同步协议-v1.md](02-方案/同步协议-v1.md)                                             | skein · S0b 冻结；改协议先开 v2           |
 | 同步：插件 spike 三条轨                       | [02-方案/同步插件spike计划.md](02-方案/同步插件spike计划.md)                                  | skein · S0c 已执行轨 0；轨 A/B 未跑       |
 | 同步：内置架构 / 多库 / 迁移                  | [02-方案/同步方案.md](02-方案/同步方案.md)                                                   | skein · S0d 定稿                          |
+| 文档稳定身份 spike（rename+edit / 跨设备 move） | [02-方案/Textus-文档稳定身份-v0.md](02-方案/Textus-文档稳定身份-v0.md)                       | skein · spike，未裁决                     |
 | 同步评审、多库与实施顺序                         | [03-调研/同步评审/README.md](03-调研/同步评审/README.md)                                     | skein · 评审已执行到 S2 主体              |
 | 已完成任务与封存线（历史）                       | [archive/2026-11-19-task-list-archive.md](archive/2026-11-19-task-list-archive.md)            | skein · 历史，不再维护                    |
 | 已落地的界面改写与全部裁决                       | [02-方案/Textus-界面改造方案.md](02-方案/Textus-界面改造方案.md)（裁决记录在 §4）            | skein · 可写                              |

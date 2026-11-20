@@ -112,7 +112,7 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 
 ### 1.11 同步内置桌面主体（S2 第一至七片，2026-11-20）
 
-> S2 尚未完成验收（built app 实跑、20k/弱网、真机跨端），这里只归档已落地的实现片段；未完成项留在任务清单 §3。
+> S2 的验收已于 2026-11-20 完成，见 §1.16；这里保留实现片段。
 
 | 片 | 已完成 | 证据 |
 | --- | --- | --- |
@@ -132,13 +132,33 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 - 引擎与插件同判据：base 非空而 scan 为 0 → `emptyScan`；删除 >20% 或 >50 个 → `bulkDelete`；单个删除不算批量；改名不误判。
 - 设置页在 `emptyScan` / `bulkDelete` 后弹「仍要同步」二次确认，确认后同一轮带 `allowEmptyScan` / `allowBulkDelete` 重跑。
 - 插件侧 2026-11-19 已完成（`dcb19b1`，156/156）；内置侧单测覆盖。
-- 交互验收（built app 实际点击「仍要同步」）并入任务清单 §3 的 S2 验收尾项，不重复立任务。
+- 交互验收（built app 实际点击「仍要同步」）已并入 S2 验收（§1.16）。
 
 ### 1.13 已决事项（从待审移出）
 
 | 项 | 原问题 | 结论 |
 | --- | --- | --- |
 | U16 | S2 UI 范围：只 Settings + notice，还是含状态/冲突/历史 | 已执行：Settings + 状态/冲突/历史（S2 第五、六片，`9da3efb9`、`7ba2655a`） |
+
+### 1.14 S2a 多库模型（2026-11-20）
+
+连接/绑定 v2、库身份与 repositoryId、base 按身份命名并随库移动、副本 fork、共享连接编辑、并发 2/1、库列表。详见 [S2a 归档](2026-11-20-s2a-multi-vault.md)。
+
+### 1.15 S2b E2EE（2026-11-20）
+
+描述符、PBKDF2/HKDF/AES-GCM、EncryptedStore、每库密码/pin；built app WebDAV 与真实 S3 引擎级加密 round-trip。详见 [S2b 归档](2026-11-20-s2b-e2ee.md)。
+
+### 1.16 S2 验收尾项（2026-11-20）
+
+built app 本机 WebDAV/真实 S3、20k/128 MiB/失败恢复、华为真机插件互通；scale 4 测试与 WebDAV 状态映射。详见 [S2 验收归档](2026-11-20-s2-acceptance.md)。
+
+### 1.17 S6 迁移 / 双开 / 首连 dry-run（2026-11-20）
+
+首连预览、Cloud Sync 插件导入、双开检测与停用/卸载/回退引导；built app 真实 S3 导入与增量。详见 [S6 归档](2026-11-20-s6-migration.md)。
+
+### 1.18 S3 内置移动端 v1（2026-11-21）
+
+Android 构建、App Documents/普通路径、手机状态行、真机五项、App trash、杀进程/断网恢复、多库上限、content grant 引导；真机华为 PKT0220512001548。详见 [S3 归档](2026-11-21-s3-mobile.md)。content:// SAF（H9）与后台（U4）不在 v1。
 
 ---
 
