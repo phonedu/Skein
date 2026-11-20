@@ -1859,6 +1859,11 @@ export default {
   syncSavedPlaceholder: "已保存，留空保持不变",
   syncSave: "保存连接",
   syncNow: "立即同步",
+  syncPreview: "预览",
+  syncPreviewSummary:
+    "将上传 {uploaded}（{uploadBytes} 字节）、下载 {downloaded}（{downloadBytes} 字节）、删除远端 {removedRemote} / 本地 {removedLocal}、冲突 {conflicts}、移动 {moved}。",
+  syncPreviewEmptyScan: "文件夹看起来是空的；执行会删除远端文件。",
+  syncPreviewBulk: "本次执行将删除大量文件。",
   syncDisconnect: "断开",
   syncDisconnectAsk:
     "断开“{folder}”？文件仍留在本机和云端，只删除本机的连接与 base。",

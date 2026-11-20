@@ -1970,6 +1970,12 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncSavedPlaceholder: "保存済み（空欄なら保持）",
   syncSave: "接続を保存",
   syncNow: "今すぐ同期",
+  syncPreview: "プレビュー",
+  syncPreviewSummary:
+    "アップロード {uploaded}（{uploadBytes} バイト）、ダウンロード {downloaded}（{downloadBytes} バイト）、リモート削除 {removedRemote} / ローカル削除 {removedLocal}、競合 {conflicts}、移動 {moved} の見込みです。",
+  syncPreviewEmptyScan:
+    "フォルダーが空のようです。実行するとリモートのファイルが削除されます。",
+  syncPreviewBulk: "この実行では多くのファイルが削除されます。",
   syncDisconnect: "切断",
   syncDisconnectAsk:
     "「{folder}」を切断しますか？ファイルは端末とクラウドに残り、この端末の接続と base だけを削除します。",

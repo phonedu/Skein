@@ -86,6 +86,20 @@ export interface SyncStatus {
   last?: SyncLast | null;
 }
 
+export interface SyncPreview {
+  uploaded: number;
+  downloaded: number;
+  removedRemote: number;
+  removedLocal: number;
+  conflicts: number;
+  moved: number;
+  unchanged: number;
+  uploadBytes: number;
+  downloadBytes: number;
+  emptyScan: boolean;
+  bulkDelete: boolean;
+}
+
 export interface SyncReply {
   result: SyncResult;
   base: unknown;
@@ -153,6 +167,9 @@ export const syncUnlock = (
   commands
     .sync_unlock(root, token)
     .then((json) => parse<{ state: "unlocked" | "noLock" }>(json));
+
+export const syncPreview = (root: string): Promise<SyncPreview> =>
+  commands.sync_preview(root).then((json) => parse<SyncPreview>(json));
 
 export const syncRunSaved = (
   root: string,

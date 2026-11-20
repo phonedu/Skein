@@ -2093,6 +2093,12 @@ para usar una.
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
+  syncPreview: "Vista previa",
+  syncPreviewSummary:
+    "Subiría {uploaded} ({uploadBytes} bytes), descargaría {downloaded} ({downloadBytes} bytes), borraría {removedRemote} remotos / {removedLocal} locales, {conflicts} conflictos, {moved} movimientos.",
+  syncPreviewEmptyScan:
+    "La carpeta parece vacía; la ejecución borraría archivos remotos.",
+  syncPreviewBulk: "Esta ejecución borraría muchos archivos.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

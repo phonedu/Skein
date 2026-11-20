@@ -2050,6 +2050,12 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
+  syncPreview: "Vorschau",
+  syncPreviewSummary:
+    "Würde {uploaded} hochladen ({uploadBytes} Bytes), {downloaded} herunterladen ({downloadBytes} Bytes), {removedRemote} remote / {removedLocal} lokal löschen, {conflicts} Konflikte, {moved} Verschiebungen.",
+  syncPreviewEmptyScan:
+    "Der Ordner wirkt leer; der Lauf würde entfernte Dateien löschen.",
+  syncPreviewBulk: "Dieser Lauf würde viele Dateien löschen.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

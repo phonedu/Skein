@@ -2070,6 +2070,12 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
+  syncPreview: "Pré-visualizar",
+  syncPreviewSummary:
+    "Enviaria {uploaded} ({uploadBytes} bytes), receberia {downloaded} ({downloadBytes} bytes), eliminaria {removedRemote} remotos / {removedLocal} locais, {conflicts} conflitos, {moved} movimentos.",
+  syncPreviewEmptyScan:
+    "A pasta parece vazia; a execução eliminaria ficheiros remotos.",
+  syncPreviewBulk: "Esta execução eliminaria muitos ficheiros.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

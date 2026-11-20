@@ -219,6 +219,7 @@ pub(crate) fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Sen
         commands::sync::sync_settings_save,
         commands::sync::sync_settings_forget,
         commands::sync::sync_status,
+        commands::sync::sync_preview,
         commands::sync::sync_lock,
         commands::sync::sync_unlock,
         commands::sync::sync_conflicts,

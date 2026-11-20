@@ -7,8 +7,8 @@ use textus_sync::protocol::{
     block_key, new_revision, Lock, Trashed, HEAD_KEY, HISTORY_KEY, LOCK_KEY,
 };
 use textus_sync::{
-    sync, Base, History, LocalFiles, Manifest, MemoryLocal, MemoryStore, ObjectStore, SyncError,
-    SyncOptions,
+    preview, sync, Base, History, LocalFiles, Manifest, MemoryLocal, MemoryStore, ObjectStore,
+    SyncError, SyncOptions,
 };
 
 fn local(items: &[(&str, &str)]) -> MemoryLocal {
@@ -532,4 +532,44 @@ async fn a_lock_that_was_not_really_stored_stops_before_planning() {
     let error = sync(&store, &local, options()).await.unwrap_err();
     assert_eq!(error.code, "lockLost");
     assert!(store.inner.get(HEAD_KEY).await.unwrap().is_none());
+}
+
+#[tokio::test]
+async fn a_first_connect_preview_counts_the_upload_without_writing() {
+    let store = MemoryStore::new();
+    let local = local(&[("a.md", "hello")]);
+    let result = preview(&store, &local, &options()).await.unwrap();
+    assert_eq!(result.uploaded, 1);
+    assert_eq!(result.upload_bytes, 5);
+    assert_eq!(result.downloaded, 0);
+    assert!(store.get(HEAD_KEY).await.unwrap().is_none());
+    assert!(store.get(LOCK_KEY).await.unwrap().is_none());
+}
+
+#[tokio::test]
+async fn a_preview_shows_conflicts_and_the_empty_scan_guard() {
+    let store = MemoryStore::new();
+    let remote = local(&[("a.md", "remote")]);
+    sync(&store, &remote, options()).await.unwrap();
+    let edited = local(&[("a.md", "local")]);
+    let result = preview(&store, &edited, &options()).await.unwrap();
+    assert_eq!(result.conflicts, 1);
+
+    let empty = local(&[]);
+    let result = preview(
+        &store,
+        &empty,
+        &SyncOptions {
+            base: Base {
+                format: "textus-cloud-sync/1".to_string(),
+                files: [("a.md".to_string(), hash_hex(b"remote"))].into(),
+                parked: Default::default(),
+            },
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert!(result.empty_scan);
+    assert_eq!(result.removed_remote, 1);
 }

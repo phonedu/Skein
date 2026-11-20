@@ -17,7 +17,7 @@ pub mod store;
 pub mod webdav;
 
 pub use encrypted_store::{open_encrypted_store, EncryptedStore};
-pub use engine::{read_entry, sync, SyncOptions, SyncOutcome, SyncResult};
+pub use engine::{preview, read_entry, sync, SyncOptions, SyncOutcome, SyncPreview, SyncResult};
 pub use error::{Result, SyncError};
 pub use local::{LocalFiles, MemoryLocal};
 pub use planner::{plan, Action, Kind};

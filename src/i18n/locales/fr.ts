@@ -2107,6 +2107,12 @@ utiliser une.
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
+  syncPreview: "Aperçu",
+  syncPreviewSummary:
+    "Enverrait {uploaded} ({uploadBytes} octets), recevrait {downloaded} ({downloadBytes} octets), supprimerait {removedRemote} distants / {removedLocal} locaux, {conflicts} conflits, {moved} déplacements.",
+  syncPreviewEmptyScan:
+    "Le dossier semble vide ; l’exécution supprimerait des fichiers distants.",
+  syncPreviewBulk: "Cette exécution supprimerait beaucoup de fichiers.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

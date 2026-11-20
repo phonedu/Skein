@@ -1864,6 +1864,11 @@ export default {
   syncSavedPlaceholder: "已儲存，留空保持不變",
   syncSave: "儲存連線",
   syncNow: "立即同步",
+  syncPreview: "預覽",
+  syncPreviewSummary:
+    "將上傳 {uploaded}（{uploadBytes} 位元組）、下載 {downloaded}（{downloadBytes} 位元組）、刪除遠端 {removedRemote} / 本機 {removedLocal}、衝突 {conflicts}、移動 {moved}。",
+  syncPreviewEmptyScan: "資料夾看起來是空的；執行會刪除遠端檔案。",
+  syncPreviewBulk: "本次執行將刪除大量檔案。",
   syncDisconnect: "中斷",
   syncDisconnectAsk:
     "中斷「{folder}」？檔案仍留在本機和雲端，只刪除本機的連線與 base。",

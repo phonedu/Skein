@@ -2004,6 +2004,12 @@ type /name in a conversation to use one.
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
+  syncPreview: "Preview",
+  syncPreviewSummary:
+    "Would upload {uploaded} ({uploadBytes} bytes), download {downloaded} ({downloadBytes} bytes), delete {removedRemote} remote / {removedLocal} local, {conflicts} conflicts, {moved} moves.",
+  syncPreviewEmptyScan:
+    "The folder looks empty; the run would delete remote files.",
+  syncPreviewBulk: "This run would delete many files.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

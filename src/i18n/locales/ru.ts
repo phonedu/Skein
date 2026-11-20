@@ -2096,6 +2096,11 @@ export default {
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
+  syncPreview: "Предпросмотр",
+  syncPreviewSummary:
+    "Будет загружено {uploaded} ({uploadBytes} байт), скачано {downloaded} ({downloadBytes} байт), удалено удалённых {removedRemote} / локальных {removedLocal}, конфликтов {conflicts}, перемещений {moved}.",
+  syncPreviewEmptyScan: "Папка выглядит пустой; запуск удалит удалённые файлы.",
+  syncPreviewBulk: "Этот запуск удалит много файлов.",
   syncDisconnect: "Disconnect",
   syncDisconnectAsk:
     "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",

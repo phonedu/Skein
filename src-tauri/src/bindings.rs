@@ -49,6 +49,7 @@ fn groups() -> Vec<(&'static str, Builder<tauri::Wry>)> {
                     crate::commands::sync::sync_settings_save,
                     crate::commands::sync::sync_settings_forget,
                     crate::commands::sync::sync_status,
+                    crate::commands::sync::sync_preview,
                     crate::commands::sync::sync_lock,
                     crate::commands::sync::sync_unlock,
                     crate::commands::sync::sync_conflicts,

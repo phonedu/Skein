@@ -20,6 +20,7 @@ vi.mock("../../platform/ipc-sync", () => ({
   syncConflicts: vi.fn(),
   syncHistory: vi.fn(),
   syncVaults: vi.fn(),
+  syncPreview: vi.fn(),
   syncConnectionUpdate: vi.fn(),
   syncForkVault: vi.fn(),
 }));
@@ -34,6 +35,7 @@ import {
   syncVaults,
   syncConnectionUpdate,
   syncForkVault,
+  syncPreview,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 
@@ -267,4 +269,40 @@ it("defaults a new repository to encryption and saves its password", async () =>
   const [, config, credentials] = vi.mocked(syncSettingsSave).mock.calls[0];
   expect(config.encrypted).toBe(true);
   expect(credentials.syncPassword).toBe("correct horse battery");
+});
+
+it("shows what a first sync would do", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  vi.mocked(syncPreview).mockResolvedValue({
+    uploaded: 3,
+    downloaded: 1,
+    removedRemote: 0,
+    removedLocal: 0,
+    conflicts: 0,
+    moved: 0,
+    unchanged: 2,
+    uploadBytes: 30,
+    downloadBytes: 10,
+    emptyScan: false,
+    bulkDelete: false,
+  });
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  const button = screen.getByRole("button", { name: t.syncPreview });
+  await waitFor(() =>
+    expect((button as HTMLButtonElement).disabled).toBe(false),
+  );
+  fireEvent.click(button);
+  expect(await screen.findByText(/Would upload 3/)).toBeTruthy();
 });

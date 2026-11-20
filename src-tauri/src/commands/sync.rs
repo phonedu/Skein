@@ -14,8 +14,8 @@ use textus_sync::open_encrypted_store;
 use textus_sync::path::conflict_path;
 use textus_sync::protocol::{HEAD_KEY, HISTORY_KEY, LOCK_KEY};
 use textus_sync::{
-    probe, read_entry, sync, Base, History, LocalFiles, Lock, ObjectStore, S3Store, SyncOptions,
-    SyncResult, WebDavStore,
+    preview, probe, read_entry, sync, Base, History, LocalFiles, Lock, ObjectStore, S3Store,
+    SyncOptions, SyncResult, WebDavStore,
 };
 
 #[derive(Serialize)]
@@ -229,6 +229,34 @@ pub fn sync_status(app: tauri::AppHandle, root: String) -> Result<String, String
     let configured = store::load(&app, &root)?.is_some();
     let last = store::load_last(&app, &root)?;
     Ok(serde_json::json!({ "configured": configured, "last": last }).to_string())
+}
+
+/// What a first sync would do, without writing anything.
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn sync_preview(app: tauri::AppHandle, root: String) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    let Some((config, credentials)) = store::load(&app, &root)? else {
+        return Err(crate::errors::error("notConfigured"));
+    };
+    let store = open_store(&app, &config, &credentials, false).await?;
+    let base = store::load_base(&app, &root)?;
+    let local = LocalSync::new(root.clone(), trash_for(&app, &root))?;
+    let result = preview(
+        store.as_ref(),
+        &local,
+        &SyncOptions {
+            base,
+            device: device_name(),
+            keep_days: config.keep_days,
+            keep_chosen: config.keep_chosen,
+            allow_empty_scan: false,
+            allow_bulk_delete: false,
+        },
+    )
+    .await
+    .map_err(|error| error.to_string())?;
+    serde_json::to_string(&result).map_err(|error| error.to_string())
 }
 
 /// The remote lock, so a run stopped by a crashed device can be recovered

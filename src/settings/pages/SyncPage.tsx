@@ -10,6 +10,7 @@ import {
   syncLock,
   syncRestore,
   syncRunSaved,
+  syncPreview,
   syncSettingsForget,
   syncSettingsGet,
   syncSettingsSave,
@@ -24,6 +25,7 @@ import {
   type SyncCredentials,
   type SyncHistory,
   type SyncLock,
+  type SyncPreview,
   type SyncStatus,
   type SyncVault,
 } from "../../platform/ipc-sync";
@@ -134,6 +136,7 @@ export function SyncPage({
   const [lock, setLock] = useState<SyncLock | null>(null);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
+  const [preview, setPreview] = useState<SyncPreview | null>(null);
   const [saved, setSaved] = useState(false);
   const [savedPassword, setSavedPassword] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -303,8 +306,22 @@ export function SyncPage({
     }
   };
 
+  const previewRun = async () => {
+    setBusy(true);
+    setNote(null);
+    setPreview(null);
+    try {
+      setPreview(await syncPreview(folderRoot));
+    } catch (error) {
+      setNote({ error: true, text: errorText(t, String(error)) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const run = async (allowEmpty = false, allowBulk = false) => {
     setBusy(true);
+    setPreview(null);
     setNote({ error: false, text: t.syncRunning });
     try {
       await syncRunSaved(folderRoot, allowEmpty, allowBulk, openPaths);
@@ -747,6 +764,14 @@ export function SyncPage({
             type="button"
             className="text-button settings-inline-button"
             disabled={busy || !status?.configured || dirty}
+            onClick={() => void previewRun()}
+          >
+            {t.syncPreview}
+          </button>
+          <button
+            type="button"
+            className="text-button settings-inline-button"
+            disabled={busy || !status?.configured || dirty}
             onClick={() => void run()}
           >
             {t.syncNow}
@@ -762,6 +787,22 @@ export function SyncPage({
             </button>
           )}
         </div>
+        {preview && (
+          <div className="tx-list-note">
+            {fill(t.syncPreviewSummary, {
+              uploaded: preview.uploaded,
+              download: preview.downloaded,
+              uploadBytes: preview.uploadBytes,
+              downloadBytes: preview.downloadBytes,
+              removedRemote: preview.removedRemote,
+              removedLocal: preview.removedLocal,
+              conflicts: preview.conflicts,
+              moved: preview.moved,
+            })}
+            {preview.emptyScan ? ` ${t.syncPreviewEmptyScan}` : ""}
+            {preview.bulkDelete ? ` ${t.syncPreviewBulk}` : ""}
+          </div>
+        )}
       </SettingsGroup>
       {status?.configured && (
         <SettingsGroup title={t.syncConflictsTitle}>
