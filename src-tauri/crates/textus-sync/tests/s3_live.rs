@@ -48,6 +48,7 @@ async fn conditional_create_and_round_trip() {
         base: Base::empty(),
         device: "rust-s3-live".to_string(),
         keep_days: 90,
+        keep_chosen: false,
         allow_empty_scan: false,
         allow_bulk_delete: false,
     };

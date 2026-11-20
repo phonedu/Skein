@@ -1934,4 +1934,23 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncNoHistory: "아직 클라우드 기록이 없습니다.",
   syncRestore: "복원",
   syncRestored: "복원됨: {path}",
+  syncSummary:
+    "업로드 {uploaded}, 다운로드 {downloaded}, 삭제 {removed}, 충돌 {conflicts}",
+  syncDeferred: "열려 있는 파일 {count}개는 다음에 동기화됩니다.",
+  syncSaveFirst: "동기화하기 전에 연결을 저장하세요.",
+  syncContinue: "그래도 동기화",
+  syncLockedAt: "{time}에 시작한 실행이 아직 잠금을 보유하고 있습니다.",
+  syncUnlockUnknown: "시작 시간을 읽을 수 없는 실행",
+  syncUnlockAsk:
+    "{time}에 시작한 동기화가 남긴 잠금을 해제할까요? 다른 기기가 동기화 중이 아닐 때만 하세요.",
+  syncUnlock: "잠금 해제",
+  syncUnlocked: "잠금을 해제했습니다.",
+  syncErrorRemote:
+    "원격 복사본이 없습니다. 원격 폴더를 확인하세요. 아무것도 삭제되지 않았습니다.",
+  syncErrorLockLost: "다른 기기가 동기화를 가져갔습니다. 다시 실행하세요.",
+  syncErrorHistory: "클라우드 기록이 손상되어 아무것도 변경되지 않았습니다.",
+  syncErrorIntegrity: "파일 검증에 실패하여 아무것도 덮어쓰지 않았습니다.",
+  syncErrorFileOpen:
+    "이 파일은 편집기에서 열려 있습니다. 닫고 다시 시도하세요.",
+  syncErrorVersionGone: "해당 버전은 클라우드 기록에 없습니다.",
 } satisfies Translation;

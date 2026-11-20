@@ -5,6 +5,7 @@
 pub mod chunk;
 pub mod engine;
 pub mod error;
+pub mod history;
 pub mod local;
 pub mod path;
 pub mod planner;

@@ -2073,4 +2073,25 @@ para usar una.
   syncNoHistory: "No cloud history yet.",
   syncRestore: "Restore",
   syncRestored: "Restored: {path}",
+  syncSummary:
+    "{uploaded} subidos, {downloaded} descargados, {removed} eliminados, {conflicts} conflictos",
+  syncDeferred: "{count} archivos abiertos se sincronizarán la próxima vez.",
+  syncSaveFirst: "Guarda la conexión antes de sincronizar.",
+  syncContinue: "Sincronizar igualmente",
+  syncLockedAt: "Una ejecución iniciada {time} aún mantiene el bloqueo.",
+  syncUnlockUnknown: "una ejecución sin hora de inicio legible",
+  syncUnlockAsk:
+    "¿Quitar el bloqueo que dejó una sincronización iniciada {time}? Hazlo solo si ningún otro dispositivo está sincronizando.",
+  syncUnlock: "Quitar bloqueo",
+  syncUnlocked: "Bloqueo quitado.",
+  syncErrorRemote:
+    "Falta la copia remota. Revisa la carpeta remota; no se eliminó nada.",
+  syncErrorLockLost:
+    "Otro dispositivo tomó la sincronización. Vuelve a ejecutarla.",
+  syncErrorHistory: "El historial en la nube está dañado; no se cambió nada.",
+  syncErrorIntegrity:
+    "Un archivo no superó la verificación; no se sobrescribió nada.",
+  syncErrorFileOpen:
+    "Ese archivo está abierto en el editor. Ciérralo e inténtalo de nuevo.",
+  syncErrorVersionGone: "Esa versión ya no está en el historial en la nube.",
 } satisfies Translation;

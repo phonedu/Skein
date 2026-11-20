@@ -46,6 +46,7 @@ export function SettingsContent(props: {
   onFilesDeleted?: (paths: string[]) => void;
   docPath?: string | null;
   folderRoot?: string | null;
+  openPaths?: string[];
 }) {
   const { settings, setSettings } = useSettings();
   /** A Textus AI page drawn only while Textus AI is on. */
@@ -116,6 +117,7 @@ export function SettingsContent(props: {
           openPage: props.onOpenPage,
           marginAvailable: props.marginAvailable,
           folderRoot: props.folderRoot ?? null,
+          openPaths: props.openPaths ?? [],
           fixedShortcuts: props.fixedShortcuts ?? [],
           pluginCommands: props.pluginCommands ?? [],
           ...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {}),

@@ -39,7 +39,21 @@ impl S3Store {
         path_style: bool,
     ) -> Result<Self> {
         let mut endpoint = Url::parse(endpoint).map_err(|_| SyncError::new("invalidConfig"))?;
-        if !matches!(endpoint.scheme(), "http" | "https") || endpoint.host_str().is_none() {
+        if !matches!(endpoint.scheme(), "http" | "https")
+            || endpoint.host_str().is_none()
+            || !endpoint.username().is_empty()
+            || endpoint.password().is_some()
+            || endpoint.query().is_some()
+            || endpoint.fragment().is_some()
+        {
+            return Err(SyncError::new("invalidConfig"));
+        }
+        if endpoint.scheme() == "http"
+            && !matches!(
+                endpoint.host_str().unwrap_or_default(),
+                "localhost" | "127.0.0.1" | "::1"
+            )
+        {
             return Err(SyncError::new("invalidConfig"));
         }
         endpoint.set_query(None);
@@ -47,8 +61,16 @@ impl S3Store {
         if bucket.is_empty() || region.is_empty() {
             return Err(SyncError::new("invalidConfig"));
         }
+        if !prefix.trim_matches('/').is_empty()
+            && !crate::path::relative_path(prefix.trim_matches('/'))
+        {
+            return Err(SyncError::new("invalidPrefix"));
+        }
         Ok(Self {
             client: Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .connect_timeout(std::time::Duration::from_secs(20))
+                .timeout(std::time::Duration::from_secs(180))
                 .build()
                 .map_err(|_| SyncError::new("networkError"))?,
             endpoint,

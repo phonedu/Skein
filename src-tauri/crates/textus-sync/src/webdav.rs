@@ -13,7 +13,8 @@ use uuid::Uuid;
 
 pub struct WebDavStore {
     client: Client,
-    base: Url,
+    endpoint: Url,
+    prefix: String,
     username: String,
     password: String,
     /// Collections this session has made or seen, so a block upload does
@@ -23,39 +24,55 @@ pub struct WebDavStore {
 
 impl WebDavStore {
     pub fn new(endpoint: &str, prefix: &str, username: &str, password: &str) -> Result<Self> {
-        let mut base = Url::parse(endpoint).map_err(|_| SyncError::new("invalidConfig"))?;
-        if !matches!(base.scheme(), "http" | "https") || base.host_str().is_none() {
+        let mut endpoint = Url::parse(endpoint).map_err(|_| SyncError::new("invalidConfig"))?;
+        if !matches!(endpoint.scheme(), "http" | "https")
+            || endpoint.host_str().is_none()
+            || !endpoint.username().is_empty()
+            || endpoint.password().is_some()
+            || endpoint.query().is_some()
+            || endpoint.fragment().is_some()
+        {
             return Err(SyncError::new("invalidConfig"));
         }
-        base.set_query(None);
-        base.set_fragment(None);
-        if !prefix.is_empty() {
-            let mut segments = base
-                .path_segments_mut()
-                .map_err(|_| SyncError::new("invalidPrefix"))?;
-            for part in prefix.split('/') {
-                segments.push(part);
-            }
+        if endpoint.scheme() == "http"
+            && !matches!(
+                endpoint.host_str().unwrap_or_default(),
+                "localhost" | "127.0.0.1" | "::1"
+            )
+        {
+            // Basic auth and sync payloads do not travel in clear text.
+            return Err(SyncError::new("invalidConfig"));
+        }
+        endpoint.set_query(None);
+        endpoint.set_fragment(None);
+        let prefix = prefix.trim_matches('/').to_string();
+        if !prefix.is_empty() && !crate::path::relative_path(&prefix) {
+            return Err(SyncError::new("invalidPrefix"));
         }
         let client = Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            // A stalled server must not hold the lock forever.
+            .connect_timeout(std::time::Duration::from_secs(20))
+            .timeout(std::time::Duration::from_secs(180))
             .build()
             .map_err(|_| SyncError::new("networkError"))?;
         Ok(Self {
             client,
-            base,
+            endpoint,
+            prefix,
             username: username.to_string(),
             password: password.to_string(),
             dirs: Mutex::new(HashSet::new()),
         })
     }
 
-    fn url_for(&self, key: &str) -> Result<Url> {
-        let mut url = self.base.clone();
+    fn url_for_parts(&self, parts: &[String]) -> Result<Url> {
+        let mut url = self.endpoint.clone();
         {
             let mut segments = url
                 .path_segments_mut()
                 .map_err(|_| SyncError::new("invalidPath"))?;
-            for part in key.split('/') {
+            for part in parts {
                 if part.is_empty() {
                     return Err(SyncError::new("invalidPath"));
                 }
@@ -65,6 +82,20 @@ impl WebDavStore {
         Ok(url)
     }
 
+    fn url_for(&self, key: &str) -> Result<Url> {
+        let mut parts = Vec::new();
+        if !self.prefix.is_empty() {
+            parts.extend(self.prefix.split('/').map(str::to_string));
+        }
+        for part in key.split('/') {
+            if part.is_empty() {
+                return Err(SyncError::new("invalidPath"));
+            }
+            parts.push(part.to_string());
+        }
+        self.url_for_parts(&parts)
+    }
+
     async fn send(
         &self,
         method: Method,
@@ -72,9 +103,20 @@ impl WebDavStore {
         body: Option<Vec<u8>>,
         headers: HeaderMap,
     ) -> Result<Response> {
+        self.send_url(method, self.url_for(key)?, body, headers)
+            .await
+    }
+
+    async fn send_url(
+        &self,
+        method: Method,
+        url: Url,
+        body: Option<Vec<u8>>,
+        headers: HeaderMap,
+    ) -> Result<Response> {
         let mut request = self
             .client
-            .request(method, self.url_for(key)?)
+            .request(method, url)
             .basic_auth(&self.username, Some(&self.password))
             .headers(headers);
         if let Some(body) = body {
@@ -87,16 +129,19 @@ impl WebDavStore {
     }
 
     async fn ensure_parents(&self, key: &str) -> Result<()> {
-        let parts: Vec<&str> = key.split('/').collect();
-        if parts.len() < 2 {
-            return Ok(());
+        let mut parts: Vec<String> = Vec::new();
+        if !self.prefix.is_empty() {
+            parts.extend(self.prefix.split('/').map(str::to_string));
         }
-        let mut folder = String::new();
-        for part in parts.iter().take(parts.len() - 1) {
-            if !folder.is_empty() {
-                folder.push('/');
+        let key_parts: Vec<&str> = key.split('/').collect();
+        if key_parts.len() > 1 {
+            for part in key_parts.iter().take(key_parts.len() - 1) {
+                parts.push((*part).to_string());
             }
-            folder.push_str(part);
+        }
+        for end in 1..=parts.len() {
+            let folders = &parts[..end];
+            let folder = folders.join("/");
             let known = self
                 .dirs
                 .lock()
@@ -105,19 +150,20 @@ impl WebDavStore {
             if known {
                 continue;
             }
+            let url = self.url_for_parts(folders)?;
             let response = self
-                .send(
+                .send_url(
                     Method::from_bytes(b"MKCOL").map_err(|_| SyncError::new("invalidConfig"))?,
-                    &folder,
+                    url.clone(),
                     None,
                     HeaderMap::new(),
                 )
                 .await?;
-            if response.status().is_success() || self.is_folder(&folder).await.unwrap_or(false) {
+            if response.status().is_success() || self.is_folder_url(url).await.unwrap_or(false) {
                 self.dirs
                     .lock()
                     .unwrap_or_else(|e| e.into_inner())
-                    .insert(folder.clone());
+                    .insert(folder);
                 continue;
             }
             return Err(SyncError::with_args("folderNotCreated", [folder]));
@@ -125,16 +171,16 @@ impl WebDavStore {
         Ok(())
     }
 
-    async fn is_folder(&self, key: &str) -> Result<bool> {
+    async fn is_folder_url(&self, url: Url) -> Result<bool> {
         let mut headers = HeaderMap::new();
         headers.insert(
             HeaderName::from_static("depth"),
             HeaderValue::from_static("0"),
         );
         let response = self
-            .send(
+            .send_url(
                 Method::from_bytes(b"PROPFIND").map_err(|_| SyncError::new("invalidConfig"))?,
-                key,
+                url,
                 None,
                 headers,
             )

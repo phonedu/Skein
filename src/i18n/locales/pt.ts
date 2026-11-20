@@ -2052,4 +2052,24 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncNoHistory: "No cloud history yet.",
   syncRestore: "Restore",
   syncRestored: "Restored: {path}",
+  syncSummary:
+    "{uploaded} enviados, {downloaded} recebidos, {removed} removidos, {conflicts} conflitos",
+  syncDeferred: "{count} ficheiros abertos serão sincronizados na próxima vez.",
+  syncSaveFirst: "Guarde a ligação antes de sincronizar.",
+  syncContinue: "Sincronizar mesmo assim",
+  syncLockedAt: "Uma execução iniciada {time} ainda mantém o bloqueio.",
+  syncUnlockUnknown: "uma execução sem hora de início legível",
+  syncUnlockAsk:
+    "Remover o bloqueio deixado por uma sincronização iniciada {time}? Faça-o apenas se nenhum outro dispositivo estiver a sincronizar.",
+  syncUnlock: "Remover bloqueio",
+  syncUnlocked: "Bloqueio removido.",
+  syncErrorRemote:
+    "A cópia remota está ausente. Verifique a pasta remota; nada foi eliminado.",
+  syncErrorLockLost:
+    "Outro dispositivo assumiu a sincronização. Execute-a novamente.",
+  syncErrorHistory: "O histórico na nuvem está danificado; nada foi alterado.",
+  syncErrorIntegrity: "Um ficheiro falhou a verificação; nada foi substituído.",
+  syncErrorFileOpen:
+    "Esse ficheiro está aberto no editor. Feche-o e tente novamente.",
+  syncErrorVersionGone: "Essa versão já não está no histórico na nuvem.",
 } satisfies Translation;

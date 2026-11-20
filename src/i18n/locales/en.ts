@@ -1985,6 +1985,24 @@ type /name in a conversation to use one.
   syncNoHistory: "No cloud history yet.",
   syncRestore: "Restore",
   syncRestored: "Restored: {path}",
+  syncSummary:
+    "{uploaded} uploaded, {downloaded} downloaded, {removed} removed, {conflicts} conflicts",
+  syncDeferred: "{count} open files will sync next time.",
+  syncSaveFirst: "Save the connection before syncing.",
+  syncContinue: "Sync anyway",
+  syncLockedAt: "A run started {time} still holds the lock.",
+  syncUnlockUnknown: "a run with no readable start time",
+  syncUnlockAsk:
+    "Remove the lock a sync started {time} left behind? Only do this if no other device is syncing.",
+  syncUnlock: "Remove lock",
+  syncUnlocked: "Lock removed.",
+  syncErrorRemote:
+    "The remote copy is missing. Check the remote folder; nothing was deleted.",
+  syncErrorLockLost: "Another device took over the sync. Run it again.",
+  syncErrorHistory: "The cloud history is damaged, so nothing was changed.",
+  syncErrorIntegrity: "A file failed verification, so nothing was overwritten.",
+  syncErrorFileOpen: "That file is open in the editor. Close it and try again.",
+  syncErrorVersionGone: "That version is no longer in the cloud history.",
 } satisfies Record<string, string | Plural>;
 
 export default en;

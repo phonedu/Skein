@@ -19,6 +19,7 @@ async fn one_device_uploads_and_another_downloads() {
         base: Base::empty(),
         device: "rust-live".to_string(),
         keep_days: 90,
+        keep_chosen: false,
         allow_empty_scan: false,
         allow_bulk_delete: false,
     };

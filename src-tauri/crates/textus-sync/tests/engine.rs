@@ -1,7 +1,7 @@
 //! The engine over the in-memory store and folder: first sync, download,
 //! conflict, lock, empty scan and deletion.
 
-use textus_sync::chunk::describe;
+use textus_sync::chunk::{describe, hash_hex};
 use textus_sync::protocol::{block_key, new_revision, Lock, HEAD_KEY, HISTORY_KEY, LOCK_KEY};
 use textus_sync::{
     sync, Base, History, LocalFiles, Manifest, MemoryLocal, MemoryStore, ObjectStore, SyncOptions,
@@ -20,6 +20,7 @@ fn options() -> SyncOptions {
         base: Base::empty(),
         device: "desktop-test".to_string(),
         keep_days: 90,
+        keep_chosen: false,
         allow_empty_scan: false,
         allow_bulk_delete: false,
     }
@@ -82,9 +83,47 @@ async fn a_conflict_keeps_both_copies() {
     assert_eq!(first.read("a.md").await.unwrap(), Some(b"local".to_vec()));
     assert_eq!(next.result.conflicts.len(), 1);
     assert!(first.has(&next.result.conflicts[0]));
+    let local_hash = describe(b"local").unwrap().hash;
+    let remote_hash = describe(b"remote").unwrap().hash;
     let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
-    assert!(head.files.contains_key("a.md"));
-    assert!(head.files.contains_key(&next.result.conflicts[0]));
+    assert_eq!(head.files["a.md"].hash, local_hash);
+    assert_eq!(head.files[&next.result.conflicts[0]].hash, remote_hash);
+
+    // The run after a conflict must not "download" the remote version over
+    // the local edit: the original path now carries this device's bytes.
+    let settled = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: next.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert!(settled.result.conflicts.is_empty());
+    assert_eq!(settled.result.downloaded, 0);
+    assert_eq!(first.read("a.md").await.unwrap(), Some(b"local".to_vec()));
+}
+
+#[tokio::test]
+async fn a_vanished_remote_head_is_not_a_folder_to_empty() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    store.delete(HEAD_KEY).await.unwrap();
+    let error = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(error.code, "remoteMissing");
+    assert!(first.has("a.md"));
 }
 
 #[tokio::test]
@@ -149,4 +188,118 @@ async fn deleting_a_missing_remote_file_is_a_remote_delete() {
     assert_eq!(next.result.removed, 1);
     let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
     assert!(head.files.is_empty());
+}
+
+#[tokio::test]
+async fn an_unchanged_second_run_does_not_publish_a_revision() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    let published = out.result.revision.clone();
+    let before = store.get(HEAD_KEY).await.unwrap().unwrap();
+
+    let settled = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(settled.result.revision, published);
+    assert_eq!(store.get(HEAD_KEY).await.unwrap().unwrap(), before);
+}
+
+#[tokio::test]
+async fn a_corrupt_history_stops_the_run_instead_of_starting_over() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    store.put(HISTORY_KEY, b"{".to_vec()).await.unwrap();
+    let error = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(error.code, "invalidHistory");
+    assert_eq!(store.get(HISTORY_KEY).await.unwrap().unwrap(), b"{");
+}
+
+#[tokio::test]
+async fn a_replaced_file_keeps_its_previous_content_as_a_version() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    first.set("a.md", b"two".to_vec());
+    let next = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(history.head.as_deref(), Some(next.result.revision.as_str()));
+    let versions = &history.versions["a.md"];
+    assert_eq!(versions.len(), 1);
+    assert_eq!(versions[0].entry.hash, hash_hex(b"one"));
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(versions[0].until.as_deref(), Some(head.updated_at.as_str()));
+    assert_eq!(
+        history.current["a.md"].device.as_deref(),
+        Some("desktop-test")
+    );
+}
+
+#[tokio::test]
+async fn another_devices_keep_setting_is_not_reset_by_a_default_run() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    let out = sync(&store, &first, options()).await.unwrap();
+    let mut history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    history.keep.days = 365;
+    store
+        .put(HISTORY_KEY, history.to_json().unwrap())
+        .await
+        .unwrap();
+
+    let settled = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base.clone(),
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let kept = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(kept.keep.days, 365);
+    assert_eq!(settled.result.revision, out.result.revision);
+
+    let chosen = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            keep_days: 30,
+            keep_chosen: true,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let changed = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(changed.keep.days, 30);
+    assert_ne!(chosen.result.revision, settled.result.revision);
 }

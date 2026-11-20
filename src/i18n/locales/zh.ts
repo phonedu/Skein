@@ -1851,4 +1851,21 @@ export default {
   syncNoHistory: "还没有云端历史。",
   syncRestore: "恢复",
   syncRestored: "已恢复：{path}",
+  syncSummary:
+    "上传 {uploaded}，下载 {downloaded}，删除 {removed}，冲突 {conflicts}",
+  syncDeferred: "有 {count} 个打开的文件将在下次同步。",
+  syncSaveFirst: "请先保存连接再同步。",
+  syncContinue: "仍要同步",
+  syncLockedAt: "{time} 开始的同步仍持有锁。",
+  syncUnlockUnknown: "一次开始时间不可读的同步",
+  syncUnlockAsk:
+    "移除 {time} 开始的同步留下的锁？仅在确认没有其他设备正在同步时操作。",
+  syncUnlock: "移除锁",
+  syncUnlocked: "已移除锁。",
+  syncErrorRemote: "远端副本不存在。请检查远端文件夹；没有删除任何内容。",
+  syncErrorLockLost: "另一台设备接管了同步。请重新运行。",
+  syncErrorHistory: "云端历史已损坏，因此没有做任何更改。",
+  syncErrorIntegrity: "文件校验失败，因此没有覆盖任何内容。",
+  syncErrorFileOpen: "该文件正在编辑器中打开。请关闭后重试。",
+  syncErrorVersionGone: "该版本已不在云端历史中。",
 } satisfies Translation;

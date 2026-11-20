@@ -28,6 +28,10 @@ pub struct Config {
     pub path_style: bool,
     #[serde(default = "keep")]
     pub keep_days: u32,
+    /// Whether this device chose the keep setting (only then does it
+    /// replace the folder's). Set when the value changes or on request.
+    #[serde(default)]
+    pub keep_chosen: bool,
 }
 
 fn keep() -> u32 {
@@ -140,8 +144,26 @@ pub fn save(
 ) -> Result<(), String> {
     let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
     let key = root_key(root);
+    let mut configs: Configs = crate::json_file::read_store(&config_path(app)?)?;
+    let mut config = config;
+    // A changed value is a choice; the default is not, so a device that
+    // never touched keep cannot reset the folder's setting.
+    let previous = configs.0.get(&key).map(|stored| stored.config.keep_days);
+    config.keep_chosen = config.keep_chosen
+        || previous.is_some_and(|days| days != config.keep_days)
+        || (previous.is_none() && config.keep_days != 90);
     let mut secrets: Secrets = crate::json_file::read_store(&secrets_path(app)?)?;
-    let old = secrets.0.get(&key).cloned().unwrap_or_default();
+    // Switching provider must not carry the other provider's credentials
+    // into the new connection.
+    let same_provider = configs
+        .0
+        .get(&key)
+        .is_some_and(|stored| stored.config.provider == config.provider);
+    let old = if same_provider {
+        secrets.0.get(&key).cloned().unwrap_or_default()
+    } else {
+        Credentials::default()
+    };
     // Empty fields on a later save mean "keep what is stored", so the page
     // need not show secrets back to be able to save the rest.
     let credentials = Credentials {
@@ -167,7 +189,6 @@ pub fn save(
         },
     };
     validate(root, &config, &credentials)?;
-    let mut configs: Configs = crate::json_file::read_store(&config_path(app)?)?;
     configs.0.insert(
         key.clone(),
         Stored {
@@ -267,6 +288,7 @@ mod tests {
             region: String::new(),
             path_style: false,
             keep_days: 90,
+            keep_chosen: false,
         };
         let credentials = Credentials {
             username: "u".to_string(),

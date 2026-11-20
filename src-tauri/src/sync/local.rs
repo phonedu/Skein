@@ -16,6 +16,8 @@ pub type TrashFile = Arc<dyn Fn(&Path) -> Result<(), String> + Send + Sync>;
 pub struct LocalSync {
     root: PathBuf,
     trash: TrashFile,
+    /// Files with a tab open: a sync never writes over them.
+    open: Arc<dyn Fn(&Path) -> bool + Send + Sync>,
 }
 
 impl LocalSync {
@@ -28,14 +30,43 @@ impl LocalSync {
         {
             return Err(crate::errors::error("notFolder"));
         }
-        Ok(Self { root, trash })
+        Ok(Self {
+            root,
+            trash,
+            open: Arc::new(|_| false),
+        })
+    }
+
+    /// The same folder, with the paths an editor tab holds: those writes,
+    /// removals and renames wait for the next run.
+    pub fn with_open(self, open: Arc<dyn Fn(&Path) -> bool + Send + Sync>) -> Self {
+        Self { open, ..self }
     }
 
     fn path(&self, relative: &str) -> Result<PathBuf, SyncError> {
         if !in_scope(relative) {
             return Err(SyncError::new("invalidPath"));
         }
-        Ok(self.root.join(relative))
+        // No ancestor may be a link: a folder link would send a write out
+        // of the repository, even though the relative path looks safe.
+        let mut path = self.root.clone();
+        let parts: Vec<&str> = relative.split('/').collect();
+        for (index, part) in parts.iter().enumerate() {
+            path.push(part);
+            match std::fs::symlink_metadata(&path) {
+                Ok(metadata) => {
+                    if metadata.file_type().is_symlink() {
+                        return Err(SyncError::new("invalidPath"));
+                    }
+                    if index + 1 < parts.len() && !metadata.is_dir() {
+                        return Err(SyncError::new("invalidPath"));
+                    }
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => break,
+                Err(_) => return Err(SyncError::new("localReadError")),
+            }
+        }
+        Ok(path)
     }
 }
 
@@ -126,9 +157,27 @@ impl LocalFiles for LocalSync {
             .map_err(|_| SyncError::new("localReadError"))
     }
 
-    async fn apply(&self, path: &str, bytes: Vec<u8>) -> Result<bool, SyncError> {
+    async fn apply(
+        &self,
+        path: &str,
+        bytes: Vec<u8>,
+        expected: Option<&str>,
+    ) -> Result<bool, SyncError> {
         let target = self.path(path)?;
+        let open = self.open.clone();
+        let expected = expected.map(str::to_string);
         tokio::task::spawn_blocking(move || {
+            if open(&target) {
+                return Ok(false);
+            }
+            let current = match std::fs::read(&target) {
+                Ok(current) => Some(textus_sync::chunk::hash_hex(&current)),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+                Err(_) => return Err(SyncError::new("localReadError")),
+            };
+            if current != expected {
+                return Ok(false);
+            }
             if let Some(parent) = target.parent() {
                 std::fs::create_dir_all(parent).map_err(|_| SyncError::new("localWriteError"))?;
             }
@@ -146,39 +195,58 @@ impl LocalFiles for LocalSync {
         .map_err(|_| SyncError::new("localWriteError"))?
     }
 
-    async fn remove(&self, path: &str) -> Result<bool, SyncError> {
+    async fn remove(&self, path: &str, expected: &str) -> Result<bool, SyncError> {
         let target = self.path(path)?;
-        if !target.exists() {
-            return Ok(true);
-        }
-        if std::fs::symlink_metadata(&target)
-            .map(|m| m.file_type().is_symlink())
-            .unwrap_or(false)
-        {
-            return Err(SyncError::new("localTrashError"));
-        }
+        let open = self.open.clone();
+        let expected = expected.to_string();
         let trash = self.trash.clone();
-        tokio::task::spawn_blocking(move || trash(&target))
-            .await
-            .map_err(|_| SyncError::new("localTrashError"))?
-            .map_err(|_| SyncError::new("localTrashError"))?;
-        Ok(true)
+        tokio::task::spawn_blocking(move || {
+            if open(&target) {
+                return Ok(false);
+            }
+            let current = match std::fs::read(&target) {
+                Ok(current) => textus_sync::chunk::hash_hex(&current),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+                Err(_) => return Err(SyncError::new("localReadError")),
+            };
+            if current != expected {
+                return Ok(false);
+            }
+            if std::fs::symlink_metadata(&target)
+                .map(|m| m.file_type().is_symlink())
+                .unwrap_or(false)
+            {
+                return Err(SyncError::new("localTrashError"));
+            }
+            trash(&target).map_err(|_| SyncError::new("localTrashError"))?;
+            Ok(true)
+        })
+        .await
+        .map_err(|_| SyncError::new("localTrashError"))?
     }
 
-    async fn move_file(&self, from: &str, to: &str) -> Result<bool, SyncError> {
+    async fn move_file(&self, from: &str, to: &str, expected: &str) -> Result<bool, SyncError> {
         let from = self.path(from)?;
         let to = self.path(to)?;
-        if !from.exists() {
-            return Ok(false);
-        }
-        if to.exists() {
-            return Err(SyncError::new("localChanged"));
-        }
-        tokio::task::spawn_blocking(move || crate::atomic::move_entry(&from, &to))
-            .await
-            .map_err(|_| SyncError::new("localMoveError"))?
-            .map_err(|_| SyncError::new("localMoveError"))?;
-        Ok(true)
+        let open = self.open.clone();
+        let expected = expected.to_string();
+        tokio::task::spawn_blocking(move || {
+            if open(&from) || open(&to) {
+                return Ok(false);
+            }
+            let current = match std::fs::read(&from) {
+                Ok(current) => textus_sync::chunk::hash_hex(&current),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+                Err(_) => return Err(SyncError::new("localReadError")),
+            };
+            if current != expected || to.exists() {
+                return Ok(false);
+            }
+            crate::atomic::move_entry(&from, &to).map_err(|_| SyncError::new("localMoveError"))?;
+            Ok(true)
+        })
+        .await
+        .map_err(|_| SyncError::new("localMoveError"))?
     }
 }
 
@@ -227,9 +295,19 @@ mod tests {
         std::fs::write(dir.path().join("a.md"), b"old").unwrap();
         let (local, trashed) = local(dir.path());
 
-        assert!(local.apply("a.md", b"new".to_vec()).await.unwrap());
+        assert!(local
+            .apply(
+                "a.md",
+                b"new".to_vec(),
+                Some(&textus_sync::chunk::hash_hex(b"old"))
+            )
+            .await
+            .unwrap());
         assert_eq!(local.read("a.md").await.unwrap(), Some(b"new".to_vec()));
-        assert!(local.remove("a.md").await.unwrap());
+        assert!(local
+            .remove("a.md", &textus_sync::chunk::hash_hex(b"new"))
+            .await
+            .unwrap());
         assert!(!dir.path().join("a.md").exists());
         assert_eq!(trashed.lock().unwrap().len(), 1);
     }
@@ -240,11 +318,14 @@ mod tests {
         std::fs::write(dir.path().join("a.md"), b"a").unwrap();
         std::fs::write(dir.path().join("b.md"), b"b").unwrap();
         let (local, _) = local(dir.path());
-        assert_eq!(
-            local.move_file("a.md", "b.md").await.unwrap_err().code,
-            "localChanged"
-        );
-        assert!(local.move_file("a.md", "c.md").await.unwrap());
+        assert!(!local
+            .move_file("a.md", "b.md", &textus_sync::chunk::hash_hex(b"a"))
+            .await
+            .unwrap());
+        assert!(local
+            .move_file("a.md", "c.md", &textus_sync::chunk::hash_hex(b"a"))
+            .await
+            .unwrap());
         assert_eq!(local.read("c.md").await.unwrap(), Some(b"a".to_vec()));
     }
 }

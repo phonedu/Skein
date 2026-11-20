@@ -16,6 +16,9 @@ pub const MAX_FILES: usize = 20_000;
 pub const MAX_MANIFEST_SIZE: usize = 8 * 1024 * 1024;
 pub const MAX_HISTORY_SIZE: usize = 8 * 1024 * 1024;
 pub const MAX_VERSIONS: usize = 200;
+/// Deleted files from before 0.5 stay this long; history holds them now.
+pub const TRASH_DAYS: i64 = 30;
+pub const MAX_TRASH: usize = 2000;
 pub const KEEP_DAYS: [u32; 4] = [30, 90, 365, 0];
 pub const HEAD_KEY: &str = "v1/head.json";
 pub const HISTORY_KEY: &str = "v1/history.json";

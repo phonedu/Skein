@@ -35,6 +35,10 @@ export function SettingsPhone(props: {
   onFilesDeleted?: (paths: string[]) => void;
   /** The document in front, for what its project sets. */
   docPath?: string | null;
+  /** The open folder, for the sync page. */
+  folderRoot?: string | null;
+  /** Documents with an open tab: a sync leaves them for the next run. */
+  openPaths?: string[];
 }) {
   const { t } = useSettings();
   const { onClose } = props;
@@ -189,6 +193,8 @@ function SettingsContentNode(props: {
   onOpenFile?: (path: string) => void;
   onFilesDeleted?: (paths: string[]) => void;
   docPath?: string | null;
+  folderRoot?: string | null;
+  openPaths?: string[];
 }) {
   return (
     <SettingsContent
@@ -204,6 +210,8 @@ function SettingsContentNode(props: {
         ? { onFilesDeleted: props.onFilesDeleted }
         : {})}
       {...(props.docPath !== undefined ? { docPath: props.docPath } : {})}
+      folderRoot={props.folderRoot ?? null}
+      openPaths={props.openPaths ?? []}
     />
   );
 }

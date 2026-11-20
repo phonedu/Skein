@@ -4,15 +4,16 @@
 
 use crate::chunk::{describe, hash_hex};
 use crate::error::{Result, SyncError};
+use crate::history::{fit, needs_publish, retire, thin};
 use crate::local::LocalFiles;
-use crate::path::{conflict_path, in_scope};
+use crate::path::{conflict_path, folded, in_scope};
 use crate::planner::{moves, plan, Kind};
 use crate::protocol::{
     block_key, new_revision, snapshot_key, Base, Entry, History, Keep, Lock, Manifest, Origin,
-    Version, HEAD_KEY, HISTORY_KEY, KEEP_DAYS, LOCK_KEY, MAX_VERSIONS,
+    HEAD_KEY, HISTORY_KEY, KEEP_DAYS, LOCK_KEY, MAX_HISTORY_SIZE, MAX_TRASH, TRASH_DAYS,
 };
 use crate::store::ObjectStore;
-use chrono::{SecondsFormat, Utc};
+use chrono::{DateTime, SecondsFormat, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
@@ -21,6 +22,8 @@ pub struct SyncOptions {
     pub base: Base,
     pub device: String,
     pub keep_days: u32,
+    /// Whether this device's keep setting replaces the folder's.
+    pub keep_chosen: bool,
     /// A caller may bypass the two guards after asking the user.
     pub allow_empty_scan: bool,
     pub allow_bulk_delete: bool,
@@ -59,10 +62,24 @@ pub async fn sync(
         id: lock_id.clone(),
         started_at: now(),
     };
-    if !store.create(LOCK_KEY, lock.to_json()?).await? {
+    let owner = lock.to_json()?;
+    // A 412 may arrive as an error rather than `false`; read the lock back
+    // either way. Our own bytes (a retry after the create landed) are taken
+    // over; anyone else's is respected.
+    let created = match store.create(LOCK_KEY, owner.clone()).await {
+        Ok(created) => created,
+        Err(error) => {
+            if !same_bytes(store.get(LOCK_KEY).await.ok().flatten(), &owner) {
+                return Err(error);
+            }
+            true
+        }
+    };
+    if !created && !same_bytes(store.get(LOCK_KEY).await?, &owner) {
         return Err(SyncError::new("locked"));
     }
-    let outcome = run(store, local, &options).await;
+    own_lock(store, &owner).await?;
+    let outcome = run(store, local, &options, &owner).await;
     match outcome {
         Ok(outcome) => {
             if !release(store, &lock_id).await? {
@@ -71,12 +88,32 @@ pub async fn sync(
             Ok(outcome)
         }
         Err(error) => {
-            if error.code != "publishFailed" {
+            // A publish failure may have left a partially written remote:
+            // keep the lock so the next run cannot plan over it. A lost
+            // lock is not ours to release.
+            if error.code != "publishFailed" && error.code != "lockLost" {
                 let _ = release(store, &lock_id).await;
             }
             Err(error)
         }
     }
+}
+
+fn same_bytes(found: Option<Vec<u8>>, expected: &[u8]) -> bool {
+    found.is_some_and(|found| found == expected)
+}
+
+/// Checks the remote lock still holds this run's exact bytes. Every write
+/// that follows the first check is guarded, as another device may have
+/// recovered the lock after a stall.
+async fn own_lock(store: &dyn ObjectStore, owner: &[u8]) -> Result<()> {
+    let Some(raw) = store.get(LOCK_KEY).await? else {
+        return Err(SyncError::new("lockLost"));
+    };
+    if raw != owner {
+        return Err(SyncError::new("lockLost"));
+    }
+    Ok(())
 }
 
 async fn release(store: &dyn ObjectStore, id: &str) -> Result<bool> {
@@ -95,17 +132,31 @@ async fn run(
     store: &dyn ObjectStore,
     local: &dyn LocalFiles,
     options: &SyncOptions,
+    owner: &[u8],
 ) -> Result<SyncOutcome> {
     let head = store
         .get(HEAD_KEY)
         .await?
         .map(|raw| Manifest::parse(&raw))
         .transpose()?;
+    if head.is_none() && (!options.base.files.is_empty() || !options.base.parked.is_empty()) {
+        // A synced folder keeps its base; an absent head is a missing or
+        // emptied repository, not permission to delete every local file.
+        return Err(SyncError::new("remoteMissing"));
+    }
     let remote_files = head
         .as_ref()
         .map(|head| head.files.clone())
         .unwrap_or_default();
-    let history = history_for(store, head.as_ref()).await?;
+    // A corrupt history stops the run: starting a fresh one would drop
+    // every version it holds. A missing one is a new folder.
+    let before = match store.get(HISTORY_KEY).await? {
+        Some(raw) => Some(History::parse(&raw)?),
+        None => None,
+    };
+    // A head written since this history (by an older client, or by a run
+    // that died between its history and head writes) is folded in first.
+    let skipped = skipped_head(store, head.as_ref(), before.as_ref()).await?;
     let files: BTreeMap<String, Entry> = local
         .scan()
         .await?
@@ -135,13 +186,29 @@ async fn run(
 
     check_bulk(&actions, &files, &remote_files, options)?;
 
+    // Twins that differ only in case cannot share a Windows or macOS
+    // folder: refuse before any transfer, not after local writes.
+    let mut names: BTreeMap<String, String> = remote_files
+        .keys()
+        .map(|path| (folded(path), path.clone()))
+        .collect();
+    for action in &actions {
+        if names
+            .get(&folded(&action.path))
+            .is_some_and(|other| other != &action.path)
+        {
+            return Err(SyncError::new("caseCollision"));
+        }
+        names.insert(folded(&action.path), action.path.clone());
+    }
+
     let mut done = BTreeSet::new();
     for (to, from) in &moves {
-        if local.move_file(from, to).await? {
-            let hash = files
-                .get(from)
-                .map(|entry| entry.hash.clone())
-                .unwrap_or_default();
+        let Some(entry) = files.get(from) else {
+            continue;
+        };
+        if local.move_file(from, to, &entry.hash).await? {
+            let hash = entry.hash.clone();
             base.files.remove(from);
             base.files.insert(to.clone(), hash);
             done.insert(from.clone());
@@ -150,7 +217,6 @@ async fn run(
         }
     }
 
-    let mut cache: BTreeMap<String, Vec<u8>> = BTreeMap::new();
     for action in &actions {
         if done.contains(&action.path) {
             continue;
@@ -173,7 +239,10 @@ async fn run(
                 }
             }
             Kind::DeleteLocal => {
-                if local.remove(&action.path).await? {
+                let Some(entry) = files.get(&action.path) else {
+                    continue;
+                };
+                if local.remove(&action.path, &entry.hash).await? {
                     next.remove(&action.path);
                     base.files.remove(&action.path);
                     result.removed += 1;
@@ -201,8 +270,9 @@ async fn run(
                 let Some(entry) = remote_files.get(&action.path) else {
                     continue;
                 };
-                let bytes = download_entry(store, entry, &mut cache).await?;
-                if local.apply(&action.path, bytes).await? {
+                let bytes = download_entry(store, entry).await?;
+                let expected = files.get(&action.path).map(|entry| entry.hash.as_str());
+                if local.apply(&action.path, bytes, expected).await? {
                     next.insert(action.path.clone(), entry.clone());
                     base.files.insert(action.path.clone(), entry.hash.clone());
                     result.downloaded += 1;
@@ -218,17 +288,37 @@ async fn run(
                 let Some(remote_entry) = remote_files.get(&action.path) else {
                     continue;
                 };
-                let bytes = download_entry(store, remote_entry, &mut cache).await?;
-                let target = conflict_path(&action.path, &remote_entry.hash);
-                if local.apply(&target, bytes).await? {
-                    next.insert(target.clone(), remote_entry.clone());
-                    base.files
-                        .insert(action.path.clone(), local_entry.hash.clone());
-                    base.files.insert(target.clone(), remote_entry.hash.clone());
-                    result.conflicts.push(target);
-                } else {
-                    result.deferred.push(target);
+                let bytes = download_entry(store, remote_entry).await?;
+                let Some(target) = keep_remote(
+                    local,
+                    &next,
+                    &mut names,
+                    &action.path,
+                    remote_entry,
+                    bytes.clone(),
+                )
+                .await?
+                else {
+                    result.deferred.push(action.path.clone());
+                    continue;
+                };
+                // The local edit stays at the original path and is uploaded:
+                // the conflict copy is the other device's version, not the
+                // only surviving copy of this one.
+                let Some(local_bytes) = local.read(&action.path).await? else {
+                    return Err(SyncError::new("localChanged"));
+                };
+                if hash_hex(&local_bytes) != local_entry.hash {
+                    return Err(SyncError::new("localChanged"));
                 }
+                upload_blocks(store, local_entry, &local_bytes).await?;
+                next.insert(target.clone(), remote_entry.clone());
+                next.insert(action.path.clone(), local_entry.clone());
+                base.files
+                    .insert(action.path.clone(), local_entry.hash.clone());
+                base.files.insert(target.clone(), remote_entry.hash.clone());
+                result.conflicts.push(target);
+                result.uploaded += 1;
             }
         }
     }
@@ -239,45 +329,122 @@ async fn run(
             return Err(SyncError::new("invalidManifest"));
         }
     }
-    let revision = new_revision();
-    let updated_at = now();
-    let snapshot = Manifest {
-        format: crate::protocol::FORMAT.to_string(),
-        revision: revision.clone(),
-        updated_at: updated_at.clone(),
-        files: next,
-        trash: head
-            .as_ref()
-            .map(|head| head.trash.clone())
-            .unwrap_or_default(),
-    };
-    let history_next = build_history(
-        head.as_ref(),
-        history.as_ref(),
-        &snapshot,
-        &updated_at,
-        &options.device,
-        options.keep_days,
-    );
 
-    let snapshot_json = snapshot.to_json()?;
-    let history_json = history_next.to_json()?;
-    store.put(&snapshot_key(&revision), snapshot_json).await?;
-    store.put(HISTORY_KEY, history_json).await?;
-    let publish_started = store.get(HEAD_KEY).await.is_ok();
-    if let Err(error) = store.put(HEAD_KEY, snapshot.to_json()?).await {
-        return Err(if publish_started {
-            SyncError::new("publishFailed")
-        } else {
-            error
-        });
+    let stamp = now();
+    let now_ms = DateTime::parse_from_rfc3339(&stamp)
+        .map(|at| at.timestamp_millis())
+        .unwrap_or(0);
+    // Deleted files from before 0.5 age out of the manifest.
+    let mut trash = head
+        .as_ref()
+        .map(|head| head.trash.clone())
+        .unwrap_or_default();
+    trash.retain(|item| {
+        DateTime::parse_from_rfc3339(&item.deleted_at)
+            .map(|at| at.timestamp_millis() > now_ms - TRASH_DAYS * 86_400_000)
+            .unwrap_or(false)
+    });
+    if trash.len() > MAX_TRASH {
+        trash.drain(..trash.len() - MAX_TRASH);
     }
-    let read_back = store
+    let mut snapshot = Manifest {
+        format: crate::protocol::FORMAT.to_string(),
+        revision: String::new(),
+        updated_at: String::new(),
+        files: next,
+        trash,
+    };
+    let changed = head
+        .as_ref()
+        .is_none_or(|head| head.files != snapshot.files || head.trash != snapshot.trash);
+    let origin = Origin {
+        at: stamp.clone(),
+        device: Some(options.device.clone()),
+    };
+
+    let mut history = match (&skipped, head.as_ref(), before.as_ref()) {
+        (Some(skipped), Some(head), Some(before)) => retire(before, skipped, head, &origin),
+        _ => before.clone().unwrap_or_else(|| History {
+            format: crate::protocol::FORMAT.to_string(),
+            current: BTreeMap::new(),
+            versions: BTreeMap::new(),
+            previous: None,
+            head: None,
+            keep: Keep {
+                days: 90,
+                at: stamp.clone(),
+            },
+        }),
+    };
+    if changed {
+        let empty;
+        let remote = match head.as_ref() {
+            Some(head) => head,
+            None => {
+                empty = Manifest::new(String::new(), String::new(), BTreeMap::new());
+                &empty
+            }
+        };
+        history = retire(&history, remote, &snapshot, &origin);
+    }
+
+    // A new choice is shared; otherwise the folder's existing one stays,
+    // so a device that never touched the setting cannot reset another's.
+    let chosen = options.keep_chosen || before.is_none();
+    let keep = if chosen {
+        Keep {
+            days: if KEEP_DAYS.contains(&options.keep_days) {
+                options.keep_days
+            } else {
+                90
+            },
+            at: stamp.clone(),
+        }
+    } else {
+        before
+            .as_ref()
+            .map(|before| before.keep.clone())
+            .unwrap_or(Keep {
+                days: 90,
+                at: stamp.clone(),
+            })
+    };
+    let keep_moved = before.as_ref().is_none_or(|before| before.keep != keep);
+    history.keep = keep;
+    let mut dropped = thin(&mut history.versions, now_ms, history.keep.days);
+    dropped.extend(fit(&mut history, MAX_HISTORY_SIZE)?);
+
+    if !needs_publish(changed, skipped.is_some(), keep_moved, dropped.len()) {
+        result.revision = head.map(|head| head.revision).unwrap_or_default();
+        return Ok(SyncOutcome { result, base });
+    }
+
+    let revision = new_revision();
+    snapshot.revision = revision.clone();
+    snapshot.updated_at = stamp;
+    history.previous = head
+        .as_ref()
+        .map(|head| head.revision.clone())
+        .filter(|revision| !revision.is_empty());
+    history.head = Some(revision.clone());
+    let snapshot_json = snapshot.to_json()?;
+    let history_json = history.to_json()?;
+
+    // The snapshot and the history land before the shared head.
+    own_lock(store, owner).await?;
+    store
+        .put(&snapshot_key(&revision), snapshot_json.clone())
+        .await?;
+    own_lock(store, owner).await?;
+    store.put(HISTORY_KEY, history_json).await?;
+    own_lock(store, owner).await?;
+    store.put(HEAD_KEY, snapshot_json.clone()).await?;
+    // Shared once the head is written, whatever the read-back says.
+    let committed = store
         .get(HEAD_KEY)
         .await?
         .ok_or_else(|| SyncError::new("publishFailed"))?;
-    let read_back = Manifest::parse(&read_back)?;
-    if read_back.revision != revision {
+    if committed != snapshot_json {
         return Err(SyncError::new("publishFailed"));
     }
     result.revision = revision;
@@ -340,8 +507,17 @@ async fn upload_blocks(store: &dyn ObjectStore, entry: &Entry, bytes: &[u8]) -> 
             return Err(SyncError::new("localChanged"));
         }
         let key = block_key(&block.hash);
+        let chunk = bytes[offset..end].to_vec();
         if !store.has(&key).await? {
-            store.put(&key, bytes[offset..end].to_vec()).await?;
+            store.put(&key, chunk.clone()).await?;
+        }
+        // A stored block's name alone is not proof of its contents.
+        let stored = store
+            .get(&key)
+            .await?
+            .ok_or_else(|| SyncError::new("integrityError"))?;
+        if stored != chunk || hash_hex(&stored) != block.hash {
+            return Err(SyncError::new("integrityError"));
         }
         offset = end;
     }
@@ -351,27 +527,17 @@ async fn upload_blocks(store: &dyn ObjectStore, entry: &Entry, bytes: &[u8]) -> 
     Ok(())
 }
 
-async fn download_entry(
-    store: &dyn ObjectStore,
-    entry: &Entry,
-    cache: &mut BTreeMap<String, Vec<u8>>,
-) -> Result<Vec<u8>> {
+async fn download_entry(store: &dyn ObjectStore, entry: &Entry) -> Result<Vec<u8>> {
     entry.validate()?;
     let mut out = Vec::with_capacity(entry.size as usize);
     for block in &entry.blocks {
-        let bytes = if let Some(bytes) = cache.get(&block.hash) {
-            bytes.clone()
-        } else {
-            let raw = store
-                .get(&block_key(&block.hash))
-                .await?
-                .ok_or_else(|| SyncError::new("missingBlock"))?;
-            if raw.len() as u64 != block.size || hash_hex(&raw) != block.hash {
-                return Err(SyncError::new("missingBlock"));
-            }
-            cache.insert(block.hash.clone(), raw.clone());
-            raw
-        };
+        let bytes = store
+            .get(&block_key(&block.hash))
+            .await?
+            .ok_or_else(|| SyncError::new("missingBlock"))?;
+        if bytes.len() as u64 != block.size || hash_hex(&bytes) != block.hash {
+            return Err(SyncError::new("missingBlock"));
+        }
         out.extend_from_slice(&bytes);
     }
     if out.len() as u64 != entry.size || hash_hex(&out) != entry.hash {
@@ -383,94 +549,82 @@ async fn download_entry(
 /// The bytes of one entry, for the history page's restore action: the same
 /// block checks a download makes, with no local file involved.
 pub async fn read_entry(store: &dyn ObjectStore, entry: &Entry) -> Result<Vec<u8>> {
-    download_entry(store, entry, &mut BTreeMap::new()).await
+    download_entry(store, entry).await
 }
 
-async fn history_for(store: &dyn ObjectStore, head: Option<&Manifest>) -> Result<Option<History>> {
-    let Some(head) = head else {
-        return Ok(None);
-    };
-    let Some(raw) = store.get(HISTORY_KEY).await? else {
-        return Ok(None);
-    };
-    let Ok(history) = History::parse(&raw) else {
-        return Ok(None);
-    };
-    if history.head.as_deref() == Some(head.revision.as_str()) {
-        Ok(Some(history))
-    } else {
-        Ok(None)
-    }
-}
-
-fn build_history(
-    head: Option<&Manifest>,
-    old: Option<&History>,
-    next: &Manifest,
-    now: &str,
-    device: &str,
-    keep_days: u32,
-) -> History {
-    let mut history = History::new(
-        next.revision.clone(),
-        head.map(|head| head.revision.clone()),
-        Keep {
-            days: if KEEP_DAYS.contains(&keep_days) {
-                keep_days
-            } else {
-                90
-            },
-            at: now.to_string(),
-        },
-    );
-    history.versions = old.map(|old| old.versions.clone()).unwrap_or_default();
-
-    for (path, entry) in &next.files {
-        let old_entry = head.and_then(|head| head.files.get(path));
-        let old_origin = old.and_then(|old| old.current.get(path));
-        let unchanged = old_entry.is_some_and(|old_entry| old_entry.hash == entry.hash);
-        history.current.insert(
-            path.clone(),
-            Origin {
-                at: if unchanged {
-                    old_origin
-                        .map(|origin| origin.at.clone())
-                        .unwrap_or_else(|| now.to_string())
-                } else {
-                    now.to_string()
-                },
-                device: Some(
-                    old_origin
-                        .and_then(|origin| origin.device.clone())
-                        .unwrap_or_else(|| device.to_string()),
-                ),
-            },
-        );
-    }
-
-    if let Some(head) = head {
-        let old_origin = old.map(|old| &old.current);
-        for (path, entry) in &head.files {
-            let changed = next
-                .files
-                .get(path)
-                .is_none_or(|next_entry| next_entry.hash != entry.hash);
-            if !changed {
-                continue;
+/// Writes another device's version beside the local one. A path already
+/// holding different bytes (or another conflict of the same name) gets a
+/// unique suffix, so a user's copy is never overwritten.
+async fn keep_remote(
+    local: &dyn LocalFiles,
+    next: &BTreeMap<String, Entry>,
+    names: &mut BTreeMap<String, String>,
+    path: &str,
+    entry: &Entry,
+    bytes: Vec<u8>,
+) -> Result<Option<String>> {
+    let mut target = conflict_path(path, &entry.hash);
+    for _ in 0..4 {
+        let existing = local.read(&target).await?;
+        let remote_collision = next
+            .get(&target)
+            .is_some_and(|other| other.hash != entry.hash);
+        let name_collision = names
+            .get(&folded(&target))
+            .is_some_and(|other| other != &target);
+        if remote_collision || name_collision {
+            target = suffixed(&target);
+            continue;
+        }
+        match existing {
+            Some(existing) if hash_hex(&existing) == entry.hash => {
+                names.insert(folded(&target), target.clone());
+                return Ok(Some(target));
             }
-            let origin = old_origin.and_then(|current| current.get(path));
-            let version = Version {
-                entry: entry.clone(),
-                at: origin
-                    .map(|origin| origin.at.clone())
-                    .unwrap_or_else(|| head.updated_at.clone()),
-                device: origin.and_then(|origin| origin.device.clone()),
-                until: Some(now.to_string()),
-            };
-            let versions = history.versions.entry(path.clone()).or_default();
-            versions.insert(0, version);
-            versions.truncate(MAX_VERSIONS);
+            Some(_) => target = suffixed(&target),
+            None => {
+                if local.apply(&target, bytes, None).await? {
+                    names.insert(folded(&target), target.clone());
+                    return Ok(Some(target));
+                }
+                return Ok(None);
+            }
         }
     }
-    history
+    Err(SyncError::new("localChanged"))
+}
+
+fn suffixed(path: &str) -> String {
+    let dot = path.rfind('.');
+    let slash = path.rfind('/');
+    let at = match dot {
+        Some(dot) if Some(dot) > slash.map(|slash| slash + 1) => dot,
+        _ => path.len(),
+    };
+    format!("{}-{}{}", &path[..at], Uuid::new_v4().simple(), &path[at..])
+}
+
+/// The head a corrupt or older history never saw: a run that wrote the
+/// history and died before the head, or a client from before history.
+/// Folding its snapshot in before the new one keeps those versions.
+async fn skipped_head(
+    store: &dyn ObjectStore,
+    head: Option<&Manifest>,
+    history: Option<&History>,
+) -> Result<Option<Manifest>> {
+    let (Some(head), Some(history)) = (head, history) else {
+        return Ok(None);
+    };
+    let Some(before_head) = history.head.as_deref() else {
+        return Ok(None);
+    };
+    if before_head == head.revision || history.previous.as_deref() == Some(&head.revision) {
+        return Ok(None);
+    }
+    let Some(raw) = store.get(&snapshot_key(before_head)).await? else {
+        return Ok(None);
+    };
+    // A snapshot that no longer parses cannot be folded in; the history it
+    // belonged to is still better than starting over.
+    Ok(Manifest::parse(&raw).ok())
 }

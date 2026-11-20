@@ -1952,4 +1952,25 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncNoHistory: "クラウド履歴はまだありません。",
   syncRestore: "復元",
   syncRestored: "復元しました：{path}",
+  syncSummary:
+    "アップロード {uploaded}、ダウンロード {downloaded}、削除 {removed}、競合 {conflicts}",
+  syncDeferred: "開いている {count} ファイルは次回同期します。",
+  syncSaveFirst: "同期する前に接続を保存してください。",
+  syncContinue: "それでも同期",
+  syncLockedAt: "{time} に開始した実行がロックを保持しています。",
+  syncUnlockUnknown: "開始時刻を読めない実行",
+  syncUnlockAsk:
+    "{time} に開始した同期が残したロックを解除しますか？他の端末が同期していない場合のみ行ってください。",
+  syncUnlock: "ロックを解除",
+  syncUnlocked: "ロックを解除しました。",
+  syncErrorRemote:
+    "リモートのコピーがありません。リモートフォルダーを確認してください。何も削除されていません。",
+  syncErrorLockLost:
+    "別の端末が同期を引き継ぎました。もう一度実行してください。",
+  syncErrorHistory: "クラウド履歴が破損しているため、何も変更されていません。",
+  syncErrorIntegrity:
+    "ファイルの検証に失敗したため、何も上書きされていません。",
+  syncErrorFileOpen:
+    "このファイルはエディターで開かれています。閉じてからもう一度お試しください。",
+  syncErrorVersionGone: "そのバージョンはクラウド履歴にありません。",
 } satisfies Translation;

@@ -45,6 +45,8 @@ export interface SettingsPanelProps {
   docPath?: string | null;
   /** The library the sync page works on, or null. */
   folderRoot?: string | null;
+  /** Documents with an open tab: a sync leaves them for the next run. */
+  openPaths?: string[];
   /** The shortcuts that can't be changed, listed under the ones that can. */
   fixedShortcuts?: FixedShortcutGroup[];
   /** The commands plugins add, under Shortcuts' own. */
@@ -92,6 +94,7 @@ export function SettingsPanel({
   onFilesDeleted,
   docPath = null,
   folderRoot = null,
+  openPaths = [],
   fixedShortcuts = [],
   pluginCommands = [],
   initialCategory = "general",
@@ -144,6 +147,7 @@ export function SettingsPanel({
     onFilesDeleted,
     docPath,
     folderRoot,
+    openPaths,
     onClose,
     fixedShortcuts,
     pluginCommands,

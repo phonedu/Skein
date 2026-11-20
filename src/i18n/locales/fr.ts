@@ -2088,4 +2088,26 @@ utiliser une.
   syncNoHistory: "No cloud history yet.",
   syncRestore: "Restore",
   syncRestored: "Restored: {path}",
+  syncSummary:
+    "{uploaded} envoyés, {downloaded} reçus, {removed} supprimés, {conflicts} conflits",
+  syncDeferred:
+    "{count} fichiers ouverts seront synchronisés la prochaine fois.",
+  syncSaveFirst: "Enregistrez la connexion avant de synchroniser.",
+  syncContinue: "Synchroniser quand même",
+  syncLockedAt: "Une exécution démarrée {time} détient encore le verrou.",
+  syncUnlockUnknown: "une exécution sans heure de début lisible",
+  syncUnlockAsk:
+    "Retirer le verrou laissé par une synchronisation démarrée {time} ? Ne le faites que si aucun autre appareil ne synchronise.",
+  syncUnlock: "Retirer le verrou",
+  syncUnlocked: "Verrou retiré.",
+  syncErrorRemote:
+    "La copie distante manque. Vérifiez le dossier distant ; rien n'a été supprimé.",
+  syncErrorLockLost:
+    "Un autre appareil a pris la synchronisation. Relancez-la.",
+  syncErrorHistory: "L'historique cloud est endommagé ; rien n'a été modifié.",
+  syncErrorIntegrity:
+    "Un fichier n'a pas passé la vérification ; rien n'a été écrasé.",
+  syncErrorFileOpen:
+    "Ce fichier est ouvert dans l’éditeur. Fermez-le et réessayez.",
+  syncErrorVersionGone: "Cette version n’est plus dans l’historique cloud.",
 } satisfies Translation;

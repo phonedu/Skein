@@ -2029,4 +2029,26 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncNoHistory: "No cloud history yet.",
   syncRestore: "Restore",
   syncRestored: "Restored: {path}",
+  syncSummary:
+    "{uploaded} hochgeladen, {downloaded} heruntergeladen, {removed} entfernt, {conflicts} Konflikte",
+  syncDeferred:
+    "{count} geöffnete Dateien werden beim nächsten Mal synchronisiert.",
+  syncSaveFirst: "Speichere die Verbindung, bevor du synchronisierst.",
+  syncContinue: "Trotzdem synchronisieren",
+  syncLockedAt: "Ein Lauf von {time} hält noch die Sperre.",
+  syncUnlockUnknown: "ein Lauf ohne lesbare Startzeit",
+  syncUnlockAsk:
+    "Die Sperre eines Laufs von {time} entfernen? Nur tun, wenn kein anderes Gerät synchronisiert.",
+  syncUnlock: "Sperre entfernen",
+  syncUnlocked: "Sperre entfernt.",
+  syncErrorRemote:
+    "Die entfernte Kopie fehlt. Prüfe den entfernten Ordner; nichts wurde gelöscht.",
+  syncErrorLockLost:
+    "Ein anderes Gerät hat die Synchronisierung übernommen. Starte sie erneut.",
+  syncErrorHistory: "Der Cloud-Verlauf ist beschädigt; nichts wurde geändert.",
+  syncErrorIntegrity:
+    "Eine Datei konnte nicht geprüft werden; nichts wurde überschrieben.",
+  syncErrorFileOpen:
+    "Diese Datei ist im Editor geöffnet. Schließe sie und versuche es erneut.",
+  syncErrorVersionGone: "Diese Version ist nicht mehr im Cloud-Verlauf.",
 } satisfies Translation;

@@ -11,6 +11,8 @@ export interface SyncConfig {
   region: string;
   pathStyle: boolean;
   keepDays: number;
+  /** Whether this device chose keepDays; only then does it replace the folder's. */
+  keepChosen?: boolean;
 }
 
 export interface SyncCredentials {
@@ -77,13 +79,32 @@ export const syncSettingsForget = (root: string): Promise<void> =>
 export const syncStatus = (root: string): Promise<SyncStatus> =>
   commands.sync_status(root).then((json) => parse<SyncStatus>(json));
 
+export interface SyncLock {
+  locked: boolean;
+  startedAt?: string;
+  /** The lock's exact bytes; unlocking passes them back. */
+  token?: string;
+}
+
+export const syncLock = (root: string): Promise<SyncLock> =>
+  commands.sync_lock(root).then((json) => parse<SyncLock>(json));
+
+export const syncUnlock = (
+  root: string,
+  token: string,
+): Promise<{ state: "unlocked" | "noLock" }> =>
+  commands
+    .sync_unlock(root, token)
+    .then((json) => parse<{ state: "unlocked" | "noLock" }>(json));
+
 export const syncRunSaved = (
   root: string,
   allowEmptyScan = false,
   allowBulkDelete = false,
+  openPaths: string[] = [],
 ): Promise<SyncReply> =>
   commands
-    .sync_run_saved(root, allowEmptyScan, allowBulkDelete)
+    .sync_run_saved(root, allowEmptyScan, allowBulkDelete, openPaths)
     .then((json) => parse<SyncReply>(json));
 
 export interface SyncConflict {
@@ -120,7 +141,8 @@ export const syncRestore = (
   root: string,
   path: string,
   hash: string,
+  openPaths: string[] = [],
 ): Promise<{ path: string }> =>
   commands
-    .sync_restore(root, path, hash)
+    .sync_restore(root, path, hash, openPaths)
     .then((json) => parse<{ path: string }>(json));

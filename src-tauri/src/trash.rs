@@ -29,7 +29,11 @@ fn stamp() -> String {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default();
-    format!("{}-{}", now.as_millis(), NEXT.fetch_add(1, Ordering::Relaxed))
+    format!(
+        "{}-{}",
+        now.as_millis(),
+        NEXT.fetch_add(1, Ordering::Relaxed)
+    )
 }
 
 /// The trash's folder in the app's private data, made if missing.
@@ -46,11 +50,7 @@ pub(crate) fn app_trash_dir(app: &AppHandle) -> Result<PathBuf, String> {
 /// Moves `target` into `trash_dir`, recording where it came from. The
 /// original goes only after the copy is in place; a failed record leaves
 /// the item in the trash rather than losing it.
-pub(crate) fn move_to_trash(
-    trash_dir: &Path,
-    target: &Path,
-    root: &Path,
-) -> Result<(), String> {
+pub(crate) fn move_to_trash(trash_dir: &Path, target: &Path, root: &Path) -> Result<(), String> {
     if !target.exists() {
         return Ok(());
     }
@@ -102,11 +102,7 @@ pub(crate) fn move_to_trash(
 }
 
 /// The phone's trash: the app's private folder, never the user's files.
-pub(crate) fn to_app_trash(
-    app: &AppHandle,
-    target: &Path,
-    root: &Path,
-) -> Result<(), String> {
+pub(crate) fn to_app_trash(app: &AppHandle, target: &Path, root: &Path) -> Result<(), String> {
     move_to_trash(&app_trash_dir(app)?, target, root)
 }
 

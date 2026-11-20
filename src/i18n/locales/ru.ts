@@ -2077,4 +2077,24 @@ export default {
   syncNoHistory: "No cloud history yet.",
   syncRestore: "Restore",
   syncRestored: "Restored: {path}",
+  syncSummary:
+    "Загружено: {uploaded}, скачано: {downloaded}, удалено: {removed}, конфликтов: {conflicts}",
+  syncDeferred: "{count} открытых файлов синхронизируются в следующий раз.",
+  syncSaveFirst: "Сохраните подключение перед синхронизацией.",
+  syncContinue: "Всё равно синхронизировать",
+  syncLockedAt: "Запуск от {time} всё ещё удерживает блокировку.",
+  syncUnlockUnknown: "запуск без читаемого времени начала",
+  syncUnlockAsk:
+    "Снять блокировку, оставленную синхронизацией от {time}? Делайте это, только если другое устройство не синхронизируется.",
+  syncUnlock: "Снять блокировку",
+  syncUnlocked: "Блокировка снята.",
+  syncErrorRemote:
+    "Удалённая копия отсутствует. Проверьте удалённую папку; ничего не удалено.",
+  syncErrorLockLost:
+    "Другое устройство перехватило синхронизацию. Запустите её снова.",
+  syncErrorHistory: "Облачная история повреждена; ничего не изменено.",
+  syncErrorIntegrity: "Файл не прошёл проверку; ничего не перезаписано.",
+  syncErrorFileOpen:
+    "Этот файл открыт в редакторе. Закройте его и повторите попытку.",
+  syncErrorVersionGone: "Этой версии больше нет в облачной истории.",
 } satisfies Translation;

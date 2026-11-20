@@ -170,5 +170,29 @@
   "sendLimit": {
     "en": "You've sent several reports today. Try again tomorrow, or submit it on GitHub.",
     "text": "reportLimit"
+  },
+  "invalidConfig": {
+    "en": "Check the connection settings.",
+    "text": null
+  },
+  "notConfigured": {
+    "en": "This folder has no sync connection.",
+    "text": null
+  },
+  "fileOpen": {
+    "en": "That file is open in the editor.",
+    "text": null
+  },
+  "localChanged": {
+    "en": "The file changed while syncing.",
+    "text": null
+  },
+  "lockLost": {
+    "en": "Another device took over the sync.",
+    "text": null
+  },
+  "notFound": {
+    "en": "Not found.",
+    "text": null
   }
 }

@@ -42,6 +42,8 @@ export interface SettingsPageProps {
   docPath?: string | null;
   /** The folder the sync page works on: the open library, or null. */
   folderRoot: string | null;
+  /** Documents with an open tab: a sync leaves them for the next run. */
+  openPaths: string[];
   /** The shortcuts that can't be changed. */
   fixedShortcuts: FixedShortcutGroup[];
   /** The commands plugins add, whose keys can be set. */
@@ -68,6 +70,7 @@ export function pageProps(
     onOpenFile: () => {},
     onClose: () => {},
     folderRoot: null,
+    openPaths: [],
     fixedShortcuts: [],
     pluginCommands: [],
     ...given,

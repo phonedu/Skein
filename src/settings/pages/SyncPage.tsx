@@ -7,16 +7,19 @@ import { fill } from "../../i18n/fill";
 import {
   syncConflicts,
   syncHistory,
+  syncLock,
   syncRestore,
   syncRunSaved,
   syncSettingsForget,
   syncSettingsGet,
   syncSettingsSave,
   syncStatus,
+  syncUnlock,
   type SyncConfig,
   type SyncConflict,
   type SyncCredentials,
   type SyncHistory,
+  type SyncLock,
   type SyncStatus,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
@@ -44,7 +47,14 @@ const EMPTY_CREDENTIALS: SyncCredentials = {
 };
 
 function errorText(t: SettingsPageProps["t"], reason: string): string {
+  if (reason.includes("remoteMissing")) return t.syncErrorRemote;
+  if (reason.includes("lockLost")) return t.syncErrorLockLost;
   if (reason.includes("locked")) return t.syncErrorLocked;
+  if (reason.includes("invalidHistory")) return t.syncErrorHistory;
+  if (reason.includes("integrityError") || reason.includes("missingBlock"))
+    return t.syncErrorIntegrity;
+  if (reason.includes("fileOpen")) return t.syncErrorFileOpen;
+  if (reason.includes("notFound")) return t.syncErrorVersionGone;
   if (reason.includes("emptyScan")) return t.syncErrorEmpty;
   if (reason.includes("bulkDelete")) return t.syncErrorBulk;
   if (reason.includes("networkError") || reason.includes("httpError"))
@@ -64,6 +74,7 @@ const folderName = (path: string) =>
 export function SyncPage({
   t,
   folderRoot,
+  openPaths,
   indexing,
   onOpenFile,
 }: SettingsPageProps) {
@@ -71,6 +82,8 @@ export function SyncPage({
   const [credentials, setCredentials] =
     useState<SyncCredentials>(EMPTY_CREDENTIALS);
   const [status, setStatus] = useState<SyncStatus | null>(null);
+  const [savedConfig, setSavedConfig] = useState<SyncConfig | null>(null);
+  const [lock, setLock] = useState<SyncLock | null>(null);
   const [conflicts, setConflicts] = useState<SyncConflict[]>([]);
   const [history, setHistory] = useState<SyncHistory | null>(null);
   const [saved, setSaved] = useState(false);
@@ -87,12 +100,17 @@ export function SyncPage({
         syncStatus(folderRoot),
       ]);
       if (settings.config) setConfig(settings.config);
+      setSavedConfig(settings.config ?? null);
       setSaved(settings.configured && !!settings.hasCredentials);
       setStatus(current);
-      const [foundConflicts, foundHistory] = await Promise.all([
+      const [foundLock, foundConflicts, foundHistory] = await Promise.all([
+        settings.configured
+          ? syncLock(folderRoot).catch(() => null)
+          : Promise.resolve(null),
         syncConflicts(folderRoot).catch(() => []),
         syncHistory(folderRoot).catch(() => null),
       ]);
+      setLock(foundLock);
       setConflicts(foundConflicts);
       setHistory(foundHistory);
     } catch (error) {
@@ -116,7 +134,16 @@ export function SyncPage({
     setBusy(true);
     setNote(null);
     try {
-      await syncSettingsSave(folderRoot, config, credentials);
+      await syncSettingsSave(
+        folderRoot,
+        {
+          ...config,
+          keepChosen:
+            config.keepChosen ||
+            (savedConfig ? savedConfig.keepDays !== config.keepDays : false),
+        },
+        credentials,
+      );
       setCredentials(EMPTY_CREDENTIALS);
       setSaved(true);
       setNote({ error: false, text: t.syncSaved });
@@ -132,11 +159,25 @@ export function SyncPage({
     setBusy(true);
     setNote({ error: false, text: t.syncRunning });
     try {
-      await syncRunSaved(folderRoot, allowEmpty, allowBulk);
+      await syncRunSaved(folderRoot, allowEmpty, allowBulk, openPaths);
       await reload();
       setNote({ error: false, text: t.syncDone });
     } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
+      const reason = String(error);
+      const retry = async (empty: boolean, bulk: boolean) => {
+        const ok = await showConfirm(errorText(t, reason), {
+          okLabel: t.syncContinue,
+          cancelLabel: t.cancel,
+        });
+        if (ok) await run(empty, bulk);
+      };
+      if (reason.includes("emptyScan")) {
+        await retry(true, allowBulk);
+      } else if (reason.includes("bulkDelete")) {
+        await retry(allowEmpty, true);
+      } else {
+        setNote({ error: true, text: errorText(t, reason) });
+      }
       await reload();
     } finally {
       setBusy(false);
@@ -163,6 +204,30 @@ export function SyncPage({
     }
   };
 
+  const unlock = async () => {
+    if (!lock?.token) return;
+    const ok = await showConfirm(
+      fill(t.syncUnlockAsk, {
+        time: lock.startedAt
+          ? new Date(lock.startedAt).toLocaleString()
+          : t.syncUnlockUnknown,
+      }),
+      { danger: true, okLabel: t.syncUnlock, cancelLabel: t.cancel },
+    );
+    if (!ok) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      await syncUnlock(folderRoot, lock.token);
+      setNote({ error: false, text: t.syncUnlocked });
+      await reload();
+    } catch (error) {
+      setNote({ error: true, text: errorText(t, String(error)) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const fullPath = (relative: string) =>
     `${folderRoot.replace(/[\\/]$/, "")}/${relative}`;
 
@@ -170,7 +235,7 @@ export function SyncPage({
     setBusy(true);
     setNote(null);
     try {
-      const restored = await syncRestore(folderRoot, path, hash);
+      const restored = await syncRestore(folderRoot, path, hash, openPaths);
       await reload();
       setNote({
         error: false,
@@ -185,12 +250,35 @@ export function SyncPage({
   };
 
   const last = status?.last;
+  const dirty =
+    !!savedConfig &&
+    (JSON.stringify(savedConfig) !== JSON.stringify(config) ||
+      credentials.username !== "" ||
+      credentials.password !== "" ||
+      credentials.accessKey !== "" ||
+      credentials.secretKey !== "");
+  const summary = last?.result
+    ? fill(t.syncSummary, {
+        uploaded: last.result.uploaded,
+        downloaded: last.result.downloaded,
+        removed: last.result.removed,
+        conflicts: last.result.conflicts.length,
+      })
+    : "";
   const statusText = !status?.configured
     ? t.syncNotConfigured
     : last?.error
       ? errorText(t, last.error)
       : last?.result
-        ? t.syncDone
+        ? [
+            t.syncDone,
+            summary,
+            last.result.deferred.length
+              ? fill(t.syncDeferred, { count: last.result.deferred.length })
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" ")
         : t.syncNever;
   const isS3 = config.provider === "s3";
   const historyRows = history
@@ -217,17 +305,41 @@ export function SyncPage({
             </span>
           ) : null}
         </div>
+        {dirty && !note ? (
+          <p className="tx-list-note">{t.syncSaveFirst}</p>
+        ) : null}
+        {lock?.locked && (
+          <div className="sync-lock-row">
+            <span className="sync-list-text">
+              {fill(t.syncLockedAt, {
+                time: lock.startedAt
+                  ? new Date(lock.startedAt).toLocaleString()
+                  : t.syncUnlockUnknown,
+              })}
+            </span>
+            <button
+              type="button"
+              className="text-button settings-inline-button danger"
+              disabled={busy || !lock.token}
+              onClick={() => void unlock()}
+            >
+              {t.syncUnlock}
+            </button>
+          </div>
+        )}
         <SettingRow label={t.syncProviderLabel}>
           <Select
             className="settings-select"
             aria-label={t.syncProviderLabel}
             value={config.provider}
-            onChange={(event) =>
+            onChange={(event) => {
               setConfig({
                 ...config,
                 provider: event.target.value as SyncConfig["provider"],
-              })
-            }
+              });
+              // The other provider's fields cannot be kept as this one's.
+              setCredentials(EMPTY_CREDENTIALS);
+            }}
           >
             <option value="webdav">{t.syncWebdav}</option>
             <option value="s3">{t.syncS3}</option>
@@ -350,7 +462,7 @@ export function SyncPage({
           <button
             type="button"
             className="text-button settings-inline-button"
-            disabled={busy || !status?.configured}
+            disabled={busy || !status?.configured || dirty}
             onClick={() => void run()}
           >
             {t.syncNow}

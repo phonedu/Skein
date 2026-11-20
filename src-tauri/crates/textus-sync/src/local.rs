@@ -2,7 +2,7 @@
 //! implementation for protocol tests. The app's filesystem adapter sits
 //! above this trait; the engine never touches a path directly.
 
-use crate::chunk::describe;
+use crate::chunk::{describe, hash_hex};
 use crate::error::{Result, SyncError};
 use crate::protocol::Entry;
 use async_trait::async_trait;
@@ -13,12 +13,15 @@ use std::sync::Mutex;
 pub trait LocalFiles: Send + Sync {
     async fn scan(&self) -> Result<BTreeMap<String, Entry>>;
     async fn read(&self, path: &str) -> Result<Option<Vec<u8>>>;
-    /// Write the file; false when it is open and the write must wait.
-    async fn apply(&self, path: &str, bytes: Vec<u8>) -> Result<bool>;
-    /// Remove the file into the app's trash; false when it is open.
-    async fn remove(&self, path: &str) -> Result<bool>;
-    /// Rename an unchanged file; false when it is open.
-    async fn move_file(&self, from: &str, to: &str) -> Result<bool>;
+    /// Write the file; false when it is open, or when its bytes no longer
+    /// match `expected` (the scan's hash, or None for a new file).
+    async fn apply(&self, path: &str, bytes: Vec<u8>, expected: Option<&str>) -> Result<bool>;
+    /// Remove the file into the app's trash; false when it is open or its
+    /// bytes no longer match `expected`.
+    async fn remove(&self, path: &str, expected: &str) -> Result<bool>;
+    /// Rename an unchanged file; false when it is open or its bytes no
+    /// longer match `expected`.
+    async fn move_file(&self, from: &str, to: &str, expected: &str) -> Result<bool>;
 }
 
 /// A folder in memory, with the deferral and trash behaviour the tests need.
@@ -100,42 +103,51 @@ impl LocalFiles for MemoryLocal {
             .cloned())
     }
 
-    async fn apply(&self, path: &str, bytes: Vec<u8>) -> Result<bool> {
+    async fn apply(&self, path: &str, bytes: Vec<u8>, expected: Option<&str>) -> Result<bool> {
         if deferred(&self.deferred, path) {
             return Ok(false);
         }
-        self.files
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .insert(path.to_string(), bytes);
+        let mut files = self.files.lock().unwrap_or_else(|e| e.into_inner());
+        let current = files.get(path).map(|current| hash_hex(current));
+        if current.as_deref() != expected {
+            return Ok(false);
+        }
+        files.insert(path.to_string(), bytes);
         Ok(true)
     }
 
-    async fn remove(&self, path: &str) -> Result<bool> {
+    async fn remove(&self, path: &str, expected: &str) -> Result<bool> {
         if deferred(&self.deferred, path) {
             return Ok(false);
         }
-        let removed = self
-            .files
+        let mut files = self.files.lock().unwrap_or_else(|e| e.into_inner());
+        let Some(bytes) = files.get(path) else {
+            return Ok(false);
+        };
+        if hash_hex(bytes) != expected {
+            return Ok(false);
+        }
+        let bytes = files.remove(path).unwrap_or_default();
+        self.trashed
             .lock()
             .unwrap_or_else(|e| e.into_inner())
-            .remove(path);
-        if let Some(bytes) = removed {
-            self.trashed
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
-                .push((path.to_string(), bytes));
-        }
+            .push((path.to_string(), bytes));
         Ok(true)
     }
 
-    async fn move_file(&self, from: &str, to: &str) -> Result<bool> {
+    async fn move_file(&self, from: &str, to: &str, expected: &str) -> Result<bool> {
         if deferred(&self.deferred, from) || deferred(&self.deferred, to) {
             return Ok(false);
         }
         let mut files = self.files.lock().unwrap_or_else(|e| e.into_inner());
         if files.contains_key(to) {
             return Err(SyncError::new("localChanged"));
+        }
+        let Some(bytes) = files.get(from) else {
+            return Ok(false);
+        };
+        if hash_hex(bytes) != expected {
+            return Ok(false);
         }
         if let Some(bytes) = files.remove(from) {
             files.insert(to.to_string(), bytes);
@@ -157,11 +169,26 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_file_changed_since_the_scan_is_not_overwritten() {
+        let local = MemoryLocal::new([("a.md".to_string(), b"edited".to_vec())]);
+        let scanned = hash_hex(b"scanned");
+        assert!(!local
+            .apply("a.md", b"remote".to_vec(), Some(&scanned))
+            .await
+            .unwrap());
+        assert!(!local.remove("a.md", &scanned).await.unwrap());
+        assert_eq!(local.read("a.md").await.unwrap(), Some(b"edited".to_vec()));
+    }
+
+    #[tokio::test]
     async fn a_deferred_file_is_not_written_or_removed() {
         let local = MemoryLocal::new([("a.md".to_string(), b"ab".to_vec())]);
         local.defer("a.md");
-        assert!(!local.apply("a.md", b"new".to_vec()).await.unwrap());
-        assert!(!local.remove("a.md").await.unwrap());
+        assert!(!local
+            .apply("a.md", b"new".to_vec(), Some(&hash_hex(b"ab")))
+            .await
+            .unwrap());
+        assert!(!local.remove("a.md", &hash_hex(b"ab")).await.unwrap());
         assert_eq!(local.read("a.md").await.unwrap(), Some(b"ab".to_vec()));
         assert!(local.trashed().is_empty());
     }

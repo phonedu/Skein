@@ -82,6 +82,8 @@ export function SettingsHost(props: {
   docPath?: string | null;
   /** The open library, for the sync page. */
   folderRoot?: string | null;
+  /** Documents with an open tab: a sync leaves them for the next run. */
+  openPaths?: string[];
   fixedShortcuts?: FixedShortcutGroup[];
   pluginCommands?: ShortcutCommand[];
 }) {
@@ -132,6 +134,7 @@ export function SettingsHost(props: {
           onClose={props.onClose}
           marginAvailable={marginAvailable}
           folderRoot={props.folderRoot ?? null}
+          openPaths={props.openPaths ?? []}
           fixedShortcuts={props.fixedShortcuts}
           pluginCommands={props.pluginCommands}
           {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
@@ -155,6 +158,7 @@ export function SettingsHost(props: {
                 onClose={props.onClose}
                 marginAvailable={marginAvailable}
                 folderRoot={props.folderRoot ?? null}
+                openPaths={props.openPaths ?? []}
               />
             ),
           },
@@ -194,6 +198,8 @@ export function SettingsHost(props: {
           ? { onFilesDeleted: props.onFilesDeleted }
           : {})}
         {...(props.docPath !== undefined ? { docPath: props.docPath } : {})}
+        folderRoot={props.folderRoot ?? null}
+        openPaths={props.openPaths ?? []}
       />
     );
   }
@@ -233,6 +239,7 @@ export function SettingsHost(props: {
             onClose={props.onClose}
             marginAvailable={marginAvailable}
             folderRoot={props.folderRoot ?? null}
+            openPaths={props.openPaths ?? []}
             fixedShortcuts={props.fixedShortcuts}
             pluginCommands={props.pluginCommands}
             {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}

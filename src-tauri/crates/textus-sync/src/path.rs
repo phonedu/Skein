@@ -124,9 +124,15 @@ fn has_extension(path: &str, extensions: &[&str]) -> bool {
 /// The plugin's conflict name: the remote keeps the path, this copy goes
 /// under `Sync conflicts/`, with the first eight hash characters.
 pub fn conflict_path(path: &str, hash: &str) -> String {
-    let safe = path
-        .strip_prefix(".textus/")
-        .map_or_else(|| path.to_string(), |rest| format!("Textus project/{rest}"));
+    let safe = if let Some(rest) = path.strip_prefix(".textus/") {
+        format!("Textus project/{rest}")
+    } else if let Some(rest) = path.strip_prefix(".obsidian/") {
+        // Hidden folders are out of scope, so a visible name keeps a
+        // restored Obsidian setting in a folder the editor can show.
+        format!("Obsidian settings/{rest}")
+    } else {
+        path.to_string()
+    };
     let dot = safe.rfind('.');
     let slash = safe.rfind('/');
     let end = match dot {
@@ -197,6 +203,10 @@ mod tests {
         assert_eq!(
             conflict_path(".textus/agent.md", "0123456789abcdef"),
             "Sync conflicts/Textus project/agent (01234567).md"
+        );
+        assert_eq!(
+            conflict_path(".obsidian/app.json", "0123456789abcdef"),
+            "Sync conflicts/Obsidian settings/app (01234567).json"
         );
     }
 }

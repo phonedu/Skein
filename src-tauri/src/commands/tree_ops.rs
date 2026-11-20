@@ -233,11 +233,7 @@ pub async fn tree_trash_entry(
     Ok(())
 }
 
-async fn trash_entry(
-    app: tauri::AppHandle,
-    path: String,
-    root: String,
-) -> Result<(), String> {
+async fn trash_entry(app: tauri::AppHandle, path: String, root: String) -> Result<(), String> {
     let target = itself(&path)?;
     tauri::async_runtime::spawn_blocking(move || {
         #[cfg(all(mobile, not(test)))]

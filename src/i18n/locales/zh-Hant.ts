@@ -1856,4 +1856,21 @@ export default {
   syncNoHistory: "還沒有雲端歷史。",
   syncRestore: "恢復",
   syncRestored: "已恢復：{path}",
+  syncSummary:
+    "上傳 {uploaded}，下載 {downloaded}，刪除 {removed}，衝突 {conflicts}",
+  syncDeferred: "有 {count} 個開啟的檔案將在下次同步。",
+  syncSaveFirst: "請先儲存連線再同步。",
+  syncContinue: "仍要同步",
+  syncLockedAt: "{time} 開始的同步仍持有鎖。",
+  syncUnlockUnknown: "一次開始時間無法讀取的同步",
+  syncUnlockAsk:
+    "移除 {time} 開始的同步留下的鎖？僅在確認沒有其他裝置正在同步時操作。",
+  syncUnlock: "移除鎖",
+  syncUnlocked: "已移除鎖。",
+  syncErrorRemote: "遠端副本不存在。請檢查遠端資料夾；沒有刪除任何內容。",
+  syncErrorLockLost: "另一台裝置接管了同步。請重新執行。",
+  syncErrorHistory: "雲端歷史已損壞，因此沒有做任何變更。",
+  syncErrorIntegrity: "檔案驗證失敗，因此沒有覆寫任何內容。",
+  syncErrorFileOpen: "該檔案正在編輯器中開啟。請關閉後重試。",
+  syncErrorVersionGone: "該版本已不在雲端歷史中。",
 } satisfies Translation;

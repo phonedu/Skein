@@ -6,54 +6,16 @@
 use crate::sync::local::{LocalSync, TrashFile};
 use crate::sync::store::{self, Config, Credentials, LastRun};
 use chrono::{SecondsFormat, Utc};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::UNIX_EPOCH;
 use textus_sync::path::conflict_path;
-use textus_sync::protocol::HISTORY_KEY;
+use textus_sync::protocol::{HEAD_KEY, HISTORY_KEY, LOCK_KEY};
 use textus_sync::{
-    probe, read_entry, sync, Base, History, LocalFiles, ObjectStore, S3Store, SyncOptions,
+    probe, read_entry, sync, Base, History, LocalFiles, Lock, ObjectStore, S3Store, SyncOptions,
     SyncResult, WebDavStore,
 };
-
-#[derive(Deserialize)]
-struct Request {
-    root: String,
-    provider: String,
-    #[serde(default)]
-    endpoint: String,
-    #[serde(default)]
-    bucket: String,
-    #[serde(default)]
-    prefix: String,
-    #[serde(default)]
-    region: String,
-    #[serde(default)]
-    path_style: bool,
-    #[serde(default)]
-    username: String,
-    #[serde(default)]
-    password: String,
-    #[serde(default)]
-    access_key: String,
-    #[serde(default)]
-    secret_key: String,
-    #[serde(default)]
-    base: Option<String>,
-    #[serde(default)]
-    device: String,
-    #[serde(default = "default_keep")]
-    keep_days: u32,
-    #[serde(default)]
-    allow_empty_scan: bool,
-    #[serde(default)]
-    allow_bulk_delete: bool,
-}
-
-fn default_keep() -> u32 {
-    90
-}
 
 #[derive(Serialize)]
 struct Reply {
@@ -113,59 +75,37 @@ fn now() -> String {
     Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true)
 }
 
-/// A one-off run with the connection in the request; used by built-app
-/// checks and the first migration path. Settings uses the saved commands.
-#[tauri::command]
-#[cfg_attr(test, specta::specta)]
-pub async fn sync_run(app: tauri::AppHandle, request: String) -> Result<String, String> {
-    let request: Request =
-        serde_json::from_str(&request).map_err(|_| "invalidConfig".to_string())?;
-    let root = store::canonical_root(&request.root)?;
-    let config = Config {
-        provider: request.provider,
-        endpoint: request.endpoint,
-        bucket: request.bucket,
-        prefix: request.prefix,
-        region: request.region,
-        path_style: request.path_style,
-        keep_days: request.keep_days,
-    };
-    let credentials = Credentials {
-        username: request.username,
-        password: request.password,
-        access_key: request.access_key,
-        secret_key: request.secret_key,
-    };
-    let store = store_for(&config, &credentials)?;
-    probe(store.as_ref()).await.map_err(|e| e.to_string())?;
-    let trash = trash_for(&app, &root);
-    let local = LocalSync::new(root, trash).map_err(|e| e.to_string())?;
-    let base = match request.base {
-        Some(raw) => Base::parse(raw.as_bytes()).map_err(|e| e.to_string())?,
-        None => Base::empty(),
-    };
-    let outcome = sync(
-        store.as_ref(),
-        &local,
-        SyncOptions {
-            base,
-            device: if request.device.is_empty() {
-                device_name()
-            } else {
-                request.device
-            },
-            keep_days: request.keep_days,
-            allow_empty_scan: request.allow_empty_scan,
-            allow_bulk_delete: request.allow_bulk_delete,
-        },
-    )
-    .await
-    .map_err(|e| e.to_string())?;
-    serde_json::to_string(&Reply {
-        result: outcome.result,
-        base: outcome.base,
+/// The open documents' canonical paths, consulted before a write, removal
+/// or rename. A tab's path is absolute; canonicalizing both sides keeps
+/// separators and case from hiding a match.
+fn open_documents(paths: &[String]) -> Arc<dyn Fn(&Path) -> bool + Send + Sync> {
+    let open: std::collections::HashSet<std::path::PathBuf> = paths
+        .iter()
+        .filter_map(|path| std::path::PathBuf::from(path).canonicalize().ok())
+        .collect();
+    Arc::new(move |target: &Path| {
+        target
+            .canonicalize()
+            .map(|target| open.contains(&target))
+            .unwrap_or(false)
     })
-    .map_err(|e| e.to_string())
+}
+
+/// The same shape the engine's conflict suffixes use, for a restore target
+/// that already exists with other bytes.
+fn suffixed(path: &str) -> String {
+    let dot = path.rfind('.');
+    let slash = path.rfind('/');
+    let at = match dot {
+        Some(dot) if Some(dot) > slash.map(|slash| slash + 1) => dot,
+        _ => path.len(),
+    };
+    format!(
+        "{}-{}{}",
+        &path[..at],
+        uuid::Uuid::new_v4().simple(),
+        &path[at..]
+    )
 }
 
 #[tauri::command]
@@ -215,6 +155,54 @@ pub fn sync_status(app: tauri::AppHandle, root: String) -> Result<String, String
     Ok(serde_json::json!({ "configured": configured, "last": last }).to_string())
 }
 
+/// The remote lock, so a run stopped by a crashed device can be recovered
+/// after the person sees when it started. `token` is the lock's exact
+/// bytes: unlocking passes them back and refuses a lock that changed.
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn sync_lock(app: tauri::AppHandle, root: String) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    let Some((config, credentials)) = store::load(&app, &root)? else {
+        return Err(crate::errors::error("notConfigured"));
+    };
+    let store = store_for(&config, &credentials)?;
+    let Some(raw) = store.get(LOCK_KEY).await.map_err(|e| e.to_string())? else {
+        return Ok(serde_json::json!({ "locked": false }).to_string());
+    };
+    let started_at = Lock::parse(&raw)
+        .ok()
+        .map(|lock| lock.started_at)
+        .unwrap_or_default();
+    serde_json::to_string(&serde_json::json!({
+        "locked": true,
+        "startedAt": started_at,
+        "token": String::from_utf8_lossy(&raw),
+    }))
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn sync_unlock(
+    app: tauri::AppHandle,
+    root: String,
+    token: String,
+) -> Result<String, String> {
+    let root = store::canonical_root(&root)?;
+    let Some((config, credentials)) = store::load(&app, &root)? else {
+        return Err(crate::errors::error("notConfigured"));
+    };
+    let store = store_for(&config, &credentials)?;
+    let Some(raw) = store.get(LOCK_KEY).await.map_err(|e| e.to_string())? else {
+        return Ok(serde_json::json!({ "state": "noLock" }).to_string());
+    };
+    if raw != token.as_bytes() {
+        return Err(crate::errors::error("lockLost"));
+    }
+    store.delete(LOCK_KEY).await.map_err(|e| e.to_string())?;
+    Ok(serde_json::json!({ "state": "unlocked" }).to_string())
+}
+
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
 pub async fn sync_run_saved(
@@ -222,6 +210,7 @@ pub async fn sync_run_saved(
     root: String,
     allow_empty_scan: bool,
     allow_bulk_delete: bool,
+    open_paths: Vec<String>,
 ) -> Result<String, String> {
     let root = store::canonical_root(&root)?;
     let Some((config, credentials)) = store::load(&app, &root)? else {
@@ -231,8 +220,9 @@ pub async fn sync_run_saved(
         let store = store_for(&config, &credentials)?;
         probe(store.as_ref()).await.map_err(|e| e.to_string())?;
         let base = store::load_base(&app, &root)?;
-        let local =
-            LocalSync::new(root.clone(), trash_for(&app, &root)).map_err(|e| e.to_string())?;
+        let local = LocalSync::new(root.clone(), trash_for(&app, &root))
+            .map_err(|e| e.to_string())?
+            .with_open(open_documents(&open_paths));
         let outcome = sync(
             store.as_ref(),
             &local,
@@ -240,6 +230,7 @@ pub async fn sync_run_saved(
                 base,
                 device: device_name(),
                 keep_days: config.keep_days,
+                keep_chosen: config.keep_chosen,
                 allow_empty_scan,
                 allow_bulk_delete,
             },
@@ -292,11 +283,20 @@ struct Conflict {
     modified_ms: Option<u64>,
 }
 
-fn walk_conflicts(dir: &Path, root: &Path, out: &mut Vec<Conflict>) {
+const MAX_CONFLICT_ROWS: usize = 500;
+const MAX_CONFLICT_DEPTH: usize = 8;
+
+fn walk_conflicts(dir: &Path, root: &Path, out: &mut Vec<Conflict>, depth: usize) {
+    if depth > MAX_CONFLICT_DEPTH || out.len() >= MAX_CONFLICT_ROWS {
+        return;
+    }
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
     };
     for entry in entries.flatten() {
+        if out.len() >= MAX_CONFLICT_ROWS {
+            return;
+        }
         let path = entry.path();
         let Ok(metadata) = std::fs::symlink_metadata(&path) else {
             continue;
@@ -305,7 +305,7 @@ fn walk_conflicts(dir: &Path, root: &Path, out: &mut Vec<Conflict>) {
             continue;
         }
         if metadata.is_dir() {
-            walk_conflicts(&path, root, out);
+            walk_conflicts(&path, root, out, depth + 1);
             continue;
         }
         let relative = path
@@ -330,8 +330,16 @@ fn walk_conflicts(dir: &Path, root: &Path, out: &mut Vec<Conflict>) {
 #[cfg_attr(test, specta::specta)]
 pub fn sync_conflicts(root: String) -> Result<String, String> {
     let root = store::canonical_root(&root)?;
+    let dir = root.join("Sync conflicts");
+    // The folder itself must be real: a link could list another place.
+    if std::fs::symlink_metadata(&dir)
+        .map(|metadata| metadata.file_type().is_symlink())
+        .unwrap_or(false)
+    {
+        return Ok("[]".to_string());
+    }
     let mut conflicts = Vec::new();
-    walk_conflicts(&root.join("Sync conflicts"), &root, &mut conflicts);
+    walk_conflicts(&dir, &root, &mut conflicts, 0);
     conflicts.sort_by(|a, b| a.path.cmp(&b.path));
     serde_json::to_string(&conflicts).map_err(|e| e.to_string())
 }
@@ -358,6 +366,7 @@ pub async fn sync_restore(
     root: String,
     path: String,
     hash: String,
+    open_paths: Vec<String>,
 ) -> Result<String, String> {
     let root = store::canonical_root(&root)?;
     let Some((config, credentials)) = store::load(&app, &root)? else {
@@ -378,14 +387,60 @@ pub async fn sync_restore(
     let bytes = read_entry(store.as_ref(), &version.entry)
         .await
         .map_err(|e| e.to_string())?;
-    let local = LocalSync::new(root.clone(), trash_for(&app, &root)).map_err(|e| e.to_string())?;
-    let target = match local.read(&path).await.map_err(|e| e.to_string())? {
-        Some(existing) if textus_sync::chunk::hash_hex(&existing) == hash => path.clone(),
-        Some(_) => conflict_path(&path, &hash),
-        None => path.clone(),
+    // Restore in place when the file is still the synced one; keep a
+    // version the person has edited since in a copy beside it.
+    let synced = match store.get(HEAD_KEY).await.map_err(|e| e.to_string())? {
+        Some(raw) => textus_sync::Manifest::parse(&raw)
+            .map_err(|e| e.to_string())?
+            .files
+            .get(&path)
+            .map(|entry| entry.hash.clone()),
+        None => None,
+    };
+    let local = LocalSync::new(root.clone(), trash_for(&app, &root))
+        .map_err(|e| e.to_string())?
+        .with_open(open_documents(&open_paths));
+    let existing = local.read(&path).await.map_err(|e| e.to_string())?;
+    let unchanged = match &existing {
+        Some(existing) => Some(textus_sync::chunk::hash_hex(existing)) == synced,
+        None => synced.is_none(),
+    };
+    let target = if unchanged {
+        path.clone()
+    } else {
+        {
+            // Never overwrite a copy the person may have edited: put the
+            // restored version beside it under a free name.
+            let mut target = conflict_path(&path, &hash);
+            let mut free = None;
+            for _ in 0..4 {
+                match local.read(&target).await.map_err(|e| e.to_string())? {
+                    None => {
+                        free = Some(target);
+                        break;
+                    }
+                    Some(existing) if textus_sync::chunk::hash_hex(&existing) == hash => {
+                        free = Some(target);
+                        break;
+                    }
+                    Some(_) => target = suffixed(&target),
+                }
+            }
+            free.ok_or_else(|| crate::errors::error("localChanged"))?
+        }
+    };
+    let previous = if target == path {
+        existing.as_deref().map(textus_sync::chunk::hash_hex)
+    } else {
+        local
+            .read(&target)
+            .await
+            .map_err(|e| e.to_string())?
+            .as_deref()
+            .map(textus_sync::chunk::hash_hex)
     };
     if !local
-        .apply(&target, bytes)
+        .apply(&target, bytes, previous.as_deref())
         .await
         .map_err(|e| e.to_string())?
     {

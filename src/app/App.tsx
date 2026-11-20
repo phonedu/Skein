@@ -176,11 +176,19 @@ function App() {
 
   // What Settings needs, as the desktop's dialog or the iPad's sheet.
   const settingsProps = {
-    onOpenFile: (path: string) => void openFile(path),
+    // A file opened from Settings shows in the editor, not behind the sheet.
+    onOpenFile: (path: string) => {
+      settingsOpening.close();
+      void openFile(path);
+    },
     onFilesDeleted: skillFilesDeleted,
     docPath: activeTab.path,
     folderRoot:
       openFolder.folder || openFolder.treeRoot || docs.documentsFolder || null,
+    // A sync never writes over a document the editor has open.
+    openPaths: shell.tabState.tabs.flatMap((tab) =>
+      tab.path ? [tab.path] : [],
+    ),
     fixedShortcuts: fixedShortcutGroups(t, platformName()),
     pluginCommands: commands()
       // Textus's own (Save, Close Tab) have their keys under File.

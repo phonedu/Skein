@@ -4,8 +4,6 @@
 mod ai;
 mod app_identity;
 mod atomic;
-#[cfg(any(mobile, test))]
-mod trash;
 mod auth;
 #[cfg(desktop)]
 mod background;
@@ -14,6 +12,8 @@ pub mod cli;
 mod dialogs;
 mod errors;
 mod excerpt;
+#[cfg(any(mobile, test))]
+mod trash;
 // Checks src/platform/bindings/; desktop builds hold every command it lists.
 #[cfg(desktop)]
 mod agents;
