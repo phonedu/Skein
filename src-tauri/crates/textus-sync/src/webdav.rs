@@ -321,4 +321,24 @@ mod tests {
             Err(error) if error.code == "invalidConfig"
         ));
     }
+
+    #[test]
+    fn a_refused_status_keeps_the_reason_the_ui_explains() {
+        assert_eq!(
+            WebDavStore::refused(StatusCode::UNAUTHORIZED).code,
+            "permissionError"
+        );
+        assert_eq!(
+            WebDavStore::refused(StatusCode::TOO_MANY_REQUESTS).code,
+            "rateLimited"
+        );
+        assert_eq!(
+            WebDavStore::refused(StatusCode::INSUFFICIENT_STORAGE).code,
+            "quotaError"
+        );
+        assert_eq!(
+            WebDavStore::refused(StatusCode::INTERNAL_SERVER_ERROR).args,
+            vec!["500".to_string()]
+        );
+    }
 }
