@@ -6,7 +6,7 @@
 // anchors in the same page are not followed.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,15 +29,32 @@ export function isLocal(target) {
   return !/^([a-z][a-z0-9+.-]*:|#|\/|\{)/i.test(target);
 }
 
+/** What the fork drops on purpose (`db35f863`, "fork: drop upstream docs
+ *  and assets the fork does not use"). The upstream files that remain
+ *  (AGENTS.md, CONTRIBUTING, docs/dev/*) still link to them; editing those
+ *  files would grow the rebase's patch face, so the targets are named here
+ *  once instead. */
+const droppedByFork = (base) => [
+  join(base, "docs", "design"),
+  join(base, "docs", "archive", "2026-10-ios-plan.zh.md"),
+  join(base, "ROADMAP.md"),
+  join(base, "ROADMAP.zh.md"),
+];
+
 /** The broken relative links in `files` (paths from `base`). */
 export function brokenLinks(files, base = root) {
   const broken = [];
+  const dropped = droppedByFork(base);
+  const isDropped = (path) =>
+    dropped.some((gone) => path === gone || path.startsWith(gone + sep));
   for (const file of files) {
     const from = dirname(join(base, file));
     for (const target of linkTargets(readFileSync(join(base, file), "utf8"))) {
       if (!isLocal(target)) continue;
       const path = decodeURIComponent(target.split(/[#?]/)[0]);
-      if (path && !existsSync(resolve(from, path)))
+      if (!path) continue;
+      const absolute = resolve(from, path);
+      if (!existsSync(absolute) && !isDropped(absolute))
         broken.push(`${file}: ${target}`);
     }
   }
@@ -45,11 +62,14 @@ export function brokenLinks(files, base = root) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const files = execFileSync("git", ["ls-files", "*.md"], {
+  // `-z`: NUL-separated and unquoted, so a path outside ASCII (a Chinese
+  // directory name) arrives as itself rather than git's `"\347\272\252"`
+  // quoted-escaped form, which readFileSync cannot open.
+  const files = execFileSync("git", ["ls-files", "-z", "*.md"], {
     cwd: root,
     encoding: "utf8",
   })
-    .split("\n")
+    .split("\0")
     .filter((file) => file && !/^(src|e2e|src-tauri)\//.test(file));
   const broken = brokenLinks(files);
   if (broken.length) {
