@@ -2049,6 +2049,11 @@ export default {
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
+  syncS3FlavorLabel: "Совместимость S3",
+  syncS3Standard: "Стандартный S3",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "Сервис не поддерживает условную запись, необходимую синхронизации. Попробуйте режим OSS или другой сервис.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
   syncAccessKeyLabel: "Access key",

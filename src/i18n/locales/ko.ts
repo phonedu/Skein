@@ -1904,6 +1904,11 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncRegionLabel: "리전",
   syncPrefixLabel: "원격 폴더",
   syncPathStyleLabel: "경로 형식 주소",
+  syncS3FlavorLabel: "S3 호환 모드",
+  syncS3Standard: "표준 S3",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "이 서비스는 동기화에 필요한 조건부 쓰기를 지원하지 않습니다. OSS 모드나 다른 서비스를 사용해 보세요.",
   syncAccountLabel: "사용자 이름",
   syncSecretLabel: "비밀번호",
   syncAccessKeyLabel: "액세스 키",

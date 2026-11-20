@@ -1826,6 +1826,11 @@ export default {
   syncRegionLabel: "區域",
   syncPrefixLabel: "遠端目錄",
   syncPathStyleLabel: "路徑式位址",
+  syncS3FlavorLabel: "S3 相容方式",
+  syncS3Standard: "標準 S3",
+  syncS3Oss: "阿里雲 OSS",
+  syncErrorConditional:
+    "該服務不支援同步所需的條件寫入。請嘗試 OSS 模式或其他服務。",
   syncAccountLabel: "使用者名稱",
   syncSecretLabel: "密碼",
   syncAccessKeyLabel: "存取金鑰",

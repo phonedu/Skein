@@ -2024,6 +2024,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
+  syncS3FlavorLabel: "Compatibilidade S3",
+  syncS3Standard: "S3 padrão",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "Este serviço não suporta a escrita condicional necessária à sincronização. Experimente o modo OSS ou outro serviço.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
   syncAccessKeyLabel: "Access key",

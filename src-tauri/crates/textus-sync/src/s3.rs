@@ -16,6 +16,14 @@ use std::collections::BTreeMap;
 
 type HmacSha256 = Hmac<Sha256>;
 
+/// How a service spells a conditional create. OSS rejects
+/// `If-None-Match` on PutObject and uses its own header instead.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum S3Flavor {
+    Standard,
+    Oss,
+}
+
 pub struct S3Store {
     client: Client,
     endpoint: Url,
@@ -25,6 +33,7 @@ pub struct S3Store {
     access_key: String,
     secret_key: String,
     path_style: bool,
+    flavor: S3Flavor,
 }
 
 impl S3Store {
@@ -37,6 +46,7 @@ impl S3Store {
         access_key: &str,
         secret_key: &str,
         path_style: bool,
+        flavor: S3Flavor,
     ) -> Result<Self> {
         let mut endpoint = Url::parse(endpoint).map_err(|_| SyncError::new("invalidConfig"))?;
         if !matches!(endpoint.scheme(), "http" | "https")
@@ -80,6 +90,7 @@ impl S3Store {
             access_key: access_key.to_string(),
             secret_key: secret_key.to_string(),
             path_style,
+            flavor,
         })
     }
 
@@ -226,6 +237,19 @@ impl S3Store {
     }
 }
 
+fn create_headers(flavor: S3Flavor) -> BTreeMap<String, String> {
+    let mut extra = BTreeMap::new();
+    match flavor {
+        S3Flavor::Standard => {
+            extra.insert("if-none-match".to_string(), "*".to_string());
+        }
+        S3Flavor::Oss => {
+            extra.insert("x-oss-forbid-overwrite".to_string(), "true".to_string());
+        }
+    }
+    extra
+}
+
 fn hmac(key: &[u8], data: &[u8]) -> Vec<u8> {
     let mut mac = HmacSha256::new_from_slice(key).expect("HMAC accepts any key length");
     mac.update(data);
@@ -280,13 +304,25 @@ impl ObjectStore for S3Store {
     }
 
     async fn create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
-        let mut extra = BTreeMap::new();
-        extra.insert("if-none-match".to_string(), "*".to_string());
+        let extra = create_headers(self.flavor);
         let response = self.send(Method::PUT, key, Some(bytes), extra).await?;
-        if response.status() == StatusCode::PRECONDITION_FAILED
-            || (response.status() == StatusCode::CONFLICT && self.has(key).await.unwrap_or(false))
-        {
-            return Ok(false);
+        let exists = || async { self.has(key).await.unwrap_or(false) };
+        match self.flavor {
+            S3Flavor::Standard => {
+                if response.status() == StatusCode::PRECONDITION_FAILED
+                    || (response.status() == StatusCode::CONFLICT && exists().await)
+                {
+                    return Ok(false);
+                }
+            }
+            S3Flavor::Oss => {
+                if response.status() == StatusCode::CONFLICT {
+                    return Ok(false);
+                }
+                if response.status() == StatusCode::BAD_REQUEST {
+                    return Err(SyncError::new("conditionalWriteUnsupported"));
+                }
+            }
         }
         if response.status().is_success() {
             Ok(true)
@@ -312,6 +348,20 @@ mod tests {
     use super::*;
 
     #[test]
+    fn a_flavor_picks_its_conditional_header() {
+        assert_eq!(
+            create_headers(S3Flavor::Standard).get("if-none-match"),
+            Some(&"*".to_string())
+        );
+        assert_eq!(
+            create_headers(S3Flavor::Oss).get("x-oss-forbid-overwrite"),
+            Some(&"true".to_string())
+        );
+        assert!(!create_headers(S3Flavor::Standard).contains_key("x-oss-forbid-overwrite"));
+        assert!(!create_headers(S3Flavor::Oss).contains_key("if-none-match"));
+    }
+
+    #[test]
     fn path_style_and_virtual_host_build_the_expected_urls() {
         let path = S3Store::new(
             "https://s3.example.com",
@@ -321,6 +371,7 @@ mod tests {
             "ak",
             "sk",
             true,
+            S3Flavor::Standard,
         )
         .unwrap();
         assert_eq!(
@@ -335,6 +386,7 @@ mod tests {
             "ak",
             "sk",
             false,
+            S3Flavor::Standard,
         )
         .unwrap();
         assert_eq!(

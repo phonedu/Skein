@@ -1957,6 +1957,11 @@ type /name in a conversation to use one.
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
+  syncS3FlavorLabel: "S3 compatibility",
+  syncS3Standard: "Standard S3",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "This service does not support the conditional write sync needs. Try the OSS mode, or another service.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
   syncAccessKeyLabel: "Access key",

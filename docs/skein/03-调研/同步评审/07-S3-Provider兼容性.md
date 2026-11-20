@@ -52,7 +52,7 @@
 
 1. **缤纷云 S4（已通过，2026-11-19）**：专用测试桶、子账号 AK/SK；`endpoint=https://s3.bitiful.net`、`region=cn-east-1`、`pathStyle=true`；`测试连接` 通过“两次 create，第二次 412”。
 2. 通过后跑 S1 同款：首次（5 个文件）、改、删、冲突、杀进程；再加 16 MiB 和 32 MiB 随机 PDF；32 MiB 的 16 个块逐块 SHA-256 校验一致。
-3. 七牛云 Kodo 待跑（同流程；S3 条件写不生效就记录，不硬改协议）。
+3. 七牛云 Kodo 待跑（同流程；S3 条件写不生效就记录，不硬改协议）。**2026-11-20 内置侧进展**：`textus-sync` 已加 `S3Flavor::Oss`，设置页可选「阿里云 OSS」兼容方式（`x-oss-forbid-overwrite`，409 视为已存在，400 报 `conditionalWriteUnsupported`）；阿里云与七牛真桶仍未实测。
 4. 阿里云 OSS 待适配：在 transport 里按 provider 加 `x-oss-forbid-overwrite` 与 409 映射，单独测试，不混进 S1b 首轮。
 
 ## 4. 适配层要改哪里

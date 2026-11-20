@@ -1924,6 +1924,11 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncRegionLabel: "リージョン",
   syncPrefixLabel: "リモートフォルダー",
   syncPathStyleLabel: "パス形式のアドレス",
+  syncS3FlavorLabel: "S3 互換モード",
+  syncS3Standard: "標準 S3",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "このサービスは同期に必要な条件付き書き込みに対応していません。OSS モードか別のサービスをお試しください。",
   syncAccountLabel: "ユーザー名",
   syncSecretLabel: "パスワード",
   syncAccessKeyLabel: "アクセスキー",

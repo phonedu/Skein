@@ -131,6 +131,7 @@ describe.each(LANGS.filter((lang) => lang !== "en"))("%s", (lang) => {
   // placeholders.
   const AS_WRITTEN = new Set([
     "syncWebdav",
+    "syncS3Oss",
     "phonePageAi",
     "apiKeyPlaceholder",
     "customBaseUrlPlaceholder",

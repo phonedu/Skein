@@ -2001,6 +2001,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
+  syncS3FlavorLabel: "S3-Kompatibilität",
+  syncS3Standard: "Standard-S3",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "Dieser Dienst unterstützt das für die Sperre nötige bedingte Schreiben nicht. Versuche den OSS-Modus oder einen anderen Dienst.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
   syncAccessKeyLabel: "Access key",

@@ -16,7 +16,14 @@ fn store(prefix: &str) -> S3Store {
     let path_style =
         env::var("TEXTUS_S3_PATH_STYLE").unwrap_or_else(|_| "true".to_string()) != "false";
     S3Store::new(
-        &endpoint, &bucket, prefix, &region, &access, &secret, path_style,
+        &endpoint,
+        &bucket,
+        prefix,
+        &region,
+        &access,
+        &secret,
+        path_style,
+        textus_sync::s3::S3Flavor::Standard,
     )
     .unwrap()
 }

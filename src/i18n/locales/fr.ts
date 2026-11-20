@@ -2060,6 +2060,11 @@ utiliser une.
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
+  syncS3FlavorLabel: "Compatibilité S3",
+  syncS3Standard: "S3 standard",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "Ce service ne prend pas en charge l’écriture conditionnelle nécessaire à la synchronisation. Essayez le mode OSS ou un autre service.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
   syncAccessKeyLabel: "Access key",

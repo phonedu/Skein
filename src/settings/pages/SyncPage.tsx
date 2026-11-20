@@ -36,6 +36,7 @@ const EMPTY: SyncConfig = {
   prefix: "",
   region: "",
   pathStyle: true,
+  s3Flavor: "standard",
   keepDays: 90,
 };
 
@@ -53,6 +54,8 @@ function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("invalidHistory")) return t.syncErrorHistory;
   if (reason.includes("integrityError") || reason.includes("missingBlock"))
     return t.syncErrorIntegrity;
+  if (reason.includes("conditionalWriteUnsupported"))
+    return t.syncErrorConditional;
   if (reason.includes("fileOpen")) return t.syncErrorFileOpen;
   if (reason.includes("notFound")) return t.syncErrorVersionGone;
   if (reason.includes("emptyScan")) return t.syncErrorEmpty;
@@ -438,16 +441,34 @@ export function SyncPage({
             />
           </label>
           {isS3 && (
-            <label className="sync-check">
-              <input
-                type="checkbox"
-                checked={config.pathStyle}
-                onChange={(event) =>
-                  setConfig({ ...config, pathStyle: event.target.checked })
-                }
-              />
-              {t.syncPathStyleLabel}
-            </label>
+            <>
+              <SettingRow label={t.syncS3FlavorLabel}>
+                <Select
+                  className="settings-select"
+                  aria-label={t.syncS3FlavorLabel}
+                  value={config.s3Flavor ?? "standard"}
+                  onChange={(event) =>
+                    setConfig({
+                      ...config,
+                      s3Flavor: event.target.value as "standard" | "oss",
+                    })
+                  }
+                >
+                  <option value="standard">{t.syncS3Standard}</option>
+                  <option value="oss">{t.syncS3Oss}</option>
+                </Select>
+              </SettingRow>
+              <label className="sync-check">
+                <input
+                  type="checkbox"
+                  checked={config.pathStyle}
+                  onChange={(event) =>
+                    setConfig({ ...config, pathStyle: event.target.checked })
+                  }
+                />
+                {t.syncPathStyleLabel}
+              </label>
+            </>
           )}
         </div>
         <div className="sync-actions">

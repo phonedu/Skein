@@ -43,6 +43,11 @@ fn store_for(config: &Config, credentials: &Credentials) -> Result<Box<dyn Objec
                 &credentials.access_key,
                 &credentials.secret_key,
                 config.path_style,
+                if config.s3_flavor == "oss" {
+                    textus_sync::s3::S3Flavor::Oss
+                } else {
+                    textus_sync::s3::S3Flavor::Standard
+                },
             )
             .map_err(|e| e.to_string())?,
         )),

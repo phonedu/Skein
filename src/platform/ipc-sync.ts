@@ -10,6 +10,8 @@ export interface SyncConfig {
   prefix: string;
   region: string;
   pathStyle: boolean;
+  /** `standard` uses If-None-Match; `oss` uses x-oss-forbid-overwrite. */
+  s3Flavor?: "standard" | "oss";
   keepDays: number;
   /** Whether this device chose keepDays; only then does it replace the folder's. */
   keepChosen?: boolean;

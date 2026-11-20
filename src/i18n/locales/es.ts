@@ -2045,6 +2045,11 @@ para usar una.
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
+  syncS3FlavorLabel: "Compatibilidad S3",
+  syncS3Standard: "S3 estándar",
+  syncS3Oss: "Alibaba Cloud OSS",
+  syncErrorConditional:
+    "Este servicio no admite la escritura condicional que necesita la sincronización. Prueba el modo OSS u otro servicio.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
   syncAccessKeyLabel: "Access key",

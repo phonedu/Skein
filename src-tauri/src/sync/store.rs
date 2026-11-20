@@ -26,6 +26,9 @@ pub struct Config {
     pub region: String,
     #[serde(default)]
     pub path_style: bool,
+    /// `standard` (If-None-Match) or `oss` (x-oss-forbid-overwrite).
+    #[serde(default = "s3_flavor")]
+    pub s3_flavor: String,
     #[serde(default = "keep")]
     pub keep_days: u32,
     /// Whether this device chose the keep setting (only then does it
@@ -36,6 +39,10 @@ pub struct Config {
 
 fn keep() -> u32 {
     90
+}
+
+fn s3_flavor() -> String {
+    "standard".to_string()
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -249,6 +256,7 @@ fn validate(root: &Path, config: &Config, credentials: &Credentials) -> Result<(
     if config.endpoint.trim().is_empty()
         || (!config.prefix.is_empty() && !relative_path(&config.prefix))
         || !KEEP_DAYS.contains(&config.keep_days)
+        || !matches!(config.s3_flavor.as_str(), "standard" | "oss")
     {
         return Err(SyncError::new("invalidConfig").to_string());
     }
@@ -287,6 +295,7 @@ mod tests {
             prefix: "notes/a".to_string(),
             region: String::new(),
             path_style: false,
+            s3_flavor: "standard".to_string(),
             keep_days: 90,
             keep_chosen: false,
         };
