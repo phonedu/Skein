@@ -51,6 +51,9 @@ impl WebDavStore {
         }
         let client = Client::builder()
             .redirect(reqwest::redirect::Policy::none())
+            // Reconnect before a server's short keep-alive closes an idle
+            // connection under us (encryption's KDF can pause for seconds).
+            .pool_idle_timeout(std::time::Duration::from_secs(4))
             // A stalled server must not hold the lock forever.
             .connect_timeout(std::time::Duration::from_secs(20))
             .timeout(std::time::Duration::from_secs(180))
