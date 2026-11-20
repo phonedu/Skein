@@ -1,0 +1,1230 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>原宿主改造图</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="oh-board">
+      <style>
+        .oh-board {
+          width: 1600px;
+          box-sizing: border-box;
+          background: #e9ecf1;
+          font-family:
+            -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+            "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+          color: #1d2129;
+          font-size: 13px;
+          line-height: 1.4;
+          -webkit-font-smoothing: antialiased;
+        }
+        .oh-board * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        .oh-board button {
+          font: inherit;
+          color: inherit;
+          background: none;
+          border: 0;
+          cursor: default;
+        }
+        .oh-board svg.i {
+          width: 16px;
+          height: 16px;
+          flex: none;
+          fill: none;
+          stroke: currentColor;
+          stroke-width: 1.4;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+        .oh-label {
+          height: 52px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 0 20px;
+        }
+        .oh-label b {
+          display: inline-flex;
+          align-items: center;
+          height: 26px;
+          padding: 0 12px;
+          border-radius: 13px;
+          background: #1d2129;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .oh-label span {
+          color: #5b6472;
+          font-size: 13px;
+        }
+        .oh-gap {
+          height: 12px;
+        }
+
+        .oh-shell {
+          position: relative;
+          width: 1600px;
+          height: 900px;
+          display: flex;
+          flex-direction: column;
+          background: #fff;
+          overflow: hidden;
+          border-top: 1px solid #d5d9e0;
+          border-bottom: 1px solid #d5d9e0;
+        }
+
+        /* 顶栏 */
+        .oh-bar {
+          height: 44px;
+          flex: none;
+          display: flex;
+          align-items: center;
+          padding: 0 12px 0 16px;
+          background: #fbfbfc;
+          border-bottom: 1px solid #e4e7ec;
+        }
+        .oh-dots {
+          display: flex;
+          gap: 8px;
+          margin-right: 22px;
+        }
+        .oh-dots i {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          display: block;
+        }
+        .oh-dots i:nth-child(1) {
+          background: #ff5f57;
+        }
+        .oh-dots i:nth-child(2) {
+          background: #febc2e;
+        }
+        .oh-dots i:nth-child(3) {
+          background: #28c840;
+        }
+        .oh-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #1d2129;
+        }
+        .oh-title em {
+          font-style: normal;
+          font-weight: 400;
+          color: #8a93a1;
+          font-size: 12px;
+        }
+        .oh-spacer {
+          flex: 1;
+        }
+        .oh-cluster {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .oh-btn {
+          height: 28px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 0 10px;
+          border: 1px solid #dfe3e9;
+          border-radius: 8px;
+          background: #fff;
+          color: #2b3340;
+          font-size: 12.5px;
+          white-space: nowrap;
+        }
+        .oh-btn .i {
+          color: #5b6472;
+        }
+        .oh-btn .n {
+          min-width: 16px;
+          height: 16px;
+          padding: 0 4px;
+          border-radius: 8px;
+          background: #2563eb;
+          color: #fff;
+          font-size: 11px;
+          line-height: 16px;
+          text-align: center;
+        }
+        .oh-btn.on {
+          background: #e8f0ff;
+          border-color: #9db9f7;
+          color: #1d4ed8;
+        }
+        .oh-btn.on .i {
+          color: #2563eb;
+        }
+        .oh-btn.ai {
+          width: 104px;
+        }
+        .oh-btn.ai .i {
+          color: #2563eb;
+        }
+        .oh-btn.k {
+          width: 208px;
+          justify-content: flex-start;
+          color: #6b7280;
+          background: #f3f4f7;
+          border-color: #eceef2;
+        }
+        .oh-btn.k kbd {
+          margin-left: auto;
+          font: inherit;
+          font-size: 11.5px;
+          color: #6b7280;
+          border: 1px solid #dcdfe5;
+          border-radius: 5px;
+          background: #fff;
+          padding: 0 5px;
+          line-height: 17px;
+        }
+        .oh-pw {
+          position: relative;
+        }
+
+        /* 主体 */
+        .oh-body {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+        }
+        .oh-left {
+          width: 280px;
+          flex: none;
+          background: #f6f7f9;
+          border-right: 1px solid #e4e7ec;
+          display: flex;
+          flex-direction: column;
+        }
+        .oh-seg {
+          margin: 12px 12px 8px;
+          padding: 2px;
+          display: flex;
+          background: #e9ecf1;
+          border-radius: 8px;
+        }
+        .oh-seg span {
+          flex: 1;
+          height: 26px;
+          line-height: 26px;
+          text-align: center;
+          font-size: 12.5px;
+          color: #5b6472;
+          border-radius: 6px;
+        }
+        .oh-seg span.on {
+          background: #fff;
+          color: #1d2129;
+          font-weight: 600;
+          box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+        }
+        .oh-scroll {
+          flex: 1;
+          min-height: 0;
+          padding: 4px 8px;
+        }
+        .oh-sec {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 8px 6px;
+          font-size: 11.5px;
+          color: #8a93a1;
+          letter-spacing: 0.02em;
+        }
+        .oh-sec .i {
+          width: 14px;
+          height: 14px;
+        }
+        .oh-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          height: 32px;
+          padding: 0 8px;
+          border-radius: 8px;
+          color: #2b3340;
+        }
+        .oh-row .i {
+          color: #7a8494;
+        }
+        .oh-row .t {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .oh-row .m {
+          font-size: 11.5px;
+          color: #9aa2af;
+        }
+        .oh-row.cur {
+          height: 50px;
+          align-items: flex-start;
+          flex-direction: column;
+          justify-content: center;
+          gap: 2px;
+          background: #e6eeff;
+          box-shadow: inset 3px 0 0 #2563eb;
+          border-radius: 8px;
+        }
+        .oh-row.cur .t {
+          flex: none;
+          font-weight: 600;
+          color: #1d4ed8;
+          max-width: 100%;
+        }
+        .oh-row.cur .m {
+          color: #5b72a8;
+        }
+        .oh-foot {
+          flex: none;
+          border-top: 1px solid #e4e7ec;
+          padding: 6px 8px 8px;
+        }
+
+        /* 文件树 */
+        .oh-tree .oh-row {
+          height: 28px;
+          padding-left: 6px;
+        }
+        .oh-tree .chev {
+          width: 10px;
+          font-size: 9px;
+          color: #8a93a1;
+          text-align: center;
+          flex: none;
+        }
+        .oh-tree .l1 {
+          padding-left: 26px;
+        }
+        .oh-tree .l1 .chev {
+          visibility: hidden;
+        }
+        .oh-tree .on {
+          background: #e6eeff;
+          color: #1d4ed8;
+          font-weight: 600;
+          box-shadow: inset 3px 0 0 #2563eb;
+        }
+        .oh-tree .on .i {
+          color: #2563eb;
+        }
+        .oh-tree .dir .i {
+          color: #6b86b8;
+        }
+
+        /* 中栏 */
+        .oh-main {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          background: #fff;
+        }
+        .oh-tabs {
+          height: 40px;
+          flex: none;
+          display: flex;
+          align-items: flex-end;
+          gap: 2px;
+          padding: 0 12px;
+          background: #f6f7f9;
+          border-bottom: 1px solid #e4e7ec;
+        }
+        .oh-tab {
+          height: 32px;
+          min-width: 120px;
+          max-width: 220px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0 10px 0 12px;
+          border-radius: 8px 8px 0 0;
+          color: #6b7280;
+          font-size: 12.5px;
+          position: relative;
+        }
+        .oh-tab .t {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .oh-tab .x {
+          margin-left: auto;
+          width: 16px;
+          height: 16px;
+          border-radius: 4px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #9aa2af;
+        }
+        .oh-tab .x .i {
+          width: 10px;
+          height: 10px;
+          stroke-width: 1.6;
+        }
+        .oh-tab.on {
+          background: #fff;
+          color: #1d2129;
+          font-weight: 600;
+          border: 1px solid #e4e7ec;
+          border-bottom: 0;
+          height: 33px;
+          margin-bottom: -1px;
+          box-shadow: inset 0 2px 0 #2563eb;
+        }
+        .oh-tab .i.ai {
+          color: #2563eb;
+        }
+        .oh-tab.plus {
+          min-width: 0;
+          width: 32px;
+          padding: 0;
+          justify-content: center;
+          border-radius: 8px;
+          height: 28px;
+          margin-bottom: 2px;
+          color: #6b7280;
+        }
+        .oh-doc {
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+        }
+        .oh-page {
+          width: 720px;
+          margin: 0 auto;
+          padding: 44px 0 0;
+        }
+        .oh-page h1 {
+          font-size: 30px;
+          line-height: 1.3;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          margin-bottom: 8px;
+        }
+        .oh-page .meta {
+          font-size: 12.5px;
+          color: #8a93a1;
+          margin-bottom: 26px;
+        }
+        .oh-page h2 {
+          font-size: 19px;
+          font-weight: 650;
+          margin: 26px 0 10px;
+        }
+        .oh-page p {
+          font-size: 15px;
+          line-height: 1.85;
+          color: #2b3340;
+          margin-bottom: 10px;
+        }
+        .oh-page ul {
+          list-style: none;
+          margin-bottom: 10px;
+        }
+        .oh-page li {
+          position: relative;
+          padding-left: 20px;
+          font-size: 15px;
+          line-height: 1.85;
+          color: #2b3340;
+        }
+        .oh-page li:before {
+          content: "";
+          position: absolute;
+          left: 6px;
+          top: 13px;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #7a8494;
+        }
+        .oh-page li.todo:before {
+          left: 2px;
+          top: 9px;
+          width: 13px;
+          height: 13px;
+          border-radius: 4px;
+          background: #fff;
+          border: 1.4px solid #9aa2af;
+        }
+        .oh-page li.todo {
+          padding-left: 24px;
+        }
+        .oh-page code {
+          font-family: "SF Mono", Consolas, "Cascadia Mono", monospace;
+          font-size: 13px;
+          background: #f1f3f6;
+          border-radius: 4px;
+          padding: 1px 5px;
+        }
+        .oh-sel {
+          background: rgba(37, 99, 235, 0.2);
+          border-radius: 2px;
+        }
+        .oh-caret {
+          display: inline-block;
+          width: 1.5px;
+          height: 19px;
+          background: #2563eb;
+          vertical-align: -4px;
+          margin-left: 1px;
+        }
+        .oh-status {
+          height: 28px;
+          flex: none;
+          border-top: 1px solid #eef0f3;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 0 16px;
+          font-size: 11.5px;
+          color: #8a93a1;
+          background: #fff;
+        }
+        .oh-status .sp {
+          flex: 1;
+        }
+
+        /* 右栏 */
+        .oh-right {
+          width: 340px;
+          flex: none;
+          border-left: 1px solid #e4e7ec;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+        }
+        .oh-rh {
+          height: 44px;
+          flex: none;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0 10px 0 16px;
+          border-bottom: 1px solid #e4e7ec;
+          background: #fbfbfc;
+        }
+        .oh-rh strong {
+          font-size: 13px;
+          font-weight: 650;
+        }
+        .oh-rh .tag {
+          font-size: 11px;
+          color: #5b6472;
+          background: #eceef2;
+          border-radius: 6px;
+          padding: 1px 6px;
+        }
+        .oh-rh .oh-btn {
+          height: 26px;
+          padding: 0 8px;
+          font-size: 12px;
+          border-color: transparent;
+          background: transparent;
+          color: #4b5563;
+        }
+        .oh-rb {
+          flex: 1;
+          min-height: 0;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .oh-cap {
+          font-size: 11.5px;
+          color: #8a93a1;
+          margin-top: 4px;
+        }
+        .oh-quote {
+          padding: 10px 12px;
+          background: #f6f7f9;
+          border-left: 3px solid #2563eb;
+          border-radius: 0 8px 8px 0;
+          font-size: 13px;
+          line-height: 1.7;
+          color: #2b3340;
+        }
+        .oh-quote small {
+          display: block;
+          margin-top: 6px;
+          font-size: 11.5px;
+          color: #8a93a1;
+        }
+        .oh-prop {
+          border: 1px solid #dfe3e9;
+          border-radius: 8px;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .oh-ph {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 650;
+          font-size: 13px;
+        }
+        .oh-ph .ic {
+          width: 22px;
+          height: 22px;
+          border-radius: 6px;
+          background: #e6eeff;
+          color: #2563eb;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .oh-ph .ic .i {
+          width: 13px;
+          height: 13px;
+        }
+        .oh-ph > span:last-child {
+          margin-left: auto;
+          font-weight: 400;
+          font-size: 11.5px;
+          color: #8a93a1;
+        }
+        .oh-old,
+        .oh-new {
+          padding: 8px 10px;
+          border-radius: 6px;
+          font-size: 13px;
+          line-height: 1.7;
+        }
+        .oh-old {
+          background: #fdeeee;
+          color: #a3302a;
+          text-decoration: line-through;
+          text-decoration-color: rgba(163, 48, 42, 0.5);
+        }
+        .oh-new {
+          background: #e8f5ec;
+          color: #16532f;
+        }
+        .oh-why {
+          font-size: 12px;
+          line-height: 1.6;
+          color: #6b7280;
+        }
+        .oh-acts {
+          display: flex;
+          gap: 8px;
+          margin-top: 2px;
+        }
+        .oh-acts .oh-btn {
+          height: 30px;
+          padding: 0 14px;
+        }
+        .oh-btn.pri {
+          background: #2563eb;
+          border-color: #2563eb;
+          color: #fff;
+        }
+        .oh-btn.pri .i {
+          color: #fff;
+        }
+        .oh-ask {
+          margin-top: auto;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          padding: 0 12px;
+          border: 1px solid #dfe3e9;
+          border-radius: 8px;
+          color: #9aa2af;
+          font-size: 12.5px;
+        }
+
+        /* 启动器 popover */
+        .oh-pop {
+          position: absolute;
+          top: 36px;
+          right: 0;
+          width: 256px;
+          background: #fff;
+          border: 1px solid #dfe3e9;
+          border-radius: 8px;
+          box-shadow:
+            0 8px 28px rgba(16, 24, 40, 0.16),
+            0 1px 3px rgba(16, 24, 40, 0.08);
+          padding: 8px;
+          z-index: 5;
+          text-align: left;
+        }
+        .oh-pop:before {
+          content: "";
+          position: absolute;
+          top: -5px;
+          right: 32px;
+          width: 9px;
+          height: 9px;
+          background: #fff;
+          border-left: 1px solid #dfe3e9;
+          border-top: 1px solid #dfe3e9;
+          transform: rotate(45deg);
+        }
+        .oh-search {
+          height: 32px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0 10px;
+          border: 1px solid #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+          border-radius: 8px;
+          color: #9aa2af;
+          font-size: 12.5px;
+        }
+        .oh-search .i {
+          color: #7a8494;
+        }
+        .oh-pcap {
+          padding: 10px 8px 4px;
+          font-size: 11.5px;
+          color: #8a93a1;
+        }
+        .oh-pi {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          height: 44px;
+          padding: 0 8px;
+          border-radius: 8px;
+        }
+        .oh-pi.hl {
+          background: #eef3ff;
+        }
+        .oh-pi .ic {
+          width: 28px;
+          height: 28px;
+          border-radius: 7px;
+          background: #f1f3f6;
+          color: #4b5563;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .oh-pi.hl .ic {
+          background: #dce8ff;
+          color: #2563eb;
+        }
+        .oh-pi div {
+          flex: 1;
+          min-width: 0;
+        }
+        .oh-pi b {
+          display: block;
+          font-size: 13px;
+          font-weight: 600;
+          color: #1d2129;
+        }
+        .oh-pi small {
+          display: block;
+          font-size: 11.5px;
+          color: #8a93a1;
+        }
+        .oh-pi kbd {
+          font: inherit;
+          font-size: 11px;
+          color: #6b7280;
+        }
+        .oh-hr {
+          height: 1px;
+          background: #eef0f3;
+          margin: 6px 0;
+        }
+      </style>
+
+      <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+        <symbol id="oh-folder" viewBox="0 0 16 16">
+          <path
+            d="M2 4.5a1 1 0 0 1 1-1h3l1.5 1.5H13a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"
+          />
+        </symbol>
+        <symbol id="oh-file" viewBox="0 0 16 16">
+          <path
+            d="M4 2h5l3 3v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"
+          />
+          <path d="M9 2v3h3" />
+        </symbol>
+        <symbol id="oh-img" viewBox="0 0 16 16">
+          <rect x="2.5" y="3" width="11" height="10" rx="1.5" />
+          <circle cx="6" cy="6.5" r="1.1" />
+          <path d="M3 12l3.5-3 2.5 2 2-1.5 3 2.5" />
+        </symbol>
+        <symbol id="oh-gear" viewBox="0 0 16 16">
+          <circle cx="8" cy="8" r="2.4" />
+          <path
+            d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M3.6 12.4L5 11M11 5l1.4-1.4"
+          />
+        </symbol>
+        <symbol id="oh-plus" viewBox="0 0 16 16">
+          <path d="M8 3v10M3 8h10" />
+        </symbol>
+        <symbol id="oh-x" viewBox="0 0 16 16">
+          <path d="M4 4l8 8M12 4l-8 8" />
+        </symbol>
+        <symbol id="oh-spark" viewBox="0 0 16 16">
+          <path d="M8 2l1.5 3.9L13.5 7.5 9.5 9 8 13 6.5 9 2.5 7.5l4-1.6z" />
+        </symbol>
+        <symbol id="oh-plug" viewBox="0 0 16 16">
+          <path d="M6 2v3M10 2v3M4.5 5h7v3a3.5 3.5 0 0 1-7 0zM8 11.5V14" />
+        </symbol>
+        <symbol id="oh-search" viewBox="0 0 16 16">
+          <circle cx="7" cy="7" r="4.3" />
+          <path d="M10.2 10.2l3.3 3.3" />
+        </symbol>
+        <symbol id="oh-pencil" viewBox="0 0 16 16">
+          <path d="M10.5 3.2l2.3 2.3L6.2 12l-3 .8.8-3z" />
+        </symbol>
+        <symbol id="oh-check" viewBox="0 0 16 16">
+          <path d="M3.5 8.5l3 3 6-6.5" />
+        </symbol>
+        <symbol id="oh-undo" viewBox="0 0 16 16">
+          <path d="M5.5 4L3 6.5 5.5 9M3 6.5h6a3.5 3.5 0 0 1 0 7H7" />
+        </symbol>
+        <symbol id="oh-box" viewBox="0 0 16 16">
+          <path
+            d="M2.5 5L8 2.5 13.5 5v6L8 13.5 2.5 11zM2.5 5L8 7.5 13.5 5M8 7.5v6"
+          />
+        </symbol>
+        <symbol id="oh-inbox" viewBox="0 0 16 16">
+          <path
+            d="M2.5 9.5l1.5-6h8l1.5 6v3h-11zM2.5 9.5h3.5a2 2 0 0 0 4 0h3.5"
+          />
+        </symbol>
+        <symbol id="oh-clock" viewBox="0 0 16 16">
+          <circle cx="8" cy="8" r="5.5" />
+          <path d="M8 5v3.2l2 1.2" />
+        </symbol>
+        <symbol id="oh-sliders" viewBox="0 0 16 16">
+          <path d="M2.5 5h6M11.5 5h2M2.5 11h2M7.5 11h6" />
+          <circle cx="10" cy="5" r="1.5" />
+          <circle cx="6" cy="11" r="1.5" />
+        </symbol>
+        <symbol id="oh-doc" viewBox="0 0 16 16">
+          <path
+            d="M4 2h5l3 3v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM5.5 8h5M5.5 10.5h5"
+          />
+        </symbol>
+      </svg>
+
+      <!-- ============ 第一张：默认两栏 ============ -->
+      <div class="oh-label">
+        <b>默认两栏</b
+        ><span
+          >顶栏 · 左 280 视图列表 · 中 文档页签 +
+          编辑器　｜　没有活动轨，没有右侧第三栏，没有常驻插件图标</span
+        >
+      </div>
+      <div class="oh-shell">
+        <div class="oh-bar">
+          <div class="oh-dots"><i></i><i></i><i></i></div>
+          <div class="oh-title">Q4 路线评审纪要<em>· 已保存</em></div>
+          <div class="oh-spacer"></div>
+          <div class="oh-cluster">
+            <button class="oh-btn">
+              <svg class="i"><use href="#oh-check" /></svg>待确认<span class="n"
+                >3</span
+              >
+            </button>
+            <div class="oh-pw">
+              <button class="oh-btn">
+                <svg class="i"><use href="#oh-plug" /></svg>插件
+              </button>
+            </div>
+            <button class="oh-btn ai">
+              <svg class="i"><use href="#oh-spark" /></svg>Textus AI
+            </button>
+            <button class="oh-btn k">
+              <svg class="i"><use href="#oh-search" /></svg>搜索与命令<kbd
+                >⌘K</kbd
+              >
+            </button>
+          </div>
+        </div>
+        <div class="oh-body">
+          <div class="oh-left">
+            <div class="oh-seg">
+              <span class="on">今天</span><span>文件</span><span>插件</span>
+            </div>
+            <div class="oh-scroll">
+              <div class="oh-sec">当前交付</div>
+              <div class="oh-row cur">
+                <span class="t">Q4 路线评审纪要</span
+                ><span class="m">本周五截止 · 3 项待办</span>
+              </div>
+              <div class="oh-sec">最近</div>
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">会议速记</span
+                ><span class="m">今天 09:42</span>
+              </div>
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">读书笔记 · 系统设计</span
+                ><span class="m">昨天</span>
+              </div>
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">周报 · 第 46 周</span
+                ><span class="m">11-15</span>
+              </div>
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">插件接入清单</span><span class="m">11-14</span>
+              </div>
+            </div>
+            <div class="oh-foot">
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-clock" /></svg
+                ><span class="t">复盘</span>
+              </div>
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-gear" /></svg
+                ><span class="t">设置</span>
+              </div>
+            </div>
+          </div>
+          <div class="oh-main">
+            <div class="oh-tabs">
+              <div class="oh-tab on">
+                <span class="t">Q4 路线评审纪要</span
+                ><span class="x"
+                  ><svg class="i"><use href="#oh-x" /></svg
+                ></span>
+              </div>
+              <div class="oh-tab">
+                <span class="t">会议速记</span
+                ><span class="x"
+                  ><svg class="i"><use href="#oh-x" /></svg
+                ></span>
+              </div>
+              <div class="oh-tab">
+                <svg class="i ai"><use href="#oh-spark" /></svg
+                ><span class="t">Textus AI</span
+                ><span class="x"
+                  ><svg class="i"><use href="#oh-x" /></svg
+                ></span>
+              </div>
+              <div class="oh-tab plus">
+                <svg class="i"><use href="#oh-plus" /></svg>
+              </div>
+            </div>
+            <div class="oh-doc">
+              <div class="oh-page">
+                <h1>Q4 路线评审纪要</h1>
+                <div class="meta">
+                  2026-11-18 · 产品 / 研发 / 设计 · 8 人参加
+                </div>
+                <h2>背景</h2>
+                <p>
+                  本季度的重点是把「采集 → 整理 →
+                  复盘」这条链路在桌面端跑通。上一轮评审已经确认了范围，这一轮要对齐节奏与负责人。
+                </p>
+                <h2>决议</h2>
+                <ul>
+                  <li>采集入口统一为命令 + 单输入框，不再单独做收集页</li>
+                  <li>资产列表走插件侧栏，详情页放到下个迭代</li>
+                  <li>复盘每周五自动生成草稿，由本人确认后再归档</li>
+                </ul>
+                <h2>下一步</h2>
+                <p>
+                  同步节奏之后再定，相关同学尽快跟进，细节另行通知。<span
+                    class="oh-caret"
+                  ></span>
+                </p>
+                <ul>
+                  <li class="todo">周五前确认插件启动器的命令清单</li>
+                  <li class="todo">
+                    整理 <code>asset-library/</code> 的目录约定
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="oh-status">
+              <span>Markdown</span><span>1,284 字</span><span class="sp"></span
+              ><span>第 21 行，第 26 列</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oh-gap"></div>
+
+      <!-- ============ 第二张：按需三栏 ============ -->
+      <div class="oh-label">
+        <b>按需三栏</b
+        ><span
+          >左栏切到「文件」 · 中 编辑器选中一段 · 右 340「页边 ·
+          Agent」插件视图　｜　顶栏「插件」打开启动器；关闭右栏即回两栏</span
+        >
+      </div>
+      <div class="oh-shell">
+        <div class="oh-bar">
+          <div class="oh-dots"><i></i><i></i><i></i></div>
+          <div class="oh-title">Q4 路线评审纪要<em>· 已保存</em></div>
+          <div class="oh-spacer"></div>
+          <div class="oh-cluster">
+            <button class="oh-btn">
+              <svg class="i"><use href="#oh-check" /></svg>待确认<span class="n"
+                >3</span
+              >
+            </button>
+            <div class="oh-pw">
+              <button class="oh-btn on">
+                <svg class="i"><use href="#oh-plug" /></svg>插件
+              </button>
+              <div class="oh-pop">
+                <div class="oh-search">
+                  <svg class="i"><use href="#oh-search" /></svg>搜索插件与命令
+                </div>
+                <div class="oh-pcap">插件</div>
+                <div class="oh-pi hl">
+                  <span class="ic"
+                    ><svg class="i"><use href="#oh-box" /></svg
+                  ></span>
+                  <div><b>资产</b><small>浏览与整理资产库</small></div>
+                </div>
+                <div class="oh-pi">
+                  <span class="ic"
+                    ><svg class="i"><use href="#oh-inbox" /></svg
+                  ></span>
+                  <div><b>采集</b><small>快速记到收件箱</small></div>
+                  <kbd>⌘⇧C</kbd>
+                </div>
+                <div class="oh-pi">
+                  <span class="ic"
+                    ><svg class="i"><use href="#oh-clock" /></svg
+                  ></span>
+                  <div><b>复盘</b><small>本周回顾与草稿</small></div>
+                </div>
+                <div class="oh-hr"></div>
+                <div class="oh-pi">
+                  <span class="ic"
+                    ><svg class="i"><use href="#oh-sliders" /></svg
+                  ></span>
+                  <div><b>插件设置</b><small>启用、排序与权限</small></div>
+                </div>
+              </div>
+            </div>
+            <button class="oh-btn ai">
+              <svg class="i"><use href="#oh-spark" /></svg>Textus AI
+            </button>
+            <button class="oh-btn k">
+              <svg class="i"><use href="#oh-search" /></svg>搜索与命令<kbd
+                >⌘K</kbd
+              >
+            </button>
+          </div>
+        </div>
+        <div class="oh-body">
+          <div class="oh-left">
+            <div class="oh-seg">
+              <span>今天</span><span class="on">文件</span><span>插件</span>
+            </div>
+            <div class="oh-scroll oh-tree">
+              <div class="oh-sec">
+                笔记库<svg class="i"><use href="#oh-plus" /></svg>
+              </div>
+              <div class="oh-row dir">
+                <span class="chev">▾</span
+                ><svg class="i"><use href="#oh-folder" /></svg
+                ><span class="t">notes/</span>
+              </div>
+              <div class="oh-row l1 on">
+                <span class="chev">·</span
+                ><svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">Q4 路线评审纪要.md</span>
+              </div>
+              <div class="oh-row l1">
+                <span class="chev">·</span
+                ><svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">会议速记.md</span>
+              </div>
+              <div class="oh-row l1">
+                <span class="chev">·</span
+                ><svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">读书笔记 · 系统设计.md</span>
+              </div>
+              <div class="oh-row l1 dir">
+                <span class="chev" style="visibility: visible">▸</span
+                ><svg class="i"><use href="#oh-folder" /></svg
+                ><span class="t">周报/</span>
+              </div>
+              <div class="oh-row dir">
+                <span class="chev">▾</span
+                ><svg class="i"><use href="#oh-folder" /></svg
+                ><span class="t">asset-library/</span>
+              </div>
+              <div class="oh-row l1 dir">
+                <span class="chev" style="visibility: visible">▸</span
+                ><svg class="i"><use href="#oh-folder" /></svg
+                ><span class="t">logos/</span>
+              </div>
+              <div class="oh-row l1 dir">
+                <span class="chev" style="visibility: visible">▸</span
+                ><svg class="i"><use href="#oh-folder" /></svg
+                ><span class="t">screenshots/</span>
+              </div>
+              <div class="oh-row l1">
+                <span class="chev">·</span
+                ><svg class="i"><use href="#oh-img" /></svg
+                ><span class="t">品牌色板.png</span>
+              </div>
+              <div class="oh-row l1">
+                <span class="chev">·</span
+                ><svg class="i"><use href="#oh-file" /></svg
+                ><span class="t">竞品对照.pdf</span>
+              </div>
+            </div>
+            <div class="oh-foot">
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-clock" /></svg
+                ><span class="t">复盘</span>
+              </div>
+              <div class="oh-row">
+                <svg class="i"><use href="#oh-gear" /></svg
+                ><span class="t">设置</span>
+              </div>
+            </div>
+          </div>
+          <div class="oh-main">
+            <div class="oh-tabs">
+              <div class="oh-tab on">
+                <span class="t">Q4 路线评审纪要</span
+                ><span class="x"
+                  ><svg class="i"><use href="#oh-x" /></svg
+                ></span>
+              </div>
+              <div class="oh-tab">
+                <span class="t">会议速记</span
+                ><span class="x"
+                  ><svg class="i"><use href="#oh-x" /></svg
+                ></span>
+              </div>
+              <div class="oh-tab">
+                <svg class="i ai"><use href="#oh-spark" /></svg
+                ><span class="t">Textus AI</span
+                ><span class="x"
+                  ><svg class="i"><use href="#oh-x" /></svg
+                ></span>
+              </div>
+              <div class="oh-tab plus">
+                <svg class="i"><use href="#oh-plus" /></svg>
+              </div>
+            </div>
+            <div class="oh-doc">
+              <div class="oh-page">
+                <h1>Q4 路线评审纪要</h1>
+                <div class="meta">
+                  2026-11-18 · 产品 / 研发 / 设计 · 8 人参加
+                </div>
+                <h2>背景</h2>
+                <p>
+                  本季度的重点是把「采集 → 整理 →
+                  复盘」这条链路在桌面端跑通。上一轮评审已经确认了范围，这一轮要对齐节奏与负责人。
+                </p>
+                <h2>决议</h2>
+                <ul>
+                  <li>采集入口统一为命令 + 单输入框，不再单独做收集页</li>
+                  <li>资产列表走插件侧栏，详情页放到下个迭代</li>
+                  <li>复盘每周五自动生成草稿，由本人确认后再归档</li>
+                </ul>
+                <h2>下一步</h2>
+                <p>
+                  <span class="oh-sel"
+                    >同步节奏之后再定，相关同学尽快跟进，细节另行通知。</span
+                  >
+                </p>
+                <ul>
+                  <li class="todo">周五前确认插件启动器的命令清单</li>
+                  <li class="todo">
+                    整理 <code>asset-library/</code> 的目录约定
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="oh-status">
+              <span>Markdown</span><span>1,284 字</span><span class="sp"></span
+              ><span>已选中 24 字</span>
+            </div>
+          </div>
+          <div class="oh-right">
+            <div class="oh-rh">
+              <strong>页边 · Agent</strong><span class="tag">插件</span>
+              <span class="oh-spacer"></span>
+              <button class="oh-btn">
+                <svg class="i"><use href="#oh-x" /></svg>关闭
+              </button>
+            </div>
+            <div class="oh-rb">
+              <div class="oh-cap">选中引用</div>
+              <div class="oh-quote">
+                同步节奏之后再定，相关同学尽快跟进，细节另行通知。<small
+                  >Q4 路线评审纪要.md · 下一步 · 第 1 段</small
+                >
+              </div>
+              <div class="oh-cap">提议 · 1 条</div>
+              <div class="oh-prop">
+                <div class="oh-ph">
+                  <span class="ic"
+                    ><svg class="i"><use href="#oh-pencil" /></svg></span
+                  >铅笔提议<span>改写</span>
+                </div>
+                <div class="oh-old">
+                  同步节奏之后再定，相关同学尽快跟进，细节另行通知。
+                </div>
+                <div class="oh-new">
+                  同步节奏定为每周三
+                  10:00，由林舟负责拉齐，细节在周二前补进本文。
+                </div>
+                <div class="oh-why">
+                  把「之后再定」换成明确的时间与负责人，复盘时可以直接核对。
+                </div>
+                <div class="oh-acts">
+                  <button class="oh-btn pri">
+                    <svg class="i"><use href="#oh-check" /></svg>留下
+                  </button>
+                  <button class="oh-btn">
+                    <svg class="i"><use href="#oh-undo" /></svg>退回
+                  </button>
+                </div>
+              </div>
+              <div class="oh-ask">继续向 Agent 说明想怎么改…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
