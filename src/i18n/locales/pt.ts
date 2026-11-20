@@ -2017,8 +2017,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
-  syncMobileDocumentsOnly:
-    "A sincronização integrada só suporta, por enquanto, a pasta Documentos do app. Para uma pasta escolhida em outro lugar, use o plugin Cloud Sync.",
+  syncMobileContentOnly:
+    "Esta pasta foi aberta por uma permissão do sistema que a sincronização integrada não consegue ler diretamente. Use o plugin Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Ligação",
   syncVaultsTitle: "Bibliotecas sincronizadas",

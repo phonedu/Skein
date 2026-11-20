@@ -381,6 +381,40 @@ it("falls back to the phone's own Documents when no folder is passed", async () 
   flags.mobile = false;
 });
 
+it("refuses a folder the app only reads through a content grant", async () => {
+  flags.mobile = true;
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(
+    <SyncPage
+      {...pageProps({
+        t,
+        settings: {} as never,
+        setSettings: (() => {}) as never,
+        folderRoot: "content://com.android.externalstorage.documents/tree/x",
+      })}
+    />,
+  );
+  await screen.findByText(t.syncMobileContentOnly);
+  expect(
+    (
+      screen.getByRole("button", {
+        name: t.syncSave,
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(true);
+  flags.mobile = false;
+});
+
 it("does not warn before built-in sync is configured", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: false,

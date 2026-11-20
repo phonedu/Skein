@@ -2042,8 +2042,8 @@ export default {
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
-  syncMobileDocumentsOnly:
-    "Встроенная синхронизация пока поддерживает только папку «Документы» приложения. Для папки, выбранной в другом месте, используйте плагин Cloud Sync.",
+  syncMobileContentOnly:
+    "Эта папка открыта по системному разрешению, которое встроенная синхронизация не может читать напрямую. Используйте для неё плагин Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Подключение",
   syncVaultsTitle: "Синхронизированные библиотеки",

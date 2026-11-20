@@ -2053,8 +2053,8 @@ utiliser une.
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
-  syncMobileDocumentsOnly:
-    "La synchronisation intégrée ne prend pour l’instant en charge que le dossier Documents de l’app. Pour un dossier choisi ailleurs, utilisez le plugin Cloud Sync.",
+  syncMobileContentOnly:
+    "Ce dossier est ouvert via une autorisation système que la synchronisation intégrée ne peut pas lire directement. Utilisez le plugin Cloud Sync.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Connexion",
   syncVaultsTitle: "Bibliothèques synchronisées",

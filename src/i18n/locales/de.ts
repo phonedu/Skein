@@ -1994,8 +1994,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
-  syncMobileDocumentsOnly:
-    "Die interne Synchronisierung unterstützt vorerst nur den App-Dokumente-Ordner. Für einen anders gewählten Ordner nutze das Cloud-Sync-Plugin.",
+  syncMobileContentOnly:
+    "Dieser Ordner ist über eine Systemfreigabe geöffnet, die die interne Synchronisierung nicht direkt lesen kann. Nutze dafür das Cloud-Sync-Plugin.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Verbindung",
   syncVaultsTitle: "Synchronisierte Bibliotheken",

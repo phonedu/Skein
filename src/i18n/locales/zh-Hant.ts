@@ -1821,8 +1821,8 @@ export default {
   navSync: "同步",
   syncFolderLabel: "資料夾",
   syncNoFolder: "先開啟一個資料夾。",
-  syncMobileDocumentsOnly:
-    "內建同步目前只支援應用文件資料夾。其他位置選取的資料夾請使用 Cloud Sync 外掛。",
+  syncMobileContentOnly:
+    "這個資料夾透過系統授權開啟，內建同步無法直接讀寫。請使用 Cloud Sync 外掛同步它。",
   syncProviderLabel: "服務",
   syncConnectionLabel: "連線",
   syncVaultsTitle: "已同步的庫",

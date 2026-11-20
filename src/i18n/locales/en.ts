@@ -1950,8 +1950,8 @@ type /name in a conversation to use one.
   navSync: "Sync",
   syncFolderLabel: "Folder",
   syncNoFolder: "Open a folder first.",
-  syncMobileDocumentsOnly:
-    "Built-in sync supports the app's Documents folder for now. Use the Cloud Sync plugin for a folder picked elsewhere.",
+  syncMobileContentOnly:
+    "This folder is shared through a system grant that sync can't read directly. Use the Cloud Sync plugin for it.",
   syncProviderLabel: "Service",
   syncConnectionLabel: "Connection",
   syncVaultsTitle: "Synced vaults",

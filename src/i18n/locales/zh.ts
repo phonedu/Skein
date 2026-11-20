@@ -1816,8 +1816,8 @@ export default {
   navSync: "同步",
   syncFolderLabel: "文件夹",
   syncNoFolder: "先打开一个文件夹。",
-  syncMobileDocumentsOnly:
-    "内置同步目前只支持应用文档文件夹。其他地方选取的文件夹请使用 Cloud Sync 插件。",
+  syncMobileContentOnly:
+    "这个文件夹通过系统授权打开，内置同步无法直接读写。请使用 Cloud Sync 插件同步它。",
   syncProviderLabel: "服务",
   syncConnectionLabel: "连接",
   syncVaultsTitle: "已同步的库",

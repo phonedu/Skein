@@ -1897,8 +1897,8 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   navSync: "동기화",
   syncFolderLabel: "폴더",
   syncNoFolder: "먼저 폴더를 여세요.",
-  syncMobileDocumentsOnly:
-    "내장 동기화는 현재 앱 문서 폴더만 지원합니다. 다른 곳에서 고른 폴더는 Cloud Sync 플러그인을 사용하세요.",
+  syncMobileContentOnly:
+    "이 폴더는 시스템 권한으로 열려 있어 내장 동기화가 직접 읽고 쓸 수 없습니다. Cloud Sync 플러그인을 사용하세요.",
   syncProviderLabel: "서비스",
   syncConnectionLabel: "연결",
   syncVaultsTitle: "동기화된 라이브러리",

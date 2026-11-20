@@ -1917,8 +1917,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   navSync: "同期",
   syncFolderLabel: "フォルダー",
   syncNoFolder: "先にフォルダーを開いてください。",
-  syncMobileDocumentsOnly:
-    "内蔵同期は今のところアプリの書類フォルダーのみ対応しています。別の場所のフォルダーは Cloud Sync プラグインを使ってください。",
+  syncMobileContentOnly:
+    "このフォルダーはシステムの許可で開かれており、内蔵同期からは直接読み書きできません。Cloud Sync プラグインを使ってください。",
   syncProviderLabel: "サービス",
   syncConnectionLabel: "接続",
   syncVaultsTitle: "同期済みのライブラリ",

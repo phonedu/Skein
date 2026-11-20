@@ -147,13 +147,11 @@ export function SyncPage({
   const folderRoot = isMobileApp
     ? (phoneFolder ?? givenFolderRoot)
     : givenFolderRoot;
-  // SAF folders are granted to the editor, not to the sync engine's plain
-  // file access: v1 syncs folders under the app's own external storage only.
+  // A picked folder the app reads through a content:// grant can't be read
+  // by the sync engine's plain paths. A plain path (the app's Documents, or
+  // a folder the user gave the app access to) works.
   const unsupportedRoot =
-    isMobileApp &&
-    !!folderRoot &&
-    /^\/storage\/emulated\/\d+\//.test(folderRoot) &&
-    !/\/Android\/(data|media)\//.test(folderRoot);
+    isMobileApp && !!folderRoot && folderRoot.startsWith("content://");
   const [config, setConfig] = useState<SyncConfig>(EMPTY);
   const [credentials, setCredentials] =
     useState<SyncCredentials>(EMPTY_CREDENTIALS);
@@ -530,7 +528,7 @@ export function SyncPage({
           {t.syncFolderLabel}: {folderRoot}
         </p>
         {unsupportedRoot && (
-          <p className="settings-error">{t.syncMobileDocumentsOnly}</p>
+          <p className="settings-error">{t.syncMobileContentOnly}</p>
         )}
         <div className={note?.error ? "settings-error" : "settings-success"}>
           {note?.text ?? statusText}
