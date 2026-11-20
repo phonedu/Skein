@@ -115,6 +115,9 @@ export const syncConnectionUpdate = (
     )
     .then((json) => parse<{ changed: boolean; vaults: number }>(json));
 
+export const syncForkVault = (root: string): Promise<void> =>
+  commands.sync_fork_vault(root).then(() => undefined);
+
 export const syncSettingsForget = (root: string): Promise<void> =>
   commands.sync_settings_forget(root).then(() => undefined);
 

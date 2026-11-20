@@ -2056,6 +2056,11 @@ utiliser une.
   syncConnectionLabel: "Connexion",
   syncVaultsTitle: "Bibliothèques synchronisées",
   syncNoVaults: "Aucune bibliothèque synchronisée pour le moment.",
+  syncVaultCopiedAsk:
+    "Ce dossier ressemble à une copie d’une autre bibliothèque synchronisée. Créer une bibliothèque séparée ?",
+  syncVaultFork: "Créer une bibliothèque séparée",
+  syncErrorVaultCopied:
+    "Ce dossier appartient à une autre bibliothèque synchronisée. Créez une bibliothèque séparée pour lui.",
   syncConnectionNew: "Nouvelle connexion",
   syncConnectionShared:
     "Cette connexion est utilisée par {count} bibliothèques ; son adresse et ses identifiants ne se modifient pas ici.",

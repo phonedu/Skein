@@ -148,6 +148,13 @@ pub fn sync_connection_update(
 
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
+pub fn sync_fork_vault(app: tauri::AppHandle, root: String) -> Result<(), String> {
+    let root = store::canonical_root(&root)?;
+    store::fork_vault(&app, &root)
+}
+
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
 pub fn sync_vaults(app: tauri::AppHandle) -> Result<String, String> {
     serde_json::to_string(&store::vault_list(&app)?).map_err(|e| e.to_string())
 }

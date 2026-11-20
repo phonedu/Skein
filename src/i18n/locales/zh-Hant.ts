@@ -1824,6 +1824,10 @@ export default {
   syncConnectionLabel: "連線",
   syncVaultsTitle: "已同步的庫",
   syncNoVaults: "還沒有同步的庫。",
+  syncVaultCopiedAsk:
+    "這個資料夾看起來是另一個已同步庫的副本。要為它建立獨立的庫嗎？",
+  syncVaultFork: "建立獨立庫",
+  syncErrorVaultCopied: "這個資料夾屬於另一個已同步庫。請為它建立獨立庫。",
   syncConnectionNew: "新增連線",
   syncConnectionShared: "此連線已被 {count} 個庫使用；位址與憑證不在這裡修改。",
   syncConnectionEdit: "編輯連線",

@@ -1900,6 +1900,11 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncConnectionLabel: "연결",
   syncVaultsTitle: "동기화된 라이브러리",
   syncNoVaults: "아직 동기화된 라이브러리가 없습니다.",
+  syncVaultCopiedAsk:
+    "이 폴더는 다른 동기화된 라이브러리의 복사본으로 보입니다. 별도 라이브러리로 만들까요?",
+  syncVaultFork: "별도 라이브러리 만들기",
+  syncErrorVaultCopied:
+    "이 폴더는 다른 동기화된 라이브러리에 속합니다. 별도 라이브러리로 만드세요.",
   syncConnectionNew: "새 연결",
   syncConnectionShared:
     "이 연결은 라이브러리 {count}개에서 사용 중입니다. 주소와 자격 증명은 여기서 변경되지 않습니다.",

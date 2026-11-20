@@ -21,6 +21,11 @@ vi.mock("../../platform/ipc-sync", () => ({
   syncHistory: vi.fn(),
   syncVaults: vi.fn(),
   syncConnectionUpdate: vi.fn(),
+  syncForkVault: vi.fn(),
+}));
+
+vi.mock("../../engine/controls/app-dialog", () => ({
+  showConfirm: vi.fn(),
 }));
 
 import {
@@ -28,13 +33,16 @@ import {
   syncSettingsSave,
   syncVaults,
   syncConnectionUpdate,
+  syncForkVault,
 } from "../../platform/ipc-sync";
+import { showConfirm } from "../../engine/controls/app-dialog";
 
 vi.mocked(syncVaults).mockResolvedValue([]);
 vi.mocked(syncConnectionUpdate).mockResolvedValue({
   changed: false,
   vaults: 2,
 });
+vi.mocked(syncForkVault).mockResolvedValue();
 
 const t = resolveStrings("en");
 
@@ -199,4 +207,28 @@ it("lets a shared connection be edited on purpose", async () => {
   const [id, updated] = vi.mocked(syncConnectionUpdate).mock.calls[0];
   expect(id).toBe("c1");
   expect(updated.endpoint).toBe("https://new.example.com");
+});
+
+it("offers to fork a copied vault and saves it again", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncSettingsSave).mockClear();
+  vi.mocked(syncForkVault).mockClear();
+  vi.mocked(syncSettingsSave)
+    .mockRejectedValueOnce(new Error("vaultCopied"))
+    .mockResolvedValueOnce();
+  vi.mocked(showConfirm).mockResolvedValue(true);
+  const { syncStatus, syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  await waitFor(() => expect(syncForkVault).toHaveBeenCalledOnce());
+  expect(syncSettingsSave).toHaveBeenCalledTimes(2);
 });

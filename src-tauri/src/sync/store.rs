@@ -352,18 +352,8 @@ fn vault_id(root: &Path) -> String {
     Uuid::new_v4().simple().to_string()
 }
 
-fn write_identity(root: &Path, id: &str) {
+fn write_identity_file(root: &Path, id: &str) {
     let path = identity_path(root);
-    #[derive(Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct Identity {
-        vault_id: String,
-    }
-    if let Some(identity) = read_json::<Identity>(&path).ok().flatten() {
-        if !identity.vault_id.is_empty() {
-            return;
-        }
-    }
     if let Some(parent) = path.parent() {
         let _ = std::fs::create_dir_all(parent);
     }
@@ -371,6 +361,20 @@ fn write_identity(root: &Path, id: &str) {
         &path,
         serde_json::to_vec_pretty(&serde_json::json!({ "vaultId": id })).unwrap_or_default(),
     );
+}
+
+fn write_identity(root: &Path, id: &str) {
+    #[derive(Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Identity {
+        vault_id: String,
+    }
+    if let Some(identity) = read_json::<Identity>(&identity_path(root)).ok().flatten() {
+        if !identity.vault_id.is_empty() {
+            return;
+        }
+    }
+    write_identity_file(root, id);
 }
 
 fn slug(root: &Path) -> String {
@@ -406,6 +410,21 @@ fn new_prefix(connection: &Connection, root: &Path, vault_id: &str) -> String {
     } else {
         format!("{base}/{sub}")
     }
+}
+
+pub fn fork_vault(app: &tauri::AppHandle, root: &Path) -> Result<(), String> {
+    let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    fork_at(&store_paths(app)?, root)
+}
+
+fn fork_at(paths: &StorePaths, root: &Path) -> Result<(), String> {
+    let (store, _) = read_state(paths)?;
+    if store.vaults.contains_key(&root_key(root)) {
+        return Err(SyncError::new("invalidConfig").to_string());
+    }
+    let id = Uuid::new_v4().simple().to_string();
+    write_identity_file(root, &id);
+    Ok(())
 }
 
 pub fn canonical_root(root: &str) -> Result<PathBuf, String> {
@@ -541,6 +560,15 @@ fn save_at(
         .map(|binding| binding.vault_id.clone())
         .filter(|id| !id.is_empty())
         .unwrap_or_else(|| vault_id(root));
+    if existing.is_none()
+        && store.vaults.iter().any(|(other, binding)| {
+            other != &key && !binding.vault_id.is_empty() && binding.vault_id == vault_id
+        })
+    {
+        // A copied folder carries the same .textus/sync-vault.json. Do not
+        // quietly bind it to the original's identity; the page asks first.
+        return Err(SyncError::new("vaultCopied").to_string());
+    }
     let same_binding = existing
         .as_ref()
         .is_some_and(|binding| binding.connection_id == connection_id);
@@ -1195,6 +1223,34 @@ mod tests {
         assert!(paths.base(&second).exists());
         let (_, credentials) = load_at(&paths, &second).unwrap().unwrap();
         assert_eq!(credentials.password, "new");
+    }
+
+    #[test]
+    fn a_copied_vault_is_asked_to_fork_before_it_binds() {
+        let dir = tempfile::tempdir().unwrap();
+        let first = dir.path().join("vault");
+        let copy = dir.path().join("vault copy");
+        std::fs::create_dir_all(&first).unwrap();
+        std::fs::create_dir_all(&copy).unwrap();
+        let paths = test_paths(dir.path());
+        save_at(&paths, &first, webdav_config(), webdav_credentials()).unwrap();
+        std::fs::create_dir_all(copy.join(".textus")).unwrap();
+        std::fs::copy(
+            first.join(".textus/sync-vault.json"),
+            copy.join(".textus/sync-vault.json"),
+        )
+        .unwrap();
+
+        let error = save_at(&paths, &copy, webdav_config(), webdav_credentials()).unwrap_err();
+        assert!(error.contains("vaultCopied"), "{error}");
+        fork_at(&paths, &copy).unwrap();
+        let (first_config, _) = load_at(&paths, &first).unwrap().unwrap();
+        let mut shared = webdav_config();
+        shared.connection_id = first_config.connection_id.clone();
+        save_at(&paths, &copy, shared, Credentials::default()).unwrap();
+        let (copy_config, _) = load_at(&paths, &copy).unwrap().unwrap();
+        assert_eq!(first_config.connection_id, copy_config.connection_id);
+        assert_ne!(first_config.prefix, copy_config.prefix);
     }
 
     #[test]

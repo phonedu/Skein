@@ -1920,6 +1920,11 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncConnectionLabel: "接続",
   syncVaultsTitle: "同期済みのライブラリ",
   syncNoVaults: "同期しているライブラリはまだありません。",
+  syncVaultCopiedAsk:
+    "このフォルダーは別の同期済みライブラリのコピーのようです。別のライブラリとして作成しますか？",
+  syncVaultFork: "別のライブラリを作成",
+  syncErrorVaultCopied:
+    "このフォルダーは別の同期済みライブラリに属しています。別のライブラリとして作成してください。",
   syncConnectionNew: "新しい接続",
   syncConnectionShared:
     "この接続は {count} 個のライブラリで使われています。アドレスと認証情報はここでは変更されません。",

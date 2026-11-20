@@ -1819,6 +1819,10 @@ export default {
   syncConnectionLabel: "连接",
   syncVaultsTitle: "已同步的库",
   syncNoVaults: "还没有同步的库。",
+  syncVaultCopiedAsk:
+    "这个文件夹看起来是另一个已同步库的副本。要为它创建独立的库吗？",
+  syncVaultFork: "创建独立库",
+  syncErrorVaultCopied: "这个文件夹属于另一个已同步库。请为它创建独立库。",
   syncConnectionNew: "新建连接",
   syncConnectionShared: "此连接已被 {count} 个库使用；地址与凭据不在这里修改。",
   syncConnectionEdit: "编辑连接",

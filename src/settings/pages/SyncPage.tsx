@@ -14,6 +14,7 @@ import {
   syncSettingsGet,
   syncSettingsSave,
   syncConnectionUpdate,
+  syncForkVault,
   syncStatus,
   syncUnlock,
   syncVaults,
@@ -53,6 +54,7 @@ const EMPTY_CREDENTIALS: SyncCredentials = {
 };
 
 function errorText(t: SettingsPageProps["t"], reason: string): string {
+  if (reason.includes("vaultCopied")) return t.syncErrorVaultCopied;
   if (reason.includes("remoteMissing")) return t.syncErrorRemote;
   if (reason.includes("lockLost")) return t.syncErrorLockLost;
   if (reason.includes("locked")) return t.syncErrorLocked;
@@ -254,7 +256,22 @@ export function SyncPage({
       setNote({ error: false, text: t.syncSaved });
       await reload();
     } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
+      const reason = String(error);
+      if (reason.includes("vaultCopied")) {
+        const ok = await showConfirm(t.syncVaultCopiedAsk, {
+          okLabel: t.syncVaultFork,
+          cancelLabel: t.cancel,
+        });
+        if (!ok) return;
+        try {
+          await syncForkVault(folderRoot);
+          await save();
+        } catch (forkError) {
+          setNote({ error: true, text: errorText(t, String(forkError)) });
+        }
+        return;
+      }
+      setNote({ error: true, text: errorText(t, reason) });
     } finally {
       setBusy(false);
     }
@@ -266,7 +283,8 @@ export function SyncPage({
     try {
       await syncRunSaved(folderRoot, allowEmpty, allowBulk, openPaths);
       await reload();
-      setNote({ error: false, text: t.syncDone });
+      // The reloaded status carries the summary and the deferred count.
+      setNote(null);
     } catch (error) {
       const reason = String(error);
       const retry = async (empty: boolean, bulk: boolean) => {

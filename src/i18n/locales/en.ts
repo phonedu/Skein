@@ -1953,6 +1953,11 @@ type /name in a conversation to use one.
   syncConnectionLabel: "Connection",
   syncVaultsTitle: "Synced vaults",
   syncNoVaults: "No vaults are synced yet.",
+  syncVaultCopiedAsk:
+    "This folder looks like a copy of another synced vault. Create a separate vault for it?",
+  syncVaultFork: "Create separate vault",
+  syncErrorVaultCopied:
+    "This folder belongs to another synced vault. Create a separate vault for it.",
   syncConnectionNew: "New connection",
   syncConnectionShared:
     "This connection is used by {count} vaults; its address and credentials are not changed here.",

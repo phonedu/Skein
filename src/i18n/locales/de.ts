@@ -1997,6 +1997,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncConnectionLabel: "Verbindung",
   syncVaultsTitle: "Synchronisierte Bibliotheken",
   syncNoVaults: "Noch keine Bibliothek synchronisiert.",
+  syncVaultCopiedAsk:
+    "Dieser Ordner sieht wie eine Kopie einer anderen synchronisierten Bibliothek aus. Eine eigene Bibliothek dafür anlegen?",
+  syncVaultFork: "Eigene Bibliothek anlegen",
+  syncErrorVaultCopied:
+    "Dieser Ordner gehört zu einer anderen synchronisierten Bibliothek. Lege eine eigene Bibliothek dafür an.",
   syncConnectionNew: "Neue Verbindung",
   syncConnectionShared:
     "Diese Verbindung wird von {count} Bibliotheken genutzt; Adresse und Zugangsdaten werden hier nicht geändert.",

@@ -2020,6 +2020,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncConnectionLabel: "Ligação",
   syncVaultsTitle: "Bibliotecas sincronizadas",
   syncNoVaults: "Ainda não há bibliotecas sincronizadas.",
+  syncVaultCopiedAsk:
+    "Esta pasta parece uma cópia de outra biblioteca sincronizada. Criar uma biblioteca separada para ela?",
+  syncVaultFork: "Criar biblioteca separada",
+  syncErrorVaultCopied:
+    "Esta pasta pertence a outra biblioteca sincronizada. Crie uma biblioteca separada para ela.",
   syncConnectionNew: "Nova ligação",
   syncConnectionShared:
     "Esta ligação é usada por {count} bibliotecas; o endereço e as credenciais não são alterados aqui.",
