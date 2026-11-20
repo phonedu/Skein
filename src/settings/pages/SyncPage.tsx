@@ -645,6 +645,7 @@ export function SyncPage({
               <MaskedKeyInput
                 className="settings-text-input"
                 label={t.syncEncryptionPasswordLabel}
+                disabled={!!savedConfig?.encrypted && savedPassword}
                 placeholder={savedPassword ? t.syncSavedPlaceholder : ""}
                 value={credentials.syncPassword ?? ""}
                 onChange={(value) =>

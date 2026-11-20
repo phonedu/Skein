@@ -180,12 +180,14 @@ export function MaskedKeyInput({
   value,
   onChange,
   className = "settings-text-input api-key-input",
+  disabled = false,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const latest = useRef({ value, onChange });
@@ -216,6 +218,7 @@ export function MaskedKeyInput({
       className={className}
       aria-label={label}
       placeholder={placeholder}
+      disabled={disabled}
       autoComplete="off"
       {...VERBATIM_INPUT}
       value={maskKey(value)}
