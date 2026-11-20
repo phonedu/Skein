@@ -376,6 +376,14 @@ async fn run(
             },
         }),
     };
+    // A run that wrote the history and died before its head left
+    // `previous` equal to the head still there. Its retirement entries are
+    // already in the history; fold them out before this run retires the
+    // same files again, or each retry adds a duplicate version.
+    if let (Some(head), Some(before)) = (head.as_ref(), before.as_ref()) {
+        drop_pending_retirements(store, &mut history, before, head).await?;
+    }
+
     if changed {
         let empty;
         let remote = match head.as_ref() {
@@ -438,17 +446,62 @@ async fn run(
     own_lock(store, owner).await?;
     store.put(HISTORY_KEY, history_json).await?;
     own_lock(store, owner).await?;
-    store.put(HEAD_KEY, snapshot_json.clone()).await?;
-    // Shared once the head is written, whatever the read-back says.
-    let committed = store
-        .get(HEAD_KEY)
-        .await?
-        .ok_or_else(|| SyncError::new("publishFailed"))?;
-    if committed != snapshot_json {
+    let written = store.put(HEAD_KEY, snapshot_json.clone()).await;
+    // Shared once the head is written, whatever the read-back says. A
+    // failed write may still have landed; a head that is ours is success.
+    let committed = store.get(HEAD_KEY).await.ok().flatten();
+    if !written.is_ok() && committed.as_deref() != Some(snapshot_json.as_slice()) {
+        return Err(SyncError::new("publishFailed"));
+    }
+    if committed.as_deref() != Some(snapshot_json.as_slice()) {
         return Err(SyncError::new("publishFailed"));
     }
     result.revision = revision;
     Ok(SyncOutcome { result, base })
+}
+
+async fn drop_pending_retirements(
+    store: &dyn ObjectStore,
+    history: &mut History,
+    before: &History,
+    head: &Manifest,
+) -> Result<()> {
+    let Some(pending_revision) = before
+        .head
+        .as_deref()
+        .filter(|revision| *revision != head.revision)
+    else {
+        return Ok(());
+    };
+    if before.previous.as_deref() != Some(head.revision.as_str()) {
+        return Ok(());
+    }
+    let Some(raw) = store.get(&snapshot_key(pending_revision)).await? else {
+        return Ok(());
+    };
+    let Ok(pending) = Manifest::parse(&raw) else {
+        return Ok(());
+    };
+    for (path, entry) in &head.files {
+        let changed = pending
+            .files
+            .get(path)
+            .is_none_or(|next| next.hash != entry.hash);
+        if !changed {
+            continue;
+        }
+        let Some(versions) = history.versions.get_mut(path) else {
+            continue;
+        };
+        versions.retain(|version| {
+            !(version.entry.hash == entry.hash
+                && version.until.as_deref() == Some(pending.updated_at.as_str()))
+        });
+        if versions.is_empty() {
+            history.versions.remove(path);
+        }
+    }
+    Ok(())
 }
 
 fn check_bulk(

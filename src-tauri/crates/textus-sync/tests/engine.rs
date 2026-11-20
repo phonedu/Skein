@@ -7,7 +7,8 @@ use textus_sync::protocol::{
     block_key, new_revision, Lock, Trashed, HEAD_KEY, HISTORY_KEY, LOCK_KEY,
 };
 use textus_sync::{
-    sync, Base, History, LocalFiles, Manifest, MemoryLocal, MemoryStore, ObjectStore, SyncOptions,
+    sync, Base, History, LocalFiles, Manifest, MemoryLocal, MemoryStore, ObjectStore, SyncError,
+    SyncOptions,
 };
 
 fn local(items: &[(&str, &str)]) -> MemoryLocal {
@@ -394,4 +395,141 @@ async fn case_folded_twins_between_devices_stop_before_transfer() {
     let error = sync(&store, &lower, options()).await.unwrap_err();
     assert_eq!(error.code, "caseCollision");
     assert_eq!(lower.read("a.md").await.unwrap(), Some(b"lower".to_vec()));
+}
+
+struct FailingHead {
+    inner: MemoryStore,
+}
+
+#[async_trait::async_trait]
+impl ObjectStore for FailingHead {
+    async fn get(&self, key: &str) -> textus_sync::Result<Option<Vec<u8>>> {
+        self.inner.get(key).await
+    }
+    async fn has(&self, key: &str) -> textus_sync::Result<bool> {
+        self.inner.has(key).await
+    }
+    async fn put(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<()> {
+        if key == HEAD_KEY {
+            return Err(SyncError::new("networkError"));
+        }
+        self.inner.put(key, bytes).await
+    }
+    async fn create(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<bool> {
+        self.inner.create(key, bytes).await
+    }
+    async fn delete(&self, key: &str) -> textus_sync::Result<()> {
+        self.inner.delete(key).await
+    }
+}
+
+#[tokio::test]
+async fn a_publish_that_dies_before_the_head_retries_without_duplicate_versions() {
+    let store = MemoryStore::new();
+    let local = local(&[("a.md", "one")]);
+    let first = sync(&store, &local, options()).await.unwrap();
+
+    local.set("a.md", b"two".to_vec());
+    let failing = FailingHead {
+        inner: MemoryStore::new(),
+    };
+    // Seed the failing store with the published repository.
+    for key in store.keys() {
+        failing
+            .inner
+            .put(&key, store.get(&key).await.unwrap().unwrap())
+            .await
+            .unwrap();
+    }
+    let error = sync(
+        &failing,
+        &local,
+        SyncOptions {
+            base: first.base.clone(),
+            ..options()
+        },
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(error.code, "publishFailed");
+    assert!(failing.inner.get(LOCK_KEY).await.unwrap().is_some());
+    let head = Manifest::parse(&failing.inner.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].hash, hash_hex(b"one"));
+
+    failing.inner.delete(LOCK_KEY).await.unwrap();
+    let working = MemoryStore::new();
+    for key in failing.inner.keys() {
+        working
+            .put(&key, failing.inner.get(&key).await.unwrap().unwrap())
+            .await
+            .unwrap();
+    }
+    let retried = sync(
+        &working,
+        &local,
+        SyncOptions {
+            base: first.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(retried.result.uploaded, 1);
+    let history = History::parse(&working.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    let ones = history.versions["a.md"]
+        .iter()
+        .filter(|version| version.entry.hash == hash_hex(b"one"))
+        .count();
+    assert_eq!(ones, 1, "{:?}", history.versions["a.md"]);
+}
+
+#[tokio::test]
+async fn a_corrupt_block_stops_the_download_before_it_writes() {
+    let store = MemoryStore::new();
+    let first = local(&[("a.md", "one")]);
+    sync(&store, &first, options()).await.unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let key = block_key(&head.files["a.md"].blocks[0].hash);
+    store.put(&key, b"rotten".to_vec()).await.unwrap();
+
+    let other = local(&[]);
+    let error = sync(&store, &other, options()).await.unwrap_err();
+    assert_eq!(error.code, "missingBlock");
+    assert!(!other.has("a.md"));
+    assert!(store.get(LOCK_KEY).await.unwrap().is_none());
+}
+
+struct LyingLock {
+    inner: MemoryStore,
+}
+
+#[async_trait::async_trait]
+impl ObjectStore for LyingLock {
+    async fn get(&self, key: &str) -> textus_sync::Result<Option<Vec<u8>>> {
+        self.inner.get(key).await
+    }
+    async fn has(&self, key: &str) -> textus_sync::Result<bool> {
+        self.inner.has(key).await
+    }
+    async fn put(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<()> {
+        self.inner.put(key, bytes).await
+    }
+    async fn create(&self, _key: &str, _bytes: Vec<u8>) -> textus_sync::Result<bool> {
+        // A store that answers yes without keeping the object.
+        Ok(true)
+    }
+    async fn delete(&self, key: &str) -> textus_sync::Result<()> {
+        self.inner.delete(key).await
+    }
+}
+
+#[tokio::test]
+async fn a_lock_that_was_not_really_stored_stops_before_planning() {
+    let store = LyingLock {
+        inner: MemoryStore::new(),
+    };
+    let local = local(&[("a.md", "one")]);
+    let error = sync(&store, &local, options()).await.unwrap_err();
+    assert_eq!(error.code, "lockLost");
+    assert!(store.inner.get(HEAD_KEY).await.unwrap().is_none());
 }
