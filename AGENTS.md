@@ -15,9 +15,10 @@ the ones to work by. Three things differ from the upstream guide below:
 
 - `docs/design/` (design-language.md included) and `docs/images/` are
   dropped: upstream's design standard and UI screenshots are not this
-  fork's reference. The interface authority is the boards
-  (`docs/skein/04-boards/`) and the rulings of the fork's interface plan;
-  where the rules below cite design-language.md, read those instead.
+  fork's reference. The interface authority is the rulings in
+  `docs/skein/02-方案/Textus-界面改造方案.md` §4; the old sealed boards
+  were deleted on 2026-11-20. Where the rules below cite
+  design-language.md, read those rulings instead.
 - Upstream contributions are never built from this checkout: clone
   upstream fresh and prepare the branch there
   ([the procedure](docs/skein/01-%E7%BA%AA%E5%BE%8B/publishing-gate.md)).
