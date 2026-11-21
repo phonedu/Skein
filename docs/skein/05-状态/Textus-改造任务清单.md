@@ -2,7 +2,7 @@
 
 > **进度的单一真相**：本清单只列**未完成 / 进行中 / 封存**；完成项在有证据后迁入[任务清单归档](../archive/2026-11-19-task-list-archive.md)，不再占正文。
 >
-> 版本：v6.0
+> 版本：v6.1
 > 日期：2026-11-21
 > 来源：《Textus-改造方案》v1.6 ·《Textus-界面改造方案》v0.7 ·《Textus-Agent工具契约》v0.3.1 ·《笔记资产理论》v0.2 ·《Agent基座与竞品调研》v0.2 ·[同步评审](../03-调研/同步评审/README.md)
 > 存放：`docs/skein/05-状态/`
@@ -23,7 +23,7 @@
 
 **顺序**：
 
-1. **Now**：**B3 上游 v1.4.6-rc.3 合并后的门禁 + 桌面/Android 冒烟**；合并提交 `1d7cceff` 已在本地，check 与全量测试已绿，待 built app/真机 smoke 后移归档。
+1. **Now**：**B3 上游 v1.4.6-rc.3 合并后的门禁 + 桌面/Android 冒烟**；合并提交 `1d7cceff` 已在本地，check 与全量测试已绿；桌面 built app 与 Android 模拟器 smoke 已过，华为真机待解锁后补。
 2. **Next**：**S2c 文档稳定身份 spike（先于 D1，3–5 天）** → D1 资产链；S3b 待凭据。
 3. **Later（3–6 个月；按人周估算）**：S4 局域网 Hub → S5 硬化 → D2 受控写入 → D3 多端完善；**ED1 块与呈现扩展**按需求插队（候选池，不占主线）。
 4. **Ongoing**：上游下一稳定 tag v1.4.6、设置遗留、PH3/PH4 手机核查、分支收口、文档维护。
@@ -49,7 +49,7 @@
 
 ## 3. Now
 
-**B3：上游 v1.4.6-rc.3 合并后的门禁 + 桌面/Android 冒烟。** 合并提交 `1d7cceff` 已在本地；`npm run check`、全量 vitest、`cargo test --lib` 已绿，待 built app 桌面 smoke 与 Android 真机 smoke。S2 验收与 S3 移动端均已归档：[S2 验收](../archive/2026-11-20-s2-acceptance.md)、[S3 移动端](../archive/2026-11-21-s3-mobile.md)。外部阻塞（第三方 WebDAV、七牛/阿里云凭据）见 §8。
+**B3：上游 v1.4.6-rc.3 合并后的门禁 + 桌面/Android 冒烟。** 合并提交 `1d7cceff` 已在本地；`npm run check`、全量 vitest、`cargo test --lib` 已绿。桌面 built app 已在隔离临时库验过（启动、背景色、设置浮层、同步页、文件树 Ctrl 多选，无 page error）；Android 模拟器（API 35 / x86_64）已验安装、启动、语言引导、设置列表、同步页（App Documents），无 FATAL。华为真机 smoke 待手机解锁后补，不能记成真机通过。S2 验收与 S3 移动端均已归档：[S2 验收](../archive/2026-11-20-s2-acceptance.md)、[S3 移动端](../archive/2026-11-21-s3-mobile.md)。外部阻塞（第三方 WebDAV、七牛/阿里云凭据）见 §8。
 
 ---
 
@@ -91,7 +91,7 @@
 | #       | 任务                                                      | 状态 | 说明                                                                                                                                                                                                                    |
 | ------- | --------------------------------------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **B2**  | 上游下一 release tag（v1.4.6）→ 拉 tag，rebase patch 清单 | ◐    | v1.4.3–v1.4.5 已并线；v1.4.6-rc.3 已合（`1d7cceff`，清账例外），稳定 tag v1.4.6 仍待；patch 清单 = 原五接入点 + 同步/宿主新增（`Cargo.toml` / `lib.rs` / `invoke_handler` / `bindings` / Settings 页 / 移动端原生 API） |
-| **B3**  | 合并后门禁 + smoke                                        | ◐    | typecheck / lint / test / check:repo 与 `cargo test --lib` 已绿（2026-11-21）；待桌面 built app smoke + Android 真机 smoke；iOS 归上游                                                                                  |
+| **B3**  | 合并后门禁 + smoke                                        | ◐    | typecheck / lint / test / check:repo 与 `cargo test --lib` 已绿（2026-11-21）；桌面 built app 与 Android 模拟器 smoke 已过；华为真机待解锁；iOS 归上游                                                                  |
 | **B4**  | 打自己的版本号                                            | ☐    | 保留上游版本号便于追溯                                                                                                                                                                                                  |
 | **A4**  | 设置空态 / 载入态                                         | ◐    | 保留组件自带空态已验证；新 IA 页的空态随 C 组封存，不另做                                                                                                                                                               |
 | **A8**  | 设置存量迁移                                              | ☐    | 旧设置页签 / 侧栏条目一次性跳转浮层；随下次宿主小改                                                                                                                                                                     |
@@ -138,7 +138,7 @@
   - **传输预算**：32 MiB 上限未强制，归 S5。
   - **超时**：transport 20 s 连接 / 180 s 总超时已配置，未做 180 s 真实挂起测试。
 - **全量 `npm run check`（2026-11-21）**：`.ryugi/`、`store/`、`.tmp-s1-s3/` 已列入 ESLint/Prettier 忽略（本机草稿/同步夹具，非源码）；typecheck、lint、全量 vitest（585/588 文件，3 skipped）、prettier、check:repo 全绿；`cargo test --lib` 1112 passed。
-- **下一步**：B3 桌面 built app + Android 真机 smoke → S2c 文档身份 spike → D1 资产链；S3b 待凭据。
+- **下一步**：B3 华为真机 smoke（待手机解锁）→ S2c 文档身份 spike → D1 资产链；S3b 待凭据。
 - **传输预算（2026-11-20）**：协议写 `TRANSFER_BYTES = 32 MiB`；内置引擎目前按文件顺序传输，单文件峰值可达 128 MiB，未强制池化预算。归入 S5 硬化或 S2-2 一并评估。
 - **服务器时间（2026-11-20）**：协议要求服务器 `Date` 优先、设备时钟只作 fallback 并 clamp；内置引擎目前只用本地 `Utc`，`ObjectStore` 没有 `now()`。归入 S5。
 - **密钥静态保护（项目级）**：`sync_secrets.json` 沿用 `provider_keys.json` 的 `0600`（Unix）写法；Windows 仅依赖用户目录 ACL，尚未接 DPAPI/Keychain。若要更强保护，应作为全项目密钥存储改造，而不是只改同步。
@@ -197,6 +197,7 @@
 | v4.1  | 2026-11-20 | **S2 第七片 + H3 内置侧**：四路只读审计后修阻塞——冲突不再丢本地编辑、远端 head 缺失即停、WebDAV prefix 建目录、HTTP 仅回环/禁重定向/超时、锁恢复与 own-lock、history 稀释/限额/保留 keep/损坏即停、块读回校验、expected-hash 与打开页延后、restore 语义、大小写冲突、trash 老化、no-op 不发布、移除 `sync_run` 凭据后门；设置页解锁/脏表单/provider 凭据/Android 参数/错误映射/十语；H3 内置确认落地待复核                                                                                                                                                                                                                               |
 | v4.2  | 2026-11-20 | **S3b 内置 OSS 适配**：`S3Flavor::Oss` + 设置页兼容方式 + 错误映射 + 单测；阿里云/七牛真桶待实测；S2 引擎级差分互通（双向临时夹具）通过                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | v4.3  | 2026-11-20 | **发布失败恢复 + 故障注入**：head 写失败判 `publishFailed`（锁保留）；重试时剔除上次“写了 history 没写 head”留下的同一版本，避免重复历史；新增块损坏、假锁、未完成发布三类单测                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| v6.1  | 2026-11-21 | **B3 冒烟（模拟器）**：桌面 built app 隔离临时库通过；Android API 35 / x86_64 模拟器安装启动、向导、设置、同步页通过，无 FATAL；华为真机待手机解锁                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | v6.0  | 2026-11-21 | **上游 v1.4.6-rc.3 合并与收口**：合并 `1d7cceff`；修 merge 冲突破坏的行为（folderDocuments、树多选、WhoAnswersProvider、页面底色、SyncPage 共享字段禁用）；共享设置页 sections 去重；check/全量测试/cargo 全绿；B3 桌面+Android smoke 待做                                                                                                                                                                                                                                                                                                                                                                                               |
 | v5.9  | 2026-11-21 | **S2c 入列**：文档稳定身份 spike 按《Textus-文档稳定身份-v0》Q1–Q8 裁决入 Next，排在 D1 之前（3–5 天）；同步工作线下一页改 S2c；新增 U18 推广触发点；S3 已完成入归档，顺序依据同步改写                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | v5.8  | 2026-11-21 | **S3 v1 收口**：普通路径任意目录（所有文件访问）可同步；content:// 授予显示提示并禁用；多库列表 + 手机并发上限 1（第二个 `busy`）；32 MiB 杀进程/24 MiB 断网后解锁续传；S3 归档（[2026-11-21-s3-mobile.md](../archive/2026-11-21-s3-mobile.md)），Next = D1；content:// SAF（H9）与后台（U4）不在 v1                                                                                                                                                                                                                                                                                                                                     |
