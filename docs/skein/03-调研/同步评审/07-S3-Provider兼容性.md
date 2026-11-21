@@ -1,6 +1,6 @@
 # S3 服务商兼容性（S1b 选型）
 
-> **结论（2026-11-20 更新）**：**缤纷云 S4（Bitiful）已实测通过 S1b**；内置 Rust 已加 `S3Flavor::Oss`（`x-oss-forbid-overwrite`，409/400 映射）并在设置页可选；**阿里云 OSS / 七牛 Kodo 真桶仍未实测**。
+> **结论（2026-11-21 更新）**：**缤纷云 S4（Bitiful）已实测通过 S1b**；内置 Rust 已有 `S3Flavor::Oss`（`x-oss-forbid-overwrite`，409/400 映射）并在设置页可选；**七牛 Kodo 待凭据实测**；**阿里云 OSS 按用户 2026-11-21 决定不测试**（补充协议与版本控制限制太麻烦），代码保留但不作为验收项。
 >
 > 协议要求见[同步协议 v1](../../02-方案/同步协议-v1.md)；插件当前 S3 transport 见 `textus-plugins/development/cloud-sync/src/transport.ts`。
 
@@ -53,7 +53,7 @@
 1. **缤纷云 S4（已通过，2026-11-19）**：专用测试桶、子账号 AK/SK；`endpoint=https://s3.bitiful.net`、`region=cn-east-1`、`pathStyle=true`；`测试连接` 通过“两次 create，第二次 412”。
 2. 通过后跑 S1 同款：首次（5 个文件）、改、删、冲突、杀进程；再加 16 MiB 和 32 MiB 随机 PDF；32 MiB 的 16 个块逐块 SHA-256 校验一致。
 3. 七牛云 Kodo 待跑（同流程；S3 条件写不生效就记录，不硬改协议）。**2026-11-20 内置侧进展**：`textus-sync` 已加 `S3Flavor::Oss`，设置页可选「阿里云 OSS」兼容方式（`x-oss-forbid-overwrite`，409 视为已存在，400 报 `conditionalWriteUnsupported`）；阿里云与七牛真桶仍未实测。
-4. 阿里云 OSS 待适配：在 transport 里按 provider 加 `x-oss-forbid-overwrite` 与 409 映射，单独测试，不混进 S1b 首轮。
+4. 阿里云 OSS：**2026-11-21 用户决定不做**（不改协议、不跑真桶）；`S3Flavor::Oss` 代码保留给已有配置，但不进 S3b 验收。
 
 ## 4. 适配层要改哪里
 
@@ -77,6 +77,7 @@ return true;
 ## 5. 结论
 
 - **S1b 已用缤纷云 S4 通过**；它是三家最接近标准 S3 的，把“协议/插件问题”和“服务商差异”分开了。
-- 七牛云 Kodo 作为第二家，重点验条件写，尚未跑。
+- 七牛云 Kodo 作为第二家，重点验条件写；等用户本地凭据后跑。
+- 阿里云 OSS 按用户 2026-11-21 决定不做真桶验收。
 - 阿里云 OSS 作为适配目标，不污染首轮 spike，尚未跑。
 - 三家都只给专用桶/子账号，AK/SK 不进仓库、不进日志。
