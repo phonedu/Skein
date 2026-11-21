@@ -30,6 +30,7 @@ pub fn describe(bytes: &[u8]) -> Result<Entry> {
         hash: hash_hex(bytes),
         size: bytes.len() as u64,
         blocks,
+        id: crate::identity::document_id(bytes),
     })
 }
 

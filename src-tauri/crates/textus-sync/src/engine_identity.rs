@@ -1,0 +1,104 @@
+//! Document identity inside one run: stop on a fork, move a remote rename
+//! at this device's old path, and carry the renamed document's history.
+
+use super::*;
+use crate::identity::{self, IdentityPair};
+
+/// Applies the identity pairs a run found. Returns the `(from, to)` paths
+/// whose history must follow the rename.
+pub(super) async fn apply_renames(
+    local: &dyn LocalFiles,
+    files: &mut BTreeMap<String, Entry>,
+    remote_files: &BTreeMap<String, Entry>,
+    base: &mut Base,
+    result: &mut SyncResult,
+) -> Result<Vec<(String, String)>> {
+    let pairs = identity::pair(files, remote_files, &base.files);
+    for pair in &pairs {
+        match pair {
+            IdentityPair::Fork { id, .. } => {
+                return Err(SyncError::with_args("identityFork", [id.clone()]));
+            }
+            IdentityPair::Conflict { path, .. } => {
+                let local_changed = files
+                    .get(path)
+                    .is_some_and(|entry| base.files.get(path) != Some(&entry.hash));
+                let remote_changed = remote_files
+                    .get(path)
+                    .is_some_and(|entry| base.files.get(path) != Some(&entry.hash));
+                // One side changed its id: that is a new identity, and the
+                // unchanged side adopts it. Both changed is a real conflict.
+                if local_changed && remote_changed {
+                    return Err(SyncError::with_args("identityConflict", [path.clone()]));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let mut renamed = Vec::new();
+    // A remote rename still at this device's old path: move the file here
+    // before planning, so it is one document, not a delete plus a new one.
+    for pair in &pairs {
+        let IdentityPair::RemoteRename { from, to } = pair else {
+            continue;
+        };
+        let Some(local_entry) = files.get(from).cloned() else {
+            continue;
+        };
+        if files.contains_key(to) || base.files.contains_key(to) {
+            continue;
+        }
+        let Some(base_hash) = base.files.get(from).cloned() else {
+            continue;
+        };
+        let Some(remote_entry) = remote_files.get(to).cloned() else {
+            continue;
+        };
+        let local_changed = local_entry.hash != base_hash;
+        let remote_changed = remote_entry.hash != base_hash;
+        // Both changed: leave the conflict path for now (Q4); a remote
+        // rename whose other side did not change is a download at `to`.
+        if local_changed && remote_changed {
+            continue;
+        }
+        if !remote_changed && local.move_file(from, to, &local_entry.hash).await? {
+            files.remove(from);
+            files.insert(to.clone(), local_entry);
+            base.files.remove(from);
+            base.files.insert(to.clone(), base_hash);
+            result.moved += 1;
+            renamed.push((from.clone(), to.clone()));
+        } else if remote_changed && !local_changed {
+            renamed.push((from.clone(), to.clone()));
+        }
+    }
+    for pair in &pairs {
+        if let IdentityPair::LocalRename { from, to } = pair {
+            renamed.push((from.clone(), to.clone()));
+        }
+    }
+    Ok(renamed)
+}
+
+/// Copies a renamed document's current origin and versions to its new path.
+/// The old path's records stay; they age out under the same keep rule.
+pub(super) fn carry_history(history: &mut History, from: &str, to: &str) {
+    if let Some(origin) = history.current.get(from).cloned() {
+        history.current.entry(to.to_string()).or_insert(origin);
+    }
+    let Some(versions) = history.versions.get(from).cloned() else {
+        return;
+    };
+    let target = history.versions.entry(to.to_string()).or_default();
+    for version in versions {
+        if !target
+            .iter()
+            .any(|kept| kept.entry.hash == version.entry.hash && kept.at == version.at)
+        {
+            target.push(version);
+        }
+    }
+    target.sort_by_key(|version| std::cmp::Reverse(crate::history::retired_at(version)));
+    target.truncate(crate::protocol::MAX_VERSIONS);
+}

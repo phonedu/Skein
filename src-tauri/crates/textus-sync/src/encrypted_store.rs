@@ -352,4 +352,42 @@ mod tests {
         .unwrap();
         assert_eq!(second.read("a.md").await.unwrap(), Some(b"one".to_vec()));
     }
+
+    #[tokio::test]
+    async fn a_document_id_never_reaches_the_plaintext_objects() {
+        const ID: &str = "5f1c9a2e-4b7d-4c8a-9e3f-1a2b3c4d5e6f";
+        let raw = Arc::new(MemoryStore::new());
+        let store = open_encrypted_store(Box::new(Shared(raw.clone())), password(), None)
+            .await
+            .unwrap();
+        let first = MemoryLocal::new([(
+            "a.md".to_string(),
+            format!(
+                "---
+textus_id: {ID}
+---
+one"
+            )
+            .into_bytes(),
+        )]);
+        sync(
+            &store,
+            &first,
+            SyncOptions {
+                base: Base::empty(),
+                device: "encrypted-a".to_string(),
+                keep_days: 90,
+                keep_chosen: false,
+                allow_empty_scan: false,
+                allow_bulk_delete: false,
+            },
+        )
+        .await
+        .unwrap();
+
+        let descriptor = raw.get(HEAD_KEY).await.unwrap().unwrap();
+        assert!(!String::from_utf8_lossy(&descriptor).contains(ID));
+        let sealed = raw.get(ENCRYPTED_HEAD).await.unwrap().unwrap();
+        assert!(!String::from_utf8_lossy(&sealed).contains(ID));
+    }
 }

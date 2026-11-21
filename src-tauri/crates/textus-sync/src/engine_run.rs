@@ -1,7 +1,7 @@
 //! The run's transfer loop and its guards.
 
-use super::*;
 use super::transfer::*;
+use super::*;
 
 pub(super) async fn run(
     store: &dyn ObjectStore,
@@ -32,7 +32,7 @@ pub(super) async fn run(
     // A head written since this history (by an older client, or by a run
     // that died between its history and head writes) is folded in first.
     let skipped = skipped_head(store, head.as_ref(), before.as_ref()).await?;
-    let files: BTreeMap<String, Entry> = local
+    let mut files: BTreeMap<String, Entry> = local
         .scan()
         .await?
         .into_iter()
@@ -50,14 +50,16 @@ pub(super) async fn run(
         ));
     }
 
-    let actions = plan(&files, &remote_files, &options.base.files);
-    let moves = moves(&actions, &files, &remote_files, &options.base.files);
+    let mut base = options.base.clone();
+    let mut result = SyncResult::default();
+    let renamed = apply_renames(local, &mut files, &remote_files, &mut base, &mut result).await?;
+
+    let actions = plan(&files, &remote_files, &base.files);
+    let moves = moves(&actions, &files, &remote_files, &base.files);
     let mut next = head
         .as_ref()
         .map(|head| head.files.clone())
         .unwrap_or_default();
-    let mut base = options.base.clone();
-    let mut result = SyncResult::default();
 
     check_bulk(&actions, &files, &remote_files, options)?;
 
@@ -163,6 +165,12 @@ pub(super) async fn run(
                 let Some(remote_entry) = remote_files.get(&action.path) else {
                     continue;
                 };
+                if local_entry.id.is_some() || remote_entry.id.is_some() {
+                    return Err(SyncError::with_args(
+                        "identityConflict",
+                        [action.path.clone()],
+                    ));
+                }
                 let bytes = download_entry(store, remote_entry).await?;
                 let Some(target) = keep_remote(
                     local,
@@ -269,6 +277,12 @@ pub(super) async fn run(
             }
         };
         history = retire(&history, remote, &snapshot, &origin);
+    }
+
+    // A rename moves the document's old versions to its new path too; the
+    // old path keeps the same versions until keepDays thins them.
+    for (from, to) in &renamed {
+        carry_history(&mut history, from, to);
     }
 
     // A new choice is shared; otherwise the folder's existing one stays,
@@ -426,4 +440,3 @@ fn check_bulk(
     }
     Ok(())
 }
-

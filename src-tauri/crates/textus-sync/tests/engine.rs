@@ -19,6 +19,22 @@ fn local(items: &[(&str, &str)]) -> MemoryLocal {
     )
 }
 
+const DOC_ID: &str = "5f1c9a2e-4b7d-4c8a-9e3f-1a2b3c4d5e6f";
+
+fn doc(body: &str) -> Vec<u8> {
+    doc_with_id(DOC_ID, body)
+}
+
+fn doc_with_id(id: &str, body: &str) -> Vec<u8> {
+    format!(
+        "---
+textus_id: {id}
+---
+{body}"
+    )
+    .into_bytes()
+}
+
 fn options() -> SyncOptions {
     SyncOptions {
         base: Base::empty(),
@@ -572,4 +588,308 @@ async fn a_preview_shows_conflicts_and_the_empty_scan_guard() {
     .unwrap();
     assert!(result.empty_scan);
     assert_eq!(result.removed_remote, 1);
+}
+
+#[tokio::test]
+async fn a_renamed_and_edited_document_keeps_its_id_and_history() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    first.delete("a.md");
+    first.set("b.md", doc("two"));
+    let next = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(next.result.conflicts, Vec::<String>::new());
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert!(!head.files.contains_key("a.md"));
+    assert_eq!(head.files["b.md"].id.as_deref(), Some(DOC_ID));
+    let history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert!(history.versions["b.md"]
+        .iter()
+        .any(|version| version.entry.hash == hash_hex(&doc("one"))));
+    assert_eq!(next.base.files.get("b.md"), Some(&hash_hex(&doc("two"))));
+}
+
+#[tokio::test]
+async fn a_remote_rename_keeps_the_local_edit_at_the_new_path() {
+    let store = MemoryStore::new();
+    let device_a = local(&[]);
+    device_a.set("a.md", doc("one"));
+    let first = sync(&store, &device_a, options()).await.unwrap();
+
+    // B has the same document and edits it under the old path.
+    let device_b = local(&[]);
+    device_b.set("a.md", doc("edited-on-b"));
+    // A renames it first, without changing the body.
+    device_a.delete("a.md");
+    device_a.set("b.md", doc("one"));
+    sync(
+        &store,
+        &device_a,
+        SyncOptions {
+            base: first.base.clone(),
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+
+    let next = sync(
+        &store,
+        &device_b,
+        SyncOptions {
+            base: first.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert!(!head.files.contains_key("a.md"));
+    assert_eq!(head.files["b.md"].id.as_deref(), Some(DOC_ID));
+    assert_eq!(
+        device_b.read("b.md").await.unwrap(),
+        Some(doc("edited-on-b"))
+    );
+    assert_eq!(
+        head.files["b.md"].hash,
+        hash_hex(&doc("edited-on-b")),
+        "B's edit is what the one surviving path holds"
+    );
+    assert!(next.result.conflicts.is_empty());
+}
+
+#[tokio::test]
+async fn an_old_client_dropping_entry_ids_has_them_rebuilt_from_the_file() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    for entry in head.files.values_mut() {
+        entry.id = None;
+    }
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let rebuilt = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(rebuilt.files["a.md"].id.as_deref(), Some(DOC_ID));
+}
+
+#[tokio::test]
+async fn a_file_without_an_id_still_syncs_by_path() {
+    let store = MemoryStore::new();
+    let first = local(&[("plain.md", "no id here")]);
+    sync(&store, &first, options()).await.unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["plain.md"].id, None);
+}
+
+#[tokio::test]
+async fn losing_the_front_matter_id_does_not_lose_the_content_or_history() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    first.set(
+        "a.md",
+        b"---
+title: rewritten
+---
+one"
+        .to_vec(),
+    );
+    let next = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(next.result.conflicts, Vec::<String>::new());
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].id, None);
+    let history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert!(history.versions["a.md"]
+        .iter()
+        .any(|version| version.entry.hash == hash_hex(&doc("one"))));
+}
+
+#[tokio::test]
+async fn deleting_and_restoring_a_document_reuses_its_id() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    first.delete("a.md");
+    let empty = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            allow_empty_scan: true,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let restored = local(&[]);
+    restored.set("a.md", doc("one"));
+    sync(
+        &store,
+        &restored,
+        SyncOptions {
+            base: empty.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].id.as_deref(), Some(DOC_ID));
+    let history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert!(history.versions["a.md"]
+        .iter()
+        .any(|version| version.entry.hash == hash_hex(&doc("one"))));
+}
+
+#[tokio::test]
+async fn changing_the_id_is_a_new_identity_at_the_same_path() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    let replacement = "0b5c7e7a-2f7e-4f1f-9a6b-8d2c3e4f5a6b";
+    first.set(
+        "a.md",
+        format!(
+            "---
+textus_id: {replacement}
+---
+one"
+        )
+        .into_bytes(),
+    );
+    sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].id.as_deref(), Some(replacement));
+    let history = History::parse(&store.get(HISTORY_KEY).await.unwrap().unwrap()).unwrap();
+    assert!(history.versions["a.md"]
+        .iter()
+        .any(|version| version.entry.hash == hash_hex(&doc("one"))));
+}
+
+#[tokio::test]
+async fn a_copy_with_one_id_stops_before_two_documents_share_it() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    first.set("copy.md", doc("one"));
+    let error = sync(&store, &first, options()).await.unwrap_err();
+    assert_eq!(error.code, "identityFork");
+    assert!(store.get(HEAD_KEY).await.unwrap().is_none());
+}
+
+#[tokio::test]
+async fn an_unchanged_side_adopts_the_id_the_other_side_published() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let replacement = "0b5c7e7a-2f7e-4f1f-9a6b-8d2c3e4f5a6b";
+    let remote_bytes = doc_with_id(replacement, "remote");
+    let remote = describe(&remote_bytes).unwrap();
+    store
+        .put(&block_key(&remote.blocks[0].hash), remote_bytes.clone())
+        .await
+        .unwrap();
+    head.files.insert("a.md".to_string(), remote);
+    head.revision = new_revision();
+    head.updated_at = "2026-11-21T00:00:00.000Z".to_string();
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].id.as_deref(), Some(replacement));
+    assert_eq!(first.read("a.md").await.unwrap(), Some(remote_bytes));
+}
+
+#[tokio::test]
+async fn both_sides_changing_the_id_stop_before_one_is_lost() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let replacement = "0b5c7e7a-2f7e-4f1f-9a6b-8d2c3e4f5a6b";
+    let remote_bytes = doc_with_id(replacement, "remote");
+    let remote = describe(&remote_bytes).unwrap();
+    store
+        .put(&block_key(&remote.blocks[0].hash), remote_bytes)
+        .await
+        .unwrap();
+    head.files.insert("a.md".to_string(), remote);
+    head.revision = new_revision();
+    head.updated_at = "2026-11-21T00:00:00.000Z".to_string();
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+    first.set("a.md", doc("local-edit"));
+
+    let error = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(error.code, "identityConflict");
 }

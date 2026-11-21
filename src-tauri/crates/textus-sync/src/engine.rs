@@ -147,7 +147,6 @@ async fn release(store: &dyn ObjectStore, id: &str) -> Result<bool> {
     Ok(true)
 }
 
-
 #[path = "engine_preview.rs"]
 mod preview;
 pub use preview::preview;
@@ -155,6 +154,10 @@ pub use preview::preview;
 #[path = "engine_run.rs"]
 mod run;
 use run::run;
+
+#[path = "engine_identity.rs"]
+mod identity_run;
+use identity_run::{apply_renames, carry_history};
 
 #[path = "engine_transfer.rs"]
 mod transfer;

@@ -44,6 +44,11 @@ pub struct Entry {
     pub hash: String,
     pub size: u64,
     pub blocks: Vec<Block>,
+    /// The document's front matter `textus_id`, a cache for pairing a
+    /// rename without downloading the file. Never the only source: missing
+    /// or unknown to an old client, it is rebuilt from the file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -323,6 +328,7 @@ mod tests {
                 hash: hash.to_string(),
                 size: block,
             }],
+            id: None,
         }
     }
 
@@ -343,6 +349,7 @@ mod tests {
                 };
                 65
             ],
+            id: None,
         };
         assert!(too_many.validate().is_err());
     }

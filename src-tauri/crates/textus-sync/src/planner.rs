@@ -110,6 +110,7 @@ mod tests {
             hash: hash.to_string(),
             size: 0,
             blocks: Vec::new(),
+            id: None,
         }
     }
 

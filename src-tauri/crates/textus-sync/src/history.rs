@@ -193,6 +193,7 @@ mod tests {
                 hash: "a".repeat(64),
                 size: 1,
             }],
+            id: None,
         }
     }
 
