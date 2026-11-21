@@ -226,6 +226,7 @@ Agent 的能力上限由这四件事决定，而不是由模型决定。
 ├─ judgments/              # 判断卡
 ├─ assets/                 # 资产卡
 ├─ attachments/<task-id>/  # 原始证据
+├─ _usage/<card-id>.jsonl  # 使用记录（record_use，只追加；D1b）
 └─ _history/<card-id>/     # 修改前版本
 ```
 
