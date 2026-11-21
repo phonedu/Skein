@@ -111,7 +111,7 @@
 - `src-tauri/src/sync/`（薄适配：命令、事件、设置）
 - `src-tauri/src/commands/fs.rs`（trash、原子写、mtime）
 - `src-tauri/src/plugins/access.rs`（插件文件 API 的移动端能力）
-- `src/platform/ipc-files.ts` / `src/platform/ios-files.ts`（默认库、content URI）
+- `src/platform/ipc-files.ts` / `src/platform/native-files.ts`（默认库、content URI；上游 v1.4.6 起 `ios-files.ts` 已更名）
 - `src/app/`（设置 › 同步、状态面、冲突中心入口）
 - `src/phone/`（首页脚注、库切换状态点、手机设置页）
 - `src/i18n/locales/`（十语言）

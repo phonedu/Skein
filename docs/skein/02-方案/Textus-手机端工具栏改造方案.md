@@ -1,7 +1,7 @@
 # Textus 手机端格式工具栏改造方案（墨契三件套移植）
 
 > **状态**：**PH1 已完成（2026-11-19）**——横滑格式栏废，手机端格式工具按墨契三件套重建；裁决 31 见《界面改造方案》§4.8。本文 = 移植规格、事件映射与实施边界，**§2.6 = 第一片形态返工单（已完成，任务 PH1b ✅）**；同日手感修正 #5（AI 键 / 3×3 插入 / 浮条 36px）已并入 §2。PH3/PH4 核查另列。**任务 = 任务清单 PH1（已归档）＋ PH1b（已归档）。**
-> **对象**：本仓 `src/app/FormatBar.tsx`（手机分支）· `format-bar-phone.tsx` · `format-buttons.ts` · `format-bar.css`；墨契侧规格 = `C:\Project\Moqi\project-b\docs\10-移动端UI与交互规范.md` §6.3（2026-10-24 减法批定稿）。
+> **对象**：本仓 `src/app/FormatBar.tsx`（手机分支）· `src/phone/PhoneFormatBar.tsx` · `src/phone/phone-format-groups.tsx` · `src/phone/phone-format-actions.ts` · `src/phone/PhoneFormatBar.css`（旧稿的 `format-bar-phone.tsx` / `phoneGroups()` 已不存在）；墨契侧规格 = `C:\Project\Moqi\project-b\docs\10-移动端UI与交互规范.md` §6.3（2026-10-24 减法批定稿）。
 > **读法 · 寿命**：实施手机端格式工具时按 § 跳入；上游发布浮层格式条时回 §5 看冲突处理。
 > **规范的家**：裁决在《界面改造方案》§4.8；任务状态在《任务清单》。
 > **关闭时处置**：手机端格式工具落地验收后，本文迁 archive。
@@ -12,13 +12,13 @@
 
 ## 1. 现状与病灶（代码读数，2026-11-18）
 
-| 事实       | 位置                                   | 读数                                                                                                                                                                              |
-| ---------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 手机键集   | `format-bar-phone.tsx` `phoneGroups()` | `[[UNDO], ...context]`：文本态 = UNDO ＋ **12 键**（heading / bold / italic / strike / highlight / inlineCode / link / bullet / ordered / quote / codeBlock / table）挤一条横滑排 |
-| 横滑实证   | `format-bar.css:179`                   | `overflow-x: auto; scrollbar-width: none`——滚动条藏掉、靠手势横滑，表格 / 代码块在最尾                                                                                            |
-| 无层级     | 同上                                   | 桌面态有 fit 折叠（⋯），手机态**滚动不折叠**；heading 是内联 picker 没有就地面板；插入类与行内格式混一排                                                                          |
-| 无选中浮条 | 全仓                                   | 行内格式只在常驻排里；「选中文本 → 浮条 → 格式」的路径不存在                                                                                                                      |
-| 好消息     | `FormatBar.tsx`                        | 整条栏是**菜单事件的皮**：`press()` = `sendAppEvent(b.event, b.detail)`，caret 态点亮；`headingItems()`（正文 / H1–H6）与 `HideKeyboardIcon`（收键盘）已有现成原料                |
+| 事实       | 位置                                                                                    | 读数                                                                                                                                                                              |
+| ---------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 手机键集   | 旧稿 `format-bar-phone.tsx` `phoneGroups()`（现见 `src/phone/phone-format-groups.tsx`） | `[[UNDO], ...context]`：文本态 = UNDO ＋ **12 键**（heading / bold / italic / strike / highlight / inlineCode / link / bullet / ordered / quote / codeBlock / table）挤一条横滑排 |
+| 横滑实证   | `format-bar.css:179`                                                                    | `overflow-x: auto; scrollbar-width: none`——滚动条藏掉、靠手势横滑，表格 / 代码块在最尾                                                                                            |
+| 无层级     | 同上                                                                                    | 桌面态有 fit 折叠（⋯），手机态**滚动不折叠**；heading 是内联 picker 没有就地面板；插入类与行内格式混一排                                                                          |
+| 无选中浮条 | 全仓                                                                                    | 行内格式只在常驻排里；「选中文本 → 浮条 → 格式」的路径不存在                                                                                                                      |
+| 好消息     | `FormatBar.tsx`                                                                         | 整条栏是**菜单事件的皮**：`press()` = `sendAppEvent(b.event, b.detail)`，caret 态点亮；`headingItems()`（正文 / H1–H6）与 `HideKeyboardIcon`（收键盘）已有现成原料                |
 
 **病灶诊断**：不是功能少（13 键比墨契主条六键还多），是**没有层级**——13 键平铺一条横滑排，每个键都难找到；插入类沉在最右端；行内格式占六个位却没有「选中才出现」的时机感。用户原话：「左右横滑非常不方便」「快图标就只有三个功能（体感）」「选择文档也没有我们那种感觉」「实在太丑了」。
 
@@ -129,7 +129,7 @@ caret 进表格 → 主条换表格操作排（`TABLE` 2 排 7 键已有）；�
 - 上游将来若真发布浮层格式条：桌面是否取用届时再议（不再预设叠层）；手机维持自建（两套并存不冲突，事件管线同一个）；rebase 风险 = 手机面新文件 ＋ `FormatBar` 一处分支，成本可控
 - **读数（2026-11-18，发布日核）**：上游 v1.4.5 桌面格式条**无浮层**——仅停靠位（`FormatBarSide = "top" | "left" | "right"` ＋ 显隐；1.4.3 起 bold/italic 可作用于选区但形态仍停靠）；用户实机核对一致。main v1.4.5 后 20 提交、开放 PR（0 个）、**1.4.6 roadmap 均无浮层格式条计划**——11-16 的「浮层化进行时」信号至今未落地。**§7.8 触发点未触发，且无临近迹象——同日用户裁：不再等（触发点撤销）**
 
-## 6. 验收（沿用 phone-handoff 流程）
+## 6. 验收（沿用真机 + built app 验收纪律）
 
 1. 三态换排：文本七键 / 表格操作排 / 图片排，undo 恒在
 2. 就地面板 ×2 开合、caret 态打点正确

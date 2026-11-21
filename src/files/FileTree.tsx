@@ -1,10 +1,4 @@
-import { useLatestCallback } from "../utils/hooks/useLatest";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  type MouseEvent as ReactMouseEvent,
-} from "react";
+import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import {
   ChevronIcon,
   CloseIcon,
@@ -20,7 +14,7 @@ import { folderName, parentDir } from "../utils/path";
 import { canOpenFolder, isMobileApp } from "../platform/capabilities";
 import { ContextMenu } from "../engine/controls/ContextMenu";
 import { Presence } from "../engine/motion/usePresence";
-import { useTreeKeys } from "../engine/controls/useTreeKeys";
+import { TreeSelectionContext, useTreeSelection } from "./tree-selection";
 import { Tooltip } from "../engine/controls/Tooltip";
 import { setUiState } from "../storage/ui-state";
 import {
@@ -30,17 +24,11 @@ import {
   type TreeShared,
   type TreeSort,
 } from "./tree-shared";
-import { useTreeContexts } from "./useTreeContexts";
-import { useRowDrag } from "./useRowDrag";
 import { DirNode } from "./TreeNodes";
 import "./FileTree.css";
 import { isWithin } from "../utils/path";
 import type { FileOpenHow } from "./tree-shared";
-import { useTreeView } from "./useTreeData";
-import { useRowMenu } from "./useRowMenu";
-import { TreeSelection } from "./tree-selection";
-import { useNewEntry } from "./useNewEntry";
-import { useNoteCount } from "./note-count";
+import { useFileTreeRows, useFileTreeState } from "./useFileTree";
 import { RecentSection } from "./recent-section";
 import { ViewFoot } from "../engine/controls/view-foot";
 import { fill } from "../i18n/fill";
@@ -105,65 +93,46 @@ export function FileTree({
   // The notes view's foot (the board's bottom strip): the folder's note
   // count beside what the view is.
   const base = folder ?? root;
-  const noteCount = useNoteCount(base);
-  const view = useTreeView(base);
+  const { noteCount, view, select, draft, setDraft, finishDraft } =
+    useFileTreeState(base, t, onFileSelect);
   const { generation, setGeneration } = view;
   const { sort, setSort, scope, setScope, versions, reload } = view;
   const { showHidden, setShowHidden } = view;
+  const { treeRef, onTreeKey, selection, picking, onRowPick } =
+    useTreeSelection(root, activePath);
   // Not on a phone: above Documents is the app's private container, and above
   // a picked folder is outside what the user granted. Not above an
   // opened folder either: that is the edge of what the user opened.
   const parent = isMobileApp || root === folder ? null : parentDir(root);
-  const { ref: treeRef, onKeyDown: treeKeys } = useTreeKeys<HTMLDivElement>();
-  // One handler for the tree's life: a row redraws only when it changes.
-  const select = useLatestCallback(onFileSelect);
   const desktop = !isMobileApp && canOpenFolder;
-  const { draft, setDraft, finishDraft } = useNewEntry(t, reload, select);
-  const selection = useMemo(() => new TreeSelection(), []);
-
-  const { menu, setMenu, onRowMenu, openRowMenu } = useRowMenu(
-    root,
-    folder ?? root,
-    t,
-    reload,
-    select,
-    onEntryMoved,
-    setDraft,
-    folder ? null : onRootChange,
-    selection,
-  );
-  const { drag, onRowPointerDown } = useRowDrag(
-    treeRef,
-    reload,
-    onEntryMoved,
-    folder ?? root,
-    t,
-    selection,
-    openRowMenu,
-  );
-  const { rowActions, shared } = useTreeContexts({
-    sort,
-    scope,
-    showHidden,
-    versions,
-    stale: view.stale,
-    refreshed: view.refreshed,
-    dropInto: drag?.into,
-    desktop,
-    onRowMenu,
-    onRowHold: isMobileApp ? openRowMenu : null,
-    onRowPointerDown,
-    draft,
-    finishDraft,
-    newDocumentLabel: t.treeNewDocument,
-    setDraft,
-    root,
-    reveal,
-    filter,
-    emptyState,
-    noResults,
-    onRootCount,
-  });
+  const { menu, setMenu, onRowMenu, drag, rowActions, shared } =
+    useFileTreeRows({
+      root,
+      folder,
+      t,
+      reload,
+      select,
+      onEntryMoved,
+      setDraft,
+      onRootChange,
+      draft,
+      finishDraft,
+      sort,
+      scope,
+      showHidden,
+      versions,
+      stale: view.stale,
+      refreshed: view.refreshed,
+      desktop,
+      reveal,
+      filter,
+      emptyState,
+      noResults,
+      onRootCount,
+      treeRef,
+      selection,
+      onRowPick,
+    });
 
   // A draft asked for from outside the tree (the phone's + sheet): one row
   // at the root, its name typed in place.
@@ -221,171 +190,177 @@ export function FileTree({
   return (
     <TreeContext.Provider value={shared}>
       <TreeRowActionsContext.Provider value={rowActions}>
-        <div className={`file-tree${drag ? " file-tree-dragging" : ""}`}>
-          <div className="tree-main">
-            <div className="tree-toolbar">
-              {/* The way up is the parent folder, by name: an arrow alone read
+        <TreeSelectionContext.Provider value={selection}>
+          <div
+            className={`file-tree${drag ? " file-tree-dragging" : ""}${picking ? " file-tree-picking" : ""}`}
+          >
+            <div className="tree-main">
+              <div className="tree-toolbar">
+                {/* The way up is the parent folder, by name: an arrow alone read
               as "collapse" or "scroll up". */}
-              {parent && (
-                <>
-                  <Tooltip text={t.treeParentFolder}>
-                    <button
-                      type="button"
-                      className="tree-crumb"
-                      onClick={() => onRootChange(parent)}
-                      aria-label={`${t.treeParentFolder}: ${folderName(parent)}`}
-                    >
-                      <ChevronIcon className="tree-crumb-back" />
-                      <span className="tx-truncate tree-crumb-name">
-                        {folderName(parent)}
-                      </span>
-                    </button>
-                  </Tooltip>
-                  <span className="tree-crumb-sep" aria-hidden="true">
-                    /
-                  </span>
-                </>
-              )}
-              <span className="tx-truncate tree-root-label" title={root}>
-                {folderName(root)}
-              </span>
-              {desktop && (
-                <>
-                  <Tooltip text={t.treeNewDocument}>
-                    <button
-                      type="button"
-                      className="tree-tool"
-                      aria-label={t.treeNewDocument}
-                      onClick={() => setDraft({ dir: root, kind: "document" })}
-                    >
-                      <NewDocumentIcon />
-                    </button>
-                  </Tooltip>
-                  <Tooltip text={t.treeNewFolder}>
-                    <button
-                      type="button"
-                      className="tree-tool"
-                      aria-label={t.treeNewFolder}
-                      onClick={() => setDraft({ dir: root, kind: "folder" })}
-                    >
-                      <NewFolderIcon />
-                    </button>
-                  </Tooltip>
-                </>
-              )}
-              {/* The tree following the document's folder: one button opens
+                {parent && (
+                  <>
+                    <Tooltip text={t.treeParentFolder}>
+                      <button
+                        type="button"
+                        className="tree-crumb"
+                        onClick={() => onRootChange(parent)}
+                        aria-label={`${t.treeParentFolder}: ${folderName(parent)}`}
+                      >
+                        <ChevronIcon className="tree-crumb-back" />
+                        <span className="tx-truncate tree-crumb-name">
+                          {folderName(parent)}
+                        </span>
+                      </button>
+                    </Tooltip>
+                    <span className="tree-crumb-sep" aria-hidden="true">
+                      /
+                    </span>
+                  </>
+                )}
+                <span className="tx-truncate tree-root-label" title={root}>
+                  {folderName(root)}
+                </span>
+                {desktop && (
+                  <>
+                    <Tooltip text={t.treeNewDocument}>
+                      <button
+                        type="button"
+                        className="tree-tool"
+                        aria-label={t.treeNewDocument}
+                        onClick={() =>
+                          setDraft({ dir: root, kind: "document" })
+                        }
+                      >
+                        <NewDocumentIcon />
+                      </button>
+                    </Tooltip>
+                    <Tooltip text={t.treeNewFolder}>
+                      <button
+                        type="button"
+                        className="tree-tool"
+                        aria-label={t.treeNewFolder}
+                        onClick={() => setDraft({ dir: root, kind: "folder" })}
+                      >
+                        <NewFolderIcon />
+                      </button>
+                    </Tooltip>
+                  </>
+                )}
+                {/* The tree following the document's folder: one button opens
                 it as the folder, its tip saying whose folder it is. */}
-              {!folder && onOpenAsFolder && (
-                <Tooltip
-                  text={t.treeOpenAsFolder}
-                  description={
-                    activePath && isWithin(activePath, root)
-                      ? t.treeDocumentFolder
-                      : null
-                  }
-                >
-                  <button
-                    type="button"
-                    className="tree-tool"
-                    aria-label={t.treeOpenAsFolder}
-                    onClick={() => onOpenAsFolder(root)}
-                  >
-                    <ProjectIcon />
-                  </button>
-                </Tooltip>
-              )}
-              <Tooltip text={t.treeSort}>
-                <button
-                  type="button"
-                  className="tree-tool"
-                  aria-label={t.treeSort}
-                  aria-haspopup="menu"
-                  onClick={openSortMenu}
-                >
-                  <SortIcon />
-                </button>
-              </Tooltip>
-              {folder && (
-                <Tooltip text={t.menuCloseFolder}>
-                  <button
-                    type="button"
-                    className="tree-tool"
-                    onClick={onCloseFolder}
-                    aria-label={t.menuCloseFolder}
-                  >
-                    <CloseIcon />
-                  </button>
-                </Tooltip>
-              )}
-              <Tooltip text={t.treeRefresh}>
-                <button
-                  type="button"
-                  className="tree-tool"
-                  onClick={() => setGeneration((g) => g + 1)}
-                  aria-label={t.treeRefresh}
-                >
-                  <RefreshIcon />
-                </button>
-              </Tooltip>
-            </div>
-            <RecentSection
-              t={t}
-              files={recentFiles ?? []}
-              root={base}
-              onOpen={(path) => onFileSelect(path)}
-            />
-            <div className="tree-section-title">
-              {t.notesLibrary} · {folderName(base)}
-            </div>
-            <div
-              ref={treeRef}
-              role="tree"
-              aria-label={t.treeTab}
-              className={`tree-body${drag?.into === root ? " tx-drop-into" : ""}`}
-              data-drop-dir={root}
-              onKeyDown={treeKeys}
-              onContextMenu={
-                desktop ? (e) => onRowMenu(e, root, true) : undefined
-              }
-              // Double-click on the blank below the rows: a new document there.
-              onDoubleClick={
-                desktop
-                  ? (e) => {
-                      if (!(e.target as HTMLElement).closest(".tree-row"))
-                        setDraft({ dir: root, kind: "document" });
+                {!folder && onOpenAsFolder && (
+                  <Tooltip
+                    text={t.treeOpenAsFolder}
+                    description={
+                      activePath && isWithin(activePath, root)
+                        ? t.treeDocumentFolder
+                        : null
                     }
-                  : undefined
-              }
-            >
-              <DirNode
-                key={`${root}\n${generation}`}
-                path={root}
-                depth={0}
-                activePath={activePath}
-                onFileSelect={select}
+                  >
+                    <button
+                      type="button"
+                      className="tree-tool"
+                      aria-label={t.treeOpenAsFolder}
+                      onClick={() => onOpenAsFolder(root)}
+                    >
+                      <ProjectIcon />
+                    </button>
+                  </Tooltip>
+                )}
+                <Tooltip text={t.treeSort}>
+                  <button
+                    type="button"
+                    className="tree-tool"
+                    aria-label={t.treeSort}
+                    aria-haspopup="menu"
+                    onClick={openSortMenu}
+                  >
+                    <SortIcon />
+                  </button>
+                </Tooltip>
+                {folder && (
+                  <Tooltip text={t.menuCloseFolder}>
+                    <button
+                      type="button"
+                      className="tree-tool"
+                      onClick={onCloseFolder}
+                      aria-label={t.menuCloseFolder}
+                    >
+                      <CloseIcon />
+                    </button>
+                  </Tooltip>
+                )}
+                <Tooltip text={t.treeRefresh}>
+                  <button
+                    type="button"
+                    className="tree-tool"
+                    onClick={() => setGeneration((g) => g + 1)}
+                    aria-label={t.treeRefresh}
+                  >
+                    <RefreshIcon />
+                  </button>
+                </Tooltip>
+              </div>
+              <RecentSection
+                t={t}
+                files={recentFiles ?? []}
+                root={base}
+                onOpen={(path) => onFileSelect(path)}
               />
+              <div className="tree-section-title">
+                {t.notesLibrary} · {folderName(base)}
+              </div>
+              <div
+                ref={treeRef}
+                role="tree"
+                aria-label={t.treeTab}
+                className={`tree-body${drag?.into === root ? " tx-drop-into" : ""}`}
+                data-drop-dir={root}
+                onKeyDown={onTreeKey}
+                onContextMenu={
+                  desktop ? (e) => onRowMenu(e, root, true) : undefined
+                }
+                // Double-click on the blank below the rows: a new document there.
+                onDoubleClick={
+                  desktop
+                    ? (e) => {
+                        if (!(e.target as HTMLElement).closest(".tree-row"))
+                          setDraft({ dir: root, kind: "document" });
+                      }
+                    : undefined
+                }
+              >
+                <DirNode
+                  key={`${root}\n${generation}`}
+                  path={root}
+                  depth={0}
+                  activePath={activePath}
+                  onFileSelect={select}
+                />
+              </div>
             </div>
+            <ViewFoot
+              left={t.notesFootNote}
+              right={
+                noteCount === null
+                  ? undefined
+                  : fill(t.notesFootCount, { n: noteCount })
+              }
+            />
+            <Presence show={menu !== null}>
+              {menu && (
+                <ContextMenu
+                  x={menu.x}
+                  y={menu.y}
+                  items={menu.items}
+                  title={menu.title}
+                  onClose={() => setMenu(null)}
+                />
+              )}
+            </Presence>
           </div>
-          <ViewFoot
-            left={t.notesFootNote}
-            right={
-              noteCount === null
-                ? undefined
-                : fill(t.notesFootCount, { n: noteCount })
-            }
-          />
-          <Presence show={menu !== null}>
-            {menu && (
-              <ContextMenu
-                x={menu.x}
-                y={menu.y}
-                items={menu.items}
-                title={menu.title}
-                onClose={() => setMenu(null)}
-              />
-            )}
-          </Presence>
-        </div>
+        </TreeSelectionContext.Provider>
       </TreeRowActionsContext.Provider>
     </TreeContext.Provider>
   );

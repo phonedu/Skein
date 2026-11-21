@@ -60,7 +60,9 @@ const ALLOWED = {
 
 function* files(dir) {
   for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
+    // Forward slashes everywhere: ALLOWED keys are written that way, and
+    // Windows paths would otherwise never match them.
+    const path = join(dir, name).replaceAll("\\", "/");
     if (statSync(path).isDirectory()) {
       if (!/^(i18n|dev|ios)$/.test(name)) yield* files(path);
     } else if (/\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name)) yield path;

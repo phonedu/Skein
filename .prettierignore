@@ -42,3 +42,6 @@ docs/skein/archive/**
 .ryugi/
 # Generated from the plugin manifests; compare against them byte for byte.
 docs/dev/plugin-permissions.json
+# Local sync test scratch (see .git/info/exclude).
+store/
+.tmp-s1-s3/

@@ -58,7 +58,7 @@
 }
 
 button.settings-phone-ic:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .settings-phone-body {
@@ -130,7 +130,7 @@ button.settings-phone-ic:active {
 }
 
 .settings-phone-row:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 /* The hairline between rows starts where the text does. */
@@ -329,7 +329,7 @@ button.settings-phone-ic:active {
   :is(.settings-group-actions, .settings-page-group-actions)
   button {
   min-height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--space-2);
   border: 0;
   border-radius: var(--shape-pill);
   background: none;
@@ -341,7 +341,7 @@ button.settings-phone-ic:active {
   .settings-content-host
   :is(.settings-group-actions, .settings-page-group-actions)
   button:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .settings-phone

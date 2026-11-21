@@ -20,6 +20,8 @@
   --shape-l: var(--shape-m);
   --shape-s: 8px;
   --shape-xs: 4px;
+  /* The phone's bottom sheet: a paper card larger than the containers. */
+  --shape-sheet: 22px;
   --shape-pill: 999px;
   /* From a pane's edge to its text: its title's, and its rows'. A scrolling
      body keeps --pane-edge for itself (rows' fills stop short of the edge);

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { emit, openApp } from "./helpers";
+import { emit, openApp, settled } from "./helpers";
 
 // Every Settings page in the dialog at every window width and interface
 // size it can be given, in the longest languages: the panel whole in the
@@ -119,7 +119,7 @@ for (const language of ["zh", "en", "de"])
               ),
             id,
           );
-          await page.waitForTimeout(150);
+          await settled(page);
           for (const p of await problems(page))
             found.push(`${width}@${uiTextScale} ${id}: ${p}`);
         }
@@ -254,7 +254,7 @@ for (const [os, platform] of [
           for (const sidebar of [false, true]) {
             const open = await page.locator(".sidebar-header").count();
             if (!!open !== sidebar) await emit(page, "menu-toggle-sidebar");
-            await page.waitForTimeout(120);
+            await settled(page);
             const said = JSON.stringify({
               ...state,
               uiTextScale,
@@ -264,7 +264,7 @@ for (const [os, platform] of [
             // Only what stays: under load the layout may still be settling.
             let left = await chromeOverlaps(page);
             for (let i = 0; left.length && i < 10; i++) {
-              await page.waitForTimeout(150);
+              await settled(page);
               left = await chromeOverlaps(page);
             }
             for (const p of left) found.push(`${said}: ${p}`);

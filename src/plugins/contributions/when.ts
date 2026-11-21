@@ -18,22 +18,31 @@ export const WHEN_KEYS: readonly string[] = [
   "view",
 ];
 
-/** The keys a clause reads: its words but the values compared with. */
-export function whenKeys(source: string): string[] {
-  const list = tokens(source);
-  return list
-    .filter(
-      (tok, i) =>
-        tok.kind === "word" &&
-        !(
-          i > 0 &&
-          list[i - 1].kind === "op" &&
-          /^[=!]=$/.test(list[i - 1].text)
-        ) &&
-        !/^(true|false)$/.test(tok.text),
-    )
-    .map((tok) => tok.text);
-}
+/** A clause read on its own, for what a manifest is checked by. */
+export const whenClause = {
+  /** The keys a clause reads: its words but the values compared with. */
+  keys(source: string): string[] {
+    const list = tokens(source);
+    return list
+      .filter(
+        (tok, i) =>
+          tok.kind === "word" &&
+          !(
+            i > 0 &&
+            list[i - 1].kind === "op" &&
+            /^[=!]=$/.test(list[i - 1].text)
+          ) &&
+          !/^(true|false)$/.test(tok.text),
+      )
+      .map((tok) => tok.text);
+  },
+
+  /** Whether `clause` reads as a when clause at all: what a manifest's is
+   *  checked by. */
+  readable(clause: string): boolean {
+    return run(clause, {}) !== null;
+  },
+};
 
 type Token = { kind: "op" | "word"; text: string };
 
@@ -75,12 +84,6 @@ export function evaluateWhen(
 ): boolean {
   if (!clause?.trim()) return true;
   return run(clause, context) ?? true;
-}
-
-/** Whether `clause` reads as a when clause at all: what a manifest's is
- *  checked by. */
-export function whenReadable(clause: string): boolean {
-  return run(clause, {}) !== null;
 }
 
 /** `clause`'s value in `context`; null when it can't be read. */

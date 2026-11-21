@@ -9,7 +9,7 @@ import type {
 import type { ViewMode } from "../../../prefs/settings-values";
 import { AdvancedFold } from "../../../settings/sections/controls";
 import { DocTextFold } from "../../../settings/sections/text-font";
-import { PageGroup } from "../settings-content";
+import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
 

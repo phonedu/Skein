@@ -196,14 +196,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-3);
   max-width: 340px;
   padding: 28px 24px 24px;
   text-align: center;
   border: 1px solid var(--ui-border);
-  border-radius: 18px;
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--ui-text) 6%, transparent);
+  box-shadow: var(--shadow-1);
 }
 
 .agent-panel-sign-in-mark {
@@ -212,7 +212,7 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: var(--shape-m);
   background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
   color: var(--ui-accent-text);
 }

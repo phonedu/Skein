@@ -32,7 +32,7 @@ export interface SyncCredentials {
   syncPassword?: string;
 }
 
-export interface SyncResult {
+interface SyncResult {
   revision: string;
   uploaded: number;
   downloaded: number;
@@ -202,7 +202,7 @@ export interface SyncConflict {
   modifiedMs?: number | null;
 }
 
-export interface SyncHistoryVersion {
+interface SyncHistoryVersion {
   hash: string;
   size: number;
   at: string;

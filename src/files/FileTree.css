@@ -328,6 +328,8 @@
   text-overflow: ellipsis;
 }
 
-.recent-row:hover {
-  background: var(--ui-hover);
+@media (any-hover: hover) {
+  .recent-row:hover {
+    background: var(--ui-hover);
+  }
 }

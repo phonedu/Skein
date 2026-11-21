@@ -2,7 +2,7 @@ import type { Strings } from "../../../i18n/strings";
 import type { ImageAlign } from "../../../prefs/SettingsContext";
 import { useSettings } from "../../../prefs/SettingsContext";
 import { ImageStorageSection } from "../../../settings/sections/images";
-import { PageGroup } from "../settings-content";
+import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect } from "../settings-controls";
 

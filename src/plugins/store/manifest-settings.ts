@@ -1,4 +1,4 @@
-import { whenReadable } from "../contributions/when";
+import { whenClause } from "../contributions/when";
 import type { SettingContribution, SettingType } from "./manifest-types";
 import { ManifestError, list, object, text, type Json } from "./manifest-json";
 
@@ -53,7 +53,7 @@ export function parseSetting(raw: unknown, at: string): SettingContribution {
     );
   checkDefault(s, type, at);
   const when = text(s.when, `${at}.when`, true) || undefined;
-  if (when && !whenReadable(when))
+  if (when && !whenClause.readable(when))
     throw new ManifestError(
       `${at}.when must be a when clause: "key", "!key", "key == value", joined with && or ||.`,
     );

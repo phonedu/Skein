@@ -27,7 +27,6 @@ async function pickFilesPackage(): Promise<string[] | null> {
 // through the window.
 
 export type PluginsState = Generated.PluginsState_Serialize;
-export type PluginCatalogEntry = Generated.CatalogEntry_Serialize;
 export type StoreScope = Access.StoreScope;
 export type PluginDocumentMeta = Access.DocumentMeta_Serialize;
 

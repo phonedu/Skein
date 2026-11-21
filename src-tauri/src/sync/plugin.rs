@@ -207,30 +207,44 @@ mod tests {
     use super::*;
     use std::collections::BTreeMap;
 
-    #[test]
-    fn an_old_plugin_config_imports_connection_credentials_base_and_pin() {
+    /// A plugin data folder holding the config an old Textus wrote for
+    /// `root`: the two tests differ only in that config and in what more
+    /// they put beside it.
+    fn plugin_with_config(
+        root: &str,
+        config: &serde_json::Value,
+    ) -> (tempfile::TempDir, std::path::PathBuf) {
         let dir = tempfile::tempdir().unwrap();
         let plugin = dir.path().join("plugin");
         let kv = plugin.join("kv");
         std::fs::create_dir_all(&kv).unwrap();
-        let root = "C:/Vault";
         let config_key = format!("config:{}", hash_hex(root.as_bytes()));
-        let config = serde_json::json!({
-            "provider": "webdav",
-            "endpoint": "https://dav.example.com",
-            "region": "",
-            "bucket": "",
-            "prefix": "notes/work",
-            "pathStyle": false,
-            "encrypt": true,
-            "keepDays": 365,
-            "keepPending": true
-        });
         std::fs::write(
             kv.join(key_file(&config_key)),
-            serde_json::to_vec(&config).unwrap(),
+            serde_json::to_vec(config).unwrap(),
         )
         .unwrap();
+        (dir, plugin)
+    }
+
+    #[test]
+    fn an_old_plugin_config_imports_connection_credentials_base_and_pin() {
+        let root = "C:/Vault";
+        let (dir, plugin) = plugin_with_config(
+            root,
+            &serde_json::json!({
+                "provider": "webdav",
+                "endpoint": "https://dav.example.com",
+                "region": "",
+                "bucket": "",
+                "prefix": "notes/work",
+                "pathStyle": false,
+                "encrypt": true,
+                "keepDays": 365,
+                "keepPending": true
+            }),
+        );
+        let kv = plugin.join("kv");
         let identity = serde_json::to_string(&serde_json::json!([
             "dav",
             "https://dav.example.com",
@@ -292,23 +306,16 @@ mod tests {
 
     #[test]
     fn a_configured_folder_is_detected_without_its_secrets() {
-        let dir = tempfile::tempdir().unwrap();
-        let plugin = dir.path().join("plugin");
-        let kv = plugin.join("kv");
-        std::fs::create_dir_all(&kv).unwrap();
         let root = "C:/Vault";
-        let config_key = format!("config:{}", hash_hex(root.as_bytes()));
-        let config = serde_json::json!({
-            "provider": "s3",
-            "endpoint": "https://s3.example.com",
-            "bucket": "notes",
-            "prefix": "work"
-        });
-        std::fs::write(
-            kv.join(key_file(&config_key)),
-            serde_json::to_vec(&config).unwrap(),
-        )
-        .unwrap();
+        let (_dir, plugin) = plugin_with_config(
+            root,
+            &serde_json::json!({
+                "provider": "s3",
+                "endpoint": "https://s3.example.com",
+                "bucket": "notes",
+                "prefix": "work"
+            }),
+        );
 
         assert!(configured_at(&plugin, Path::new(root)));
         assert!(!configured_at(&plugin, Path::new("C:/Other")));

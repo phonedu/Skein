@@ -11,7 +11,7 @@ import {
   DefaultEditorSection,
 } from "../../../settings/sections/general";
 import { BackgroundSection } from "../../../settings/sections/background";
-import { PageGroup } from "../settings-content";
+import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
 

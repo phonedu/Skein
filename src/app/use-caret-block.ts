@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { caretBlock, NO_BLOCK, type CaretBlock } from "../editor/caret-block";
+import {
+  caretBlock,
+  NO_BLOCK,
+  sameCaretBlock,
+  type CaretBlock,
+} from "../editor/caret-block";
 import { tabElement } from "../engine/layout/tab-element";
 import { tabInUse } from "../engine/layout/store";
 
@@ -13,7 +18,12 @@ export function useCaretBlock(tabId: string): CaretBlock {
     const read = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() =>
-        setBlock(caretBlock(tabInUse() === tabId ? tabElement(tabId) : null)),
+        setBlock((prev) => {
+          const next = caretBlock(
+            tabInUse() === tabId ? tabElement(tabId) : null,
+          );
+          return sameCaretBlock(prev, next) ? prev : next;
+        }),
       );
     };
     read();

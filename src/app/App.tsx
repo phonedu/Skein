@@ -1,11 +1,9 @@
 import { provideAiFileMarks } from "../ai/revision/file-marks";
-import { useTabsInBar } from "./islands/tabs-in-bar";
 import { tabTitle } from "../document/doc-tabs";
-import { useWindowAi } from "./islands/useWindowAi";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -22,7 +20,6 @@ import {
   type PageRequest,
 } from "./tabs/page-tabs";
 import { usePhoneLayout } from "../engine/controls/usePhoneLayout";
-import { onBack } from "../mobile/back";
 import { useSettings } from "../prefs/SettingsContext";
 import { formatCombo } from "../utils/shortcuts";
 import { fixedShortcutGroups } from "../registry/fixed-shortcuts";
@@ -34,6 +31,8 @@ import { aiFeatures } from "../prefs/ai-features";
 import { useWindowShell } from "./useWindowShell";
 import { useWindowDocuments } from "./useWindowDocuments";
 import { useWindowWiring } from "./useWindowWiring";
+import { useAppChrome } from "./useAppChrome";
+import { useBackStep } from "./useBackStep";
 import { Sidebar } from "./frame/Sidebar";
 import { DocumentIslands } from "./islands/DocumentIslands";
 import { ClosePrompt } from "./ClosePrompt";
@@ -48,7 +47,6 @@ import "./App.css";
 import { ReportProblemHost } from "./report/report-open";
 import { lazyModule } from "../lazy/lazy-module";
 import { lazyComponent } from "../lazy/lazy-component";
-import { usePanelsReport } from "../plugins/panels-state";
 
 // The folder's rows show what Textus AI changed in their files.
 provideAiFileMarks();
@@ -108,38 +106,13 @@ function App() {
     return rel && rel !== "." && !rel.startsWith("..") ? rel : null;
   })();
 
-  // Android's Back steps through the phone's pages instead of leaving the
-  // app: the AI page back to the document, the document to the library, and
-  // from the library on it is the system's (the app goes to the background).
-  // Registered once, so Settings - mounted over these while it is up - keeps
-  // answering first.
-  const backStep = useRef({
-    agentOpen: false,
-    inDoc: false,
-    closeAgent: () => {},
-    toHome: () => {},
-  });
-  backStep.current = {
+  useBackStep({
+    phone,
     agentOpen: agentPanel.open,
     inDoc: phoneView === "doc",
     closeAgent: toggleAgentPanel,
     toHome: () => setPhoneView("home"),
-  };
-  useEffect(() => {
-    if (!phone) return;
-    return onBack(() => {
-      const step = backStep.current;
-      if (step.agentOpen) {
-        step.closeAgent();
-        return true;
-      }
-      if (step.inDoc) {
-        step.toHome();
-        return true;
-      }
-      return false;
-    });
-  }, [phone]);
+  });
 
   const { searchFiles } = docs;
   const { searchFocusRequest, clearSearchFocusRequest } = docs;
@@ -154,24 +127,10 @@ function App() {
   const { documentRenamed, documentDeleted } = wiring;
   const { closeSaving, closeDiscarding, cancelClose, closePrompt } =
     wiring.close;
-  usePanelsReport({
-    sidebarOpen: panelOpen,
-    sidebarTab: panelMode,
-    aiOpen: agentPanel.open,
-    zen: zenMode,
-  });
-
-  useWindowAi({
-    tabs: shell.tabState,
-    settings,
-    shown: agentPanel.open,
-    setShown: agentPanel.setOpen,
-  });
-
   // Whether the documents lie on islands: their tabs in the window bar's
   // row (or the row under a bar of its own), or one sheet alone under the
   // title's row - else a clean sheet (Zen), or the phone's own bar.
-  const tabsInBar = useTabsInBar(zenMode, showTabBar);
+  const tabsInBar = useAppChrome({ shell, settings, showTabBar, zenMode });
   const tabRow = tabsInBar || !zenMode ? "bar" : undefined;
 
   // What Settings needs, as the desktop's dialog or the iPad's sheet.

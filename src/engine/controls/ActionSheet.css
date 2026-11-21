@@ -19,7 +19,7 @@
   width: 40px;
   height: 4px;
   margin: var(--space-1) auto var(--space-2);
-  border-radius: 2px;
+  border-radius: var(--shape-xs);
   background: color-mix(in srgb, var(--ui-text) 20%, transparent);
 }
 
@@ -28,14 +28,14 @@
   /* Under the status bar's room, with Cancel and the gaps below it. */
   max-height: calc(100vh - var(--safe-top, 0px) - 154px);
   overflow-y: auto;
-  border-radius: 22px;
+  border-radius: var(--shape-sheet);
   background: var(--ui-surface);
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--ui-text) 6%, transparent);
+  box-shadow: var(--shadow-1);
 }
 
 .action-sheet-cancel {
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: var(--shape-sheet);
   background: var(--ui-surface);
 }
 

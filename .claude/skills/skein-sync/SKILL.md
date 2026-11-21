@@ -26,7 +26,7 @@ Core  src-tauri/crates/textus-sync/             (no Tauri; cargo test)
 Xfer  S3 / WebDAV / LAN
 ```
 
-The core crate owns planner, merge, history, publish, lock; the adapter reads settings, opens files and sends events; the UI sends commands and receives events. Do not move algorithm upward or copy a service per window.
+The core crate owns planner, history, publish, lock (v1 keeps conflict copies, not three-way merge); the adapter reads settings, opens files and sends events; the UI sends commands and receives events. Do not move algorithm upward or copy a service per window.
 
 ## Invariants
 

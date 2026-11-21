@@ -122,7 +122,6 @@ export const commands = {
 	sync_settings_save: (root: string, config: string, credentials: string) => __TAURI_INVOKE<null>("sync_settings_save", { root, config, credentials }),
 	sync_settings_forget: (root: string) => __TAURI_INVOKE<null>("sync_settings_forget", { root }),
 	sync_status: (root: string) => __TAURI_INVOKE<string>("sync_status", { root }),
-	/**  What a first sync would do, without writing anything. */
 	sync_preview: (root: string) => __TAURI_INVOKE<string>("sync_preview", { root }),
 	/**
 	 *  The remote lock, so a run stopped by a crashed device can be recovered

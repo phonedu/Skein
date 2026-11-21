@@ -1,5 +1,4 @@
 import { lazyModule } from "../../lazy/lazy-module";
-import type { openSettingsDialog as open } from "./index";
 
 /**
  * The settings page's module, one lazy entry for the app's three triggers
@@ -19,5 +18,3 @@ export async function openSettingsDialog(): Promise<void> {
   const module = await settingsFeature.load();
   module.openSettingsDialog();
 }
-
-export type { open };

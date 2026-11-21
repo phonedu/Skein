@@ -10,12 +10,13 @@ import { clearAllConversations } from "../../ai/chat/chat-history";
 import { drafts } from "../../platform/ipc";
 import { hasTextusAi, isDesktopApp } from "../../platform/capabilities";
 import { SettingsFileSection } from "./settings-file";
+import type { GroupShell } from "./group-shell";
 
 // Settings > Privacy: a switch per kind of local history, plus a clear. A
 // switch off only stops new writes; a clear can't be undone, so it asks first.
 // Last, the settings file, which can carry the AI history away.
 
-export function ClearRow({
+function ClearRow({
   label,
   warning,
   t,
@@ -59,13 +60,23 @@ export function ClearRow({
   );
 }
 
-export function PrivacySection({ t }: { t: Strings }) {
-  const { settings, setSettings } = useSettings();
-
+/** Privacy's rows, shared by the iPad sheet and the new dialog: only the
+ *  group shell around them differs. */
+export function PrivacySections({
+  t,
+  settings,
+  setSettings,
+  Group,
+}: {
+  t: Strings;
+  settings: ReturnType<typeof useSettings>["settings"];
+  setSettings: ReturnType<typeof useSettings>["setSettings"];
+  Group: GroupShell;
+}) {
   return (
     <>
       {hasTextusAi && (
-        <SettingsGroup title={t.privacyChatHistoryLabel}>
+        <Group title={t.privacyChatHistoryLabel}>
           <ToggleRow
             label={t.privacyChatHistoryToggle}
             checked={settings.enableChatHistory}
@@ -77,10 +88,10 @@ export function PrivacySection({ t }: { t: Strings }) {
             t={t}
             onClear={clearAllConversations}
           />
-        </SettingsGroup>
+        </Group>
       )}
 
-      <SettingsGroup title={t.privacyDraftRecoveryLabel}>
+      <Group title={t.privacyDraftRecoveryLabel}>
         <ToggleRow
           label={t.privacyDraftRecoveryToggle}
           checked={settings.enableDraftRecovery}
@@ -101,13 +112,26 @@ export function PrivacySection({ t }: { t: Strings }) {
           t={t}
           onClear={() => drafts.clearAllDrafts()}
         />
-      </SettingsGroup>
+      </Group>
 
       {isDesktopApp && (
-        <SettingsGroup title={t.settingsFileLabel}>
+        <Group title={t.settingsFileLabel}>
           <SettingsFileSection t={t} />
-        </SettingsGroup>
+        </Group>
       )}
     </>
+  );
+}
+
+/** The iPad sheet's page: the same rows in its own group shell. */
+export function PrivacySection({ t }: { t: Strings }) {
+  const { settings, setSettings } = useSettings();
+  return (
+    <PrivacySections
+      t={t}
+      settings={settings}
+      setSettings={setSettings}
+      Group={SettingsGroup}
+    />
   );
 }

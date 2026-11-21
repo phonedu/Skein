@@ -8,7 +8,7 @@ import { isMacPlatform } from "../../../platform/os";
 import { AdvancedFold } from "../../../settings/sections/controls";
 import { ExportFileRow } from "../../../settings/sections/export-files";
 import { PandocArgsRows } from "../../../settings/sections/pandoc-args";
-import { PageGroup } from "../settings-content";
+import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSwitch } from "../settings-controls";
 

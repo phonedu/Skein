@@ -33,7 +33,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-1);
   padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
 }
 
@@ -65,7 +65,7 @@
   min-height: 48px;
   padding: 0 var(--space-3);
   /* A softer shoulder than shape-m, matching the mockup's 11px chip. */
-  border-radius: 11px;
+  border-radius: var(--shape-s);
   border: 0;
   background: none;
   font-size: var(--text-body);
@@ -75,13 +75,13 @@
 }
 
 .ph-vault:active {
-  background: color-mix(in srgb, var(--phone-fire) 6%, var(--phone-paper));
+  background: var(--ui-primary-pressed);
 }
 
 .ph-vault .vic {
   width: 26px;
   height: 26px;
-  border-radius: 7px;
+  border-radius: var(--shape-s);
   background: color-mix(in srgb, var(--phone-fire) 10%, transparent);
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@
   height: 48px;
   border: 0;
   background: none;
-  border-radius: 12px;
+  border-radius: var(--shape-s);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,7 +144,7 @@
      an opaque mix, not an ink-tinted translucent one. A pale surface
      fill underneath, so the pill reads as a trough in the paper. */
   border: 1px solid var(--ui-border);
-  border-radius: 14px;
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
   /* A 1px top highlight so the pill lifts off the paper, and a feather of
      shadow below it; same recipe as the Skein mockup. */
@@ -220,7 +220,7 @@
   margin: calc(-1 * var(--space-1)) var(--space-5) var(--space-3);
   padding: 0 var(--space-4);
   border: 1px solid var(--ui-border);
-  border-radius: 12px;
+  border-radius: var(--shape-s);
   background: none;
   color: var(--phone-muted);
   font: inherit;
@@ -251,7 +251,7 @@
 }
 
 .ph-search-clear:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .ph-tree {
@@ -277,7 +277,7 @@
      would step even the root rows in; the board's root rows stand at the
      pane's inset, and one level in is one step (34px drawn). */
   --tree-indent: min(calc(max(var(--depth, 1) - 1, 0) * var(--tree-step)), 35%);
-  gap: 10px;
+  gap: var(--space-2);
   padding-block: var(--space-1);
   padding-right: var(--space-2);
   /* The depth indent survives the phone row's own padding: a folder's
@@ -309,7 +309,7 @@
      22px box (the side margins make the box up around the svg), at the
      tree's own muted ink (FileTree.css's 0.6 opacity stands). */
   --icon-scale: 1.43;
-  margin-inline: 5px;
+  margin-inline: var(--space-1);
 }
 
 .phone-home .tree-row:hover {
@@ -317,7 +317,7 @@
 }
 
 .phone-home .tree-row:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .phone-home .tree-row .tree-icon {
@@ -370,7 +370,7 @@
   display: inline-block;
   width: 6px;
   height: 6px;
-  border-radius: 2px;
+  border-radius: var(--shape-xs);
   background: var(--phone-fire);
   margin-right: 8px;
   vertical-align: 2px;
@@ -408,7 +408,7 @@
 }
 
 .phone-home .tree-more:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .phone-home .recent-section {
@@ -443,7 +443,7 @@
 .phone-home .tree-empty-glyph {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: var(--shape-m);
   margin-bottom: var(--space-5);
   background: color-mix(in srgb, var(--phone-fire) 10%, transparent);
   display: flex;
@@ -464,7 +464,7 @@
 }
 
 .phone-home .tree-empty-title {
-  font-size: 20px;
+  font-size: var(--text-title);
   font-weight: 650;
   color: var(--phone-ink);
   letter-spacing: 0.01em;
@@ -495,7 +495,7 @@
 }
 
 .phone-home .tree-empty-cta:active {
-  background: color-mix(in srgb, var(--phone-fire) 88%, black);
+  background: var(--ui-primary-pressed);
 }
 
 /* A search with no matches reads alone: one quiet line on the paper. */
@@ -523,7 +523,7 @@
 .ph-empty-glyph {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: var(--shape-m);
   margin-bottom: var(--space-5);
   background: color-mix(in srgb, var(--phone-fire) 10%, transparent);
   color: var(--phone-fire);
@@ -538,7 +538,7 @@
 }
 
 .ph-empty-title {
-  font-size: 20px;
+  font-size: var(--text-title);
   font-weight: 650;
   color: var(--phone-ink);
   letter-spacing: 0.01em;
@@ -569,7 +569,7 @@
 }
 
 .ph-empty-cta:active {
-  background: color-mix(in srgb, var(--phone-fire) 88%, black);
+  background: var(--ui-primary-pressed);
 }
 
 .ph-empty-cta-quiet {
@@ -581,7 +581,7 @@
 }
 
 .ph-empty-cta-quiet:active {
-  background: color-mix(in srgb, var(--phone-ink) 8%, transparent);
+  background: var(--ui-pressed);
 }
 
 .ph-fab {
@@ -604,7 +604,7 @@
   /* A tight shadow only: the earlier large fire-tinted halo stained the
      paper around the FAB and made the button itself read as heavier and
      dirtier than it is. The disc stands on its own. */
-  box-shadow: 0 2px 6px color-mix(in srgb, var(--phone-ink) 24%, transparent);
+  box-shadow: var(--shadow-1);
   /* Held, the button asks which new thing; a held finger must not select
      or call out anything meanwhile. */
   -webkit-user-select: none;

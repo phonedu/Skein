@@ -39,8 +39,13 @@ const COPIES_NOW = {
 const out = mkdtempSync(join(tmpdir(), "textus-jscpd-"));
 let report;
 try {
+  // Windows cannot spawn the .bin shell script directly; its .cmd needs a shell.
+  const windows = process.platform === "win32";
   execFileSync(
-    join(root, "node_modules/.bin/jscpd"),
+    join(
+      root,
+      windows ? "node_modules/.bin/jscpd.cmd" : "node_modules/.bin/jscpd",
+    ),
     [
       "src",
       "src-tauri/src",
@@ -56,7 +61,7 @@ try {
       out,
       "--silent",
     ],
-    { cwd: root, stdio: ["ignore", "ignore", "inherit"] },
+    { cwd: root, stdio: ["ignore", "ignore", "inherit"], shell: windows },
   );
   report = JSON.parse(readFileSync(join(out, "jscpd-report.json"), "utf8"));
 } finally {
@@ -65,8 +70,11 @@ try {
 
 const found = {};
 for (const d of report.duplicates) {
-  const at = (f) => `${f.name}:${f.start}`;
-  const key = [d.firstFile.name, d.secondFile.name].sort().join(" | ");
+  // jscpd names files with the host separator; the baseline lists them
+  // with "/" wherever it was written.
+  const name = (f) => f.name.replaceAll("\\", "/");
+  const at = (f) => `${name(f)}:${f.start}`;
+  const key = [name(d.firstFile), name(d.secondFile)].sort().join(" | ");
   (found[key] ??= []).push(`${at(d.firstFile)} and ${at(d.secondFile)}`);
 }
 

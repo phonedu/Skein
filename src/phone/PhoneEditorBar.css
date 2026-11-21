@@ -32,7 +32,7 @@
 }
 
 .pe-ic:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .pe-title {

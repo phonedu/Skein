@@ -81,7 +81,7 @@ describe("the phone action sheet", () => {
   });
 
   it("keeps the sheet's Skein shell", () => {
-    expect(actionSheetCss).toContain("border-radius: 22px;");
+    expect(actionSheetCss).toContain("border-radius: var(--shape-sheet);");
     expect(actionSheetCss).toContain(".action-sheet-grab");
     expect(actionSheetCss).toContain(".action-sheet-item-fire");
     expect(actionSheetCss).toContain(".action-sheet-ic");

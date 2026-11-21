@@ -1,7 +1,5 @@
-import { explainError } from "../utils/error-explain";
 import { useFileBadge } from "../plugins/contributions/file-badges";
 import { Tooltip } from "../engine/controls/Tooltip";
-import { currentStrings } from "../i18n/current";
 // The file tree's rows: a folder, which reads and lists its entries, and
 // a file.
 
@@ -17,7 +15,7 @@ import {
 } from "../engine/controls/icons";
 import { fs } from "../platform/ipc";
 import { useSettings } from "../prefs/SettingsContext";
-import { basename, isInside, onTheWay, parentDir } from "../utils/path";
+import { basename, onTheWay, parentDir } from "../utils/path";
 import { isMobileApp } from "../platform/capabilities";
 import { useLongPress } from "../utils/hooks/useLongPress";
 import { isDocumentName } from "./document-name";
@@ -26,11 +24,17 @@ import { compareEntries, nameCollator } from "../utils/name-order";
 import { dayLabelKind, monthDay } from "./day-label";
 import { countNotes } from "./note-count";
 import { useTree, useTreeRowActions } from "./tree-shared";
-import { isWithin } from "../utils/path";
+import { useRowPicked } from "./tree-selection";
+import { byModified, useFolderListing, useFolderOpen } from "./useFolder";
 import { DraftRow } from "./DraftRow";
 import { TreeRowsInSight } from "./TreeRowsInSight";
 import type { FileOpenHow } from "./tree-shared";
 import { fileIconFor } from "../engine/controls/file-icons";
+import {
+  folderDocumentAround,
+  folderDocumentOf,
+  useFolderDocumentKinds,
+} from "./folder-documents";
 
 interface DirNodeProps {
   path: string;
@@ -39,35 +43,6 @@ interface DirNodeProps {
   ignored?: boolean;
   activePath: string | null;
   onFileSelect: (path: string, how?: FileOpenHow) => void;
-}
-
-/** `next`, keeping each entry of `was` that is unchanged, and `was` itself
- *  when none changed: a folder read again as the window comes to the front
- *  draws none of its rows again. */
-function keptEntries(
-  was: DirEntryInfo[] | undefined,
-  next: DirEntryInfo[],
-): DirEntryInfo[] {
-  if (!was) return next;
-  const known = new Map(was.map((e) => [e.path, e]));
-  const same = (a: DirEntryInfo, b: DirEntryInfo) =>
-    (Object.keys(b) as (keyof DirEntryInfo)[]).every((k) => a[k] === b[k]);
-  let changed = was.length !== next.length;
-  const kept = next.map((entry, i) => {
-    const old = known.get(entry.path);
-    if (old && same(old, entry)) {
-      if (was[i] !== old) changed = true;
-      return old;
-    }
-    changed = true;
-    return entry;
-  });
-  return changed ? kept : was;
-}
-
-/** Newest first; one the system gave no date for goes last. */
-function byModified(a: DirEntryInfo, b: DirEntryInfo): number {
-  return (b.modified_ms ?? -Infinity) - (a.modified_ms ?? -Infinity);
 }
 
 export const DirNode = memo(function DirNode({
@@ -81,66 +56,23 @@ export const DirNode = memo(function DirNode({
   const filter = tree.filter.trim().toLocaleLowerCase();
   const version = tree.versions[path] ?? 0;
   const listing = `${version}:${tree.stale[path] ?? 0}:${tree.refreshed}`;
-  // The root is always open, and so is a folder on the way down to the open
-  // document.
-  const [open, setOpen] = useState(
-    depth === 0 || (activePath !== null && isInside(activePath, path)),
-  );
-  const [loaded, setLoaded] = useState<{
-    listing: string;
-    entries: DirEntryInfo[];
-    /** Why it couldn't be read, in the UI's language. */
-    failed?: string;
-  } | null>(null);
-  // A document opened further down shows where it is, and so does a folder
-  // asked to be shown (a plugin's showFolder): the folders on the way open,
-  // the rest stay as they were.
-  useEffect(() => {
-    if (
-      (activePath !== null && isInside(activePath, path)) ||
-      (tree.reveal && isWithin(tree.reveal, path))
-    )
-      setOpen(true);
-  }, [activePath, tree.reveal, path]);
-  // Something was made in it or moved into it, or is being named in it:
-  // show it.
   const drafting = tree.draft?.dir === path ? tree.draft.kind : null;
-  useEffect(() => {
-    if (version > 0 || drafting) setOpen(true);
-  }, [version, drafting]);
-
-  useEffect(() => {
-    if (filter && !open) {
-      setOpen(true);
-      return;
-    }
-    if (!open || loaded?.listing === listing) return;
-    let cancelled = false;
-    fs.listDir(path).then(
-      (entries) =>
-        !cancelled &&
-        setLoaded((was) => ({
-          listing,
-          entries: keptEntries(was?.entries, entries),
-        })),
-      // Unreadable (permissions, vanished): said so, not shown empty with a
-      // New Document that would fail too.
-      (err: unknown) =>
-        !cancelled &&
-        setLoaded({
-          listing,
-          entries: [],
-          failed: explainError(err, currentStrings()),
-        }),
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [filter, open, loaded, listing, path]);
+  const [open, setOpen] = useFolderOpen({
+    path,
+    depth,
+    activePath,
+    reveal: tree.reveal,
+    version,
+    drafting,
+  });
+  const loaded = useFolderListing({ path, open, filter, listing });
   // In the file manager's order for the UI language, not byte order
   // ("第2章" before "第10章"). Folders first.
   const { settings } = useSettings();
   const collator = nameCollator(localeOf(settings.language));
+  // A plugin opening folders as documents changes what its rows are; the
+  // list itself is the same entries in the same order.
+  const folderDocuments = useFolderDocumentKinds();
   const sorted = useMemo(() => {
     if (!loaded) return null;
     const shown = loaded.entries.filter(
@@ -154,7 +86,15 @@ export const DirNode = memo(function DirNode({
           ? byModified(a, b)
           : 0) || compareEntries(collator, a, b),
     );
-  }, [loaded, collator, tree.scope, tree.sort, tree.showHidden]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    loaded,
+    collator,
+    tree.scope,
+    tree.sort,
+    tree.showHidden,
+    folderDocuments,
+  ]);
   const filtered = filter
     ? (sorted?.filter(
         (entry) =>
@@ -241,7 +181,7 @@ export const DirNode = memo(function DirNode({
             entries={filtered}
             needed={(entry) => onWay(entry.path)}
             row={(entry) =>
-              entry.is_dir ? (
+              entry.is_dir && !folderDocumentOf(entry.name) ? (
                 <DirNode
                   key={entry.path}
                   path={entry.path}
@@ -255,7 +195,10 @@ export const DirNode = memo(function DirNode({
                   key={entry.path}
                   entry={entry}
                   depth={depth + 1}
-                  active={entry.path === activePath}
+                  active={
+                    entry.path === activePath ||
+                    entry.path === folderDocumentAround(activePath)
+                  }
                   onSelect={onFileSelect}
                 />
               )
@@ -282,7 +225,8 @@ const FileNode = memo(function FileNode({
   const { t, settings } = useSettings();
   const lang = settings.language;
   const tree = useTreeRowActions();
-  const Icon = fileIconFor(entry.name);
+  const picked = useRowPicked(entry.path);
+  const Icon = fileIconFor(folderDocumentOf(entry.name)?.[0] ?? entry.name);
   const press = useLongPress(
     tree.onRowHold ? (at) => tree.onRowHold!(at, entry.path, false) : undefined,
   );
@@ -314,15 +258,17 @@ const FileNode = memo(function FileNode({
   return (
     <>
       <div
-        className={`tree-row tree-row-file${active ? " tree-row-active" : ""}${entry.ignored ? " tree-row-ignored" : ""}`}
+        className={`tree-row tree-row-file${active ? " tree-row-active" : ""}${picked ? " tree-row-picked" : ""}${entry.ignored ? " tree-row-ignored" : ""}`}
         role="treeitem"
         aria-level={depth}
-        aria-selected={active}
+        aria-selected={active || picked}
+        data-path={entry.path}
         data-ai-changed={changed || undefined}
         // Dropped on a file, a drag goes into that file's folder.
         data-drop-dir={parentDir(entry.path) ?? undefined}
         style={{ "--depth": depth } as CSSProperties}
         onClick={(e) => {
+          if (tree.onRowPick?.(e, entry.path)) return;
           if ((e.metaKey || e.ctrlKey) && tree.openInNewWindow)
             return tree.openInNewWindow(entry.path);
           // A click looks (the preview tab); a double click keeps it.
@@ -432,21 +378,26 @@ function FolderRow({
   onToggle: () => void;
 }) {
   const tree = useTreeRowActions();
+  const picked = useRowPicked(path);
   const press = useLongPress(
     tree.onRowHold ? (at) => tree.onRowHold!(at, path, true) : undefined,
   );
   return (
     <div
-      className={`tree-row${dropping ? " tx-drop-into" : ""}${ignored ? " tree-row-ignored" : ""}`}
+      className={`tree-row${dropping ? " tx-drop-into" : ""}${picked ? " tree-row-picked" : ""}${ignored ? " tree-row-ignored" : ""}`}
       role="treeitem"
       aria-level={depth}
       aria-expanded={open}
+      aria-selected={picked}
+      data-path={path}
       data-drop-dir={path}
       style={{ "--depth": depth } as CSSProperties}
       // A double click folds or unfolds it once, as a click does; going
       // into it is the row's menu's Show Only This Folder.
       onClick={(e) => {
-        if (e.detail > 1 || press.consumeClick()) return;
+        if (e.detail > 1) return;
+        if (tree.onRowPick?.(e, path)) return;
+        if (press.consumeClick()) return;
         onToggle();
       }}
       onContextMenu={

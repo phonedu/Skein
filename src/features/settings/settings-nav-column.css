@@ -26,9 +26,11 @@
   cursor: pointer;
 }
 
-.settings-nav-row:hover,
-.settings-nav-group-head:hover {
-  background: color-mix(in srgb, var(--ui-text) 5%, transparent);
+@media (any-hover: hover) {
+  .settings-nav-row:hover,
+  .settings-nav-group-head:hover {
+    background: color-mix(in srgb, var(--ui-text) 5%, transparent);
+  }
 }
 
 .settings-nav-row.on {

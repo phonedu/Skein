@@ -11,6 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import { lucide } from "../../engine/controls/icons";
 import { SettingsPhoneList } from "./settings-phone-list";
 import { SettingsContent } from "./settings-content";
+import { settingsContentProps } from "./settings-content-props";
 import { useSettingsDialogSearch } from "./settings-search";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
 import { onBack } from "../../mobile/back";
@@ -128,22 +129,11 @@ export function SettingsPhone(props: {
               className="settings-content-host"
               data-settings-page={page.id}
             >
-              <SettingsContent
+              <SettingsContentNode
                 key={page.id}
-                t={t}
-                page={page}
+                {...props}
+                pageDef={page}
                 onOpenPage={setPageId}
-                onClose={props.onClose}
-                marginAvailable={props.marginAvailable}
-                fixedShortcuts={props.fixedShortcuts}
-                pluginCommands={props.pluginCommands}
-                {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
-                {...(props.onFilesDeleted
-                  ? { onFilesDeleted: props.onFilesDeleted }
-                  : {})}
-                {...(props.docPath !== undefined
-                  ? { docPath: props.docPath }
-                  : {})}
               />
             </div>
           </div>
@@ -198,20 +188,20 @@ function SettingsContentNode(props: {
 }) {
   return (
     <SettingsContent
-      t={props.t}
-      page={props.pageDef}
-      onOpenPage={props.onOpenPage}
-      onClose={props.onClose}
-      marginAvailable={props.marginAvailable}
-      fixedShortcuts={props.fixedShortcuts}
-      pluginCommands={props.pluginCommands}
-      {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
-      {...(props.onFilesDeleted
-        ? { onFilesDeleted: props.onFilesDeleted }
-        : {})}
-      {...(props.docPath !== undefined ? { docPath: props.docPath } : {})}
-      folderRoot={props.folderRoot ?? null}
-      openPaths={props.openPaths ?? []}
+      {...settingsContentProps({
+        t: props.t,
+        page: props.pageDef,
+        onOpenPage: props.onOpenPage,
+        onClose: props.onClose,
+        marginAvailable: props.marginAvailable,
+        fixedShortcuts: props.fixedShortcuts,
+        pluginCommands: props.pluginCommands,
+        onOpenFile: props.onOpenFile,
+        onFilesDeleted: props.onFilesDeleted,
+        docPath: props.docPath,
+        folderRoot: props.folderRoot,
+        openPaths: props.openPaths,
+      })}
     />
   );
 }

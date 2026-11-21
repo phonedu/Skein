@@ -2,6 +2,10 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
     "src/plugin-api.ts",
+    "src/plugins/store/plugin-check.ts",
+    "src/plugins/store/files.ts",
+    "src/plugins/store/plugin-settings.ts",
+    "src/plugins/store/manifest-settings.ts",
     "src/**/*.test.{ts,tsx}",
     "scripts/**/*.mjs",
     "*.config.ts",

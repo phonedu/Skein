@@ -60,7 +60,7 @@
 .pf-key:active,
 .pf-key.is-on,
 .pf-key[aria-pressed="true"] {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 /* A table's or an image's keys: undo and redo first, the rest scrolling
@@ -90,7 +90,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 4px;
+  padding: var(--space-1) var(--space-1);
   border: 1px solid var(--ui-border);
   border-radius: var(--shape-m);
   background: var(--ui-surface);
@@ -127,7 +127,7 @@
 
 .pf-panel-key:active,
 .pf-panel-key.is-on {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .pf-panel-sep {
@@ -143,7 +143,7 @@
 .pf-ai-panel .pf-ai-key {
   height: auto;
   min-height: 38px;
-  padding: 6px;
+  padding: var(--space-1);
   font-size: var(--text-footnote);
   line-height: 1.2;
   text-align: center;
@@ -188,7 +188,7 @@
 }
 
 .pf-sel-key:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 .pf-clear {
@@ -246,7 +246,7 @@
 }
 
 .pf-insert-key:active {
-  background: var(--ui-hover);
+  background: var(--ui-pressed);
 }
 
 @supports (height: 100dvh) {

@@ -3,7 +3,7 @@
 // only home and loads through lazy.ts (src/lazy/lazy-module.ts): settings
 // opens only from ⌘, the rail's gear or the app menu - so none of it may be
 // imported at startup, and this file is the lazy entry.
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useSettings } from "../../prefs/SettingsContext";
 import type { Strings } from "../../i18n/strings";
 import type { FixedShortcutGroup } from "../../registry/fixed-shortcuts";
@@ -19,13 +19,14 @@ import { SettingsDialog } from "./settings-dialog";
 import { SettingsNavColumn } from "./settings-nav-column";
 import { SettingsContent } from "./settings-content";
 import { SettingsPhone } from "./settings-phone";
-import { useSettingsDialogSearch } from "./settings-search";
-import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
+import type { SearchablePage } from "../../settings/SettingsSearch";
+import { useSettingsPageSearch } from "./use-settings-page-search";
+import { settingsContentProps } from "./settings-content-props";
 import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
 import { PluginDetail } from "../../settings/pages/PluginDetail";
 import { AboutPage } from "../../settings/pages/AboutPage";
 import { pluginName, pluginRecord } from "../../plugins/store/plugin-records";
-import { isImeKeydown } from "../../utils/ime";
+import { useSettingsImeEscape } from "./use-settings-ime-escape";
 import {
   PLUGIN_PAGE_PREFIX,
   showSettingsDialog,
@@ -94,15 +95,7 @@ export function SettingsHost(props: {
   const content = useRef<HTMLDivElement>(null);
   const marginAvailable = useMarginAvailable();
 
-  // The engine's Escape rule wins: an Escape that ends a compose
-  // belongs to the input method, never to the dialog.
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isImeKeydown(e)) e.stopPropagation();
-    };
-    document.addEventListener("keydown", onKeyDown, true);
-    return () => document.removeEventListener("keydown", onKeyDown, true);
-  }, []);
+  useSettingsImeEscape();
 
   const def = (id: string): SettingsPageDef => {
     if (id === "updates") {
@@ -122,28 +115,29 @@ export function SettingsHost(props: {
   };
 
   const pages = settingsPages();
+  const contentProps = (
+    page: SettingsPageDef,
+    onOpenPage: (id: string) => void,
+  ) =>
+    settingsContentProps({
+      t,
+      page,
+      onOpenPage,
+      onClose: props.onClose,
+      marginAvailable,
+      fixedShortcuts: props.fixedShortcuts,
+      pluginCommands: props.pluginCommands,
+      onOpenFile: props.onOpenFile,
+      onFilesDeleted: props.onFilesDeleted,
+      docPath: props.docPath,
+      folderRoot: props.folderRoot,
+      openPaths: props.openPaths,
+    });
   const searchPages: SearchablePage[] = [
     ...pages.map((page) => ({
       key: page.id,
       name: page.label(t),
-      render: () => (
-        <SettingsContent
-          t={t}
-          page={page}
-          onOpenPage={() => {}}
-          onClose={props.onClose}
-          marginAvailable={marginAvailable}
-          folderRoot={props.folderRoot ?? null}
-          openPaths={props.openPaths ?? []}
-          fixedShortcuts={props.fixedShortcuts}
-          pluginCommands={props.pluginCommands}
-          {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
-          {...(props.onFilesDeleted
-            ? { onFilesDeleted: props.onFilesDeleted }
-            : {})}
-          {...(props.docPath !== undefined ? { docPath: props.docPath } : {})}
-        />
-      ),
+      render: () => <SettingsContent {...contentProps(page, () => {})} />,
     })),
     ...(pageId.startsWith(PLUGIN_PAGE_PREFIX)
       ? [
@@ -151,22 +145,14 @@ export function SettingsHost(props: {
             key: pageId,
             name: def(pageId).label(t),
             render: () => (
-              <SettingsContent
-                t={t}
-                page={def(pageId)}
-                onOpenPage={() => {}}
-                onClose={props.onClose}
-                marginAvailable={marginAvailable}
-                folderRoot={props.folderRoot ?? null}
-                openPaths={props.openPaths ?? []}
-              />
+              <SettingsContent {...contentProps(def(pageId), () => {})} />
             ),
           },
         ]
       : []),
   ];
 
-  const search = useSettingsDialogSearch({
+  const search = useSettingsPageSearch({
     t,
     pages: searchPages,
     owns: true,
@@ -174,9 +160,10 @@ export function SettingsHost(props: {
       setPageId(match.entry.page);
       setJump(match.entry);
     },
+    content,
+    jump,
+    clearJump: () => setJump(null),
   });
-
-  useReveal(content, jump, () => setJump(null));
 
   // A phone takes the page form - fullscreen, list first, the section
   // pushed under a back row (settings-phone.tsx); the dialog is the
@@ -233,20 +220,7 @@ export function SettingsHost(props: {
         ) : (
           <SettingsContent
             key={pageId}
-            t={t}
-            page={def(pageId)}
-            onOpenPage={setPageId}
-            onClose={props.onClose}
-            marginAvailable={marginAvailable}
-            folderRoot={props.folderRoot ?? null}
-            openPaths={props.openPaths ?? []}
-            fixedShortcuts={props.fixedShortcuts}
-            pluginCommands={props.pluginCommands}
-            {...(props.onOpenFile ? { onOpenFile: props.onOpenFile } : {})}
-            {...(props.onFilesDeleted
-              ? { onFilesDeleted: props.onFilesDeleted }
-              : {})}
-            {...(props.docPath !== undefined ? { docPath: props.docPath } : {})}
+            {...contentProps(def(pageId), setPageId)}
           />
         )}
       </div>

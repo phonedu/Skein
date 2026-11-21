@@ -58,6 +58,7 @@ vi.mock("../../settings/sections/custom-provider", () => ({
 }));
 vi.mock("../../settings/sections/agent", () => ({
   ModelListRow: () => <div data-testid="model-list" />,
+  useModelListShown: () => true,
   AgentModelSection: () => null,
   WritingModelSection: () => null,
   AgentSystemPromptSection: () => null,

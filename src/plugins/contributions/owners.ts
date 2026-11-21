@@ -24,10 +24,10 @@ export const claimKey = {
   editor: (pattern: string) => `editor:${pattern.toLowerCase()}`,
   hover: (kind: string) => `hover:${kind}`,
   embed: (kind: string) => `embed:${kind}`,
+  /** A front matter key's place among the file patterns an editor
+   *  claims. */
+  frontMatter: (key: string) => `front-matter:${key}`,
 };
-
-/** A front matter key's place among the file patterns an editor claims. */
-export const frontMatterClaim = (key: string) => `front-matter:${key}`;
 
 /** The plugin that does `claim` now, if any is on. */
 export function ownerOf(claim: string): string | null {
@@ -70,7 +70,7 @@ export function ownedClaims(
       .filter((editor) => editor.priority === "default")
       .flatMap((editor) => [
         ...editor.filenamePatterns,
-        ...editor.frontMatter.map(frontMatterClaim),
+        ...editor.frontMatter.map(claimKey.frontMatter),
       ])
       .map(claimKey.editor),
     ...contributes.hovers.map(claimKey.hover),

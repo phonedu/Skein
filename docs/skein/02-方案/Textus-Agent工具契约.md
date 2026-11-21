@@ -555,15 +555,15 @@ export interface AuditEntry {
 
 ## 8. 阶段 1：插件实现映射
 
-| 工具                         | 实现方式                                                 | 风险                             |
-| ---------------------------- | -------------------------------------------------------- | -------------------------------- |
-| `search_notes`               | 工作区元数据索引 + Front Matter                          | 索引可能滞后                     |
-| `resolve_assets_for_trigger` | 索引 + `trigger.stage` 过滤                              | 触发字段可能缺失                 |
-| `read_note`                  | 读取文件并解析                                           | 大文件需要截断                   |
-| `create_draft`               | 通用文件写入到草稿目录                                   | 可绕过目录约定                   |
-| `propose_patch`              | 内存中生成 diff                                          | 无副作用                         |
+| 工具                         | 实现方式                                            | 风险                             |
+| ---------------------------- | --------------------------------------------------- | -------------------------------- |
+| `search_notes`               | 工作区元数据索引 + Front Matter                     | 索引可能滞后                     |
+| `resolve_assets_for_trigger` | 索引 + `trigger.stage` 过滤                         | 触发字段可能缺失                 |
+| `read_note`                  | 读取文件并解析                                      | 大文件需要截断                   |
+| `create_draft`               | 通用文件写入到草稿目录                              | 可绕过目录约定                   |
+| `propose_patch`              | 内存中生成 diff                                     | 无副作用                         |
 | `request_confirm`            | `ui.confirm` 后调用 `files.process`（token 版本化） | 确认来自插件，不是宿主           |
-| `record_use`                 | `files.process` 修改计数字段（token 版本化）              | 可能与编辑冲突（token 重试处理） |
+| `record_use`                 | `files.process` 修改计数字段（token 版本化）        | 可能与编辑冲突（token 重试处理） |
 
 关键说明：
 

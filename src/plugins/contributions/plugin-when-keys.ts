@@ -7,16 +7,20 @@ import type { WhenContext } from "./when";
  */
 const keys = new Map<string, string | boolean>();
 
-/** Whether `key` is one of `plugin`'s own. */
-export const ownWhenKey = (plugin: string, key: string): boolean =>
-  key.startsWith(`${plugin}.`) && key.length > plugin.length + 1;
+/** A plugin's own context keys. */
+export const ownWhen = {
+  /** Whether `key` is one of `plugin`'s own. */
+  is(plugin: string, key: string): boolean {
+    return key.startsWith(`${plugin}.`) && key.length > plugin.length + 1;
+  },
+};
 
 export function setPluginWhenKey(
   plugin: string,
   key: string,
   value: unknown,
 ): void {
-  if (!ownWhenKey(plugin, key))
+  if (!ownWhen.is(plugin, key))
     throw new Error(`A context key must start with "${plugin}.".`);
   if (value === undefined || value === null || value === false)
     keys.delete(key);
@@ -30,5 +34,5 @@ export function pluginWhenKeys(): WhenContext {
 
 export function forgetPluginWhenKeys(plugin: string): void {
   for (const key of [...keys.keys()])
-    if (ownWhenKey(plugin, key)) keys.delete(key);
+    if (ownWhen.is(plugin, key)) keys.delete(key);
 }

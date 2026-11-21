@@ -94,7 +94,11 @@ export const TreeContext = createContext<TreeShared | null>(null);
  *  folders are read again, so a re-read doesn't draw every row. */
 export type TreeRowActions = Pick<
   TreeShared,
-  "onRowMenu" | "onRowHold" | "onRowPointerDown" | "openInNewWindow" | "onRowPick"
+  | "onRowMenu"
+  | "onRowHold"
+  | "onRowPointerDown"
+  | "openInNewWindow"
+  | "onRowPick"
 >;
 
 export const TreeRowActionsContext = createContext<TreeRowActions | null>(null);

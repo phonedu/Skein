@@ -28,7 +28,9 @@ const GLYPHS = {
 
 function* files(dir) {
   for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
+    // Forward slashes everywhere: ALLOWED_FILES is written that way, and
+    // Windows paths would otherwise never match it.
+    const path = join(dir, name).replaceAll("\\", "/");
     if (statSync(path).isDirectory()) yield* files(path);
     else if (name.endsWith(".css")) yield path;
   }

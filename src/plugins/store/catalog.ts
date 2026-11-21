@@ -1,8 +1,6 @@
 import { fill } from "../../i18n/fill";
-import {
-  plugins as pluginsIpc,
-  type PluginCatalogEntry,
-} from "../../platform/ipc";
+import { plugins as pluginsIpc } from "../../platform/ipc";
+import type { CatalogEntry_Serialize as PluginCatalogEntry } from "../../platform/bindings/plugins";
 import type { SkillEntry_Serialize as SkillEntry } from "../../platform/bindings/plugins";
 import { parseManifest } from "./manifest";
 import { type PluginManifest } from "./manifest-types";

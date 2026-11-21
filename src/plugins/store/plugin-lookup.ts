@@ -4,7 +4,7 @@ import { currentStrings } from "../../i18n/current";
 import { PLUGIN_SETTINGS } from "../../registry/menu/plugin-menu";
 import { basename, isNoteFile } from "../../utils/path";
 import { localize, matchesFilename } from "./manifest";
-import { claimKey, frontMatterClaim, ownerOf } from "../contributions/owners";
+import { claimKey, ownerOf } from "../contributions/owners";
 import {
   pluginsSnapshot,
   runningPlugins,
@@ -61,7 +61,7 @@ export function customEditorForContent(
         editor.frontMatter.some(
           (key) =>
             keys.includes(key) &&
-            (ownerOf(claimKey.editor(frontMatterClaim(key))) ?? record.id) ===
+            (ownerOf(claimKey.editor(claimKey.frontMatter(key))) ?? record.id) ===
               record.id,
         )
       )

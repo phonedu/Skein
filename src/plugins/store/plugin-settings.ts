@@ -1,6 +1,6 @@
 import {
   evaluateWhen,
-  whenKeys,
+  whenClause,
   type WhenContext,
 } from "../contributions/when";
 import { ownError } from "../../utils/error-text";
@@ -126,7 +126,7 @@ export function settingShown(
 ): boolean {
   if (!when) return true;
   const context: WhenContext = {};
-  for (const key of whenKeys(when)) {
+  for (const key of whenClause.keys(when)) {
     const v = value(key);
     context[key] =
       typeof v === "boolean" || v === undefined

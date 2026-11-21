@@ -73,6 +73,10 @@ export default tseslint.config(
       ".claude/**",
       // The save round-trip corpus: downloaded third-party files.
       ".cache/**",
+      // Local design scratch (gitignored), kept out of the build and checks.
+      ".ryugi/**",
+      "store/**",
+      ".tmp-s1-s3/**",
     ],
   },
   js.configs.recommended,

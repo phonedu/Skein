@@ -15,16 +15,16 @@
 
 ### 最小改动集（按优先级）
 
-| # | 改动 | 位置 | 量级 | 是否 spike 必须 |
-| --- | --- | --- | --- | --- |
-| 1 | manifest 加 `"ios"` | `[P]/plugins/catvinci.cloud-sync/textus-plugin.json:13` | 1 行 | 必须 |
-| 2 | Android 默认库指向 App Documents（普通路径，无需权限） | `[T]/src/platform/ios-files.ts:180-191`、`[T]/src/app/useOpenFolder.ts:92-118`、`[T]/src/platform/ipc-files.ts:49-60` | 2-3 人日 | 必须（否则只能用 SAF 或“所有文件”） |
-| 3 | App 管理的移动端 trash，接到 `files.trash` | `[T]/src-tauri/src/atomic.rs:400-416`、`[T]/src-tauri/src/plugins/access.rs:292-306`、Kotlin | 3-5 人日（不含恢复 UI） | 只要测删除就必须 |
-| 4 | 空扫描保护（base 非空而本地 0 文件时中止，不按删除处理） | `[P]/development/cloud-sync/src/engine.ts:151-170`、`src/planner.ts:35-58` | 0.5 人日 | 必须（防远端被清空） |
-| 5 | 手机插件入口（状态/命令/面板） | `[T]/src/app/App.tsx:197-227`、`src/phone/PhoneHome.tsx:90-144` | 2-4 人日 | 建议（设置页可临时替代） |
-| 6 | content:// 解禁 + 路径规范化 + 隐藏文件校验 | `[T]/src/platform/content-plugin-fs.ts:21-54`、`src/plugins/host/scoped-root.ts` | 3-5 人日 | 仅 SAF 路线需要 |
-| 7 | Kotlin list/stat 返回 size/lastModified、二进制写 | `[T]/src-tauri/plugins/textus-files/android/src/main/java/TextusFilesPlugin.kt:186-243` | 3-5 人日 | 仅 SAF 路线需要 |
-| 8 | 后台同步 | 需 Rust 内置 + WorkManager/前台服务 | 4-8 周 | 后置 |
+| #   | 改动                                                     | 位置                                                                                                                     | 量级                    | 是否 spike 必须                     |
+| --- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------- | ----------------------------------- |
+| 1   | manifest 加 `"ios"`                                      | `[P]/plugins/catvinci.cloud-sync/textus-plugin.json:13`                                                                  | 1 行                    | 必须                                |
+| 2   | Android 默认库指向 App Documents（普通路径，无需权限）   | `[T]/src/platform/native-files.ts:180-191`、`[T]/src/app/useOpenFolder.ts:92-118`、`[T]/src/platform/ipc-files.ts:49-60` | 2-3 人日                | 必须（否则只能用 SAF 或“所有文件”） |
+| 3   | App 管理的移动端 trash，接到 `files.trash`               | `[T]/src-tauri/src/atomic.rs:400-416`、`[T]/src-tauri/src/plugins/access.rs:292-306`、Kotlin                             | 3-5 人日（不含恢复 UI） | 只要测删除就必须                    |
+| 4   | 空扫描保护（base 非空而本地 0 文件时中止，不按删除处理） | `[P]/development/cloud-sync/src/engine.ts:151-170`、`src/planner.ts:35-58`                                               | 0.5 人日                | 必须（防远端被清空）                |
+| 5   | 手机插件入口（状态/命令/面板）                           | `[T]/src/app/App.tsx:197-227`、`src/phone/PhoneHome.tsx:90-144`                                                          | 2-4 人日                | 建议（设置页可临时替代）            |
+| 6   | content:// 解禁 + 路径规范化 + 隐藏文件校验              | `[T]/src/platform/content-plugin-fs.ts:21-54`、`src/plugins/host/scoped-root.ts`                                         | 3-5 人日                | 仅 SAF 路线需要                     |
+| 7   | Kotlin list/stat 返回 size/lastModified、二进制写        | `[T]/src-tauri/plugins/textus-files/android/src/main/java/TextusFilesPlugin.kt:186-243`                                  | 3-5 人日                | 仅 SAF 路线需要                     |
+| 8   | 后台同步                                                 | 需 Rust 内置 + WorkManager/前台服务                                                                                      | 4-8 周                  | 后置                                |
 
 ---
 
@@ -32,36 +32,36 @@
 
 图例：**可用** / **受限** / **不可用** / **需原生**。“普通路径”指 App Documents（`getExternalFilesDir(Documents)`，无需权限）或“所有文件访问”授权目录，两者对插件 API 能力相同，差别在授权方式。
 
-| API / 能力 | 普通路径 | content:// SAF | 桌面 | 证据与说明 |
-| --- | --- | --- | --- | --- |
-| `files.root` | 可用 | 可用 | 可用 | content 下唯一不被 gate 的：`broker-files.ts:116` 直接返回 `p.folder()` |
-| `files.list` | 可用（size/mtime 齐全） | 不可用（当前）→ 解禁后受限 | 可用 | gate：`scoped-root.ts:15-21`；解禁后 Kotlin 只列 3 列（`TextusFilesPlugin.kt:189-193`），`size=0, mtime=null`（`content-plugin-fs.ts:34-44`） |
-| `files.stat` | 可用 | 不可用（当前）→ 解禁后受限 | 可用 | content 实现靠列父目录再按 URL 字符串比对（`content-plugin-fs.ts:46-54`）；调用方自行拼 content URL 时永远匹配不上（见 §3 P0-3） |
-| `files.read` | 可用（Rust 原始字节） | 不可用（当前）→ 解禁后受限 | 可用 | content 走整文件 base64（`content-plugin-fs.ts:92-93`、`TextusFilesPlugin.kt:160-169`），无流式、无大小上限 |
-| `files.write`（文本） | 可用且原子 | 不可用（当前）→ 解禁后受限 | 可用 | 普通路径 temp+rename：`src-tauri/src/atomic.rs:61-100`；content 只有 `openOutputStream("wt")` 截断写（`TextusFilesPlugin.kt:171-183`） |
-| `files.write`（二进制/base64） | 可用 | **不可用** | 可用 | 显式抛错：`content-plugin-fs.ts:108-110` |
-| `files.create` | 可用（`create_new`） | 不可用（当前）→ 解禁后受限 | 可用 | `src-tauri/src/plugins/files.rs:37-68`；content 为 stat→createEntry，竞态窗口（`content-plugin-fs.ts:115-119`） |
-| `files.rename` | 可用（同卷 rename；跨卷在移动端失败） | 不可用（当前）→ 解禁后受限 | 可用 | 跨卷回退依赖 trash：`atomic.rs:302-316`（`try_trash` 在移动端恒 false）；content 用 `moveDocument/renameDocument`（`TextusFilesPlugin.kt:226-237`），provider 可能不支持 |
-| `files.trash` | **不可用** | **不可用** | 可用 | 普通路径：`atomic.rs:400-416` 的 `#[cfg(not(desktop))]` 直接返回错误；content：`content-plugin-fs.ts:137-141` 显式抛错；`ipc-plugins.ts:149-153` 路由 |
-| `files.process` | 可用（token + 原子写；脏 tab 走编辑器一次 undo） | 不可用（当前）→ 解禁后受限 | 可用 | `broker-files.ts:88-104`、`src-tauri/src/plugins/files.rs:87-143`；content 的 `readText` 有损 UTF-8、写非原子 |
-| `files.find` | 可用 | 不可用（当前）→ 解禁后受限 | 可用 | 普通路径 `index_folder`；content 走 JS 树（`scoped-folder.ts:17-36`，5000 上限）；`plugin_fs_documents` 无 content 路由（`ipc-plugins.ts:140-142`） |
-| `files.conventions` / `appSettings` | 可用 | 不可用 | 可用 | 均为 Rust `Path` 实现（`src-tauri/src/plugins/files.rs:249-276`） |
-| `metadata.*` | 可用 | 不可用 | 可用 | Rust 索引 + `checked_root`（`src-tauri/src/plugins/metadata.rs:445-487`） |
-| `ctx.storage.global` | 可用 | 可用 | 可用 | 落在 app 配置目录；但 base 以 root 字符串哈希为 key（`src/settings.ts:33-36`） |
-| `ctx.storage.project` | 可用 | 不可用 | 可用 | 需要 `.textus/plugins/<id>` 普通路径（`src-tauri/src/plugins/store.rs:36-73`） |
-| `ctx.secrets` | 可用 | 可用 | 可用 | 明文 JSON：`src-tauri/src/plugins/files.rs:145-164`；Auto Backup 风险见 §3 |
-| `api.net.fetch` | 可用 | 可用 | 可用 | HTTPS-only（localhost 例外）：`src-tauri/src/plugins/access.rs:355-365`；32MB 上限：`http.rs:16`；10s/60s 超时：`http.rs:76` |
-| `ui.confirm/form/pick` | 可用 | 可用 | 可用 | 手机为 ActionSheet/对话框；cloud-sync 的 `ui.confirm` 可用（`src/plugins/host/broker-ui.ts`） |
-| `statusItem` | 受限（手机不可见，平板/桌面可见） | 同左 | 可用 | 只在 `WindowBar` 渲染（`src/app/frame/WindowBar.tsx:75-76,138`），而手机不挂 `WindowBar`（`src/app/App.tsx:197-227`） |
-| `views.registerWebview` / `registerSettingsPage` | 可用（设置页） | 同左 | 可用 | 设置页走 `PluginSettingsWebview`（`src/settings/pages/PluginPage.tsx:236-240`） |
-| `layout.openView` / `layout.open` 导航 | 受限（打开后手机不切换页面） | 同左 | 可用 | `openPluginTab` 只改 active tab（`src/app/usePluginWindow.ts:352-365`）；`phoneView` 仅三处被设置（`src/app/App.tsx:88,210,269,273`） |
-| `layout.tabs` | 可用（返回窗口全部 tab） | 可用 | 可用 | `broker-layout.ts:137-141`；手机没有 tab 条但 tab 仍存在（`App.tsx:281`） |
-| `l10n` | 可用 | 可用 | 可用 | manifest l10n → runtime |
-| `commands.register` | 可用（注册/执行），手机无入口 | 同左 | 可用 | 手机菜单不可达：`AppMenuButton` 只在 `WindowBar`（`src/app/frame/WindowControls.tsx:17`、`WindowBar.tsx:103,108`）；Settings›Shortcuts 手机不显示（`docs/dev/ios-code-map.md:131`） |
-| `menus`（`app/plugins`） | 受限（不可达） | 受限 | 可用 | `buildMobileMenu` 存在（`src/registry/menu/app-menu-model.ts:315-378`）但宿主不渲染 |
-| `menus`（`file/context`） | 可用（长按文件） | 可用 | 可用 | `src/files/FileTree.tsx:143-144`、`src/files/useRowMenu.ts:160-169` |
-| `app.state` / `onDidChangeState` | **不可用**（恒为 active） | 不可用 | 可用 | `app_state` 命令 desktop-only（`src-tauri/src/invoke_handler.rs:301-303`），`watchAppState` 只在桌面后台宿主调用（`src/plugins/background/schedule-window.ts:49`） |
-| `schedule` / `background` | 不可用 | 不可用 | 可用 | `src-tauri/src/schedule/mod.rs:10-21`；带 background 的 manifest 被强制 desktop（`src/plugins/store/manifest.ts:102-125`） |
+| API / 能力                                       | 普通路径                                         | content:// SAF             | 桌面 | 证据与说明                                                                                                                                                                          |
+| ------------------------------------------------ | ------------------------------------------------ | -------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `files.root`                                     | 可用                                             | 可用                       | 可用 | content 下唯一不被 gate 的：`broker-files.ts:116` 直接返回 `p.folder()`                                                                                                             |
+| `files.list`                                     | 可用（size/mtime 齐全）                          | 不可用（当前）→ 解禁后受限 | 可用 | gate：`scoped-root.ts:15-21`；解禁后 Kotlin 只列 3 列（`TextusFilesPlugin.kt:189-193`），`size=0, mtime=null`（`content-plugin-fs.ts:34-44`）                                       |
+| `files.stat`                                     | 可用                                             | 不可用（当前）→ 解禁后受限 | 可用 | content 实现靠列父目录再按 URL 字符串比对（`content-plugin-fs.ts:46-54`）；调用方自行拼 content URL 时永远匹配不上（见 §3 P0-3）                                                    |
+| `files.read`                                     | 可用（Rust 原始字节）                            | 不可用（当前）→ 解禁后受限 | 可用 | content 走整文件 base64（`content-plugin-fs.ts:92-93`、`TextusFilesPlugin.kt:160-169`），无流式、无大小上限                                                                         |
+| `files.write`（文本）                            | 可用且原子                                       | 不可用（当前）→ 解禁后受限 | 可用 | 普通路径 temp+rename：`src-tauri/src/atomic.rs:61-100`；content 只有 `openOutputStream("wt")` 截断写（`TextusFilesPlugin.kt:171-183`）                                              |
+| `files.write`（二进制/base64）                   | 可用                                             | **不可用**                 | 可用 | 显式抛错：`content-plugin-fs.ts:108-110`                                                                                                                                            |
+| `files.create`                                   | 可用（`create_new`）                             | 不可用（当前）→ 解禁后受限 | 可用 | `src-tauri/src/plugins/files.rs:37-68`；content 为 stat→createEntry，竞态窗口（`content-plugin-fs.ts:115-119`）                                                                     |
+| `files.rename`                                   | 可用（同卷 rename；跨卷在移动端失败）            | 不可用（当前）→ 解禁后受限 | 可用 | 跨卷回退依赖 trash：`atomic.rs:302-316`（`try_trash` 在移动端恒 false）；content 用 `moveDocument/renameDocument`（`TextusFilesPlugin.kt:226-237`），provider 可能不支持            |
+| `files.trash`                                    | **不可用**                                       | **不可用**                 | 可用 | 普通路径：`atomic.rs:400-416` 的 `#[cfg(not(desktop))]` 直接返回错误；content：`content-plugin-fs.ts:137-141` 显式抛错；`ipc-plugins.ts:149-153` 路由                               |
+| `files.process`                                  | 可用（token + 原子写；脏 tab 走编辑器一次 undo） | 不可用（当前）→ 解禁后受限 | 可用 | `broker-files.ts:88-104`、`src-tauri/src/plugins/files.rs:87-143`；content 的 `readText` 有损 UTF-8、写非原子                                                                       |
+| `files.find`                                     | 可用                                             | 不可用（当前）→ 解禁后受限 | 可用 | 普通路径 `index_folder`；content 走 JS 树（`scoped-folder.ts:17-36`，5000 上限）；`plugin_fs_documents` 无 content 路由（`ipc-plugins.ts:140-142`）                                 |
+| `files.conventions` / `appSettings`              | 可用                                             | 不可用                     | 可用 | 均为 Rust `Path` 实现（`src-tauri/src/plugins/files.rs:249-276`）                                                                                                                   |
+| `metadata.*`                                     | 可用                                             | 不可用                     | 可用 | Rust 索引 + `checked_root`（`src-tauri/src/plugins/metadata.rs:445-487`）                                                                                                           |
+| `ctx.storage.global`                             | 可用                                             | 可用                       | 可用 | 落在 app 配置目录；但 base 以 root 字符串哈希为 key（`src/settings.ts:33-36`）                                                                                                      |
+| `ctx.storage.project`                            | 可用                                             | 不可用                     | 可用 | 需要 `.textus/plugins/<id>` 普通路径（`src-tauri/src/plugins/store.rs:36-73`）                                                                                                      |
+| `ctx.secrets`                                    | 可用                                             | 可用                       | 可用 | 明文 JSON：`src-tauri/src/plugins/files.rs:145-164`；Auto Backup 风险见 §3                                                                                                          |
+| `api.net.fetch`                                  | 可用                                             | 可用                       | 可用 | HTTPS-only（localhost 例外）：`src-tauri/src/plugins/access.rs:355-365`；32MB 上限：`http.rs:16`；10s/60s 超时：`http.rs:76`                                                        |
+| `ui.confirm/form/pick`                           | 可用                                             | 可用                       | 可用 | 手机为 ActionSheet/对话框；cloud-sync 的 `ui.confirm` 可用（`src/plugins/host/broker-ui.ts`）                                                                                       |
+| `statusItem`                                     | 受限（手机不可见，平板/桌面可见）                | 同左                       | 可用 | 只在 `WindowBar` 渲染（`src/app/frame/WindowBar.tsx:75-76,138`），而手机不挂 `WindowBar`（`src/app/App.tsx:197-227`）                                                               |
+| `views.registerWebview` / `registerSettingsPage` | 可用（设置页）                                   | 同左                       | 可用 | 设置页走 `PluginSettingsWebview`（`src/settings/pages/PluginPage.tsx:236-240`）                                                                                                     |
+| `layout.openView` / `layout.open` 导航           | 受限（打开后手机不切换页面）                     | 同左                       | 可用 | `openPluginTab` 只改 active tab（`src/app/usePluginWindow.ts:352-365`）；`phoneView` 仅三处被设置（`src/app/App.tsx:88,210,269,273`）                                               |
+| `layout.tabs`                                    | 可用（返回窗口全部 tab）                         | 可用                       | 可用 | `broker-layout.ts:137-141`；手机没有 tab 条但 tab 仍存在（`App.tsx:281`）                                                                                                           |
+| `l10n`                                           | 可用                                             | 可用                       | 可用 | manifest l10n → runtime                                                                                                                                                             |
+| `commands.register`                              | 可用（注册/执行），手机无入口                    | 同左                       | 可用 | 手机菜单不可达：`AppMenuButton` 只在 `WindowBar`（`src/app/frame/WindowControls.tsx:17`、`WindowBar.tsx:103,108`）；Settings›Shortcuts 手机不显示（`docs/dev/ios-code-map.md:131`） |
+| `menus`（`app/plugins`）                         | 受限（不可达）                                   | 受限                       | 可用 | `buildMobileMenu` 存在（`src/registry/menu/app-menu-model.ts:315-378`）但宿主不渲染                                                                                                 |
+| `menus`（`file/context`）                        | 可用（长按文件）                                 | 可用                       | 可用 | `src/files/FileTree.tsx:143-144`、`src/files/useRowMenu.ts:160-169`                                                                                                                 |
+| `app.state` / `onDidChangeState`                 | **不可用**（恒为 active）                        | 不可用                     | 可用 | `app_state` 命令 desktop-only（`src-tauri/src/invoke_handler.rs:301-303`），`watchAppState` 只在桌面后台宿主调用（`src/plugins/background/schedule-window.ts:49`）                  |
+| `schedule` / `background`                        | 不可用                                           | 不可用                     | 可用 | `src-tauri/src/schedule/mod.rs:10-21`；带 background 的 manifest 被强制 desktop（`src/plugins/store/manifest.ts:102-125`）                                                          |
 
 ### 2.3 两条存储路线的实际差别
 
@@ -73,12 +73,12 @@
 - 权限：
   - App Documents：`getExternalFilesDir(DIRECTORY_DOCUMENTS)`（Tauri 2.12.5 `PathPlugin.kt:73-75`），**无需任何权限**，但用户在系统文件管理器里看不到（Android 11+ 限制 `Android/data`），卸载即删。
   - 所有文件授权：`MANAGE_EXTERNAL_STORAGE` app-op，重启/更新后保留，用户可在系统设置撤销；华为/应用市场审核有政策风险。
-- 重启：路径稳定，可用；但当前 Android 不把 App Documents 作为树根（`useIOSDocumentsFolder` 只对 iOS 生效，`[T]/src/platform/ios-files.ts:180-191`），需要第 2 项改动。
+- 重启：路径稳定，可用；但当前 Android 不把 App Documents 作为树根（`useIOSDocumentsFolder` 只对 iOS 生效，`[T]/src/platform/native-files.ts:180-191`），需要第 2 项改动。
 - 单窗格：`canUseWindows=false`（`capabilities.ts:30`），无会话恢复；单窗格不影响普通路径。
 
 **content:// SAF**
 
-- 能做（App 自身）：系统树选择、列目录、新建/重命名/移动/删除、纯文本打开与保存、图片只读显示（`scopedImageSrc`，`ios-files.ts:149-157`）、插件设置的读取。
+- 能做（App 自身）：系统树选择、列目录、新建/重命名/移动/删除、纯文本打开与保存、图片只读显示（`scopedImageSrc`，`native-files.ts:149-157`）、插件设置的读取。
 - 不能做：插件文件 API（gate）；二进制写；原子写；trash；mtime/size；隐藏文件策略；metadata/project storage；保存时冲突提示；后台。
 - 性能：每次 list/read 都走 JS→Rust→Kotlin→ContentResolver；读整文件再 base64；`stat` 列父目录；无 mtime 导致每次全量重读（见 §3 P1-3）。
 - 权限持久化：`takePersistableUriPermission`（`TextusFilesPlugin.kt:133-135`）；支持持久授权的 provider 重启后可用。provider 不支持时 `runCatching` 静默失败，只在当前进程有效。系统对 persisted grant 有数量上限；卸载清除。
@@ -112,14 +112,14 @@
 
 **删除语义会怎么变**：
 
-| 维度 | 桌面系统回收站 | App trash |
-| --- | --- | --- |
-| 用户预期 | Finder/资源管理器可恢复 | 只能在 App 内恢复；需先有入口 |
-| 远端 | 删除后其他端各自进系统回收站 | 删除后其他端（含旧客户端）看到的是“文件消失”，行为不变 |
+| 维度         | 桌面系统回收站                          | App trash                                                                     |
+| ------------ | --------------------------------------- | ----------------------------------------------------------------------------- |
+| 用户预期     | Finder/资源管理器可恢复                 | 只能在 App 内恢复；需先有入口                                                 |
+| 远端         | 删除后其他端各自进系统回收站            | 删除后其他端（含旧客户端）看到的是“文件消失”，行为不变                        |
 | base/history | v1 base 删除路径；远端 history 保留版本 | 同左；v1 的 `trash` 墓碑数组实际上只读不写（`engine.ts:161,397`），不影响兼容 |
-| 恢复 | 系统级 | App 级，需要保留元数据与路径 |
-| 清理 | 系统负责 | 必须做保留期/容量上限（手机存储敏感） |
-| 旧客户端兼容 | — | 无协议变化，v1 格式不变 |
+| 恢复         | 系统级                                  | App 级，需要保留元数据与路径                                                  |
+| 清理         | 系统负责                                | 必须做保留期/容量上限（手机存储敏感）                                         |
+| 旧客户端兼容 | —                                       | 无协议变化，v1 格式不变                                                       |
 
 ### P0-3 插件自拼 content URL + 空扫描会误判“本地全删”
 
@@ -230,13 +230,13 @@
 
 行为矩阵：
 
-| 场景 | 前台-only（第一版） | 有 WorkManager/前台服务 |
-| --- | --- | --- |
-| 切后台（进程活） | WebView 定时器被节流，pacer 基本停摆；已发出的请求可能完成但 JS 回调延迟 | 前台服务可继续，WorkManager 受约束 |
-| 进程被杀/划掉 | 同步中止；普通路径安全（原子写），SAF 可能半截；base 未保存则下次重扫 | WorkManager 可重新调度；SAF 仍不原子 |
-| 锁屏 | 等同切后台 | 前台服务可继续；WorkManager 视 Doze |
-| Doze | 网络/定时器被挂起 | 前台服务通常豁免；WorkManager 等到维护窗口 |
-| EMUI 省电 | 可能直接冻结/杀掉；需用户把 Textus 加入“受保护应用/允许后台活动” | 仍可能被杀；必须真机验证 |
+| 场景             | 前台-only（第一版）                                                      | 有 WorkManager/前台服务                    |
+| ---------------- | ------------------------------------------------------------------------ | ------------------------------------------ |
+| 切后台（进程活） | WebView 定时器被节流，pacer 基本停摆；已发出的请求可能完成但 JS 回调延迟 | 前台服务可继续，WorkManager 受约束         |
+| 进程被杀/划掉    | 同步中止；普通路径安全（原子写），SAF 可能半截；base 未保存则下次重扫    | WorkManager 可重新调度；SAF 仍不原子       |
+| 锁屏             | 等同切后台                                                               | 前台服务可继续；WorkManager 视 Doze        |
+| Doze             | 网络/定时器被挂起                                                        | 前台服务通常豁免；WorkManager 等到维护窗口 |
+| EMUI 省电        | 可能直接冻结/杀掉；需用户把 Textus 加入“受保护应用/允许后台活动”         | 仍可能被杀；必须真机验证                   |
 
 **最少可接受的第一版**：只做前台。用插件自身的 `document.visibilitychange`（iframe 会跟随顶层页面）在回到前台时触发一次 catch-up，加上启动时同步、保存后 debounce、可见时定时同步；UI 明确写“仅前台同步”。这不需要任何原生代码，也不改变现有 pacer 的结构。
 
@@ -252,16 +252,16 @@
 
 ### 3.6 网络
 
-| 条件 | 现状 |
-| --- | --- |
-| 前台 Wi‑Fi/LTE | 可用；无计量网络判断，无 Wi‑Fi Only |
-| 飞行模式/断网 | `networkError`，整次同步失败；无网络异常重试 |
-| 网络切换（Wi‑Fi↔LTE） | 在途请求失败，同步中止；下次重跑 |
-| 弱网 | 每请求总超时 60s（2MB 块在 <270kbps 时会超时） |
-| 系统代理（Wi‑Fi 代理） | 不读取；需在 Textus 设置里配 `proxyType/proxyHost/proxyPort`（`src-tauri/src/settings/app.rs:26-69`） |
-| TLS | rustls + 内置 webpki 根（`Cargo.toml:80`），不用 Android 系统 CA；企业/自签证书失败 |
-| HTTP WebDAV | 插件层拒绝（仅 localhost 允许 http，`access.rs:355-365`）；release manifest 也 `usesCleartextTraffic=false`（`gen/android/app/build.gradle.kts:21`） |
-| 后台 | Doze/节流；插件层不可用 |
+| 条件                   | 现状                                                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 前台 Wi‑Fi/LTE         | 可用；无计量网络判断，无 Wi‑Fi Only                                                                                                                  |
+| 飞行模式/断网          | `networkError`，整次同步失败；无网络异常重试                                                                                                         |
+| 网络切换（Wi‑Fi↔LTE）  | 在途请求失败，同步中止；下次重跑                                                                                                                     |
+| 弱网                   | 每请求总超时 60s（2MB 块在 <270kbps 时会超时）                                                                                                       |
+| 系统代理（Wi‑Fi 代理） | 不读取；需在 Textus 设置里配 `proxyType/proxyHost/proxyPort`（`src-tauri/src/settings/app.rs:26-69`）                                                |
+| TLS                    | rustls + 内置 webpki 根（`Cargo.toml:80`），不用 Android 系统 CA；企业/自签证书失败                                                                  |
+| HTTP WebDAV            | 插件层拒绝（仅 localhost 允许 http，`access.rs:355-365`）；release manifest 也 `usesCleartextTraffic=false`（`gen/android/app/build.gradle.kts:21`） |
+| 后台                   | Doze/节流；插件层不可用                                                                                                                              |
 
 ### 3.7 存储/电量/发热
 
@@ -280,34 +280,37 @@
 ### 4.1 三条测试轨（建议按顺序）
 
 **轨 0：App Documents 普通路径（1-2 天）**
+
 - 改动：让 Android 使用 `getExternalFilesDir(Documents)` 作为库根（复用 iOS 的 `useIOSDocumentsFolder` 逻辑并改名为移动端通用），手机首页可进入；“新建”直接写入该目录（复用 `newDocumentPath`）。
 - 目的：在不碰权限、不碰 SAF 的情况下验证插件数据通路、原子写、mtime、附件、WebView iframe、crypto。
 - 预期：除 `files.trash`、后台、状态条外全部通过。
 
 **轨 A：所有文件访问 + 用户文件夹（2-3 天）**
+
 - 改动：同轨 0，但根是用户通过系统选择器选的 `/storage/emulated/0/...`，允许 `MANAGE_EXTERNAL_STORAGE`。
 - 目的：验证 D0 的“目录授权 + 新建/修改/冲突检测”，以及华为的“所有文件访问”页面是否存在、授权是否稳定。
 - 预期：与桌面同能力（除 trash）；跨卷 move、文件夹删除仍不可用。
 
 **轨 B：SAF content://（1-2 天，先只验证失败边界）**
+
 - 不改 gate，只观察：插件是否被拒、提示是否出现、App 自身编辑是否正常、重启后 grant 是否还在。
 - 可选：临时解禁 gate + 修路径，只做“读取 + 上传”，**禁止删除和覆盖**，验证 §P0-3 的空扫描保护是否生效。
 - 预期：文本可读可上传；删除/下载/覆盖按已知错误失败，且不产生远端删除。
 
 ### 4.2 必须测的清单
 
-| 类别 | 用例 | 通过标准 |
-| --- | --- | --- |
-| 授权 | 允许/拒绝所有文件；SAF 选择；重启 3 次；24 小时后 | 根可用或明确报“库不可用”；不出现空树无提示 |
-| 基本同步 | 新建/修改/重命名/删除（本端/远端各一次）；新建子目录 | 远端 v1 head 正确；桌面端可读同一远端；删除不导致同步中止（轨 0/A 在 App trash 后） |
-| 冲突 | 两端同时改同一文件；一端删一端改 | 生成冲突副本；不静默丢任一侧；手机能看见副本 |
-| 打开中同步 | 文件在 tab 中（clean/dirty）；同步写它 | clean 原地重载一次 undo；dirty defer；不丢输入 |
-| 附件 | 图片/PDF 新增与更新；粘贴图片 | 轨 0/A 通过；轨 B 明确报不支持且不中止其他文件（或按设计中止并提示） |
-| 崩溃 | 上传/下载中断网；杀进程；锁屏；低电量 | 文件不半截（普通路径）；重启后 base 一致；无远端误删 |
-| 网络 | 飞行模式；Wi‑Fi↔LTE；弱网限速；系统代理；自签证书 | 失败可重试；错误可读；不产生损坏 |
-| 性能 | 500/2000 文件；10MB 附件；首同步与增量 | 见 4.3 数据 |
-| 后台 | 切后台 1/10 分钟；锁屏；Doze；EMUI 省电 | 明确记录“停/继续”；不产生半写 |
-| UI | 手机宽度下插件设置页、命令、History、状态条 | 至少设置页可用；其余缺口记录 |
+| 类别       | 用例                                                 | 通过标准                                                                            |
+| ---------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 授权       | 允许/拒绝所有文件；SAF 选择；重启 3 次；24 小时后    | 根可用或明确报“库不可用”；不出现空树无提示                                          |
+| 基本同步   | 新建/修改/重命名/删除（本端/远端各一次）；新建子目录 | 远端 v1 head 正确；桌面端可读同一远端；删除不导致同步中止（轨 0/A 在 App trash 后） |
+| 冲突       | 两端同时改同一文件；一端删一端改                     | 生成冲突副本；不静默丢任一侧；手机能看见副本                                        |
+| 打开中同步 | 文件在 tab 中（clean/dirty）；同步写它               | clean 原地重载一次 undo；dirty defer；不丢输入                                      |
+| 附件       | 图片/PDF 新增与更新；粘贴图片                        | 轨 0/A 通过；轨 B 明确报不支持且不中止其他文件（或按设计中止并提示）                |
+| 崩溃       | 上传/下载中断网；杀进程；锁屏；低电量                | 文件不半截（普通路径）；重启后 base 一致；无远端误删                                |
+| 网络       | 飞行模式；Wi‑Fi↔LTE；弱网限速；系统代理；自签证书    | 失败可重试；错误可读；不产生损坏                                                    |
+| 性能       | 500/2000 文件；10MB 附件；首同步与增量               | 见 4.3 数据                                                                         |
+| 后台       | 切后台 1/10 分钟；锁屏；Doze；EMUI 省电              | 明确记录“停/继续”；不产生半写                                                       |
+| UI         | 手机宽度下插件设置页、命令、History、状态条          | 至少设置页可用；其余缺口记录                                                        |
 
 ### 4.3 预期数据（用于判断是否继续）
 

@@ -23,6 +23,8 @@ export function useTreeContexts(
     /** Null where rows aren't touched (the desktop). */
     onRowHold: TreeRowActions["onRowHold"];
     onRowPointerDown: NonNullable<TreeRowActions["onRowPointerDown"]>;
+    /** A click with ⌘/Ctrl or Shift picks rows; null on a phone. */
+    onRowPick: NonNullable<TreeRowActions["onRowPick"]>;
     newDocumentLabel: string;
     setDraft: (draft: TreeDraft) => void;
     root: string;
@@ -33,16 +35,16 @@ export function useTreeContexts(
     onRootCount?: TreeShared["onRootCount"];
   },
 ): { rowActions: TreeRowActions; shared: TreeShared } {
-  const { desktop, onRowMenu, onRowHold, onRowPointerDown } = input;
+  const { desktop, onRowMenu, onRowHold, onRowPointerDown, onRowPick } = input;
   const rowActions = useMemo<TreeRowActions>(
     () => ({
       onRowMenu: desktop ? onRowMenu : null,
       onRowHold,
       onRowPointerDown: desktop ? onRowPointerDown : null,
       openInNewWindow: desktop ? openInNewWindow : null,
-      onRowPick: null,
+      onRowPick,
     }),
-    [desktop, onRowMenu, onRowHold, onRowPointerDown],
+    [desktop, onRowMenu, onRowHold, onRowPointerDown, onRowPick],
   );
   const {
     sort,

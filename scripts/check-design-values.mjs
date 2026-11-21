@@ -5,8 +5,9 @@
 // with "design: allow" on it or the line above. Exits 1 with a list of what strays.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("../src/", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("../src/", import.meta.url));
 // Spacing on the 4-point grid; 1 and 2 for hairlines and nudges.
 const onGrid = (n) => n <= 2 || n % 4 === 0;
 // Radii a token doesn't name: none, a hairline's.

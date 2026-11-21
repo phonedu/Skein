@@ -1,6 +1,6 @@
 # 发布闸门：Skein 与上游的隔离
 
-本仓是 `CatVinci-Studio/Textus` 的 fork。日常所有改动（代码、skein 文档、画板、
+本仓是 `CatVinci-Studio/Textus` 的 fork。日常所有改动（代码、skein 文档、
 任务清单）都发布到自己的 fork `phonedu/Skein`；上游只在接受 pull request 的
 意义上存在，而且**只有当我说"这个能上上游"时才碰**。本文是这件事的唯一流程。
 
@@ -169,7 +169,7 @@ git apply C:/Project/pr-<主题>.patch
 
 ## 永不上上游的清单
 
-- `base-ui-settings` 分支的全部内容：Base UI 设置页重建、界面改造、画板。
+- `base-ui-settings` 分支的全部内容：Base UI 设置页重建、界面改造（画板已于 2026-11-20 删除，仅留文档记录）。
 - 已规划的后续功能改动（见 `docs/skein/05-状态/Textus-改造任务清单.md`）。
 - `docs/skein/`、`.ryugi/`、`.githooks/` 目录本身。
 

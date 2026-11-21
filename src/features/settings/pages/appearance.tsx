@@ -12,7 +12,7 @@ import {
   ThemesTab,
 } from "../../../settings/sections/theme";
 import { AdvancedFold } from "../../../settings/sections/controls";
-import { PageGroup } from "../settings-content";
+import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
 

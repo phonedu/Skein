@@ -15,6 +15,7 @@ const ALLOWED: Record<string, string> = {
   "app/useOpenFolder.ts":
     "a reinstall moves Documents, and the AI's folder with it",
   "ai/chat/panel/agent-panel.tsx": "a docked panel drawn at its width",
+  "app/SettingsLayer.tsx": "the iPhone and iPad keep Settings in tabs",
   "editor/click-below-end.ts":
     "a tap beside a table: its caret went astray, onto a word it selected",
   "export/exporters.ts":

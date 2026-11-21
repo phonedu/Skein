@@ -1,4 +1,5 @@
 import type { SearchEntry } from "./settings-search";
+import { createSubscribers } from "../utils/store";
 
 /**
  * Settings on the desktop: one dialog floating over the window (the board
@@ -25,7 +26,7 @@ export interface SettingsDialogOpen {
 
 let dialog: SettingsDialogOpen | null = null;
 let requests = 0;
-const listeners = new Set<() => void>();
+const { subscribe, publish } = createSubscribers();
 
 export function settingsDialogOpen(): SettingsDialogOpen | null {
   return dialog;
@@ -33,19 +34,16 @@ export function settingsDialogOpen(): SettingsDialogOpen | null {
 
 export function showSettingsDialog(page = "general", jump?: SearchEntry): void {
   dialog = { page, jump, request: ++requests };
-  for (const listener of listeners) listener();
+  publish();
 }
 
 export function closeSettingsDialog(): void {
   if (!dialog) return;
   dialog = null;
-  for (const listener of listeners) listener();
+  publish();
 }
 
-export function onSettingsDialogChange(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
+export const onSettingsDialogChange = subscribe;
 
 /** Asks the window to show Settings at `page`, at a search result's row. */
 export const OPEN_SETTINGS_PAGE_EVENT = "textus:open-settings-page";
