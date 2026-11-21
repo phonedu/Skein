@@ -120,3 +120,21 @@ describe("writeDocFile", () => {
     expect(disk.written).toEqual([["/a.txt", "new\r\n"]]);
   });
 });
+
+it("adds a textus_id on a document save and keeps it on the next one", async () => {
+  disk.written.length = 0;
+  const id = "5f1c9a2e-4b7d-4c8a-9e3f-1a2b3c4d5e6f";
+  disk.read.mockResolvedValueOnce(`---\ntextus_id: ${id}\n---\n\nold\n`);
+  await writeDocFile("/a.md", "new\n", true);
+  expect(disk.written[0][1]).toContain(`textus_id: ${id}`);
+  expect(disk.written[0][1]).toContain("new");
+
+  disk.read.mockRejectedValueOnce(new Error("not found"));
+  disk.mtime.mockResolvedValueOnce(null);
+  await writeDocFile("/new.md", "one\n", true);
+  expect(disk.written[1][1]).toMatch(/textus_id: [0-9a-f-]{36}/);
+
+  disk.read.mockResolvedValueOnce("old\n");
+  await writeDocFile("/plain.txt", "new\n", true);
+  expect(disk.written[2][1]).toBe("new\n");
+});

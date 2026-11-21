@@ -4,7 +4,7 @@
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use textus_sync::protocol::{History, Manifest, HEAD_KEY, LOCK_KEY};
+use textus_sync::protocol::{History, Manifest, HEAD_KEY, LOCK_KEY, MAX_MANIFEST_SIZE};
 use textus_sync::{
     sync, LocalFiles, MemoryLocal, MemoryStore, ObjectStore, SyncError, SyncOptions,
 };
@@ -240,4 +240,44 @@ async fn a_transient_upload_failure_releases_the_lock_and_retry_publishes_once()
     )
     .unwrap();
     assert_eq!(history.versions["a.md"].len(), 1);
+}
+
+#[tokio::test]
+async fn twenty_thousand_identified_files_stay_within_the_manifest_limit() {
+    let files: std::collections::BTreeMap<String, Vec<u8>> = (0..20_000)
+        .map(|index| {
+            let id = uuid::Uuid::from_u128(index as u128 + 1).to_string();
+            (
+                format!("Notes/{index:05}.md"),
+                format!(
+                    "---
+textus_id: {id}
+---
+note {index}
+"
+                )
+                .into_bytes(),
+            )
+        })
+        .collect();
+    let store = MemoryStore::new();
+    let started = std::time::Instant::now();
+    let first = sync(&store, &MemoryLocal::new(files), options())
+        .await
+        .unwrap();
+    assert_eq!(first.result.uploaded, 20_000);
+    let raw = store.get(HEAD_KEY).await.unwrap().unwrap();
+    assert!(
+        raw.len() < MAX_MANIFEST_SIZE,
+        "manifest {} bytes",
+        raw.len()
+    );
+    let head = Manifest::parse(&raw).unwrap();
+    assert_eq!(head.files.len(), 20_000);
+    assert!(head.files.values().all(|entry| entry.id.is_some()));
+    eprintln!(
+        "20k with ids: manifest {} bytes, first sync {:?}",
+        raw.len(),
+        started.elapsed()
+    );
 }

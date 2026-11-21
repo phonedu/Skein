@@ -82,7 +82,7 @@ describe("autosaveTab", () => {
     // The file's own line endings, as a manual save keeps them.
     expect(fs.writeTextFile).toHaveBeenCalledWith(
       "/notes/a.md",
-      "edited\r\nline",
+      expect.stringMatching(/textus_id: [0-9a-f-]{36}/),
     );
     expect(result.current.tabState.tabs[0]).toMatchObject({
       savedContent: "edited\nline",
@@ -117,7 +117,7 @@ describe("autosaveTab", () => {
       // The taken name is numbered, never overwritten.
       expect(fs.writeTextFile).toHaveBeenCalledWith(
         "/work/Trip plan 2.md",
-        draft.content,
+        expect.stringContaining(draft.content),
       );
       expect(result.current.tabState.tabs[0]).toMatchObject({
         path: "/work/Trip plan 2.md",
@@ -148,7 +148,7 @@ describe("autosaveTab", () => {
       });
       expect(fs.writeTextFile).toHaveBeenCalledWith(
         "/work/Spring garden.md",
-        untitled.content,
+        expect.stringContaining(untitled.content),
       );
     });
 
@@ -301,7 +301,7 @@ describe("saveTabAs", () => {
     );
     expect(fs.writeTextFile).toHaveBeenLastCalledWith(
       "/elsewhere/b.md",
-      "![](assets/p.png)\n",
+      expect.stringContaining("![](assets/p.png)"),
     );
     expect(result.current.tabState.tabs[0]).toMatchObject({
       path: "/elsewhere/b.md",

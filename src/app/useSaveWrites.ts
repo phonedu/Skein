@@ -65,7 +65,7 @@ export function useFileWrites({
       from: string | null = path,
     ): Promise<boolean> => {
       try {
-        await writeDocFile(path, fileTextFor(from, content));
+        await writeDocFile(path, fileTextFor(from, content), true);
         await writeRevisions(path, content, from);
         return true;
       } catch (err) {
@@ -107,7 +107,7 @@ export function useFileWrites({
         );
         if (migration.migrated) {
           content = migration.content;
-          await writeDocFile(picked, content);
+          await writeDocFile(picked, content, true);
         }
         if (migration.failed.length > 0) {
           void showMessage(

@@ -6,6 +6,7 @@ import { basename } from "../utils/path";
 import { lazyModule } from "../lazy/lazy-module";
 import { fs } from "../platform/ipc";
 import { detectFormat, toEditorText, toFileText } from "./file-format";
+import { ensureTextusId, textusIdOf } from "../utils/document-identity";
 import type { PluginTabView } from "../plugins/app-bridge";
 import { chatTitle } from "../ai/chat/chat-title";
 import { licensesText } from "../help/licenses";
@@ -260,6 +261,7 @@ export async function readDocFromDisk(
 export async function writeDocFile(
   path: string,
   content: string,
+  assignIdentity = false,
 ): Promise<void> {
   // Only a file that isn't there has no format to keep: one that can't be
   // read just now (locked, not downloaded) is not written over as if new,
@@ -275,5 +277,9 @@ export async function writeDocFile(
   });
   const format =
     existing === null ? { crlf: false, bom: false } : detectFormat(existing);
-  await fs.writeTextFile(path, toFileText(content, format));
+  const next =
+    assignIdentity && /\.(md|markdown|mdx)$/i.test(path)
+      ? ensureTextusId(content, existing ? textusIdOf(existing) : null).text
+      : content;
+  await fs.writeTextFile(path, toFileText(next, format));
 }

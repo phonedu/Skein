@@ -135,6 +135,59 @@ pub fn pair(
     out
 }
 
+/// `bytes` with `textus_id` set to `id`, for a conflict copy that must not
+/// share the original's identity. Front matter comments and body bytes stay
+/// as they are; line endings and a BOM are kept.
+pub fn with_document_id(bytes: &[u8], id: &str) -> Option<Vec<u8>> {
+    let text = std::str::from_utf8(bytes).ok()?;
+    let (bom, body) = match text.strip_prefix('\u{feff}') {
+        Some(body) => ("\u{feff}", body),
+        None => ("", text),
+    };
+    let mut lines = body.split_inclusive('\n');
+    let first = lines.next()?;
+    if first.trim_end_matches(['\n', '\r']).trim_end() != "---" {
+        return Some(format!("{bom}---\ntextus_id: {id}\n---\n\n{body}").into_bytes());
+    }
+    let mut offset = first.len();
+    let mut close = None;
+    let mut header = Vec::new();
+    for line in lines {
+        let bare = line.trim_end_matches(['\n', '\r']).trim_end();
+        if bare == "---" || bare == "..." {
+            close = Some(offset);
+            break;
+        }
+        header.push((offset, line));
+        offset += line.len();
+    }
+    let close = close?;
+    let nl = if body.contains("\r\n") { "\r\n" } else { "\n" };
+    let prefix_end = header.first().map_or(first.len(), |(at, _)| *at);
+    let mut out = String::from(bom);
+    out.push_str(&body[..prefix_end]);
+    let mut replaced = false;
+    for (_, line) in &header {
+        if line.trim_start().starts_with("textus_id:") {
+            out.push_str(&format!("textus_id: {id}"));
+            if line.ends_with('\n') {
+                out.push_str(nl);
+            }
+            replaced = true;
+        } else {
+            out.push_str(line);
+        }
+    }
+    if !replaced {
+        if !out.ends_with(nl) && !out.ends_with('\n') {
+            out.push_str(nl);
+        }
+        out.push_str(&format!("textus_id: {id}{nl}"));
+    }
+    out.push_str(&body[close..]);
+    Some(out.into_bytes())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -237,6 +290,26 @@ mod tests {
         assert_eq!(
             document_id(b"---\ntextus_id: not-a-uuid\n---\n").as_deref(),
             None
+        );
+    }
+
+    #[test]
+    fn a_conflict_copy_gets_its_own_id_without_touching_the_body() {
+        let text = format!("---\ntitle: t\ntextus_id: {A}\n---\n\nbody\n");
+        let copy = with_document_id(text.as_bytes(), B).unwrap();
+        let copy = String::from_utf8(copy).unwrap();
+        assert!(copy.contains(&format!("textus_id: {B}")));
+        assert!(copy.contains("title: t"));
+        assert!(copy.ends_with("body\n"));
+        assert!(!copy.contains(A));
+    }
+
+    #[test]
+    fn a_copy_without_front_matter_gets_a_block() {
+        let copy = with_document_id(b"body\n", B).unwrap();
+        assert_eq!(
+            String::from_utf8(copy).unwrap(),
+            format!("---\ntextus_id: {B}\n---\n\nbody\n")
         );
     }
 }

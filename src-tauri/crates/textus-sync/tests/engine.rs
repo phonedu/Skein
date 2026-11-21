@@ -817,14 +817,22 @@ one"
 }
 
 #[tokio::test]
-async fn a_copy_with_one_id_stops_before_two_documents_share_it() {
+async fn a_copy_with_one_id_gets_a_new_id() {
     let store = MemoryStore::new();
     let first = local(&[]);
     first.set("a.md", doc("one"));
     first.set("copy.md", doc("one"));
-    let error = sync(&store, &first, options()).await.unwrap_err();
-    assert_eq!(error.code, "identityFork");
-    assert!(store.get(HEAD_KEY).await.unwrap().is_none());
+    let out = sync(&store, &first, options()).await.unwrap();
+    assert_eq!(out.result.conflicts, Vec::<String>::new());
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let a = head.files["a.md"].id.as_deref();
+    let copy = head.files["copy.md"].id.as_deref();
+    assert!(a.is_some());
+    assert!(copy.is_some());
+    assert_ne!(a, copy);
+    assert_eq!(first.read("a.md").await.unwrap(), Some(doc("one")));
+    let copy_text = String::from_utf8(first.read("copy.md").await.unwrap().unwrap()).unwrap();
+    assert!(!copy_text.contains(DOC_ID));
 }
 
 #[tokio::test]
@@ -892,4 +900,86 @@ async fn both_sides_changing_the_id_stop_before_one_is_lost() {
     .await
     .unwrap_err();
     assert_eq!(error.code, "identityConflict");
+}
+
+#[tokio::test]
+async fn a_conflict_copy_gets_a_new_id() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    let remote_bytes = doc("remote");
+    let remote = describe(&remote_bytes).unwrap();
+    store
+        .put(&block_key(&remote.blocks[0].hash), remote_bytes.clone())
+        .await
+        .unwrap();
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    head.files.insert("a.md".to_string(), remote);
+    head.revision = new_revision();
+    head.updated_at = "2026-11-21T00:00:00.000Z".to_string();
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    first.set("a.md", doc("local"));
+    let next = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(next.result.conflicts.len(), 1);
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].id.as_deref(), Some(DOC_ID));
+    let copy = &head.files[&next.result.conflicts[0]];
+    assert!(copy.id.is_some());
+    assert_ne!(copy.id.as_deref(), Some(DOC_ID));
+    let copy_bytes = first
+        .read(&next.result.conflicts[0])
+        .await
+        .unwrap()
+        .unwrap();
+    let copy_text = String::from_utf8(copy_bytes).unwrap();
+    assert!(copy_text.contains("remote"));
+    assert!(!copy_text.contains(DOC_ID));
+}
+
+#[tokio::test]
+async fn two_different_renames_keep_both_documents_with_new_ids() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let entry = head.files.remove("a.md").unwrap();
+    head.files.insert("right.md".to_string(), entry);
+    head.revision = new_revision();
+    head.updated_at = "2026-11-21T00:00:00.000Z".to_string();
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    first.delete("a.md");
+    first.set("left.md", doc("one"));
+    sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["right.md"].id.as_deref(), Some(DOC_ID));
+    assert!(head.files["left.md"].id.is_some());
+    assert_ne!(head.files["left.md"].id.as_deref(), Some(DOC_ID));
+    let left_text = String::from_utf8(first.read("left.md").await.unwrap().unwrap()).unwrap();
+    assert!(left_text.contains("one"));
+    assert!(!left_text.contains(DOC_ID));
+    assert_eq!(first.read("right.md").await.unwrap(), Some(doc("one")));
 }

@@ -165,19 +165,26 @@ pub(super) async fn run(
                 let Some(remote_entry) = remote_files.get(&action.path) else {
                     continue;
                 };
-                if local_entry.id.is_some() || remote_entry.id.is_some() {
-                    return Err(SyncError::with_args(
-                        "identityConflict",
-                        [action.path.clone()],
-                    ));
-                }
                 let bytes = download_entry(store, remote_entry).await?;
+                // A conflict copy must not keep the original's id: it is a
+                // different document now. Give it a new id and upload its
+                // changed bytes under that entry.
+                let (bytes, copy_entry) = if local_entry.id.is_some() || remote_entry.id.is_some() {
+                    let id = Uuid::new_v4().to_string();
+                    let bytes = crate::identity::with_document_id(&bytes, &id)
+                        .ok_or_else(|| SyncError::new("invalidEntry"))?;
+                    let entry = describe(&bytes)?;
+                    upload_blocks(store, &entry, &bytes).await?;
+                    (bytes, entry)
+                } else {
+                    (bytes, remote_entry.clone())
+                };
                 let Some(target) = keep_remote(
                     local,
                     &next,
                     &mut names,
                     &action.path,
-                    remote_entry,
+                    &copy_entry,
                     bytes.clone(),
                 )
                 .await?
@@ -195,7 +202,7 @@ pub(super) async fn run(
                     return Err(SyncError::new("localChanged"));
                 }
                 upload_blocks(store, local_entry, &local_bytes).await?;
-                next.insert(target.clone(), remote_entry.clone());
+                next.insert(target.clone(), copy_entry.clone());
                 next.insert(action.path.clone(), local_entry.clone());
                 base.files
                     .insert(action.path.clone(), local_entry.hash.clone());

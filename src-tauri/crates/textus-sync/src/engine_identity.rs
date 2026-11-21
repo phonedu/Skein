@@ -16,8 +16,49 @@ pub(super) async fn apply_renames(
     let pairs = identity::pair(files, remote_files, &base.files);
     for pair in &pairs {
         match pair {
-            IdentityPair::Fork { id, .. } => {
-                return Err(SyncError::with_args("identityFork", [id.clone()]));
+            IdentityPair::Fork {
+                id,
+                local: at_home,
+                remote,
+            } => {
+                // A copy on this side gets a new id; the other side keeps
+                // the original. Two copies already on the remote cannot be
+                // rewritten here without racing them.
+                if remote.len() > 1 {
+                    return Err(SyncError::with_args("identityFork", [id.clone()]));
+                }
+                let keep = remote
+                    .first()
+                    .cloned()
+                    .or_else(|| {
+                        at_home
+                            .iter()
+                            .find(|path| base.files.contains_key(*path))
+                            .cloned()
+                    })
+                    .or_else(|| at_home.first().cloned());
+                for path in at_home {
+                    if Some(path) == keep.as_ref() {
+                        continue;
+                    }
+                    let Some(entry) = files.get(path).cloned() else {
+                        continue;
+                    };
+                    let Some(bytes) = local.read(path).await? else {
+                        continue;
+                    };
+                    if crate::chunk::hash_hex(&bytes) != entry.hash {
+                        return Err(SyncError::new("localChanged"));
+                    }
+                    let new_id = Uuid::new_v4().to_string();
+                    let bytes = identity::with_document_id(&bytes, &new_id)
+                        .ok_or_else(|| SyncError::new("invalidEntry"))?;
+                    let next = describe(&bytes)?;
+                    if !local.apply(path, bytes.clone(), Some(&entry.hash)).await? {
+                        return Err(SyncError::new("localChanged"));
+                    }
+                    files.insert(path.clone(), next);
+                }
             }
             IdentityPair::Conflict { path, .. } => {
                 let local_changed = files
