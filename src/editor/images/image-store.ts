@@ -6,8 +6,7 @@ import { resolveStrings } from "../../i18n/strings";
 import { showMessage } from "../../engine/controls/app-dialog";
 import { fs } from "../../platform/ipc";
 import { isAndroidPlatform } from "../../platform/os";
-import { iosFiles } from "../../platform/ios-files";
-import { basename } from "../../utils/path";
+import { nativeFiles, isScopedUrl } from "../../platform/native-files";
 import type { Settings, ImageNamingMode } from "../../prefs/SettingsContext";
 import { IMAGE_FILE_EXTENSIONS, imageMimeForPath } from "./pasted-files";
 import { unwrittenImageSrcs } from "../markdown/markdown-output";
@@ -17,6 +16,7 @@ import { explainError } from "../../utils/error-explain";
 import { LINK } from "../markdown/link-source";
 import { announceFileCreated } from "../../utils/events";
 import IMAGE_TYPES from "./image-types.json";
+import { blobToBase64 } from "../../utils/blob-base64";
 
 /** Pictures pasted, dropped or picked, saved where the writer keeps them. */
 
@@ -26,18 +26,6 @@ const EXT_BY_MIME: Record<string, string> = Object.entries(IMAGE_TYPES).reduce(
   (by, [ext, mime]) => ({ [mime]: ext, ...by }),
   {} as Record<string, string>,
 );
-
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      resolve(url.slice(url.indexOf(",") + 1));
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-}
 
 export function safeImageStem(name: string): string {
   const withoutExtension = name.replace(/\.[^.]*$/, "");
@@ -303,21 +291,26 @@ export function pastedImages(sources: {
   ];
 }
 
-/** An image file on disk, read through the backend once it's stored. A
- *  content:// pick is named by the mobile picker, so its extension is known. */
+/** An image file on disk, read through the backend once it's stored; one
+ *  picked in the Files app (a URL) through the native plugin, which holds
+ *  its scope. */
 export function fileImage(path: string): PastedImage {
-  const name = basename(path);
+  const name = path.slice(
+    Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\")) + 1,
+  );
+  const picked = isScopedUrl(path);
   return {
-    name,
-    type: imageMimeForPath(name) ?? "",
-    base64: () => fs.readBinaryFileBase64(path),
+    name: picked ? decodeURIComponent(name) : name,
+    type: imageMimeForPath(path) ?? "",
+    base64: () =>
+      picked ? nativeFiles.readBase64(path) : fs.readBinaryFileBase64(path),
   };
 }
 
 /** Asks for an image file in the native picker; null when cancelled. On
  *  Android the content:// picker names the file (Rust reads plain paths). */
 export function pickImageFile(language: Settings["language"]) {
-  if (isAndroidPlatform()) return iosFiles.pickImage();
+  if (isAndroidPlatform()) return nativeFiles.pickImage();
   return fs.openImageFileDialog(
     resolveStrings(language).missingImageFilter,
     IMAGE_FILE_EXTENSIONS,

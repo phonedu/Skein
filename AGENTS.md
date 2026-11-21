@@ -27,7 +27,8 @@ the ones to work by. Three things differ from the upstream guide below:
 
 ## Where things are
 
-Textus is a Markdown editor for macOS, Windows, Linux, iPhone and iPad,
+Textus is an Integrated Writing Environment (IWE) for Markdown on macOS,
+Windows, Linux, iPhone and iPad,
 built with Tauri 2: a React + TypeScript frontend in `src/` (the editor is
 Milkdown/ProseMirror, source mode CodeMirror 6) and a Rust backend in
 `src-tauri/`.

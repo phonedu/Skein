@@ -112,7 +112,7 @@
   cursor: pointer;
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .agent-comment-row-quote:hover:not(:disabled) {
     color: var(--ui-text);
   }
@@ -166,7 +166,7 @@ button.chat-queue-action {
   font: inherit;
   cursor: pointer;
 }
-@media (hover: hover) {
+@media (any-hover: hover) {
   button.chat-queue-action:hover {
     color: var(--ui-text);
   }
@@ -183,10 +183,6 @@ button.chat-queue-action {
 .agent-proposal-group-rows > li {
   flex-wrap: wrap;
   align-items: center;
-}
-
-.agent-proposal-group-rows .agent-proposal-sentence-text {
-  flex: 1 1 8ch;
 }
 
 .agent-proposal-group-rows .agent-diff-summary {
@@ -210,7 +206,7 @@ button.chat-queue-action {
 /* A group's row text, and its own reason under it where the group's
    reasons differ. */
 .agent-proposal-group-row-text {
-  flex: 1;
+  flex: 1 1 8ch;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -234,7 +230,7 @@ button.chat-queue-action {
   cursor: pointer;
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .agent-proposal-group-fold:hover {
     color: var(--ui-text);
   }
@@ -268,7 +264,7 @@ button.chat-queue-action {
   cursor: pointer;
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .agent-file-changes-path:hover:not(:disabled) {
     color: var(--ui-accent-text);
   }

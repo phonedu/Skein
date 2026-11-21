@@ -129,7 +129,7 @@
   }
 
   :root[data-window-chrome="mobile"] .settings-nav-item:active {
-    background: var(--ui-hover);
+    background: var(--ui-pressed-row);
   }
 
   :root[data-window-chrome="mobile"] .settings-nav-chevron {

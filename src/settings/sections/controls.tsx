@@ -179,7 +179,7 @@ export function MaskedKeyInput({
   placeholder,
   value,
   onChange,
-  className = "settings-text-input api-key-input",
+  className = "tx-input settings-text-input api-key-input",
   disabled = false,
 }: {
   label: string;
@@ -267,7 +267,7 @@ export function SecretInput({
     <div className="api-key-configured">
       <span className="settings-row-hint">{t.apiKeyConfigured}</span>
       <button
-        className="text-button settings-inline-button"
+        className="tx-button text-button settings-inline-button"
         onClick={() =>
           void showConfirm(fill(t.apiKeyClearAsk, { name: label }), {
             okLabel: t.apiKeyClear,
@@ -288,7 +288,7 @@ export function SecretInput({
         onChange={onChange}
       />
       <button
-        className="text-button settings-inline-button"
+        className="tx-button text-button settings-inline-button"
         onClick={onSave}
         disabled={saveDisabled}
       >

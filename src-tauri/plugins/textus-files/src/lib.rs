@@ -70,6 +70,13 @@ mod native {
         appearance => "appearance",
     }
 
+    /// File > Export as PDF, drawn by the Swift plugin (iOS only): `args` as
+    /// the app's export_pdf_native has them.
+    #[cfg(target_os = "ios")]
+    pub fn export_pdf<R: Runtime>(app: &AppHandle<R>, args: Value) -> Result<(), String> {
+        forward(app, "exportPdf", args).map(|_| ())
+    }
+
     pub fn init<R: Runtime>() -> TauriPlugin<R> {
         Builder::new("textus-files")
             .invoke_handler(tauri::generate_handler![
@@ -104,18 +111,7 @@ mod native {
     }
 }
 
+#[cfg(target_os = "ios")]
+pub use native::export_pdf;
 #[cfg(any(target_os = "ios", target_os = "android"))]
 pub use native::init;
-
-#[cfg(target_os = "ios")]
-extern "C" {
-    fn textus_ai_unavailable() -> bool;
-}
-
-/// Textus AI isn't offered on this install: one from the App Store in
-/// mainland China (ios/Sources/Storefront.swift).
-#[cfg(target_os = "ios")]
-pub fn ai_unavailable() -> bool {
-    // SAFETY: a Swift function with no arguments that returns a C bool.
-    unsafe { textus_ai_unavailable() }
-}

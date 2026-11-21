@@ -16,6 +16,7 @@ Everything Textus's iOS and Android document access needs.
 - `allow-rename-entry`
 - `allow-move-entry`
 - `allow-delete-entry`
+- `allow-trash`
 - `allow-remembered`
 - `allow-begin-access`
 - `allow-share`
@@ -443,6 +444,32 @@ Enables the share command without any pre-configured scope.
 <td>
 
 Denies the share command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`textus-files:allow-trash`
+
+</td>
+<td>
+
+Enables the trash command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`textus-files:deny-trash`
+
+</td>
+<td>
+
+Denies the trash command without any pre-configured scope.
 
 </td>
 </tr>

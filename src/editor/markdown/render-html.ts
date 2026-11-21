@@ -1,9 +1,13 @@
 import { splitFrontmatter } from "../../utils/frontmatter";
 import { Marked, Renderer, type TokenizerAndRendererExtension } from "marked";
+import markedCjkFriendly from "marked-cjk-friendly";
 import createDOMPurify from "dompurify";
 import { escapeHtml } from "../../utils/html";
 import { WIKILINK_SOURCE } from "../../utils/note-link";
-import { normalizeMathDelimiters } from "../../utils/markdown-math";
+import {
+  displayMathApart,
+  normalizeMathDelimiters,
+} from "../../utils/markdown-math";
 import { sanitizeNodes } from "../html/html-policy";
 import { readImagePresentation } from "../images/image-html";
 import { katexNow, mathSourceHtml } from "../math/katex-loader";
@@ -89,9 +93,13 @@ const wikilink: TokenizerAndRendererExtension = {
   renderer: (token) => `<span class="wikilink">${escapeHtml(token.raw)}</span>`,
 };
 
+// "**" next to CJK punctuation is emphasis, as in the editor; CommonMark's
+// flanking rules would leave the stars showing.
+const cjkFriendly = markedCjkFriendly();
+
 // Its own instance, not the global `marked`: for chat replies, where a bare
 // newline breaks the line.
-const chatMarked = new Marked({
+const chatMarked = new Marked(cjkFriendly, {
   gfm: true,
   breaks: true,
   extensions: [...mathExtensions(mathHtml), wikilink],
@@ -143,7 +151,7 @@ const AUTHORED = {
  *  sources in order: a streaming reply redraws only its last. */
 export function markdownBlocks(markdown: string): string[] {
   return chatMarked
-    .lexer(normalizeMathDelimiters(markdown))
+    .lexer(displayMathApart(normalizeMathDelimiters(markdown)))
     .map((token) => token.raw);
 }
 
@@ -151,9 +159,12 @@ export function markdownBlocks(markdown: string): string[] {
 export function renderMarkdownHtml(markdown: string): string {
   // `\(`/`\[` are folded to `$`/`$$` first, so markdown's backslash escaping
   // can't mangle them.
-  const parsed = chatMarked.parse(normalizeMathDelimiters(markdown), {
-    async: false,
-  });
+  const parsed = chatMarked.parse(
+    displayMathApart(normalizeMathDelimiters(markdown)),
+    {
+      async: false,
+    },
+  );
   return purify().sanitize(parsed, AUTHORED);
 }
 
@@ -199,7 +210,7 @@ const footnotes: TokenizerAndRendererExtension[] = [
 ];
 
 // The inline flavour: the chat's, plus footnote references raised.
-const inlineMarked = new Marked({
+const inlineMarked = new Marked(cjkFriendly, {
   gfm: true,
   breaks: true,
   extensions: [
@@ -215,7 +226,7 @@ const MATH_SLOT_TAG = "textus-math";
 
 // The document flavour, for the split view: a single newline is not a line
 // break.
-const documentMarked = new Marked({
+const documentMarked = new Marked(cjkFriendly, {
   gfm: true,
   breaks: false,
   extensions: [

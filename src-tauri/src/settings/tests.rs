@@ -361,12 +361,35 @@ fn invalid_history_entries_are_rejected() {
 
 #[test]
 fn the_proxy_follows_the_settings() {
+    // SOCKS5 resolves names at the proxy (socks5h): on an intranet this
+    // computer's own DNS can't look up an address elsewhere, and socks5://
+    // would ask it to.
     proxy_changed(
         &json!({ "proxyType": "socks5", "proxyHost": " 127.0.0.1 ", "proxyPort": "7890" }),
     );
     assert_eq!(
         aicompat::http::proxy_url().as_deref(),
-        Some("socks5://127.0.0.1:7890")
+        Some("socks5h://127.0.0.1:7890")
+    );
+    // A whole URL pasted into the address is taken as is: prefixing another
+    // scheme onto it made a host literally named "http", which then failed
+    // to resolve.
+    proxy_changed(&json!({
+        "proxyType": "http",
+        "proxyHost": "http://192.168.1.1:7890",
+        "proxyPort": "7890",
+    }));
+    assert_eq!(
+        aicompat::http::proxy_url().as_deref(),
+        Some("http://192.168.1.1:7890")
+    );
+    proxy_changed(&json!({
+        "proxyType": "socks5",
+        "proxyHost": "socks5://192.168.1.1:1080",
+    }));
+    assert_eq!(
+        aicompat::http::proxy_url().as_deref(),
+        Some("socks5h://192.168.1.1:1080")
     );
     proxy_changed(&json!({ "proxyType": "http", "proxyHost": "proxy.lan" }));
     assert_eq!(
@@ -403,4 +426,63 @@ fn the_proxy_follows_the_settings() {
         aicompat::http::Route::System
     );
     proxy_changed(&json!({ "proxyType": "direct" }));
+}
+
+#[test]
+fn the_window_and_recents_kept_apart_move_into_the_ui_state_once() {
+    let dir = temp_dir();
+    std::fs::write(
+        dir.join(file_name("prefs")),
+        r#"{"editor_window_size":[900,700],"editor_window_position":[40,60]}"#,
+    )
+    .unwrap();
+    std::fs::write(dir.join(file_name("recent_files")), r#"["/a.md","/b.md"]"#).unwrap();
+    std::fs::write(dir.join(file_name("recent_folders")), r#"["/notes"]"#).unwrap();
+    let stores = Stores::load(&dir, &dir);
+    let state = stores.ui_state.snapshot().0;
+    assert_eq!(state["editorWindowSize"], json!([900, 700]));
+    assert_eq!(state["editorWindowPosition"], json!([40, 60]));
+    assert_eq!(state["recentFiles"], json!(["/a.md", "/b.md"]));
+    assert_eq!(state["recentFolders"], json!(["/notes"]));
+    // On disk before the old files go.
+    let written = read_file(&dir.join(file_name("ui-state")));
+    assert_eq!(written["state"]["recentFolders"], json!(["/notes"]));
+    for stem in ["prefs", "recent_files", "recent_folders"] {
+        assert!(!dir.join(file_name(stem)).exists(), "{stem}");
+    }
+    // Loaded again, nothing is left to move and nothing changes.
+    let again = Stores::load(&dir, &dir);
+    assert_eq!(again.ui_state.snapshot().0, state);
+}
+
+#[test]
+fn the_ui_state_s_own_lists_win_over_old_files() {
+    let dir = temp_dir();
+    std::fs::write(
+        dir.join(file_name("ui-state")),
+        r#"{"schemaVersion":1,"state":{"recentFiles":["/new.md"]}}"#,
+    )
+    .unwrap();
+    std::fs::write(dir.join(file_name("recent_files")), r#"["/old.md"]"#).unwrap();
+    let stores = Stores::load(&dir, &dir);
+    assert_eq!(
+        stores.ui_state.snapshot().0["recentFiles"],
+        json!(["/new.md"])
+    );
+    assert!(!dir.join(file_name("recent_files")).exists());
+}
+
+#[test]
+fn a_name_or_password_change_reapplies_the_proxy() {
+    // Each field is patched on its own as the user types; a proxy that asks
+    // for a name and password must be rebuilt when only those change, or
+    // requests keep going out without them.
+    assert!(proxy_keys_changed(&obj(
+        json!({ "proxyUsername": "alice" })
+    )));
+    assert!(proxy_keys_changed(&obj(
+        json!({ "proxyPassword": "secret" })
+    )));
+    assert!(proxy_keys_changed(&obj(json!({ "proxyType": "http" }))));
+    assert!(!proxy_keys_changed(&obj(json!({ "theme": "dark" }))));
 }

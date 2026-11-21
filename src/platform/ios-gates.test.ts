@@ -11,16 +11,18 @@ import { describe, expect, it } from "vitest";
  */
 const ALLOWED: Record<string, string> = {
   "ai/chat/chat-history.ts": "paths relative to the app's Documents folder",
-  "app/SettingsLayer.tsx": "Settings is a sheet over the window, not a tab",
   "app/frame/WindowControls.tsx": "the title row's menu button",
   "app/useOpenFolder.ts":
     "a reinstall moves Documents, and the AI's folder with it",
   "ai/chat/panel/agent-panel.tsx": "a docked panel drawn at its width",
   "editor/click-below-end.ts":
     "a tap beside a table: its caret went astray, onto a word it selected",
+  "export/exporters.ts":
+    "its PDF is WebKit's, as a Mac's, and goes to the share sheet",
   "document/word-import.ts":
     "Files' security-scoped URLs the converter can't read",
-  "platform/ios-files.ts": "the Files app's documents",
+  "platform/far-files.ts": "the Files app's documents",
+  "platform/native-files.ts": "the Files app's documents",
   "platform/ipc-files.ts": "the Files app's documents",
   "platform/ipc-ai-workspace.ts": "the project folder is picked in Files",
   "platform/mobile-viewport.ts":

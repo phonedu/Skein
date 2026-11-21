@@ -12,9 +12,12 @@ import "./about.css";
  *  its code, where to talk with us, and who made it. */
 export function AboutSection({
   t,
+  openLicenses,
   checkNow = false,
 }: {
   t: Strings;
+  /** Opens the open-source licenses as a document. */
+  openLicenses: () => void;
   /** Opened from Check for Updates…: check at once. */
   checkNow?: boolean;
 }) {
@@ -40,24 +43,31 @@ export function AboutSection({
       <div className="settings-about-links">
         <button
           type="button"
-          className="text-button settings-about-link"
+          className="tx-button text-button settings-about-link"
           onClick={() => void links.openAboutLink("github")}
         >
           GitHub
         </button>
         <button
           type="button"
-          className="text-button settings-about-link"
+          className="tx-button text-button settings-about-link"
           onClick={() => void links.openAboutLink("discord")}
         >
           Discord
         </button>
         <button
           type="button"
-          className="text-button settings-about-link"
+          className="tx-button text-button settings-about-link"
           onClick={() => void links.openAboutLink("qq")}
         >
           {t.aboutQq}
+        </button>
+        <button
+          type="button"
+          className="tx-button text-button settings-about-link"
+          onClick={openLicenses}
+        >
+          {t.aboutLicenses}
         </button>
         <UpdateButton t={t} checkOnOpen={checkNow} />
       </div>

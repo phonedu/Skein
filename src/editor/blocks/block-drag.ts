@@ -13,7 +13,7 @@ import {
   placeAt,
   type HandledBlock,
 } from "./block-commands";
-import { boxIn, nearestGap } from "./block-handle-place";
+import { boxIn, nearestGap, withRoom } from "./block-handle-place";
 import {
   blockLook,
   movingBlocks,
@@ -84,8 +84,9 @@ export function dragBlock(
       ? gapsFor(target.state.doc, block)
       : gapsIn(target.state.doc, block.node.type.name === "list_item");
     // The block on its way out, and the room, aren't there to stand by.
+    const tops = topLevelElements(target);
     const shown = (pos: number) => {
-      const el = target.nodeDOM(pos) as HTMLElement | null;
+      const el = (tops.get(pos) ?? target.nodeDOM(pos)) as HTMLElement | null;
       return el?.isConnected && el.offsetParent && el !== source ? el : null;
     };
     // What is past the block moves up into its place.
@@ -133,16 +134,6 @@ export function dragBlock(
     }
     return gaps;
   };
-  /** The places as they stand with the room open at `at` (null: none):
-   *  what is after it moved down by the block's height. */
-  const withRoom = (gaps: ReturnType<typeof measured>, at: number | null) =>
-    at === null
-      ? gaps
-      : gaps.map((g) => ({
-          ...g,
-          y: g.y + (g.pos > at ? tall : g.pos === at ? tall / 2 : 0),
-        }));
-
   /** The open editor under the pointer: its scroller's box, on screen. */
   const editorAt = (x: number, y: number): EditorView => {
     for (const [target] of openEditors) {
@@ -170,7 +161,11 @@ export function dragBlock(
         : aim.view === target
           ? aim.landing
           : null;
-    const gap = nearestGap(withRoom(layoutOf(target, root), open), at.x, at.y);
+    const gap = nearestGap(
+      withRoom(layoutOf(target, root), open, tall),
+      at.x,
+      at.y,
+    );
     if (!gap) return { view: target, landing: null };
     const fits =
       target === view
@@ -306,4 +301,21 @@ function carryGrip(lifted: HTMLElement, grip: HTMLElement) {
     height: `${g.height / scale}px`,
   });
   lifted.append(carried);
+}
+
+/** The editor's top-level blocks' elements by position, in one pass: a
+ *  lookup each would scan the editor's children every time. */
+function topLevelElements(view: EditorView): Map<number, Element> {
+  const { doc } = view.state;
+  const found = new Map<number, Element>();
+  let next = 0;
+  let pos = 0;
+  for (const el of view.dom.children) {
+    if (next >= doc.childCount) break;
+    const desc = (el as { pmViewDesc?: { node?: unknown } }).pmViewDesc;
+    if (desc?.node !== doc.child(next)) continue;
+    found.set(pos, el);
+    pos += doc.child(next++).nodeSize;
+  }
+  return found;
 }

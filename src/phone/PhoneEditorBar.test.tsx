@@ -23,8 +23,8 @@ vi.mock("../engine/controls/notices", () => ({
 }));
 
 const shared: string[] = [];
-vi.mock("../platform/ios-files", () => ({
-  iosFiles: {
+vi.mock("../platform/native-files", () => ({
+  nativeFiles: {
     share: (path: string) => {
       shared.push(path);
       return Promise.resolve();

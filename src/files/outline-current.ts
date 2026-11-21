@@ -1,5 +1,5 @@
 import { tabElement } from "../engine/layout/tab-element";
-import { HEADING_PLACEHOLDER } from "../editor/lazy-blocks/lazy-block-views";
+import { HEADING_PLACEHOLDER } from "../editor/lazy/lazy-block-views";
 
 /** A document's own headings in its editor, drawn or out of sight as
  *  placeholders (the outline's rows are these, in order). */

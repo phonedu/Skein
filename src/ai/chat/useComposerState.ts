@@ -10,7 +10,7 @@ import type { ChatAttachment, ThinkingLevel } from "../types";
 import { ai } from "../../platform/ipc";
 import { useActiveProvider, useWebSearchStatus } from "../provider-catalog";
 import type { AgentMode, PanelMode } from "../../prefs/SettingsContext";
-import { loadSettings } from "../../prefs/settings-store";
+import { useWhoAnswers } from "./conversation/useWhoAnswers";
 import { externalAgent } from "../../plugins/contributions/agents";
 import { initialMode, rememberMode } from "./last-mode";
 import { rememberWebSearch, webSearchOn } from "./web-search-on";
@@ -23,6 +23,9 @@ import type {
 } from "./composer-types";
 import { currentStrings } from "../../i18n/current";
 import { explainError } from "../../utils/error-explain";
+import { blobToBase64 } from "../../utils/blob-base64";
+import { clipboardFiles } from "../../editor/images/pasted-files";
+import { basename } from "../../utils/path";
 
 /** The composer's state, one hook per concern. */
 
@@ -85,17 +88,45 @@ export function useComposerInput(handle?: Ref<ChatComposerHandle | null>) {
  *  image is staged, so no caller can forget it. */
 export function useAttachments(noVisionMessage: string, conversation: string) {
   const providerVision = useActiveProvider()?.supportsVision ?? true;
+  const who = useLatest(useWhoAnswers().agent);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [attachError, setAttachError] = useState<string | null>(null);
 
   async function attachFile() {
+    // None means the picker was cancelled - not something to report.
+    await stage(() => ai.pickAttachmentFiles(conversation));
+  }
+
+  /** A paste of files (a picture, a PDF, a spreadsheet): attached as the
+   *  "+" button's are. False when it is text, and the textarea's to paste:
+   *  text copied in Word or Excel brings a picture of itself along. */
+  function attachPasted(data: DataTransfer | null): boolean {
+    const { files, paths } = clipboardFiles(data);
+    if (!files.length && !paths.length) return false;
+    const names = new Set([
+      ...files.map((file) => file.name),
+      ...paths.map((path) => basename(path)),
+    ]);
+    const text = (data?.getData("text/plain") ?? "").trim();
+    // A file manager's copy names its files in the text, and nothing else.
+    if (text && !text.split(/\r?\n/).every((line) => names.has(line.trim())))
+      return false;
+    void stage(async () =>
+      ai.attachPasted(conversation, [
+        ...paths.map((path) => ({ kind: "path" as const, path })),
+        ...(await Promise.all(files.map(pastedBytes))),
+      ]),
+    );
+    return true;
+  }
+
+  async function stage(read: () => Promise<ChatAttachment[]>) {
     setAttachError(null);
     try {
-      // None means the picker was cancelled - not something to report.
-      const files = await ai.pickAttachmentFiles(conversation);
+      const files = await read();
       // An outside agent answering takes pictures if it reads them; the
       // exchange leaves them out for one that doesn't.
-      const agent = externalAgent(loadSettings().chatAgent);
+      const agent = externalAgent(who.current);
       const kept =
         agent || providerVision
           ? files
@@ -113,6 +144,17 @@ export function useAttachments(noVisionMessage: string, conversation: string) {
     attachError,
     setAttachError,
     attachFile,
+    attachPasted,
+  };
+}
+
+/** A pasted picture's bytes, named for its type (a screenshot comes as
+ *  "image.png"). */
+async function pastedBytes(file: File) {
+  return {
+    kind: "bytes" as const,
+    name: file.name || "image.png",
+    dataBase64: await blobToBase64(file),
   };
 }
 

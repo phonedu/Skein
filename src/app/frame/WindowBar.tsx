@@ -1,4 +1,11 @@
-import { Fragment, Suspense, useRef, useSyncExternalStore } from "react";
+import {
+  Fragment,
+  Suspense,
+  useRef,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import { barRowsHaveRoom } from "../../engine/layout/row-insets";
 import { useFitSteps } from "../../engine/controls/fit-steps";
 import { useSettings } from "../../prefs/SettingsContext";
 import { WindowCaptionButtons } from "../../engine/controls/WindowCaptionButtons";
@@ -16,8 +23,8 @@ import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
 import { lazyModule } from "../../lazy/lazy-module";
 import { lazyComponent } from "../../lazy/lazy-component";
 import {
-  statusItemsSnapshot,
-  subscribeStatusItems,
+  anyStatus,
+  subscribeAnyStatus,
 } from "../../plugins/contributions/status-items";
 
 // What plugins show here comes with the first of it: plugins run once the
@@ -27,7 +34,9 @@ const PluginStatusItems = lazyComponent(
   (m) => m.PluginStatusItems,
 );
 
-const MENU_FOLDS = ["menu"] as const;
+/** As the bar runs short, in turn: the menu's titles to ☰, plugins'
+ *  status to their icons, the agents' buttons to one menu. */
+const BAR_FOLDS = ["menu", "status", "agents"] as const;
 
 /**
  * The window's one top strip: a real layout row (an overlay title bar hides
@@ -46,6 +55,7 @@ export function WindowBar({
   agentShortcut,
   onToggleAgent,
   onToggleReadOnly,
+  documentMenu,
 }: {
   menuChecks: MenuChecks;
   title: string;
@@ -62,6 +72,9 @@ export function WindowBar({
   onToggleAgent: () => void;
   /** The padlock beside a read-only document's title turns it off. */
   onToggleReadOnly: () => void;
+  /** A phone's document menu (its ⋯), beside the AI toggle; none on a
+   *  desktop, where the tabs and menus hold the document's actions. */
+  documentMenu?: ReactNode;
 }) {
   const { t, settings } = useSettings();
   const bar = useBarLayout({
@@ -71,15 +84,13 @@ export function WindowBar({
     railOff: !settings.activityRail,
     zen: !!menuChecks.zen,
   });
-  const hasStatus = useSyncExternalStore(
-    subscribeStatusItems,
-    () => statusItemsSnapshot().length > 0,
-  );
+  const hasStatus = useSyncExternalStore(subscribeAnyStatus, anyStatus);
   // A phone's row is its tabs': no title over them.
   const phone = usePhoneLayout();
-  // Too narrow for the menu bar's titles: the ☰ instead (window-controls.css).
+  // Too narrow for the menu bar's titles: the ☰ instead (window-controls.css),
   const header = useRef<HTMLElement>(null);
-  useFitSteps(header, MENU_FOLDS);
+  // ...and while a tab row under the bar's end has no tab's room.
+  useFitSteps(header, BAR_FOLDS, barRowsHaveRoom);
   return (
     <>
       <header ref={header} className="window-bar" data-tauri-drag-region>
@@ -148,6 +159,7 @@ export function WindowBar({
             shortcut={agentShortcut}
             onTogglePanel={onToggleAgent}
           />
+          {documentMenu}
         </div>
         <WindowCaptionButtons />
       </header>

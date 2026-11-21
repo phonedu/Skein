@@ -7,18 +7,21 @@
 /** Every localStorage key the app reads or writes outside the stores'
  *  fallbacks. Renaming one loses what users have saved under it. */
 export const LOCAL_KEYS = {
-  /** The settings blob from before settings.json: the settings store without
-   *  Rust, and what the one-time import reads. */
+  /** The settings where there is no Rust behind the page: the browser dev
+   *  shim, the web playground, the unit tests. */
   settings: "catvinci-settings",
   /** A provider's last fetched model list, by provider id. */
   fetchedModels: (provider: string) => `textus-fetched-models:${provider}`,
-  /** Before a folder's scope: its live conversation, its open ones. */
+  /** By scope (a folder, a document): its live conversation, its open
+   *  ones. */
   liveConversation: "textus-ai-live:",
   openConversations: "textus-ai-open:",
+  /** By conversation: who answers in it ("" Textus AI). */
+  conversationAgent: "textus-ai-agent:",
 } as const;
 
 /** The value under `key`, or null when it is absent or can't be read. */
-function readLocal(key: string): string | null {
+export function readLocal(key: string): string | null {
   try {
     return localStorage.getItem(key);
   } catch {

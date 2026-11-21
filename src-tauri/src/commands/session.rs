@@ -18,6 +18,10 @@ pub struct WindowSession {
     pub layout: Option<serde_json::Value>,
     #[serde(default)]
     pub folder: Option<String>,
+    /// Documents handed over as it opens (Finder, a second launch): put
+    /// in front. Never written to the session file.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub opened: Vec<String>,
 }
 
 impl WindowSession {
@@ -61,31 +65,18 @@ pub fn read_session_windows(app: &AppHandle) -> Vec<WindowSession> {
     parse_session(&raw)
 }
 
-/// Whether `raw` is a session file some version wrote.
+/// Whether `raw` is a session file this version writes.
 fn readable_session(raw: &str) -> bool {
     serde_json::from_str::<Vec<WindowSession>>(raw).is_ok()
-        || serde_json::from_str::<Vec<Vec<String>>>(raw).is_ok()
-        || serde_json::from_str::<Vec<String>>(raw).is_ok()
 }
 
-/// The file as each version wrote it: windows' sessions; up to 1.3.12 each
-/// window's paths; up to 1.3.0-beta.6 one flat list, each path a window.
+/// The windows' sessions in the file, those with nothing left out.
 fn parse_session(raw: &str) -> Vec<WindowSession> {
-    let windows = if let Ok(windows) = serde_json::from_str::<Vec<WindowSession>>(raw) {
-        windows
-    } else if let Ok(windows) = serde_json::from_str::<Vec<Vec<String>>>(raw) {
-        windows.into_iter().map(WindowSession::of_paths).collect()
-    } else {
-        serde_json::from_str::<Vec<String>>(raw)
-            .map(|paths| {
-                paths
-                    .into_iter()
-                    .map(|p| WindowSession::of_paths(vec![p]))
-                    .collect()
-            })
-            .unwrap_or_default()
-    };
-    windows.into_iter().filter(kept).collect()
+    serde_json::from_str::<Vec<WindowSession>>(raw)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(kept)
+        .collect()
 }
 
 /// A window worth bringing back: one with documents or a folder.
@@ -100,6 +91,38 @@ fn write_session(app: &AppHandle, windows: &[WindowSession]) {
     if let Err(e) = crate::json_file::save(&path, windows) {
         eprintln!("textus: cannot keep the window session: {e}");
     }
+}
+
+/// The last session's windows with `paths` handed over as the app opens
+/// with no window: in the window whose folder holds them all (else the
+/// first), in front. With no session, one window of them alone.
+pub fn with_documents(saved: Vec<WindowSession>, paths: Vec<String>) -> Vec<WindowSession> {
+    let mut windows = saved;
+    let holds = |window: &WindowSession| {
+        window.folder.as_ref().is_some_and(|folder| {
+            paths
+                .iter()
+                .all(|path| std::path::Path::new(path).starts_with(folder))
+        })
+    };
+    let Some(at) = windows
+        .iter()
+        .position(holds)
+        .or((!windows.is_empty()).then_some(0))
+    else {
+        return vec![WindowSession {
+            opened: paths.clone(),
+            ..WindowSession::of_paths(paths)
+        }];
+    };
+    for path in &paths {
+        for window in windows.iter_mut() {
+            window.paths.retain(|p| p != path);
+        }
+        windows[at].paths.push(path.clone());
+    }
+    windows[at].opened = paths;
+    windows
 }
 
 /// Every window's session, the main window first, each path in one window
@@ -236,6 +259,29 @@ mod tests {
     }
 
     #[test]
+    fn a_document_opened_with_no_window_joins_the_last_session() {
+        let saved = vec![
+            of(&["/a/one.md"]),
+            WindowSession {
+                folder: Some("/notes".into()),
+                ..of(&["/notes/x.md", "/notes/y.md"])
+            },
+        ];
+        let windows = with_documents(saved, vec!["/notes/y.md".into()]);
+        assert_eq!(windows[0], of(&["/a/one.md"]));
+        assert_eq!(windows[1].paths, ["/notes/x.md", "/notes/y.md"]);
+        assert_eq!(windows[1].opened, ["/notes/y.md"]);
+        assert_eq!(windows[1].folder.as_deref(), Some("/notes"));
+        // Outside every folder: the first window; with no session, its own.
+        let windows = with_documents(windows, vec!["/b/two.md".into()]);
+        assert_eq!(windows[0].opened, ["/b/two.md"]);
+        assert_eq!(
+            with_documents(Vec::new(), vec!["/b/two.md".into()])[0].opened,
+            ["/b/two.md"]
+        );
+    }
+
+    #[test]
     fn closing_the_last_window_keeps_its_session_for_the_next_launch() {
         // Windows/Linux exit with it; macOS keeps running windowless. Either
         // way the documents it had open are what comes back.
@@ -276,21 +322,14 @@ mod tests {
             paths: vec!["one.md".into(), "two.md".into()],
             layout: Some(serde_json::json!({"direction": "row"})),
             folder: Some("/notes".into()),
+            ..WindowSession::default()
         };
         map.insert("main".into(), main.clone());
         assert_eq!(merge_windows(&map), vec![main, of(&["three.md"])]);
     }
 
     #[test]
-    fn every_earlier_session_file_still_opens() {
-        assert_eq!(
-            parse_session(r#"["a.md","b.md"]"#),
-            vec![of(&["a.md"]), of(&["b.md"])]
-        );
-        assert_eq!(
-            parse_session(r#"[["a.md","b.md"],[]]"#),
-            vec![of(&["a.md", "b.md"])]
-        );
+    fn the_session_file_opens_without_its_empty_windows() {
         assert_eq!(
             parse_session(r#"[{"paths":[],"folder":"/n"},{"paths":[]}]"#),
             vec![WindowSession {
@@ -302,16 +341,14 @@ mod tests {
     }
 
     #[test]
-    fn only_a_file_no_version_wrote_is_set_aside() {
-        for written in [
-            r#"["a.md"]"#,
-            r#"[["a.md"]]"#,
-            r#"[{"paths":["a.md"]}]"#,
-            "[]",
-        ] {
+    fn a_file_this_version_did_not_write_is_set_aside() {
+        for written in [r#"[{"paths":["a.md"]}]"#, "[]"] {
             assert!(readable_session(written), "{written}");
         }
-        assert!(!readable_session(r#"[{"paths":["a.md"]"#));
+        // Broken, or as versions before 1.4 wrote it.
+        for other in [r#"[{"paths":["a.md"]"#, r#"[["a.md"]]"#, r#"["a.md"]"#] {
+            assert!(!readable_session(other), "{other}");
+        }
     }
 
     #[test]

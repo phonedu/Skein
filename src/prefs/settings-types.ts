@@ -9,6 +9,9 @@ import {
   type AiProvider,
   type ContentWidth,
   type ImageAlign,
+  type PdfMargin,
+  type PdfPaper,
+  type PdfTextScale,
   type EmbedDisplay,
   type ViewMode,
   type ProxyType,
@@ -159,9 +162,6 @@ export interface Settings {
   typewriterMode: boolean;
   /** The formatting row under the title bar. */
   formatBar: boolean;
-  /** formatBar has been turned on once for a profile from before it was
-   *  on by default (settings-normalise.ts). */
-  formatBarOnce: boolean;
   formatBarSide: FormatBarSide;
   /** Every document zoomed together, not each tab its own (documents
    *  only: Settings, plugin pages and the AI aren't zoomed). */
@@ -248,12 +248,19 @@ export interface Settings {
   /** Closing the last document shows the start page instead of closing
    *  the window. */
   closeLastToStartPage: boolean;
+  /** The tab row's + opens the start page, which New File there then
+   *  turns into the document, instead of a blank document at once. */
+  addTabShowsStartPage: boolean;
   /** Suggest an H1 or first content line as a draft's Save As filename. */
   autoSuggestFilename: boolean;
   /** Write a document that has a file back to it once typing rests. */
   autosave: boolean;
   /** Export as PDF numbers each page in its bottom margin. */
   pdfPageNumbers: boolean;
+  /** The paper, margins and text size a PDF export prints with. */
+  pdfPaper: PdfPaper;
+  pdfMargin: PdfMargin;
+  pdfTextScale: PdfTextScale;
   /** macOS: export PDFs on white in the theme's light colours. Other
    *  platforms always do. */
   pdfLightColors: boolean;
@@ -343,7 +350,6 @@ export const DEFAULT_SETTINGS: Settings = {
   proxyPassword: "",
   typewriterMode: false,
   formatBar: true,
-  formatBarOnce: true,
   formatBarSide: "top",
   zoomTogether: false,
   viewMode: "rich",
@@ -380,9 +386,13 @@ export const DEFAULT_SETTINGS: Settings = {
   creations: [],
   startPageOnLaunch: false,
   closeLastToStartPage: false,
+  addTabShowsStartPage: false,
   autoSuggestFilename: true,
   autosave: false,
   pdfPageNumbers: false,
+  pdfPaper: "a4",
+  pdfMargin: "normal",
+  pdfTextScale: 1,
   pdfLightColors: false,
   docxReferenceDoc: "",
   exportToc: false,

@@ -37,7 +37,7 @@ export interface TabState {
   /** A blank document in use; its tab's id. */
   addBlankTab: () => string;
   /** Opens the start page in a tab of its own. */
-  addStartTab: () => void;
+  addStartTab: () => string;
 }
 
 // The window starts with one blank document - none on a phone, whose empty
@@ -123,6 +123,7 @@ export function useTabState(): TabState {
     const start = makeStartTab();
     setTabs((prev) => [...prev.filter((tab) => !showsStartPage(tab)), start]);
     setActiveTabId(start.id);
+    return start.id;
   }, []);
 
   return {

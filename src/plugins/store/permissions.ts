@@ -1,3 +1,4 @@
+import { hasTextusAi } from "../../platform/capabilities";
 import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
 import type { Permission } from "./manifest";
@@ -26,7 +27,18 @@ export const PERMISSION_LABELS: Record<
   agents: "pluginPermAgents",
   appearance: "pluginPermAppearance",
   "git.commit": "pluginPermGitCommit",
+  ssh: "pluginPermSsh",
 };
+
+/** The permissions worth naming to the user: where Textus AI isn't offered,
+ *  the AI's (granted all the same, they do nothing there). */
+export function shownPermissions(
+  permissions: readonly Permission[],
+): Permission[] {
+  return hasTextusAi
+    ? [...permissions]
+    : permissions.filter((p) => !p.startsWith("ai."));
+}
 
 /** A permission in plain words, as the install dialog and a plugin's page
  *  in Settings name it. */

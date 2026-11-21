@@ -1,5 +1,10 @@
 import { useLatestCallback } from "../utils/hooks/useLatest";
-import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import {
   ChevronIcon,
   CloseIcon,
@@ -33,6 +38,7 @@ import { isWithin } from "../utils/path";
 import type { FileOpenHow } from "./tree-shared";
 import { useTreeView } from "./useTreeData";
 import { useRowMenu } from "./useRowMenu";
+import { TreeSelection } from "./tree-selection";
 import { useNewEntry } from "./useNewEntry";
 import { useNoteCount } from "./note-count";
 import { RecentSection } from "./recent-section";
@@ -113,6 +119,7 @@ export function FileTree({
   const select = useLatestCallback(onFileSelect);
   const desktop = !isMobileApp && canOpenFolder;
   const { draft, setDraft, finishDraft } = useNewEntry(t, reload, select);
+  const selection = useMemo(() => new TreeSelection(), []);
 
   const { menu, setMenu, onRowMenu, openRowMenu } = useRowMenu(
     root,
@@ -123,6 +130,7 @@ export function FileTree({
     onEntryMoved,
     setDraft,
     folder ? null : onRootChange,
+    selection,
   );
   const { drag, onRowPointerDown } = useRowDrag(
     treeRef,
@@ -130,6 +138,8 @@ export function FileTree({
     onEntryMoved,
     folder ?? root,
     t,
+    selection,
+    openRowMenu,
   );
   const { rowActions, shared } = useTreeContexts({
     sort,

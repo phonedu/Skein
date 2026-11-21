@@ -12,7 +12,8 @@ import {
   canPickImageFile,
   canRevealInFileManager,
 } from "../../platform/capabilities";
-import { isScopedUrl, scopedImageSrc } from "../../platform/ios-files";
+import { scopedImageSrc } from "../../platform/native-files";
+import { isFarUrl } from "../../platform/far-files";
 import {
   MISSING_IMAGE_CLASS,
   imageDisplayName,
@@ -35,6 +36,7 @@ import {
   withImageWidth,
 } from "./image-html";
 import { imageRotationView } from "./image-rotation";
+import { reserveRoom, rememberSize } from "./picture-sizes";
 import { DROP_IMAGE_FILES_EVENT } from "../../utils/events";
 import {
   changedRangesOf,
@@ -54,6 +56,7 @@ import {
 } from "./image-store";
 import { openDiagramViewer, zoomButton } from "../diagram-zoom";
 import { trackDrag } from "../../engine/drag/pointer-drag";
+import { holdOnResize } from "../lazy/hold-on-resize";
 /**
  * Image paste (stored in the document's image folder, relative src) and
  * render (local srcs rewritten to asset: URLs; the document keeps the original).
@@ -91,14 +94,14 @@ export function showDocImage(
   // Loaded only as it comes near the screen (set before the src, or it
   // loads at once): a short note can hold many large photos.
   img.loading = "lazy";
-  if (doc && isScopedUrl(doc) && !hasUrlScheme(src) && !src.startsWith("/")) {
+  if (doc && isFarUrl(doc) && !hasUrlScheme(src) && !src.startsWith("/")) {
     img.removeAttribute("src");
     void scopedImageSrc(src, doc)
       .then((url) => {
         if (stillWanted()) img.src = url;
       })
       .catch(() => {});
-  } else if (doc && !isScopedUrl(doc) && /^\/(?!\/)/.test(src)) {
+  } else if (doc && !isFarUrl(doc) && /^\/(?!\/)/.test(src)) {
     img.removeAttribute("src");
     void rootedImagePath(src, doc)
       .then((path) => {
@@ -220,6 +223,8 @@ function createImageView(
     dom.append(card);
   };
   img.addEventListener("load", clearMissing);
+  img.addEventListener("load", () => rememberSize(shown(), img));
+  const stopHold = holdOnResize(dom);
   // A short, wide strip (a README badge) has nothing to enlarge or
   // resize, and the controls would cover its words.
   img.addEventListener("load", () => {
@@ -244,12 +249,10 @@ function createImageView(
     const want = shown();
     if (want !== drawn || card) {
       drawn = want;
-      showDocImage(
-        img,
-        (n.attrs.src as string) ?? "",
-        docPath(),
-        () => shown() === want,
-      );
+      const src = (n.attrs.src as string) ?? "";
+      const stillWanted = () => shown() === want;
+      reserveRoom(img, want, src, docPath(), stillWanted);
+      showDocImage(img, src, docPath(), stillWanted);
     }
     img.alt = splitAltSize((n.attrs.alt as string) ?? "").alt;
     if (title) img.title = title;
@@ -315,6 +318,7 @@ function createImageView(
       apply(n);
       return true;
     },
+    destroy: stopHold,
     selectNode: () => dom.classList.add("ProseMirror-selectednode"),
     deselectNode: () => dom.classList.remove("ProseMirror-selectednode"),
     // The handle's drag is ours, not ProseMirror's (which would start a

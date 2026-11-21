@@ -31,7 +31,7 @@ vi.mock("../../engine/controls/app-dialog", () => ({
   showConfirm: vi.fn(),
 }));
 
-vi.mock("../../platform/ios-files", () => ({
+vi.mock("../../platform/native-files", () => ({
   useAppDocumentsFolder: vi.fn(() => null),
 }));
 
@@ -55,7 +55,7 @@ import {
   syncPluginImport,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
-import { useAppDocumentsFolder } from "../../platform/ios-files";
+import { useAppDocumentsFolder } from "../../platform/native-files";
 
 vi.mocked(syncVaults).mockResolvedValue([]);
 vi.mocked(syncConnectionUpdate).mockResolvedValue({

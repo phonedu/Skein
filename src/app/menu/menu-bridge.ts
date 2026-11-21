@@ -43,6 +43,7 @@ import { islandKeyOf } from "./island-key";
 import { APP_ACTIONS, type AppActionHandlers } from "./app-actions";
 import { copyPath } from "../../clipboard/copy-path";
 import { openReportProblem } from "../report/report-open";
+import type { PdfLayout } from "../../export/pdf-page";
 
 interface MenuBridgeHandlers extends AppActionHandlers {
   activeTabId: string;
@@ -53,6 +54,7 @@ interface MenuBridgeHandlers extends AppActionHandlers {
   liveTabs: () => DocTab[];
   t: Strings;
   pdfPageNumbers: boolean;
+  pdfLayout: PdfLayout;
   pdfLightColors: boolean;
   diagramEngine: DiagramEngine;
   /** Settings › Editor › Export, for a Pandoc export. */
@@ -186,6 +188,7 @@ export function useMenuBridge(handlers: MenuBridgeHandlers): void {
             m.exportPdf(tab, h().t, {
               pageNumbers: h().pdfPageNumbers,
               lightColors: h().pdfLightColors,
+              layout: h().pdfLayout,
             }),
           );
       }),
@@ -269,7 +272,11 @@ export function useMenuBridge(handlers: MenuBridgeHandlers): void {
       listenToThisWindow("menu-help-sponsor", () => h().openSponsor()),
       listenToThisWindow<string>("menu-open-help", (event) => {
         if (event.payload === "welcome") h().startWelcomeTutorial();
-        else if (event.payload === "markdown" || event.payload === "agent")
+        else if (
+          event.payload === "markdown" ||
+          event.payload === "agent" ||
+          event.payload === "licenses"
+        )
           h().openHelpTab(event.payload);
       }),
     );

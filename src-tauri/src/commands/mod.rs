@@ -30,8 +30,9 @@ pub mod links;
 #[cfg(desktop)]
 pub mod native_edit;
 pub mod own_notes;
-#[cfg(desktop)]
+#[cfg(any(desktop, target_os = "ios"))]
 pub mod pdf_page_numbers;
+pub mod picture_size;
 #[cfg(desktop)]
 pub mod prefs;
 pub mod recents;

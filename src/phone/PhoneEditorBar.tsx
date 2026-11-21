@@ -19,7 +19,7 @@ import {
   ShareActionIcon,
 } from "./PhoneEditorBarIcons";
 import { emitToThisWindow } from "../platform/menu-events";
-import { iosFiles } from "../platform/ios-files";
+import { nativeFiles } from "../platform/native-files";
 import { parseHeadings } from "../files/outline-parse";
 import { currentHeading } from "../files/outline-current";
 import { plainInline } from "../utils/markdown-plain";
@@ -105,7 +105,7 @@ export function PhoneEditorBar({
       // A document that has not been saved has nothing to hand on.
       disabled: !path,
       onSelect: () => {
-        if (path) void iosFiles.share(path).catch(() => {});
+        if (path) void nativeFiles.share(path).catch(() => {});
       },
     },
   ];

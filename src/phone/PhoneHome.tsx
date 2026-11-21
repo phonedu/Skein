@@ -9,7 +9,7 @@ import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
 import { FileTree } from "../files/FileTree";
 import { canOpenFolder } from "../platform/capabilities";
-import { useAppDocumentsFolder } from "../platform/ios-files";
+import { useAppDocumentsFolder } from "../platform/native-files";
 import { emitToThisWindow } from "../platform/menu-events";
 import {
   ActionSheet,

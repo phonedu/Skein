@@ -41,7 +41,7 @@ vi.mock("../platform/capabilities", () => ({
   isDesktopApp: false,
 }));
 
-vi.mock("../platform/ios-files", () => ({
+vi.mock("../platform/native-files", () => ({
   useAppDocumentsFolder: () => "/app/Documents",
 }));
 

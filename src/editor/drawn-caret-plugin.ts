@@ -1,8 +1,8 @@
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
-import type { ResolvedPos } from "@milkdown/kit/prose/model";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import { $prose } from "@milkdown/kit/utils";
 import { watchContentZoom } from "../engine/zoom/tab-zoom";
+import { caretBox } from "./drawn-caret-box";
 import "./drawn-caret.css";
 
 /**
@@ -14,11 +14,6 @@ import "./drawn-caret.css";
  * hidden mark), where the editor computes it. Beside a picture it is as
  * tall as the picture. Placed once a frame at most.
  */
-/** The caret's height, in the block's text size. */
-const CARET_EM = 1.25;
-/** Its width on screen, whatever the document's zoom. */
-const CARET_PX = 2;
-
 /** Events after which the caret may stand elsewhere. */
 const MOVES = [
   "focus",
@@ -74,17 +69,6 @@ class DrawnCaret {
     return box && box.height > 0 ? box : null;
   }
 
-  /** The box of the empty line a block's last newline starts: the break
-   *  ProseMirror keeps for it. Null when the block draws none. */
-  private trailingBreak($head: ResolvedPos): DOMRect | null {
-    const dom = this.view.nodeDOM($head.before($head.depth));
-    if (!(dom instanceof HTMLElement)) return null;
-    const box = dom
-      .querySelector("br.ProseMirror-trailingBreak")
-      ?.getBoundingClientRect();
-    return box && box.height > 0 ? box : null;
-  }
-
   /** The box of the picture right before or after the caret, if any. */
   private pictureBeside(): DOMRect | null {
     const { $head } = this.view.state.selection;
@@ -109,24 +93,19 @@ class DrawnCaret {
     const empty = view.composing ? !!live : view.state.selection.empty;
     const on = this.enabled() && view.editable && view.hasFocus() && empty;
     this.root.classList.toggle("drawn-caret-on", on);
-    const wasHidden = this.caret.hidden;
+    const wasHidden = this.caret.hidden !== false;
     this.caret.hidden = !on;
     if (!on) return;
     const { $head } = view.state.selection;
     // At a line's end after a formula or a picture, the editor keeps a
     // break; the browser's caret may stand after it, on the line below,
     // and the editor's own place too: the side before it. Outside a
-    // composition, the line is the editor's to say. A last newline is
-    // different: the empty line it starts is where the caret is, and the
-    // side before it is the line above.
-    const atEnd = $head.parentOffset === $head.parent.content.size;
-    const newLine =
-      atEnd &&
-      $head.parent.isTextblock &&
-      $head.parent.textContent.endsWith("\n")
-        ? this.trailingBreak($head)
-        : null;
-    const own = newLine ?? view.coordsAtPos($head.pos, atEnd ? -1 : 1);
+    // composition, the line is the editor's to say. After a code block's
+    // last newline, the side before is still the line above.
+    const atEnd =
+      $head.parentOffset === $head.parent.content.size &&
+      !$head.nodeBefore?.text?.endsWith("\n");
+    const own = view.coordsAtPos($head.pos, atEnd ? -1 : 1);
     const offLine =
       !!live &&
       !view.composing &&
@@ -149,33 +128,21 @@ class DrawnCaret {
       block instanceof HTMLElement
         ? parseFloat(getComputedStyle(block).fontSize)
         : 0;
-    // On whole screen pixels - its left, top, width and height - and as
-    // wide on screen at any zoom: in between, or grown with the zoom, it
-    // drew thick and soft.
-    const dpr = window.devicePixelRatio || 1;
-    const onPixel = (v: number) => Math.round(v * dpr) / dpr;
     // Beside a picture it stands as tall as the picture, as in Word.
-    const picture = this.pictureBeside();
-    const tall = onPixel(
-      picture
-        ? picture.height
-        : fontSize
-          ? fontSize * CARET_EM * zoom
-          : at.bottom - at.top,
-    );
-    const middle = picture
-      ? picture.top + picture.height / 2
-      : (at.top + at.bottom) / 2;
-    const top = onPixel(middle - tall / 2);
-    const x = (onPixel(at.left) - r.left) / zoom;
-    const y = (top - r.top) / zoom;
-    const width = Math.max(1, Math.round(CARET_PX * dpr)) / dpr / zoom;
+    const { x, y, height, width } = caretBox({
+      at,
+      picture: this.pictureBeside(),
+      fontSize,
+      zoom,
+      dpr: window.devicePixelRatio || 1,
+      root: r,
+    });
     // Shown again: it starts where the caret is, not gliding in from
     // where it was last.
     this.caret.classList.toggle("drawn-caret-still", wasHidden);
     this.caret.classList.toggle("drawn-caret-glide", this.glide());
     this.caret.style.transform = `translate(${x}px, ${y}px)`;
-    this.caret.style.height = `${tall / zoom}px`;
+    this.caret.style.height = `${height}px`;
     this.caret.style.width = `${width}px`;
     // Each move starts the blink over, solid while the caret moves: a new
     // animation name restarts it without laying the page out again.

@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { beforeAll, describe, expect, it } from "vitest";
-import { renderDocumentHtml, renderMarkdownHtml } from "./render-html";
+import {
+  renderDocumentHtml,
+  renderMarkdownHtml,
+  renderMarkdownInlineHtml,
+} from "./render-html";
 import { loadKatex } from "../math/katex-loader";
 
 // The app loads KaTeX on the first formula; these render with it there.
@@ -12,6 +16,16 @@ describe("renderMarkdownHtml", () => {
     expect(html).toContain('class="katex"');
     expect(html).toContain('class="agent-math"');
     expect(html).toContain("katex-display");
+  });
+
+  it("takes display math right under a line of text as a formula, not a heading", () => {
+    const html = renderMarkdownHtml(
+      "先给法向量 $v=(1,0)$，求完整受力：\n$$\nMv=\n\\begin{bmatrix}2&1\\\\1&2\\end{bmatrix}\n=\n\\begin{bmatrix}2\\\\1\\end{bmatrix}\n$$\n这对应**线性映射**：输入一个向量。",
+    );
+    expect(html).not.toMatch(/<h\d/);
+    expect(html.match(/katex-display/g)).toHaveLength(1);
+    expect(html).toContain("<strong>线性映射</strong>");
+    expect(html).not.toContain("katex-error");
   });
 
   it("renders LaTeX's own delimiters too", () => {
@@ -30,6 +44,12 @@ describe("renderMarkdownHtml", () => {
     );
     expect(html).toContain("<table>");
     expect(html).toContain('type="checkbox"');
+  });
+
+  it("takes stars next to CJK punctuation as bold, as the editor does", () => {
+    const md = "这就是**线性（linearity）**在这里的含义";
+    for (const html of [renderMarkdownHtml(md), renderMarkdownInlineHtml(md)])
+      expect(html).toContain("<strong>线性（linearity）</strong>");
   });
 
   it("still strips script from model output", () => {

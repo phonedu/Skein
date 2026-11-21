@@ -656,6 +656,12 @@ para usar una.
     "¿Mover «{name}» a la papelera? Podrás recuperarlo desde allí.",
   treeTrashFolderConfirm:
     "¿Mover la carpeta «{name}» y todo su contenido a la papelera? Podrás recuperarla desde allí.",
+  treeTrashManyConfirm: {
+    one: "¿Mover {n} elemento a la papelera? Podrás recuperarlo desde allí.",
+    many: "¿Mover {n} elementos a la papelera? Podrás recuperarlos desde allí.",
+    other:
+      "¿Mover {n} elementos a la papelera? Podrás recuperarlos desde allí.",
+  },
   errorPermission:
     "Textus no tiene permiso para abrir este archivo o carpeta. Revisa sus permisos o elige otra ubicación.",
   errorNotFound:
@@ -678,8 +684,8 @@ para usar una.
     "La tienda de plugins necesita una versión más reciente de Textus. Actualiza Textus para verla.",
   errorImageTooBig: "La imagen está vacía o supera los 25 MB.",
   errorNoFolder: "Abre primero una carpeta.",
-  errorPluginsNeedAllFiles:
-    "Los plugins no pueden leer esta carpeta: Textus no tiene acceso a todos los archivos. Vuelve a abrir la carpeta y elige «Continuar».",
+  errorFarPictures:
+    "Todavía no se pueden guardar imágenes en esta carpeta. Pégalas en un documento de este dispositivo.",
   errorPdfUnsupported:
     "La exportación a PDF no está disponible en este sistema.",
   errorNoText: "No tiene texto legible.",
@@ -802,6 +808,7 @@ para usar una.
   aboutVersionBeta: "Versión {version} · Beta",
   aboutMadeBy: "Hecho por CatVinci Studio",
   aboutQq: "Grupo de QQ",
+  aboutLicenses: "Licencias de código abierto",
   navShortcuts: "Atajos de teclado",
   generalBasicsLabel: "Opciones básicas",
   generalSystemLabel: "Aplicación",
@@ -1007,6 +1014,7 @@ para usar una.
   agentQueueContinue: "Continuar",
   agentQueueEdit: "Editar",
   agentQueueRemove: "Quitar",
+  agentQueueInsert: "Enviar ya",
   agentSend: "Enviar",
   agentStop: "Detener",
   agentRetry: "Reintentar",
@@ -1185,6 +1193,12 @@ para usar una.
   autoCloseBracketsLabel: "Cerrar (), [] y «»",
   plainTextMenuLabel: "Copiar y pegar sin formato en el menú contextual",
   pdfPageNumbersLabel: "Mostrar números de página al exportar",
+  pdfPaperLabel: "Tamaño de papel del PDF",
+  pdfMarginLabel: "Márgenes del PDF",
+  pdfMarginNarrow: "Estrechos",
+  pdfMarginNormal: "Normales",
+  pdfMarginWide: "Anchos",
+  pdfTextScaleLabel: "Tamaño del texto del PDF",
   docxTemplateLabel: "Plantilla de Word",
   docxTemplateHelp:
     "Los archivos de Word exportados toman los estilos, fuentes y márgenes de este archivo.",
@@ -1468,6 +1482,7 @@ para usar una.
   closeLastLabel: "Al cerrar el último documento",
   closeLastWindow: "Cerrar la ventana",
   closeLastStartPage: "Mostrar la página de inicio",
+  addTabLabel: "El + de la barra de pestañas abre",
   startPageRemoveRecent: "Quitar de recientes",
   startPageRecentProjects: "Carpetas recientes",
   startPagePickDocument:
@@ -1988,6 +2003,14 @@ para usar una.
   pluginPermNotifications: "Mostrar notificaciones del sistema",
   pluginPermAppearance: "Cambiar los colores de Textus y de tus documentos",
   pluginPermGitCommit: "Hacer commits de Git en la carpeta abierta con tu Git",
+  pluginPermSsh:
+    "Conectarse a servidores con tu configuración SSH (solo los que permitas)",
+  pluginSshAsk:
+    "{plugin} quiere conectarse a {host} con tu configuración SSH para leer y escribir archivos allí.",
+  pluginSshUnknownHost:
+    "{host} aún no es un host conocido. Conéctate una vez en una terminal (ssh {host}) para comprobar y aceptar su clave, y vuelve a intentarlo.",
+  pluginSshNeedsLogin:
+    "{host} pidió una contraseña o una clave no cargada. Añade tu clave al agente SSH (ssh-add) o configura el acceso con clave, y vuelve a intentarlo.",
   pluginPermComments: "Leer y dejar notas en el margen de tus documentos",
   pluginPermAiModel:
     "Usar tu modelo de IA (cuenta para el uso de tu servicio de IA)",

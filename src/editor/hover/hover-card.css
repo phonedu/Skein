@@ -54,7 +54,7 @@
   cursor: pointer;
 }
 
-@media (hover: hover) {
+@media (any-hover: hover) {
   .hover-card-button:hover {
     border-color: var(--ui-accent);
     color: var(--ui-accent-text);
@@ -84,6 +84,6 @@
 @media (prefers-reduced-motion: reduce) {
   .hover-card {
     transform: none;
-    transition: opacity var(--dur-fast) linear;
+    transition: opacity var(--dur-fast) var(--ease-standard);
   }
 }

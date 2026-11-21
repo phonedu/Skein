@@ -1,4 +1,3 @@
-import { uiList } from "../../storage/ui-state";
 import { inOrder } from "../../utils/in-order";
 import { loadSettings } from "../../prefs/settings-store";
 import {
@@ -210,7 +209,7 @@ export function railTabs(): SidebarTabDef[] {
   const order = loadSettings().activityRailOrder;
   return orderTabs(
     [...BUILT_IN, ...pluginsTab(), ...addedSidebarTabs()],
-    order.length ? order : uiList("sidebarTabOrder"),
+    order,
   );
 }
 

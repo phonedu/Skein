@@ -8,10 +8,11 @@ import {
 } from "react";
 import { fs } from "../platform/ipc";
 import { isMobileApp } from "../platform/capabilities";
-import { iosFiles } from "../platform/ios-files";
+import { nativeFiles } from "../platform/native-files";
 
 import { basename, parentDir } from "../utils/path";
 import { type ContextMenuItem } from "../engine/controls/ContextMenu";
+import type { TreeSelection } from "./tree-selection";
 import {
   contributedContextItems,
   lateContextItems,
@@ -57,7 +58,10 @@ export function useRowMenu(
   /** The tree narrowed to a folder inside it. */
   /** Null with a folder opened: the tree shows it whole. */
   onEnter: ((path: string) => void) | null,
+  /** Rows picked together, where multi-row actions are offered. */
+  _selection?: TreeSelection,
 ) {
+  void _selection;
   const [menu, setMenu] = useState<TreeMenu>(null);
   const rename = useCallback(
     async (path: string) => {
@@ -125,7 +129,7 @@ export function useRowMenu(
             ? [
                 {
                   label: t.menuShare,
-                  onSelect: () => void iosFiles.share(path).catch(() => {}),
+                  onSelect: () => void nativeFiles.share(path).catch(() => {}),
                   Icon: ShareIcon,
                 },
               ]

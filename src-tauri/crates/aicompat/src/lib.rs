@@ -3,6 +3,7 @@
 
 pub mod agent;
 pub mod capabilities;
+pub mod error_kind;
 pub mod http;
 pub mod images;
 pub mod models;
@@ -11,6 +12,8 @@ pub mod pkce;
 pub mod providers;
 pub mod public_address;
 pub mod responses_api;
+pub mod system_proxy;
+pub mod trust;
 
 pub use oauth_page::success_page_html;
 

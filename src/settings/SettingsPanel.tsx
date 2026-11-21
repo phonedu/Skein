@@ -104,12 +104,22 @@ export function SettingsPanel({
   const marginAvailable = useMarginAvailable();
   const phone = usePhoneLayout();
   const noMargin = !phone && !marginAvailable;
+  const nav = useSettingsNav(initialCategory);
+  // Android's Back (Escape) on a phone steps back to Settings' list before
+  // leaving Settings; the close button and the dimmed edge still close it.
   // Closing Settings on a phone leaves the keyboard down: the user is
   // going back to the page, not necessarily to typing.
-  const modal = useModalDialog(onClose, true, undefined, false);
+  const modal = useModalDialog(
+    () => {
+      if (phone && !nav.home) return nav.back();
+      onClose();
+    },
+    true,
+    undefined,
+    false,
+  );
   // Rendered inside a Presence: it goes the way it came.
   const presence = usePresenceProps<HTMLDivElement>();
-  const nav = useSettingsNav(initialCategory);
   const { category, subpage, setSubpage, content, setJump } = nav;
   // A phone opened at General starts on the list instead.
   const atHome = phone && nav.home;
@@ -168,7 +178,11 @@ export function SettingsPanel({
 
   const renderSubpage = (s: Subpage) =>
     s === "about" ? (
-      <AboutSection t={t} checkNow={initialCategory === "updates"} />
+      <AboutSection
+        t={t}
+        openLicenses={() => openHelp("licenses")}
+        checkNow={initialCategory === "updates"}
+      />
     ) : (
       <>
         <h1 className="settings-category-title">{subpageTitles[s]}</h1>
@@ -294,7 +308,7 @@ export function SettingsPanel({
         >
           <button
             type="button"
-            className="text-button settings-back-button"
+            className="tx-button text-button settings-back-button"
             onClick={nav.back}
           >
             <ChevronIcon className="settings-back-chevron" />

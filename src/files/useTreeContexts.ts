@@ -40,6 +40,7 @@ export function useTreeContexts(
       onRowHold,
       onRowPointerDown: desktop ? onRowPointerDown : null,
       openInNewWindow: desktop ? openInNewWindow : null,
+      onRowPick: null,
     }),
     [desktop, onRowMenu, onRowHold, onRowPointerDown],
   );

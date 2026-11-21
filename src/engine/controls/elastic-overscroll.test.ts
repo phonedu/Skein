@@ -33,10 +33,19 @@ function page() {
   scroller.append(content);
   Object.defineProperty(scroller, "clientHeight", { value: 500 });
   Object.defineProperty(scroller, "scrollHeight", { value: 2000 });
-  const springs: Keyframe[][] = [];
+  // Each spring played, and how to end it.
+  const springs: { frames: Keyframe[]; done?: () => void }[] = [];
   content.animate = ((frames: Keyframe[]) => {
-    springs.push(frames);
-    return { cancel() {} } as Animation;
+    const spring = { frames } as (typeof springs)[number];
+    springs.push(spring);
+    const anim = {
+      cancel() {
+        anim.oncancel?.(new Event("cancel") as AnimationPlaybackEvent);
+      },
+    } as Animation;
+    spring.done = () =>
+      anim.onfinish?.(new Event("finish") as AnimationPlaybackEvent);
+    return anim;
   }) as typeof content.animate;
   const stop = elasticOverscroll(scroller, content);
   return { scroller, content, springs, stop };
@@ -60,10 +69,21 @@ describe("the Mac's give at a document's end", () => {
     touch.down = null;
   });
 
-  it("pulls the text after the finger past the top", () => {
-    const { scroller, content, stop } = page();
+  it("pulls the text after the finger past the top, the box marked stretched until it rests", () => {
+    const { scroller, content, springs, stop } = page();
+    const scrolls = vi.fn();
+    scroller.addEventListener("scroll", scrolls);
     swipe(scroller, [-8, -9, -8, -10, -8]);
-    expect(content.style.translate).toMatch(/^0 \d/);
+    expect(content.style.translate).toMatch(/^0(px)? \d/);
+    expect(scroller.hasAttribute("data-stretched")).toBe(true);
+    finger(false);
+    // Springing back, still stretched; at rest, a scroll is heard.
+    expect(springs).toHaveLength(1);
+    expect(scroller.hasAttribute("data-stretched")).toBe(true);
+    expect(scrolls).not.toHaveBeenCalled();
+    springs.at(-1)!.done!();
+    expect(scroller.hasAttribute("data-stretched")).toBe(false);
+    expect(scrolls).toHaveBeenCalledOnce();
     stop();
   });
 
@@ -106,13 +126,24 @@ describe("the Mac's give at a document's end", () => {
     const { scroller, content, springs, stop } = page();
     finger(true);
     swipe(scroller, [-8, -9, -8, -10, -8]);
+    // Slowing down with the finger on, as momentum's steps would: still
+    // the finger's, so it keeps pulling.
+    swipe(scroller, [-7, -6, -5, -4, -3, -2]);
+    expect(springs).toHaveLength(0);
     const held = content.style.translate;
+    expect(held).toMatch(/^0(px)? \d/);
     // Held still well past any pause a guess would take for a lift.
     vi.advanceTimersByTime(2000);
     expect(content.style.translate).toBe(held);
     expect(springs).toHaveLength(0);
     // Lifted: back now, not after a wait.
     finger(false);
+    expect(content.style.translate).toBe("");
+    expect(springs).toHaveLength(1);
+    // The momentum comes after a pause, as a new swipe would: it doesn't
+    // pull the page out again.
+    vi.advanceTimersByTime(120);
+    swipe(scroller, [-12, -11, -10, -9, -8, -7, -6]);
     expect(content.style.translate).toBe("");
     expect(springs).toHaveLength(1);
     stop();
@@ -123,7 +154,7 @@ describe("the Mac's give at a document's end", () => {
     swipe(scroller, [-8, -9, -8, -7, -6, -5, -4, -3]);
     vi.advanceTimersByTime(300);
     swipe(scroller, [-8, -9, -8]);
-    expect(content.style.translate).toMatch(/^0 \d/);
+    expect(content.style.translate).toMatch(/^0(px)? \d/);
     stop();
   });
 
@@ -131,7 +162,7 @@ describe("the Mac's give at a document's end", () => {
     const { scroller, content, stop } = page();
     swipe(scroller, [-8, -9, -8, -10]);
     swipe(scroller, [-1, -1, -2, -1, -1]);
-    expect(content.style.translate).toMatch(/^0 \d/);
+    expect(content.style.translate).toMatch(/^0(px)? \d/);
     stop();
   });
 

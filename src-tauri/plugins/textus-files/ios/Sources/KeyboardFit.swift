@@ -56,13 +56,18 @@ final class KeyboardFit {
       ) { [weak self] note in
         self?.keyboardMoved(note)
       })
-    // A turn re-lays out the host after the keyboard has said where it goes:
-    // the gap it leaves is measured again against the new bounds, or the
-    // portrait keyboard's gap stays under a landscape page.
-    boundsObservation = webview.superview?.layer.observe(\.bounds) {
-      [weak self] _, _ in
-      DispatchQueue.main.async { self?.turned() }
-    }
+    // Gone without a frame that says so (put down for a turn, or by the
+    // system mid-turn): the page gets its full height back.
+    observers.append(
+      center.addObserver(
+        forName: UIResponder.keyboardDidHideNotification,
+        object: nil,
+        queue: .main
+      ) { [weak self] _ in
+        self?.keyboardEnd = nil
+        self?.fit(animated: false)
+      })
+    watchTurns()
     // Coming back from another app the keyboard is re-announced and the
     // page may have drifted; settle it again.
     observers.append(
@@ -73,6 +78,21 @@ final class KeyboardFit {
       ) { [weak self] _ in
         self?.pinToTop()
       })
+  }
+
+  /// A turn re-lays out the host after the keyboard has said where it goes:
+  /// the gap it leaves is measured again against the new bounds, or the
+  /// portrait keyboard's gap stays under a landscape page. The web view may
+  /// not be in its host yet when the plugin loads; then once it is.
+  private func watchTurns() {
+    guard boundsObservation == nil else { return }
+    guard let host = webview?.superview else {
+      DispatchQueue.main.async { [weak self] in self?.watchTurns() }
+      return
+    }
+    boundsObservation = host.layer.observe(\.bounds) { [weak self] _, _ in
+      DispatchQueue.main.async { self?.turned() }
+    }
   }
 
   deinit {
@@ -151,11 +171,22 @@ final class KeyboardFit {
   }
 
   /// The web view as tall as the host less what the keyboard covers of it
-  /// (nothing when it is leaving, or is a floating/hardware-keyboard bar).
+  /// (nothing when it is leaving, floating or split).
   private func fit(animated: Bool, duration: Double = 0) {
     guard let webview = webview, let host = webview.superview else { return }
-    let covered =
-      keyboardEnd.map { max(0, host.bounds.maxY - host.convert($0, from: nil).minY) } ?? 0
+    // A frame as wide as the screen was before a turn is the old
+    // orientation's keyboard, which is no longer there.
+    let screenWidth = host.window?.screen.bounds.width
+    let current = keyboardEnd.flatMap { end -> CGRect? in
+      guard let width = screenWidth, end.width > width + 1 else { return end }
+      return nil
+    }
+    // Only a keyboard docked at the bottom, across the whole width, takes
+    // height: an iPad's floating or split one sits over the page and moves.
+    let docked = current.map { host.convert($0, from: nil) }.flatMap { end -> CGRect? in
+      end.maxY >= host.bounds.maxY - 1 && end.width >= host.bounds.width - 1 ? end : nil
+    }
+    let covered = docked.map { max(0, host.bounds.maxY - $0.minY) } ?? 0
     // Shows for a moment below the shortened view as the keyboard moves.
     host.backgroundColor = .systemBackground
     var frame = host.bounds

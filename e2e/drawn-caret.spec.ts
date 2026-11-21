@@ -98,6 +98,7 @@ async function caretAtZooms(page: Page) {
     for (let i = 0; i < Math.abs(by); i++)
       await page.mouse.wheel(0, by > 0 ? -120 : 120);
     await page.keyboard.up("Control");
+    // Real time: a pinch ends once the wheel has been still a moment (useZoom's 250 ms).
     await page.waitForTimeout(500);
   };
   const heights = [];
@@ -115,12 +116,6 @@ async function caretAtZooms(page: Page) {
   // The zoom did take: the caret grew with the text, not wider.
   expect(heights[3]).toBeGreaterThan(heights[1] * 1.3);
 }
-
-test("the drawn caret keeps its width on screen at any zoom, on whole pixels", async ({
-  page,
-}) => {
-  await caretAtZooms(page);
-});
 
 test.describe("on a Retina screen", () => {
   test.use({ deviceScaleFactor: 2 });

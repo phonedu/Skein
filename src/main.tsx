@@ -10,12 +10,12 @@ import { installDevTauriShim } from "./dev/tauri-shim";
 import { installPolyfills } from "./utils/polyfills";
 import { watchMemory } from "./app/watch-memory";
 import { publishWindowChrome } from "./platform/window-chrome";
-import { WindowEdges } from "./app/frame/WindowEdges";
+import { WindowEdges, WindowOutline } from "./app/frame/WindowEdges";
 import { installWebviewGuards } from "./engine/controls/webview-guards";
 import { installLinkGuard } from "./app/link-guard";
 import { installTextFieldMenu } from "./engine/controls/text-field-menu";
 import { installScrollReveal } from "./engine/controls/scroll-reveal";
-import { restoreFolderAccess } from "./platform/ios-files";
+import { restoreFolderAccess } from "./platform/native-files";
 import { installMobileViewport } from "./platform/mobile-viewport";
 import { installBack } from "./mobile/back";
 import { markEngineQuirks } from "./engine/controls/engine-quirks";
@@ -108,6 +108,7 @@ if (view === "background") {
                 <App />
               )}
               {view !== "floating" && <WindowEdges />}
+              {view !== "floating" && <WindowOutline />}
             </SettingsProvider>
           </AppErrorBoundary>
         </React.StrictMode>,

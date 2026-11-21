@@ -6,7 +6,6 @@ import {
   isMacPlatform,
   isWindowsPlatform,
 } from "./os";
-import { readBoot } from "../storage/boot";
 
 /**
  * What this build can do: the one place the desktop/iOS split is decided on
@@ -55,8 +54,9 @@ export const canToggleFullscreen = isDesktopApp;
 /** The self-updater. iOS updates come from the App Store. */
 export const canAutoUpdate = isDesktopApp;
 
-/** File > Export as PDF, through each desktop webview's PDF backend. */
-export const canExportPdf = isDesktopApp;
+/** File > Export as PDF, through each webview's PDF backend: iOS's is the
+ *  Mac's WebKit one. */
+export const canExportPdf = isDesktopApp || isIOSApp;
 
 /** Export through pandoc, an external process iOS can't spawn. */
 export const canExportWithPandoc = isDesktopApp;
@@ -64,9 +64,21 @@ export const canExportWithPandoc = isDesktopApp;
 /** Showing a file or folder in Finder/Explorer/the file manager. */
 export const canRevealInFileManager = isDesktopApp;
 
-/** A picker for an image file on disk. iOS's Files picker gives files the
- *  image store can't read by path. */
-export const canPickImageFile = isDesktopApp;
+/** A picker for an image file: on iOS, Files' pick read through the native
+ *  plugin (image-store's fileImage). */
+export const canPickImageFile = isDesktopApp || isIOSApp;
+
+/** Settings › Plugins › Install from File: a package picked on the
+ *  desktop, or in Files on iOS. */
+export const canInstallPluginFile = isDesktopApp || isIOSApp;
+
+/** Load Plugin Folder and the scripts folder: a folder the app watches,
+ *  on the desktop. */
+export const canPickPluginFolder = isDesktopApp;
+
+/** Files dragged in from another app arrive as their contents, with no
+ *  paths (an iPad's HTML5 drop), not as the desktop's drop of paths. */
+export const filesDropAsContents = isIOSApp;
 
 /** A folder picker: the dialog plugin's on desktop, Files' on iOS. */
 export const canPickFolder = isDesktopApp || isIOSApp;
@@ -79,8 +91,8 @@ export const canOpenFolder = isDesktopApp || isMobileApp;
 /** Settings' "install the `textus` terminal command". */
 export const canInstallCliCommand = isDesktopApp;
 
-/** Moving a replaced picture's file to the Trash. */
-export const canTrashFiles = isDesktopApp;
+/** Moving files to the Trash: iOS's is the Files app's Recently Deleted. */
+export const canTrashFiles = isDesktopApp || isIOSApp;
 
 /** Settings' "Default Markdown editor". iOS has no default app to set. */
 export const canSetDefaultEditor = isDesktopApp;
@@ -96,8 +108,7 @@ export const canHaptic = isMobileApp;
  *  the app from being linked to. */
 export const canLinkSponsor = !isIOSApp;
 
-/** Textus AI at all: not on an iOS App Store download in mainland China,
- *  where it would need its own licence. Off, the master switch stays off
- *  (settings-normalise.ts) and the AI lessons, Settings page and chat
- *  history go with it. */
-export const hasTextusAi = !readBoot()?.aiUnavailable;
+/** Textus AI at all: not on iOS, which goes through App Review without it.
+ *  Off, the master switch stays off (settings-normalise.ts) and the AI
+ *  lessons, Settings page and chat history go with it. */
+export const hasTextusAi = !isIOSApp;

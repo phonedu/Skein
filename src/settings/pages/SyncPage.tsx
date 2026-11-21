@@ -34,7 +34,7 @@ import { showConfirm } from "../../engine/controls/app-dialog";
 import { Select } from "../../engine/controls/Select";
 import { isMobileApp } from "../../platform/capabilities";
 import { resolvedDocumentPath } from "../../platform/documents-path";
-import { useAppDocumentsFolder } from "../../platform/ios-files";
+import { useAppDocumentsFolder } from "../../platform/native-files";
 import { getUiState } from "../../storage/ui-state";
 import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../../utils/events";
 import { SettingsGroup } from "./SettingsGroup";

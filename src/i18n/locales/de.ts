@@ -636,6 +636,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "„{name}“ in den Papierkorb legen? Von dort lässt es sich zurücklegen.",
   treeTrashFolderConfirm:
     "Den Ordner „{name}“ mit allem darin in den Papierkorb legen? Von dort lässt er sich zurücklegen.",
+  treeTrashManyConfirm: {
+    one: "{n} Objekt in den Papierkorb legen? Von dort lässt es sich zurücklegen.",
+    other:
+      "{n} Objekte in den Papierkorb legen? Von dort lassen sie sich zurücklegen.",
+  },
   errorPermission:
     "Textus darf diese Datei oder diesen Ordner nicht öffnen. Prüfe die Zugriffsrechte oder wähle einen anderen Ort.",
   errorNotFound:
@@ -660,8 +665,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Der Plugin-Store braucht eine neuere Textus-Version. Aktualisiere Textus, um ihn zu sehen.",
   errorImageTooBig: "Das Bild ist leer oder größer als 25 MB.",
   errorNoFolder: "Öffne zuerst einen Ordner.",
-  errorPluginsNeedAllFiles:
-    "Plugins können diesen Ordner nicht lesen: Textus hat keinen Zugriff auf alle Dateien. Öffne den Ordner erneut und wähle „Weiter“.",
+  errorFarPictures:
+    "Bilder lassen sich in diesem Ordner noch nicht speichern. Füge sie in ein Dokument auf diesem Gerät ein.",
   errorPdfUnsupported: "PDF-Export ist auf diesem System nicht verfügbar.",
   errorNoText: "Es enthält keinen lesbaren Text.",
   errorUnreadable: "Diese Datei kann nicht gelesen werden.",
@@ -769,6 +774,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   aboutVersionBeta: "Version {version} · Beta",
   aboutMadeBy: "Von CatVinci Studio",
   aboutQq: "QQ-Gruppe",
+  aboutLicenses: "Open-Source-Lizenzen",
   navShortcuts: "Tastenkürzel",
   generalBasicsLabel: "Grundeinstellungen",
   generalSystemLabel: "Anwendung",
@@ -978,6 +984,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   agentQueueContinue: "Weiter",
   agentQueueEdit: "Bearbeiten",
   agentQueueRemove: "Entfernen",
+  agentQueueInsert: "Jetzt senden",
   agentSend: "Senden",
   agentStop: "Stoppen",
   agentRetry: "Erneut versuchen",
@@ -1147,6 +1154,12 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   autoCloseBracketsLabel: "(), [] und „“ schließen",
   plainTextMenuLabel: "Als reinen Text kopieren/einfügen im Kontextmenü",
   pdfPageNumbersLabel: "Seitenzahlen beim Exportieren anzeigen",
+  pdfPaperLabel: "PDF-Papierformat",
+  pdfMarginLabel: "PDF-Seitenränder",
+  pdfMarginNarrow: "Schmal",
+  pdfMarginNormal: "Normal",
+  pdfMarginWide: "Breit",
+  pdfTextScaleLabel: "PDF-Schriftgröße",
   docxTemplateLabel: "Word-Vorlage",
   docxTemplateHelp:
     "Exportierte Word-Dateien übernehmen Formatvorlagen, Schriften und Ränder dieser Datei.",
@@ -1428,6 +1441,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   closeLastLabel: "Wenn das letzte Dokument geschlossen wird",
   closeLastWindow: "Fenster schließen",
   closeLastStartPage: "Startseite zeigen",
+  addTabLabel: "Das + in der Tableiste öffnet",
   startPageRemoveRecent: "Aus „Zuletzt verwendet“ entfernen",
   startPageRecentProjects: "Letzte Ordner",
   startPagePickDocument:
@@ -1944,6 +1958,13 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   pluginPermNotifications: "Systemmitteilungen anzeigen",
   pluginPermAppearance: "Die Farben von Textus und Ihren Dokumenten ändern",
   pluginPermGitCommit: "Mit Ihrem Git Commits im geöffneten Ordner erstellen",
+  pluginPermSsh: "Mit Ihren SSH-Einstellungen Server verbinden (nur erlaubte)",
+  pluginSshAsk:
+    "{plugin} möchte sich mit Ihren SSH-Einstellungen mit {host} verbinden, um dort Dateien zu lesen und zu schreiben.",
+  pluginSshUnknownHost:
+    "{host} ist noch kein bekannter Host. Verbinden Sie sich einmal im Terminal (ssh {host}), prüfen und akzeptieren Sie seinen Schlüssel und versuchen Sie es erneut.",
+  pluginSshNeedsLogin:
+    "{host} hat nach einem Passwort oder einem nicht geladenen Schlüssel gefragt. Fügen Sie Ihren Schlüssel dem SSH-Agenten hinzu (ssh-add) oder richten Sie die Anmeldung per Schlüssel ein und versuchen Sie es erneut.",
   pluginPermComments: "Notizen am Rand Ihrer Dokumente lesen und hinzufügen",
   pluginPermAiModel:
     "Ihr KI-Modell verwenden (zählt zur Nutzung Ihres KI-Dienstes)",

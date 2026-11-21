@@ -76,13 +76,17 @@ dependencies = [
  "http",
  "hyper-util",
  "rand 0.8.8",
+ "regex",
  "reqwest 0.12.28",
+ "rustls",
+ "rustls-native-certs",
  "serde",
  "serde_json",
  "sha2",
  "specta",
  "tokio",
  "url",
+ "windows-registry",
 ]
 
 [[package]]
@@ -619,8 +623,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link",
 ]
 
@@ -911,6 +917,20 @@ dependencies = [
  "darling_core",
  "quote",
  "syn 3.0.9",
+]
+
+[[package]]
+name = "dashmap"
+version = "6.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6361d5c062261c78a176addb82d4c821ae42bed6089de0e12603cd25de2059c"
+dependencies = [
+ "cfg-if",
+ "crossbeam-utils",
+ "hashbrown 0.14.5",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -1727,6 +1747,18 @@ dependencies = [
  "log",
  "regex-automata",
  "regex-syntax",
+]
+
+[[package]]
+name = "gloo-timers"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4460540da666acdb5722b2a62ac47d18f627fcfc0c728d04dc7226b3f6d40a7"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "js-sys",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -3836,6 +3868,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "russh-sftp"
+version = "3.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9bb17f72aba4314656b359ffba72c68dcbd70ed9e97497898b75498fe7198042"
+dependencies = [
+ "bitflags 2.13.2",
+ "bytes",
+ "chrono",
+ "dashmap",
+ "gloo-timers",
+ "log",
+ "serde",
+ "serde_bytes",
+ "thiserror 2.0.21",
+ "tokio",
+ "tokio-util",
+ "wasm-bindgen-futures",
+]
+
+[[package]]
 name = "rust-ini"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4107,6 +4159,16 @@ dependencies = [
  "serde",
  "serde_core",
  "typeid",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5d440709e79d88e51ac01c4b72fc6cb7314017bb7da9eeff678aa94c10e3ea8"
+dependencies = [
+ "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -5112,7 +5174,7 @@ dependencies = [
 
 [[package]]
 name = "textus"
-version = "1.4.5"
+version = "1.4.6-rc.3"
 dependencies = [
  "aicompat",
  "async-trait",
@@ -5144,6 +5206,8 @@ dependencies = [
  "quick-xml 0.41.0",
  "regex",
  "reqwest 0.12.28",
+ "reqwest 0.13.5",
+ "russh-sftp",
  "semver",
  "serde",
  "serde_json",
@@ -5351,6 +5415,7 @@ dependencies = [
  "bytes",
  "futures-core",
  "futures-sink",
+ "futures-util",
  "libc",
  "pin-project-lite",
  "tokio",
@@ -5964,9 +6029,9 @@ dependencies = [
 
 [[package]]
 name = "webpki-roots"
-version = "1.0.11"
+version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5f280bbb2b287bc8e7de7e3852945a0ff50d1bbcb5ed42b6c7a568c546df171"
+checksum = "7265c9301c16a8711c992c2d8da90ee77ef54b1ed51482d6dfeb00dc756b1297"
 dependencies = [
  "rustls-pki-types",
 ]
