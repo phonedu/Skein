@@ -2008,6 +2008,11 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
     "이 동기화는 많은 파일을 삭제합니다. 아무것도 삭제하지 않았습니다.",
   syncErrorConfig: "연결 항목을 확인하세요.",
   syncErrorOther: "동기화 실패: {reason}",
+  syncErrorIdentityFork:
+    "원격에 같은 ID를 가진 문서가 두 개 있습니다. 변경하지 않고 동기화를 중지했습니다.",
+  syncErrorIdentityConflict:
+    "두 기기가 같은 문서에 서로 다른 ID를 할당했습니다. 덮어쓰지 않고 동기화를 중지했습니다.",
+  syncReassigned: "문서 {count}개에 새 ID를 할당했습니다.",
   syncConflictsTitle: "충돌 사본",
   syncHistoryTitle: "클라우드 기록",
   syncNoConflicts: "충돌 사본이 없습니다.",

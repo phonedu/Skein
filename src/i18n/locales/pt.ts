@@ -2132,6 +2132,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
   syncErrorOther: "Sync failed: {reason}",
+  syncErrorIdentityFork:
+    "Duas cópias remotas compartilham o id de um documento. A sincronização parou sem alterar nenhuma.",
+  syncErrorIdentityConflict:
+    "Dois dispositivos atribuíram ids diferentes ao mesmo documento. A sincronização parou sem sobrescrever nenhum.",
+  syncReassigned: "{count} documento(s) receberam uma nova identidade.",
   syncConflictsTitle: "Conflicts",
   syncHistoryTitle: "Cloud history",
   syncNoConflicts: "No conflict copies.",

@@ -2111,6 +2111,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
   syncErrorOther: "Sync failed: {reason}",
+  syncErrorIdentityFork:
+    "Zwei Remote-Kopien teilen eine Dokument-ID. Die Synchronisierung wurde ohne Änderung gestoppt.",
+  syncErrorIdentityConflict:
+    "Zwei Geräte haben demselben Dokument unterschiedliche IDs gegeben. Die Synchronisierung wurde ohne Überschreiben gestoppt.",
+  syncReassigned: "{count} Dokument(e) erhielten eine neue Identität.",
   syncConflictsTitle: "Conflicts",
   syncHistoryTitle: "Cloud history",
   syncNoConflicts: "No conflict copies.",

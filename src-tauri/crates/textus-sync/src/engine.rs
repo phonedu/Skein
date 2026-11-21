@@ -40,6 +40,9 @@ pub struct SyncResult {
     pub conflicts: Vec<String>,
     pub deferred: Vec<String>,
     pub unchanged: usize,
+    /// Files given a new id this run (a copy, or a remote duplicate).
+    #[serde(default)]
+    pub identity_reassigned: Vec<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

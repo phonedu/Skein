@@ -1914,6 +1914,11 @@ export default {
   syncErrorBulk: "这次同步会删除很多文件，没有删除任何东西。",
   syncErrorConfig: "请检查连接字段。",
   syncErrorOther: "同步失败：{reason}",
+  syncErrorIdentityFork:
+    "远端有两份文档共用同一身份，同步已停止，未改动任何一份。",
+  syncErrorIdentityConflict:
+    "两台设备给同一文档分配了不同身份，同步已停止，未覆盖任何一方。",
+  syncReassigned: "已为 {count} 个文档重新分配身份。",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncConflictsTitle: "冲突副本",

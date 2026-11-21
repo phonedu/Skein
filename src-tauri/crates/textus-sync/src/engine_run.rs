@@ -19,7 +19,7 @@ pub(super) async fn run(
         // emptied repository, not permission to delete every local file.
         return Err(SyncError::new("remoteMissing"));
     }
-    let remote_files = head
+    let mut remote_files = head
         .as_ref()
         .map(|head| head.files.clone())
         .unwrap_or_default();
@@ -52,7 +52,7 @@ pub(super) async fn run(
 
     let mut base = options.base.clone();
     let mut result = SyncResult::default();
-    let renamed = apply_renames(local, &mut files, &remote_files, &mut base, &mut result).await?;
+    let renamed = apply_renames(store, local, &mut files, &mut remote_files, &mut base, &mut result).await?;
 
     let actions = plan(&files, &remote_files, &base.files);
     let moves = moves(&actions, &files, &remote_files, &base.files);

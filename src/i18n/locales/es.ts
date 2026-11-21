@@ -2156,6 +2156,11 @@ para usar una.
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
   syncErrorOther: "Sync failed: {reason}",
+  syncErrorIdentityFork:
+    "Dos copias remotas comparten el id de un documento. La sincronización se detuvo sin cambiar ninguna.",
+  syncErrorIdentityConflict:
+    "Dos dispositivos asignaron ids distintos al mismo documento. La sincronización se detuvo sin sobrescribir ninguno.",
+  syncReassigned: "Se asignó una nueva identidad a {count} documento(s).",
   syncConflictsTitle: "Conflicts",
   syncHistoryTitle: "Cloud history",
   syncNoConflicts: "No conflict copies.",

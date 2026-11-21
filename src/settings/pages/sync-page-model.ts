@@ -32,6 +32,8 @@ export const EMPTY_CREDENTIALS: SyncCredentials = {
 };
 
 export function errorText(t: SettingsPageProps["t"], reason: string): string {
+  if (reason.includes("identityFork")) return t.syncErrorIdentityFork;
+  if (reason.includes("identityConflict")) return t.syncErrorIdentityConflict;
   if (reason.includes("vaultCopied")) return t.syncErrorVaultCopied;
   if (reason.includes("pluginNotFound")) return t.syncImportNotFound;
   if (reason.includes("alreadyConfigured")) return t.syncImportAlready;
@@ -106,6 +108,7 @@ export function syncStatusText(
         conflicts: last.result.conflicts.length,
       })
     : "";
+  const reassigned = last?.result?.identityReassigned?.length ?? 0;
   return !status?.configured
     ? t.syncNotConfigured
     : last?.error
@@ -117,6 +120,7 @@ export function syncStatusText(
             last.result.deferred.length
               ? fill(t.syncDeferred, { count: last.result.deferred.length })
               : "",
+            reassigned ? fill(t.syncReassigned, { count: reassigned }) : "",
           ]
             .filter(Boolean)
             .join(" ")

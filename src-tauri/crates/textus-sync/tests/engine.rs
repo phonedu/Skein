@@ -983,3 +983,35 @@ async fn two_different_renames_keep_both_documents_with_new_ids() {
     assert!(!left_text.contains(DOC_ID));
     assert_eq!(first.read("right.md").await.unwrap(), Some(doc("one")));
 }
+
+#[tokio::test]
+async fn two_remote_copies_with_one_id_get_a_new_id() {
+    let store = MemoryStore::new();
+    let first = local(&[]);
+    first.set("a.md", doc("one"));
+    let out = sync(&store, &first, options()).await.unwrap();
+    let mut head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    let entry = head.files["a.md"].clone();
+    head.files.insert("copy.md".to_string(), entry);
+    head.revision = new_revision();
+    head.updated_at = "2026-11-21T00:00:00.000Z".to_string();
+    store.put(HEAD_KEY, head.to_json().unwrap()).await.unwrap();
+
+    let next = sync(
+        &store,
+        &first,
+        SyncOptions {
+            base: out.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert!(next.result.identity_reassigned.contains(&"copy.md".to_string()));
+    let head = Manifest::parse(&store.get(HEAD_KEY).await.unwrap().unwrap()).unwrap();
+    assert_eq!(head.files["a.md"].id.as_deref(), Some(DOC_ID));
+    assert!(head.files["copy.md"].id.is_some());
+    assert_ne!(head.files["copy.md"].id.as_deref(), Some(DOC_ID));
+    let copy = String::from_utf8(first.read("copy.md").await.unwrap().unwrap()).unwrap();
+    assert!(!copy.contains(DOC_ID));
+}

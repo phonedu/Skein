@@ -1,15 +1,17 @@
 //! Document identity inside one run: stop on a fork, move a remote rename
 //! at this device's old path, and carry the renamed document's history.
 
+use super::transfer::*;
 use super::*;
 use crate::identity::{self, IdentityPair};
 
 /// Applies the identity pairs a run found. Returns the `(from, to)` paths
 /// whose history must follow the rename.
 pub(super) async fn apply_renames(
+    store: &dyn ObjectStore,
     local: &dyn LocalFiles,
     files: &mut BTreeMap<String, Entry>,
-    remote_files: &BTreeMap<String, Entry>,
+    remote_files: &mut BTreeMap<String, Entry>,
     base: &mut Base,
     result: &mut SyncResult,
 ) -> Result<Vec<(String, String)>> {
@@ -17,18 +19,16 @@ pub(super) async fn apply_renames(
     for pair in &pairs {
         match pair {
             IdentityPair::Fork {
-                id,
                 local: at_home,
                 remote,
+                ..
             } => {
-                // A copy on this side gets a new id; the other side keeps
-                // the original. Two copies already on the remote cannot be
-                // rewritten here without racing them.
-                if remote.len() > 1 {
-                    return Err(SyncError::with_args("identityFork", [id.clone()]));
-                }
+                // A copy on either side gets a new id; one path keeps the
+                // original. A path duplicated on both sides gets the same
+                // new id in both places.
                 let keep = remote
-                    .first()
+                    .iter()
+                    .find(|path| base.files.contains_key(*path))
                     .cloned()
                     .or_else(|| {
                         at_home
@@ -36,7 +36,26 @@ pub(super) async fn apply_renames(
                             .find(|path| base.files.contains_key(*path))
                             .cloned()
                     })
+                    .or_else(|| remote.first().cloned())
                     .or_else(|| at_home.first().cloned());
+                let mut fresh: BTreeMap<String, String> = BTreeMap::new();
+                for path in remote {
+                    if Some(path) == keep.as_ref() {
+                        continue;
+                    }
+                    let Some(entry) = remote_files.get(path).cloned() else {
+                        continue;
+                    };
+                    let bytes = download_entry(store, &entry).await?;
+                    let new_id = Uuid::new_v4().to_string();
+                    let bytes = identity::with_document_id(&bytes, &new_id)
+                        .ok_or_else(|| SyncError::new("invalidEntry"))?;
+                    let next = describe(&bytes)?;
+                    upload_blocks(store, &next, &bytes).await?;
+                    remote_files.insert(path.clone(), next);
+                    fresh.insert(path.clone(), new_id);
+                    result.identity_reassigned.push(path.clone());
+                }
                 for path in at_home {
                     if Some(path) == keep.as_ref() {
                         continue;
@@ -50,7 +69,10 @@ pub(super) async fn apply_renames(
                     if crate::chunk::hash_hex(&bytes) != entry.hash {
                         return Err(SyncError::new("localChanged"));
                     }
-                    let new_id = Uuid::new_v4().to_string();
+                    let new_id = fresh
+                        .get(path)
+                        .cloned()
+                        .unwrap_or_else(|| Uuid::new_v4().to_string());
                     let bytes = identity::with_document_id(&bytes, &new_id)
                         .ok_or_else(|| SyncError::new("invalidEntry"))?;
                     let next = describe(&bytes)?;
@@ -58,6 +80,9 @@ pub(super) async fn apply_renames(
                         return Err(SyncError::new("localChanged"));
                     }
                     files.insert(path.clone(), next);
+                    if !result.identity_reassigned.contains(path) {
+                        result.identity_reassigned.push(path.clone());
+                    }
                 }
             }
             IdentityPair::Conflict { path, .. } => {

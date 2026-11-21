@@ -41,6 +41,7 @@ interface SyncResult {
   conflicts: string[];
   deferred: string[];
   unchanged: number;
+  identityReassigned?: string[];
 }
 
 export interface SyncLast {

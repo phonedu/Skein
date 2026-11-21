@@ -2064,6 +2064,11 @@ type /name in a conversation to use one.
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
   syncErrorOther: "Sync failed: {reason}",
+  syncErrorIdentityFork:
+    "Two remote copies share a document id. Sync stopped before changing either.",
+  syncErrorIdentityConflict:
+    "Two devices assigned different ids to the same document. Sync stopped before overwriting one.",
+  syncReassigned: "{count} document(s) were given a new identity.",
   syncConflictsTitle: "Conflicts",
   syncHistoryTitle: "Cloud history",
   syncNoConflicts: "No conflict copies.",

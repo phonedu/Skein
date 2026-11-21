@@ -1919,6 +1919,11 @@ export default {
   syncErrorBulk: "這次同步會刪除很多檔案，沒有刪除任何東西。",
   syncErrorConfig: "請檢查連線欄位。",
   syncErrorOther: "同步失敗：{reason}",
+  syncErrorIdentityFork:
+    "遠端有兩份文件共用同一身分，同步已停止，未改動任何一份。",
+  syncErrorIdentityConflict:
+    "兩台裝置為同一文件分配了不同身分，同步已停止，未覆寫任何一方。",
+  syncReassigned: "已為 {count} 個文件重新分配身分。",
   syncWebdav: "WebDAV",
   syncS3: "S3",
   syncConflictsTitle: "衝突副本",

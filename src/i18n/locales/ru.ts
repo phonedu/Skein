@@ -2157,6 +2157,11 @@ export default {
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
   syncErrorOther: "Sync failed: {reason}",
+  syncErrorIdentityFork:
+    "Две удалённые копии используют один id документа. Синхронизация остановлена без изменений.",
+  syncErrorIdentityConflict:
+    "Два устройства назначили одному документу разные id. Синхронизация остановлена без перезаписи.",
+  syncReassigned: "Новый id назначен для документов ({count}).",
   syncConflictsTitle: "Conflicts",
   syncHistoryTitle: "Cloud history",
   syncNoConflicts: "No conflict copies.",

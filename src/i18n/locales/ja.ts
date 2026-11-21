@@ -2028,6 +2028,11 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncErrorBulk: "この同期は多くのファイルを削除します。何も削除していません。",
   syncErrorConfig: "接続項目を確認してください。",
   syncErrorOther: "同期に失敗しました：{reason}",
+  syncErrorIdentityFork:
+    "リモートに同じ ID を持つ文書が 2 つあります。変更せずに同期を停止しました。",
+  syncErrorIdentityConflict:
+    "2 台の端末が同じ文書に別の ID を割り当てました。上書きせずに同期を停止しました。",
+  syncReassigned: "{count} 件の文書に新しい ID を割り当てました。",
   syncConflictsTitle: "競合コピー",
   syncHistoryTitle: "クラウド履歴",
   syncNoConflicts: "競合コピーはありません。",

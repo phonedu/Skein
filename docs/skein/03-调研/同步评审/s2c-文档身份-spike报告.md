@@ -1,6 +1,6 @@
-# S2c 文档稳定身份 spike 报告（第一、二切片）
+# S2c 文档稳定身份 spike 报告（第一至第三切片）
 
-> 日期：2026-11-21 · 状态：**第一、二切片完成；未推广到全部笔记**
+> 日期：2026-11-21 · 状态：**spike 完成（引擎级、保存链路、S3 真服务）；未推广到全部笔记**
 > 依据：[《文档稳定身份 v0》](../../02-方案/Textus-文档稳定身份-v0.md) §6–§9；任务清单 S2c
 > 代码：`textus-sync` 的 `identity`、`protocol::Entry.id`、引擎的改名与历史跟随
 
@@ -12,7 +12,7 @@
 标准：E1/E2/E6/E8 引擎级自动化通过；E3/E4/E12 至少能识别为 fork/conflict 且不静默覆盖；E5/E7/E9/E10 有引擎级测试。
 不做：不碰块身份、CRDT、块级合并；不推广到全部笔记；不改 md 是唯一内容真相；不做实时协同。
 范围：S 组 S2c，仅 textus-sync 引擎与协议；不接 UI、不接真远端、不碰真机。
-证据：`cargo test -p textus-sync`（49 单元 + 31 引擎 + 4 wire + 5 scale）；`vitest` 的 front matter 写入与保存链路测试。
+证据：`cargo test -p textus-sync`（49 单元 + 32 引擎 + 4 wire + 5 scale）；S3 真服务带 id 用例；`vitest` 的 front matter 写入、保存链路与同步文案测试。
 ```
 
 ## 一、这一片做了什么
@@ -25,9 +25,10 @@
    - 本地改名+改内容：按原路径规划上传新路径、删远端旧路径，历史复制到新路径、base 跟到新路径。
    - 远端改名、本地在旧路径编辑：先把本地文件移到新路径，再把本地内容上传到新路径；最终一条新路径，本地编辑不丢。
    - 旧客户端重写 head 丢掉 `Entry.id`：下一次同步从文件 front matter 重建。
-   - fork：本侧的副本自动分配新 id 并保留；远端已有两份同 id 时仍停止（`identityFork`），不静默产生重复 id。
+   - fork：本侧副本自动分配新 id 并保留；远端已有两份同 id 时，保留一份，另一份下载后改写 front matter、上传新块并写回清单；两侧同路径的副本复用同一个新 id。
    - 带 id 的内容冲突：冲突副本写入新 id 并上传该新版本；原路径保留本地内容与原 id。
    - 两端都改同一个 id：`identityConflict` 停止，不静默覆盖。
+   - 重新分配写入 `SyncResult.identityReassigned`；设置页摘要显示数量，fork/冲突错误有十语文案。
 6. **E2EE**：id 只在文件 front matter 与加密后的 `v2/head.bin` 里；明文 `v1/head.json` 描述符和对象名不含 id。
 
 ## 二、实验证据
@@ -37,7 +38,7 @@
 | E1  | 单设备改名 + 改内容              | 通过：新路径保留 id，历史跟随，无冲突                        | `a_renamed_and_edited_document_keeps_its_id_and_history`                                                         |
 | E2  | A 改名，B 改旧路径内容           | 通过：一条新路径，B 的内容保留                               | `a_remote_rename_keeps_the_local_edit_at_the_new_path`                                                           |
 | E3  | A/B 各改名到不同路径             | 通过：远端保留原 id，本地另一路径自动新 id，两份都保留       | `two_renames_are_a_fork`；`two_different_renames_keep_both_documents_with_new_ids`                               |
-| E4  | 复制文件                         | 通过：副本自动新 id，原文件保留；不静默共用 id               | `a_copy_on_one_side_is_a_fork`；`a_copy_with_one_id_gets_a_new_id`                                               |
+| E4  | 复制文件 / 远端重复              | 通过：本侧副本、远端两份同 id 都自动新 id；原文件保留        | `a_copy_with_one_id_gets_a_new_id`；`two_remote_copies_with_one_id_get_a_new_id`                                 |
 | E5  | 外部新建无 id 文件               | 可同步；保存时补 id（不保存不改文件）                        | `a_file_without_an_id_still_syncs_by_path`；`document-identity.test.ts`                                          |
 | E6  | 旧客户端重写 head 丢 `Entry.id`  | 通过：从文件重建                                             | `an_old_client_dropping_entry_ids_has_them_rebuilt_from_the_file`                                                |
 | E7  | 旧客户端重写 front matter 丢字段 | 内容/历史不丢；下一次保存补 id                               | `losing_the_front_matter_id_does_not_lose_the_content_or_history`；`doc-tabs.test.ts`                            |
@@ -53,23 +54,17 @@
 cargo test -p textus-sync
 ```
 
-结果：49 单元测试、31 引擎测试、4 wire、5 scale 全过；live WebDAV/S3 仍按环境变量跳过。前端 `doc-tabs`、`document-identity`、`useSaveTabs` 共 33 测试通过。
+结果：49 单元测试、32 引擎测试、4 wire、5 scale 全过；S3 真服务带 id 用例通过（Bitiful，一次性前缀）；WebDAV live 因无凭据仍跳过。前端 `doc-tabs`、`document-identity`、`useSaveTabs`、`sync-page-model` 共 34 测试通过。
 
 ## 三、尚未做的（决定不冒充完成）
 
-1. **远端已有两份同 id**：本侧能自动改副本，但远端两份同 id 仍停止（`identityFork`），没有自动改写远端文件的路径。
-2. **历史按 id**：这一片按裁决 Q6 只把版本复制到新路径，旧路径记录按 keepDays 淡出；没有 id 级历史。
-3. **UI/文案**：自动重新分配、`identityFork` / `identityConflict` 还没有用户提示与十语字符串；冲突中心也还没显示“同源/已分叉”。
-4. **分配范围**：按保存分配，不做全库回填；打开但不保存的旧笔记仍无 id。这是本轮有意选择，不是遗漏。
-5. **真实远端**：所有新测试仍在 MemoryStore/MemoryLocal；没有接 WebDAV/S3 做带 id 的远端回归（现有 S2/S3 验收不含 id）。
+1. **WebDAV 真服务**：本机没有可用的 WebDAV 凭据，带 id 的 WebDAV live 回归未跑；S3（Bitiful）已跑。
+2. **历史按 id**：按裁决 Q6 只把版本复制到新路径，旧路径记录按 keepDays 淡出；没有 id 级历史。
+3. **UI 走查**：文案与摘要已有十语和单测，但 built app 的同步页尚未做视觉走查。
+4. **分配范围**：按保存分配，不做全库回填；打开但不保存的旧笔记仍无 id。这是有意选择，不是遗漏。
 
 ## 四、结论与建议
 
-**建议：暂不推广到全部笔记（U18 不触发）。** 第一、二切片已证明 rename / 跨设备 move / 复制分叉 / 冲突副本 / 旧客户端重建 / E2EE / 20k 的主要路径，且保存时分配已接上；剩下的硬前置是“远端两份同 id 的自动改写”和用户可见提示。
+**S2c spike 到此收口（引擎级 + 保存链路 + S3 真服务），U18 仍不自动触发。** 建议把 S2c 归档；推广到全部笔记要你先确认，并且最好再补一次 WebDAV live 与 built app 同步页视觉走查。
 
-下一片（仍属 S2c，不是 D1）：
-
-1. 远端两份同 id 的自动改写（或明确产品上只允许本侧自动改）。
-2. 自动重新分配与 `identityFork` / `identityConflict` 的十语提示、冲突中心展示。
-3. 带 id 的 WebDAV/S3 真服务回归（有凭据时）。
-4. 完成后按 E1–E4/E6/E12 + 用户确认，再决定是否打开 U18 推广。
+后续若继续身份线，可另立小项：按 id 的历史（v2）、WebDAV live、以及推广到全部笔记的迁移提示。
