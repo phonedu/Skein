@@ -26,7 +26,11 @@
 - 前端：`doc-tabs`、`document-identity`、`useSaveTabs`、`sync-page-model` 共 49 测试通过；全量 vitest 586 文件 / 4906 tests 通过（收口前一次全量，后续只加同步文案测试）。
 - typecheck、lint、`check:repo`、Prettier 通过。
 
-## 3. 仍未做
+## 3. S2c-V1 视觉走查（2026-11-21 补）
+
+built app（portable debug，隔离临时库）用演示 `last` 结果打开设置 › 同步：中文、英文、俄文的 reassignment 摘要都在状态条内换行，无溢出；`identityFork` / `identityConflict` 文案走查由单测覆盖。发现俄语同步页仍有英文存量标签（Folder / Synced. / Last synced / Service / Server address / Remote folder / Save connection），非本片新增，已记入任务清单缺口。
+
+## 4. 仍未做
 
 - **推广到全部笔记（U18）**：等用户确认；当前按保存分配，打开但不保存的旧笔记不改文件。
 - **WebDAV 真服务带 id**：本机无 WebDAV 凭据，未跑。

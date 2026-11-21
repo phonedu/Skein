@@ -120,7 +120,9 @@ export function syncStatusText(
             last.result.deferred.length
               ? fill(t.syncDeferred, { count: last.result.deferred.length })
               : "",
-            reassigned ? fill(t.syncReassigned, { count: reassigned }) : "",
+            reassigned
+              ? `· ${fill(t.syncReassigned, { count: reassigned })}`
+              : "",
           ]
             .filter(Boolean)
             .join(" ")
