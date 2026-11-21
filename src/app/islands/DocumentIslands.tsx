@@ -142,7 +142,8 @@ export function DocumentIslands({
     ),
   );
   const byId = new Map(tabs.map((tab) => [tab.id, tab]));
-  const tabsInBar = useTabsInBar(zen, showTabBar);
+  // A phone draws no tab row: the bar's name opens the tabs as a sheet.
+  const tabsInBar = useTabsInBar(zen, showTabBar) && !phone;
   // Out of Zen with no row of tabs (the title on a row of its own, one
   // document): its sheet is still an island, only with no row - and plain,
   // one island being the page itself (islandsPlain).

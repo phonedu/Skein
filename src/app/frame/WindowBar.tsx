@@ -61,6 +61,7 @@ export function WindowBar({
   onToggleReadOnly,
   onOpenPlugins,
   documentMenu,
+  tabSwitcher,
 }: {
   menuChecks: MenuChecks;
   title: string;
@@ -82,6 +83,9 @@ export function WindowBar({
   /** A phone's document menu (its ⋯), beside the AI toggle; none on a
    *  desktop, where the tabs and menus hold the document's actions. */
   documentMenu?: ReactNode;
+  /** A phone's tabs, behind the document's name in the bar; none on a
+   *  desktop, which keeps its tab row. */
+  tabSwitcher?: ReactNode;
 }) {
   const { t, settings } = useSettings();
   const bar = useBarLayout({
@@ -145,13 +149,17 @@ export function WindowBar({
               );
           }
         })}
-        <WindowTitle
-          placed={bar.rows === 1 && !bar.lead.includes("menu-bar") && !phone}
-          title={title}
-          dirty={dirty}
-          readOnly={!!menuChecks.readOnly}
-          onToggleReadOnly={onToggleReadOnly}
-        />
+        {phone && tabSwitcher ? (
+          tabSwitcher
+        ) : (
+          <WindowTitle
+            placed={bar.rows === 1 && !bar.lead.includes("menu-bar") && !phone}
+            title={title}
+            dirty={dirty}
+            readOnly={!!menuChecks.readOnly}
+            onToggleReadOnly={onToggleReadOnly}
+          />
+        )}
         <div className="window-bar-status">
           {hasStatus && (
             <Suspense fallback={null}>
