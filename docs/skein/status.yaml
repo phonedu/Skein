@@ -13,7 +13,7 @@ workstreams:
   - id: UI
     name: 手机端 UI
     state: doing
-    focus: PH3/PH4 核查；TW1 主题工坊两栏裁切
+    focus: PH3/PH4 核查
     spec: specs/Textus-手机端元素一致性方案.md
   - id: S
     name: 同步（S 组）
