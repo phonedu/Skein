@@ -25,7 +25,7 @@
   checkout on purpose - they are not this fork's reference.
 - **Upstream contributions are never built from this checkout**: clone
   upstream fresh; the procedure is in
-  [docs/skein/01-纪律/publishing-gate.md](docs/skein/01-%E7%BA%AA%E5%BE%8B/publishing-gate.md).
+  [docs/skein/discipline/publishing-gate.md](docs/skein/discipline/publishing-gate.md).
 
 ## Development
 
@@ -37,4 +37,4 @@ npm run check
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the checks, and how
 pull requests work. Fork collaboration rules (AI assistants included):
-[docs/skein/01-纪律/AI协作纪律.md](docs/skein/01-%E7%BA%AA%E5%BE%8B/AI%E5%8D%8F%E4%BD%9C%E7%BA%AA%E5%BE%8B.md).
+[docs/skein/discipline/AI协作纪律.md](docs/skein/discipline/AI%E5%8D%8F%E4%BD%9C%E7%BA%AA%E5%BE%8B.md).

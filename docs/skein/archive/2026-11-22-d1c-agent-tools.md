@@ -2,7 +2,7 @@
 
 > **状态：完成。** 插件 `skein.collect` 0.4.0，源码在 `C:\Project\skein-plugins\skein-collect`
 > （本地 git，未推上游）；宿主侧只补了聊天里的工具名，工具本身由插件提供。
-> 出处：[Agent 工具契约 §3/§8/§10](../02-方案/Textus-Agent工具契约.md)、
+> 出处：[Agent 工具契约 §3/§8/§10](../specs/Textus-Agent工具契约.md)、
 > [D1b 确认流归档](2026-11-21-d1b-confirm-flow.md)。
 
 ## 1. 完成内容

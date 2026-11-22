@@ -2,8 +2,16 @@
 
 Start with [CONTRIBUTING.md](../CONTRIBUTING.md): where to start, setup,
 the one check to run and how pull requests work. [AGENTS.md](../AGENTS.md) is the
-index and hard rules for AI coding assistants; [ROADMAP.md](../ROADMAP.md)
-shows where the project is heading.
+index and hard rules for AI coding assistants; the fork's
+[STATUS.md](skein/STATUS.md) shows where this checkout is heading.
+
+## Skein fork (`skein/`)
+
+Everything fork-specific is here. Start at the [Skein entry](skein/README.md);
+[STATUS.md](skein/STATUS.md) is the only progress source, [INDEX.md](skein/INDEX.md)
+lists every live document, and [decisions/](skein/decisions/README.md) holds the rulings.
+The rest of this page indexes **upstream's engineering manual**: it answers
+"how do I do this in the code", not "what are we building".
 
 ## Developing (`dev/`)
 
