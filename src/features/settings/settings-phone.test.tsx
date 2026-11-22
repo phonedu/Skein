@@ -245,6 +245,11 @@ describe("the phone's settings", () => {
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone \.settings-content-host \.settings-group-body > \.settings-row \{[^}]*border-top: 0;/s,
     );
+    // The row's own border-bottom is the other half of the double line:
+    // it sits on the same edge as the next row's hairline.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-group-body > \.settings-row \{[^}]*border-bottom: 0;/s,
+    );
     // A catalog card ("可安装") is the same direct child, under another name.
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone \.settings-content-host \.settings-group-body > \.plugin-card \{[^}]*border-top: 0;/s,
@@ -253,6 +258,23 @@ describe("the phone's settings", () => {
     // the first skill under it. That row already draws the hairline.
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone\s+\.settings-content-host\s+\.settings-group-body\s+\.settings-builtin-category\s+> \.settings-row \{[^}]*border-top: 0;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone\s+\.settings-content-host\s+\.settings-group-body\s+\.settings-builtin-category\s+> \.settings-row \{[^}]*border-bottom: 0;/s,
+    );
+  });
+
+  it("insets a proxy row with the card's rows", () => {
+    // The card pads the block only. A proxy row with no side inset starts
+    // at the card's edge, while the label row above it is inset 16.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-proxy-row \{[^}]*padding-inline: var\(--space-4\);/s,
+    );
+    // Two hosts at a 176px basis plus the gap are wider than the card, so
+    // the second wraps before either can shrink. A zero basis lets them
+    // share the row; the port keeps its own fixed basis.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-proxy-host \{[^}]*flex: 1 1 0;/s,
     );
   });
 

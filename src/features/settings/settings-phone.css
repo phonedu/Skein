@@ -364,6 +364,21 @@ button.settings-phone-ic:active {
   justify-content: flex-end;
 }
 
+/* Proxy fields are not a settings row, so they miss that row's side inset
+   and start at the card's edge. The label above them is inset 16. The
+   row's own bottom padding stays; this only brings the sides in. */
+.settings-phone .settings-content-host .settings-proxy-row {
+  padding-inline: var(--space-4);
+}
+
+/* A host's 176px basis, twice, plus the gap, is wider than the card, and a
+   wrapping row wraps on that basis before either field can shrink. A zero
+   basis lets two hosts share the line, and leaves the port its own width. */
+.settings-phone .settings-content-host .settings-proxy-host {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* The card's first row sits under its edge: no line above it. */
 .settings-phone
   .settings-content-host
@@ -549,6 +564,9 @@ button.settings-phone-ic:active {
      is the one that insets. A note or another child of the card is not a
      row, and keeps the border it had. */
   border-top: 0;
+  /* The row's own bottom border is the same edge as the next row's
+     hairline. A catalog card is a settings row, so it is covered here. */
+  border-bottom: 0;
   background-image: linear-gradient(
     to right,
     transparent var(--space-4),
@@ -575,6 +593,7 @@ button.settings-phone-ic:active {
   .settings-builtin-category
   > .settings-row {
   border-top: 0;
+  border-bottom: 0;
 }
 
 .settings-phone
@@ -730,6 +749,7 @@ button.settings-phone-ic:active {
 
 .settings-phone .settings-phone-body .settings-group-body > .settings-row {
   min-height: 62px;
+  border-bottom: 0;
   background-image: linear-gradient(
     to right,
     transparent var(--space-4),

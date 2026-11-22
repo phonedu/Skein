@@ -315,7 +315,9 @@
   background-image: none;
 }
 
-.pchanges .prow:last-child {
+.pchanges .prow:first-child {
+  /* The line is the next row's top edge. Hiding the last row removed the
+     line above it, so three rows showed one line. The first row has none. */
   background-image: none;
 }
 

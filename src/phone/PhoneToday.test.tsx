@@ -38,7 +38,8 @@ describe("Phone Today, the design board", () => {
       /\.pchanges \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,
     );
     // Written 80 draws 72 at the phone's 10/11. The hairline starts after
-    // the file icon and stops 16 short; the last row has none.
+    // the file icon and stops 16 short. It is the following row's top edge,
+    // so the first row has none and the last row keeps the line above it.
     expect(css).toMatch(/\.prow-doc \{[^}]*min-height: 80px;/s);
     // 2026-11-22 fix: the old offset (24px icon + --space-3 gap, 52px) used
     // the wrong icon width and gap token and landed inside the text; the
@@ -47,8 +48,11 @@ describe("Phone Today, the design board", () => {
     expect(css).toMatch(
       /\.pchanges \.prow \{[^}]*transparent calc\(var\(--space-4\) \+ 16px \+ var\(--space-2\)\)[^}]*transparent calc\(100% - var\(--space-4\)\)/s,
     );
+    expect(css).not.toMatch(
+      /\.pchanges \.prow:last-child\s*\{[^}]*background-image:\s*none/,
+    );
     expect(css).toMatch(
-      /\.pchanges \.prow:last-child \{[^}]*background-image: none;/s,
+      /\.pchanges \.prow:first-child \{[^}]*background-image: none;/s,
     );
     // The card's shorthand padding wiped the two-line row's block padding,
     // so the title sat on the top edge and the hairline on the empty bottom.
