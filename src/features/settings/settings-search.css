@@ -10,6 +10,9 @@
 
 .settings-nav-search .settings-search {
   width: 100%;
+  /* The legacy field's side margins would add to the nav's own 12px and
+     push the field's right edge under the divider. */
+  margin: 0;
   height: var(--control-height);
   border-radius: var(--shape-s);
   border: 1px solid var(--ui-border);

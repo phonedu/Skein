@@ -18,9 +18,10 @@
   inset: 0;
   z-index: var(--z-modal);
   margin: auto;
-  /* 2026-11-22 design board: the settled panel is 1040×720. */
-  width: calc(1040px * var(--chrome-scale, 1));
-  height: calc(720px * var(--chrome-scale, 1));
+  /* 2026-11-22 design board, then a step down on review: the settled panel
+     is 980×640, so the window bar stays visible behind the dim. */
+  width: calc(980px * var(--chrome-scale, 1));
+  height: calc(640px * var(--chrome-scale, 1));
   /* Never past the window's edge: a small window keeps the panel whole. */
   max-width: calc(100vw - var(--space-6));
   max-height: calc(100vh - var(--space-6));
@@ -128,6 +129,11 @@
   mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
 }
 
+/* The last page can scroll above the fade instead of ending under it. */
+.settings-dialog-nav-scroll .settings-phone-list {
+  padding-bottom: var(--space-5);
+}
+
 /* The phone's list at the dialog's density: rows a touch lower, the icons
    and section titles at the column's scale. */
 .settings-dialog-nav .settings-phone-section {
@@ -168,10 +174,10 @@
 }
 
 .settings-dialog-nav .settings-phone-row-ic {
-  /* Bare line icons, about 22px, not a tinted tile. */
-  width: 22px;
-  height: 22px;
-  --icon-scale: 1.05;
+  /* Bare line icons, about 24px, not a tinted tile. */
+  width: 24px;
+  height: 24px;
+  --icon-scale: 1.15;
 }
 
 /* The nav's icons are a step larger than the phone's: the hairline follows

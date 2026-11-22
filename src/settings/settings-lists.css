@@ -244,6 +244,47 @@
   white-space: nowrap;
 }
 
+/* The fixed list is a page card's content, like the editable rows: its
+   titles and rows keep the card's 20px text start, and its rows share the
+   same inset hairline. */
+.settings-page-group-body > .shortcut-fixed {
+  gap: 0;
+  padding: 0;
+}
+
+.settings-page-group-body > .shortcut-fixed .shortcut-fixed-title {
+  margin: 0;
+  padding: 12px 20px 4px;
+}
+
+.settings-page-group-body > .shortcut-fixed .shortcut-fixed-row {
+  min-height: 44px;
+  padding: 0 20px;
+}
+
+.settings-page-group-body
+  > .shortcut-fixed
+  .shortcut-fixed-row
+  + .shortcut-fixed-row {
+  background-image: linear-gradient(
+    to right,
+    transparent 20px,
+    var(--ui-border) 20px,
+    var(--ui-border) calc(100% - 16px),
+    transparent calc(100% - 16px)
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+.settings-page-group-body
+  > .shortcut-fixed
+  .shortcut-fixed-section
+  + .shortcut-fixed-section {
+  margin-top: var(--space-2);
+}
+
 /* A row whose control needs the full width (Custom CSS): label above,
    control below, actions under that. */
 .settings-row.settings-row-stacked {

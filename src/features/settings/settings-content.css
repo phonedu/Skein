@@ -95,6 +95,8 @@
   > .settings-row-control {
   flex: 1 1 auto;
   min-width: 0;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* A title and its description need the taller row. */

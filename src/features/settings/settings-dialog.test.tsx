@@ -7,7 +7,7 @@ import { SettingsDialog } from "./settings-dialog";
 /**
  * The shell's contract: a Base UI Dialog skinned to the board
  * - opaque surface, the shape/shadow tokens nearest the board's values, the
- * 1040×720 base box drawn at the interface's scale - with a top row (title,
+ * 980×640 base box drawn at the interface's scale - with a top row (title,
  * close) and two slots: the nav column and the page's content.
  */
 const css = readFileSync("src/features/settings/settings-dialog.css", "utf8");
@@ -46,11 +46,11 @@ describe("the settings dialog shell", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("the sheet is the board's 1040×720, at the interface's scale", () => {
-    // Design-board size change (2026-11-22): the settled settings panel is
-    // 1040×720, not the earlier 880×620.
-    expect(css).toContain("calc(1040px * var(--chrome-scale, 1))");
-    expect(css).toContain("calc(720px * var(--chrome-scale, 1))");
+  it("the sheet is 980×640, at the interface's scale", () => {
+    // The 1040×720 board covered the window bar on a short desktop; the
+    // reviewed size leaves room for it.
+    expect(css).toContain("calc(980px * var(--chrome-scale, 1))");
+    expect(css).toContain("calc(640px * var(--chrome-scale, 1))");
     // Clamped to the window: a small one keeps the panel whole.
     expect(css).toContain("max-width: calc(100vw");
     expect(css).toContain("max-height: calc(100vh");

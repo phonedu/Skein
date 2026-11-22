@@ -318,9 +318,27 @@ button.settings-phone-ic:active {
   min-height: 80px;
 }
 
-/* The control sits at the row's end. */
+/* The control sits at the row's end, on the same line as the name: a long
+   description wraps under the name instead of pushing the control below
+   it, so a phone row keeps the desktop's shape. */
 .settings-phone .settings-row-value {
+  flex: 0 0 auto;
   margin-left: auto;
+}
+
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  .settings-row:has(.settings-row-value) {
+  flex-wrap: nowrap;
+}
+
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  .settings-row
+  > .settings-row-control {
+  justify-content: flex-end;
 }
 
 /* The card's first row sits under its edge: no line above it. */

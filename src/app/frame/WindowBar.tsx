@@ -10,7 +10,6 @@ import { useFitSteps } from "../../engine/controls/fit-steps";
 import { useSettings } from "../../prefs/SettingsContext";
 import { WindowCaptionButtons } from "../../engine/controls/WindowCaptionButtons";
 import type { MenuChecks } from "../../registry/menu/app-menu-model";
-import { AppMenuButton } from "./WindowControls";
 import { MenuBar } from "../menu/MenuBar";
 import { Tooltip } from "../../engine/controls/Tooltip";
 import { TextusAiButton } from "../../ai/TextusAiSwitch";
@@ -19,6 +18,7 @@ import { canUseWindows } from "../../platform/capabilities";
 import {
   LockIcon,
   PluginsTabIcon,
+  SearchIcon,
   SidebarToggleIcon,
 } from "../../engine/controls/icons";
 import { useBarLayout } from "../../engine/layout/useBarLayout";
@@ -120,12 +120,12 @@ export function WindowBar({
                   <MenuBar checks={menuChecks} />
                   {/* For a window too narrow for the titles. */}
                   <span className="window-menu-fallback">
-                    <AppMenuButton checks={menuChecks} />
+                    <PaletteButton />
                   </span>
                 </Fragment>
               );
             case "menu":
-              return <AppMenuButton key={item} checks={menuChecks} />;
+              return <PaletteButton key={item} />;
             case "sidebar-toggle":
               return (
                 <Tooltip
@@ -183,6 +183,26 @@ export function WindowBar({
         <WindowCaptionButtons />
       </header>
     </>
+  );
+}
+
+/** The menu's replacement on the desktop: one search key that opens the
+ *  command palette, which lists every menu item and command. */
+function PaletteButton() {
+  const { t } = useSettings();
+  return (
+    <Tooltip text={t.menuCommandPalette}>
+      <button
+        type="button"
+        className="window-menu-button window-palette-button"
+        aria-label={t.menuCommandPalette}
+        onClick={() =>
+          void import("../command-palette").then((m) => m.openCommandPalette())
+        }
+      >
+        <SearchIcon />
+      </button>
+    </Tooltip>
   );
 }
 

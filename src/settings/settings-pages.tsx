@@ -11,6 +11,7 @@ import {
   Brain,
   Cloud,
   Cpu,
+  FileDown,
   Image,
   Info,
   Keyboard,
@@ -22,11 +23,12 @@ import {
   SlidersHorizontal,
   Sparkles,
   Type,
+  Wrench,
 } from "lucide-react";
 import type { SettingsPageProps } from "./pages/types";
 import { isPhoneLayout } from "../platform/phone-layout";
 
-const NAV_ICON = 15;
+const NAV_ICON = 17;
 
 /** A Settings page: its id, its name in the list, its icon (a page of its
  *  own's), the group it is listed under (Appearance's, Editing's, Textus
@@ -87,6 +89,7 @@ const BUILT_IN: SettingsPageDef[] = [
     // Its PDF and Pandoc exports are the desktop's.
     available: () => canExportPdf || canExportWithPandoc,
     label: (t) => t.menuExport,
+    Icon: lucide(FileDown, NAV_ICON),
   },
   {
     id: "providers",
@@ -115,6 +118,7 @@ const BUILT_IN: SettingsPageDef[] = [
     group: "ai",
     available: () => hasTextusAi && !isMobileApp,
     label: (t) => t.navExternalTools,
+    Icon: lucide(Wrench, NAV_ICON),
   },
   // Plugins, themes and skills: a phone manages them in Settings; the
   // desktop and a tablet reach the same page from the top bar's plugin

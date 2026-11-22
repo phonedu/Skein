@@ -70,9 +70,9 @@
      the interface text only: a bigger window shows more, not bigger.
      --window-scale stays 1 for plugins' pages that still read it. */
   --window-scale: 1;
-  /* Icons a quarter larger than their design size (icons.tsx iconSize):
-     Lucide's 16 draws at 20. */
-  --icon-scale: 1.25;
+  /* Icons a third larger than their design size (icons.tsx iconSize):
+     Lucide's 16 draws at 21.6. */
+  --icon-scale: 1.35;
   /* Medium is 1: lengths written here are what Medium draws. */
   --chrome-scale: var(--ui-text-scale, 1);
   /* The app's own text, by role: a component names what its text is,
@@ -174,8 +174,8 @@
 /* iOS's text styles at their default size, and its control sizes. Hit
    areas reach 44 on their own (mobile/styles). */
 :root[data-window-chrome="mobile"] {
-  /* The phone's icons at their design size, under its chrome's step. */
-  --icon-scale: 1.1;
+  /* The phone's icons a step above their design size. */
+  --icon-scale: 1.2;
   --text-list: var(--text-body);
   --control-height-sm: 36px;
   --control-height: 40px;
