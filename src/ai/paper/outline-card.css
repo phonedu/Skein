@@ -128,7 +128,7 @@
 
 /* The outline as it reads: the thesis set off, each section a title with
    its length, a few key points and its figures as tags. The thesis sits on
-   the quiet surface, not behind a side strip (ruling 4.10). */
+   the quiet surface, not behind a side strip. */
 .paper-outline-thesis {
   display: flex;
   align-items: flex-start;

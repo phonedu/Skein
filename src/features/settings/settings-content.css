@@ -9,7 +9,7 @@
 }
 
 /* The dialog's groups as the phone's cards: the same surface, hairline and
-   radius, so both ends read as one interface (ruling 4.10, 2026-11-22). */
+   radius, so both ends read as one interface. */
 .settings-dialog-content .settings-content-host {
   max-width: calc(680px * var(--chrome-scale, 1));
   width: 100%;

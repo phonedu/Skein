@@ -42,8 +42,7 @@
 }
 
 /* The thought reads as an indented aside, not a card: no side strip, the
-   indentation and the smaller face set it off (the side-strip ban,
-   ruling 4.10). */
+   indentation and the smaller face set it off (the side-strip ban). */
 .agent-thought-text {
   margin-top: 4px;
   padding-left: 8px;

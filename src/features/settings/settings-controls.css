@@ -16,7 +16,7 @@
 }
 
 /* A row's value controls: one height and one text size, whichever control
-   the row uses. The value pills keep their pill shape (ruling 17). */
+   the row uses. The value pills keep their pill shape. */
 .settings-row-value
   :is(.tx-button, .settings-select, .shortcut-capture-button) {
   min-height: var(--control-height-sm);
