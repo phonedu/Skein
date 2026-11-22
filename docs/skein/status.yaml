@@ -8,7 +8,7 @@ workstreams:
   - id: D1
     name: 资产闭环
     state: doing
-    focus: D1e 资产详情 / 来源链 / 使用记录
+    focus: D1e 已完成（2026-11-23）；下一步 D1r 外部复核
     spec: specs/Textus-改造方案.md
   - id: UI
     name: 手机端 UI
@@ -36,25 +36,6 @@ workstreams:
     focus: 文档 / 上游 / 发布命令自动化已落地；等下一次实战
     spec: decisions/0052-文档体系重排.md
 tasks:
-  - id: D1e
-    title: 资产详情 / 来源链 / 使用记录
-    workstream: D1
-    state: doing
-    acceptance: 桌面 + 手机能在详情里看到来源与使用历史，写入走确认流。
-    spec: specs/Textus-改造方案.md#75-资产与确认界面在办
-    context:
-      - decisions/0026-验证与淘汰状态可见化.md
-      - decisions/0027-修数入口.md
-      - decisions/0028-任务完成门槛交互.md
-      - specs/Textus-界面改造方案.md
-    estimate: 1–2 周
-    brief:
-      problem: 资产目前只有列表和确认流，看不到来源与使用历史，无法判断是否可复用。
-      expected: 资产详情分内容 / 证据 / 历史三段，显示 source_ids 与使用记录；既有数据不改。
-      standard: 桌面和 Android 详情都能看到来源链与使用历史；写入仍走 D1b 确认流；相关单测 / e2e 通过。
-      not: 不做 D2 受控写入，不做 D1f 理论淘汰，不改同步。
-      scope: D1 资产链；桌面 + Android。
-      evidence: built app 隔离库走查；相关单测；必要时补 e2e。
   - id: D1r
     title: 外部 AI 复核（opencode）
     workstream: D1
@@ -104,6 +85,20 @@ tasks:
     acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
     spec: specs/Textus-主题策略.md
     estimate: 3–5 天
+  - id: D1t
+    title: Agent 时间线：工具调用卡片
+    workstream: D1
+    state: todo
+    acceptance: 聊天里每次资产工具调用一张卡：工具名、参数摘要、结果、确认状态；确认状态接 D1b 队列；桌面 + 手机。未改动确认流本身。
+    spec: specs/Textus-改造方案.md#75-资产与确认界面在办
+    estimate: 2–3 天
+    brief:
+      problem: D1c 的七个工具调用在聊天里只有一行文字，看不到参数、结果和是否待确认，时间线无法回看。
+      expected: 每次工具调用一张卡，显示工具名、参数摘要、结果和确认状态；待确认项能从卡片进确认中心；其余工具的现有显示不变。
+      standard: chat 单测覆盖 call/result 配对、结果摘要与待确认徽标；桌面 + 手机 built app 走查通过；不改 D1c 工具契约与 D1b 队列。
+      not: 不改七个工具的输入输出；不新建独立时间线页面；不让宿主直接读写插件的 project storage；不动同步。
+      scope: 宿主聊天 UI（Agent 面板）；桌面 + 手机。
+      evidence: chat 单测；桌面/真机 built app 走查；必要时插件 result 补状态字段。
 later:
   - id: S4
     title: 局域网 Hub
@@ -158,6 +153,8 @@ waiting:
   - 同步页俄语存量标签：Folder / Synced. / Last synced / Service / Server address / Remote folder / Save connection 仍英文；归文案清理。
   - D1b 观察期锚点：卡片没有 activated_at，按 created_at 计；D1f 若需要真激活时间再补字段。
   - D1b 手机入口：窄屏确认中心已在桌面 WebView 344 CSS px 验过；Android/iOS 入口归 D3。
+  - D1e 手机返回栈：从插件启动器打开的资产列表进入详情后，系统/应用返回回「今天」而不是列表；插件页导航归 D3（详情页内的来源链返回已可用）。
+  - 桌面窄窗详情：800 CSS 左右且右页边（资产列表）打开时，详情被三栏挤压；属 H0 右页边断点，归 D3/UI，不在插件页内硬改。
   - H9 SAF：2026-11-21 关闭；content:// 不做，除非出现真实用户场景。
   - S3b：七牛 S3 条件写返回 unsafeServer，东区域 IncorrectRegion；原生 insertOnly 走 S3q；阿里云不做。
 questions:
