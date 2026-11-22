@@ -31,6 +31,13 @@ Three things differ from the upstream guide below:
 `docs/dev/*` below is upstream's engineering manual: read it for how to
 change the code, but never put fork plans, progress or rulings in it.
 
+Docs are automated: `npm run docs:task -- brief <id>` writes the task six
+lines, `start` refuses to start without them, and `npm run docs:context --
+<id>` prints the task's context pack; `docs:new` creates a decision/spec/
+research, `docs:find` searches, and `npm run docs` regenerates `STATUS.md` /
+`INDEX.md` / the decision index and checks them. `STATUS.md` and the generated
+indexes are never edited by hand.
+
 ## Where things are
 
 Textus is an Integrated Writing Environment (IWE) for Markdown on macOS,

@@ -24,6 +24,8 @@ updated: 2026-11-23
 
 「标准 / 不做」两行是硬门槛：写不出就先问清再动手（本仓成因：2026-11-16 混读事故——需求模糊时 AI 拿上游文档当规划）。
 
+任务六行存在 `docs/skein/status.yaml`：用 `npm run docs:task -- brief <id> --problem … --expected … --standard … --not … --scope … --evidence …` 写入；`npm run docs:task -- start <id>` 会拒绝缺项。汇报开头仍抄一遍，保证人读得到。
+
 任务涉及**上游**（开 issue、改上游代码、开 PR、回 review）时，六行之外先按
 [publishing-gate.md](publishing-gate.md) 的「上游工单」写清仓、基线 commit、
 分支、issue/PR 关联和确切文件；「范围」一行写明这次是 fork 还是上游克隆，
@@ -37,6 +39,8 @@ updated: 2026-11-23
 未验证：仍缺什么环境/真机/视觉证据——没跑的写「未验证」，不写成通过。
 状态：已实现 / 后续规划 / 阻塞。
 ```
+
+收尾用 `npm run docs:task -- done <id> --evidence "命令 / 输出 / commit"`：它从 `STATUS.md` 删行、在 `archive/` 写证据、重建索引。不要手改 `STATUS.md`。
 
 ## 三、多会话红线（违反 = 当次交付作废，不是「下次改」）
 

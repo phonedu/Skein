@@ -13,6 +13,20 @@
 | 工程上怎么做       | [AGENTS.md](../../AGENTS.md) → [CONTRIBUTING.md](../../CONTRIBUTING.md) → `docs/dev/` |
 | 查历史             | [archive/README.md](archive/README.md)                      |
 
+## 自动化
+
+| 我要…             | 命令                                                                 |
+| ----------------- | -------------------------------------------------------------------- |
+| 开始任务 / 看上下文 | `npm run docs:task -- start D1e`；`npm run docs:context -- D1e`     |
+| 补任务六行         | `npm run docs:task -- brief D1e --problem … --expected … --standard … --not … --scope … --evidence …` |
+| 完成并归档         | `npm run docs:task -- done D1e --evidence "命令 / 输出 / commit"`   |
+| 新裁决 / 方案 / 调研 | `npm run docs:new -- decision "标题"`（spec / research 同理）       |
+| 找东西             | `npm run docs:find -- "关键词"`                                      |
+| 改完文档           | `npm run docs`（生成 STATUS / INDEX / 裁决索引并检查）               |
+| 体检               | `npm run docs:doctor`                                                |
+
+`STATUS.md` 由 `status.yaml` 生成，`INDEX.md` 与 `decisions/README.md` 由脚本生成；都不要手改。
+
 ## 三条定位
 
 1. **软件在这里改。** 本仓是 `CatVinci-Studio/Textus` 的下游工作仓；`src/`、`src-tauri/` 就是要改的软件本体。上游只跟 release tag，流程见 [discipline/publishing-gate.md](discipline/publishing-gate.md)。
