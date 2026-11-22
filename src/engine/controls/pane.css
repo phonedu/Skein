@@ -36,11 +36,22 @@
   color: var(--ui-text);
 }
 
+/* The caption over a group of rows or cards: one definition on every end
+   (Today, Settings, a list's group). Its margin and inset belong to the
+   surface that holds it. */
+.tx-section-label {
+  font-size: var(--text-footnote);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ui-muted);
+}
+
 /* A heading between a list's items: a day, a group. */
 .tx-list-heading {
   color: var(--ui-muted);
-  font-size: var(--text-caption);
+  font-size: var(--text-footnote);
   font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 /* Its place, which a list with its own rhythm sets instead. */

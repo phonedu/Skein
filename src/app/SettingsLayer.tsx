@@ -10,7 +10,7 @@ import {
 } from "../settings/pages/extensions-tab";
 import type { SettingsPanelProps } from "../settings/SettingsPanel";
 import { Presence } from "../engine/motion/usePresence";
-import { isIOSApp } from "../platform/capabilities";
+import { isIOSApp, isMobileApp } from "../platform/capabilities";
 import { SHOW_SIDEBAR_TAB_EVENT } from "../utils/events";
 import {
   closeSettingsDialog,
@@ -169,14 +169,32 @@ export function SettingsDialogLayer({
   opening: ReturnType<typeof useSettingsOpening>;
 }) {
   const { dialog, close } = opening;
+  // The panel stays over the window while it shrinks out: Base UI would
+  // unmount it with the request, so the layer keeps the last one mounted
+  // through its exit, then lets it go.
+  const [shown, setShown] = useState(dialog);
+  if (dialog && dialog !== shown) setShown(dialog);
+  const closing = !dialog && !!shown;
+  useEffect(() => {
+    if (dialog || !shown) return;
+    // The phone's full-screen page has its own exit (or none); only the
+    // desktop panel shrinks out here.
+    if (isMobileApp) {
+      setShown(null);
+      return;
+    }
+    const timer = window.setTimeout(() => setShown(null), 240);
+    return () => window.clearTimeout(timer);
+  }, [dialog, shown]);
   return (
     <Suspense fallback={null}>
-      {dialog && (
+      {shown && (
         <SettingsDialog
-          key={dialog.request}
-          page={dialog.page}
-          jump={dialog.jump ?? null}
-          onClose={close}
+          key={shown.request}
+          page={shown.page}
+          jump={shown.jump ?? null}
+          closing={closing}
+          onClose={closing ? () => {} : close}
           {...props}
         />
       )}

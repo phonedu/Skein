@@ -106,6 +106,15 @@ export function listenFor(
       const root = getWindowAccess()?.rootPath() ?? null;
       if (fileEventReadable(data, root)) plugin.tell(event, data);
     });
+  // A subscriber starts from the folder that is open: plugins activate
+  // after the window restored it, and would otherwise wait for a change
+  // that never comes (a status item set at startup would stay unset).
+  if (event === "root") {
+    const stop = onPluginEvent(event, (data) => plugin.tell(event, data));
+    const root = getWindowAccess()?.rootPath() ?? null;
+    if (root) plugin.tell("root", { path: root });
+    return stop;
+  }
   if (event === "activeTab")
     return onPluginEvent(event, (data) =>
       plugin.tell(

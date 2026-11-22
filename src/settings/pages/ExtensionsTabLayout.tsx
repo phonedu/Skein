@@ -1,5 +1,6 @@
 import { SearchField } from "../../engine/controls/SearchField";
 import { ExpandingSearch } from "../../engine/controls/ExpandingSearch";
+import { MoreIcon } from "../../engine/controls/icons";
 import { useMenuButton } from "../../engine/controls/useMenuButton";
 import type { ReactNode } from "react";
 import type { Strings } from "../../i18n/strings";
@@ -89,7 +90,7 @@ export function ExtensionsTabLayout({
               {primary && (
                 <button
                   type="button"
-                  className="tx-button text-button settings-inline-button"
+                  className="tx-button small"
                   onClick={primary.onSelect}
                 >
                   {primary.label}
@@ -118,7 +119,8 @@ export function ExtensionsTabLayout({
 }
 
 /** The tab's other actions - install from a file, import, add by hand -
- *  behind one "…" button. */
+ *  behind one "…" button. The group's tools are one kind of button: icons
+ *  draw as icon buttons, an action that needs words as a small button. */
 function MoreMenu({ t, actions }: { t: Strings; actions: ExtensionsAction[] }) {
   const { button, menu } = useMenuButton(
     () => actions.map((a) => ({ label: a.label, onSelect: a.onSelect })),
@@ -128,11 +130,11 @@ function MoreMenu({ t, actions }: { t: Strings; actions: ExtensionsAction[] }) {
     <div className="extensions-more">
       <button
         type="button"
-        className="tx-button text-button settings-inline-button extensions-more-button"
+        className="tx-icon-button"
         aria-label={t.toolbarMore}
         {...button}
       >
-        ⋯
+        <MoreIcon />
       </button>
       {menu}
     </div>

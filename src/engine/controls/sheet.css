@@ -18,12 +18,8 @@
   animation: motion-fade-in var(--dur-base) var(--ease-standard);
 }
 
-/* On a phone the sheet sits over a FAB in a saturated accent (the home's
-   "new" button); a 30%-day veil leaks that colour. The stronger veil,
-   also used behind a picture, covers it without changing a dialog's. */
-:root[data-window-chrome="mobile"] .sheet-scrim::before {
-  background: var(--ui-overlay-strong);
-}
+/* On a phone the sheet sits over the page as any dialog does: the same
+   veil, no stronger one (the FAB it once covered is gone). */
 
 .sheet {
   position: relative;
@@ -35,7 +31,7 @@
 }
 
 .sheet-scrim[data-state="closing"] > .sheet {
-  animation: motion-sheet-out var(--dur-base) var(--ease-in) forwards;
+  animation: motion-sheet-out var(--dur-sheet-exit) var(--ease-in) forwards;
 }
 
 /* Holds the focus only to keep keys from the document behind. */

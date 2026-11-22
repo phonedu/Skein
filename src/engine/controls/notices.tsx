@@ -30,17 +30,22 @@ const MAX_SHOWN = 3;
 
 let nextId = 1;
 let notices: Notice[] = [];
-const shownNow = createSubscribers<[notices: Notice[]]>();
+const shownNow =
+  createSubscribers<[notices: Notice[], instant: readonly number[]]>();
 const timers = new Map<number, ReturnType<typeof setTimeout>>();
 
-const publish = () => shownNow.publish(notices);
+/** `instant`: the notes in this change that go at once, without the exit
+ *  (taken away to make room, so a burst never leaves a pile of fading
+ *  boxes). */
+const publish = (instant: readonly number[] = []) =>
+  shownNow.publish(notices, instant);
 
-function remove(id: number) {
+function remove(id: number, animate = true) {
   clearTimeout(timers.get(id));
   timers.delete(id);
   notices.find((n) => n.id === id)?.onGone?.();
   notices = notices.filter((n) => n.id !== id);
-  publish();
+  publish(animate ? [] : [id]);
 }
 
 /** Removes a note after `ms`; a pointer resting on it holds it (hold). */
@@ -78,7 +83,7 @@ function add(notice: Omit<Notice, "id">): number {
   while (notices.length > MAX_SHOWN) {
     const old = notices.find(plain) ?? notices.find((n) => !n.progress);
     if (!old) break;
-    remove(old.id);
+    remove(old.id, false);
   }
   publish();
   return id;
@@ -153,24 +158,62 @@ export function reportProgress(
 }
 
 export function endProgress(id: number): void {
-  remove(id);
+  // A progress bar is a fact about work, not a toast: when the work ends it
+  // goes at once, no farewell.
+  remove(id, false);
 }
 
-/** Mounted once per window, by App. */
+/** Mounted once per window, by App. A note that goes plays its exit out
+ *  first: it is kept for the animation's length after the store dropped
+ *  it (`--dur-base`, motion-moves.css motion-sink-out). */
+const EXIT_MS = 200;
+
 export function NoticeHost() {
   const [shown, setShown] = useState<Notice[]>(notices);
-  useEffect(() => shownNow.subscribe(setShown), []);
-  if (!shown.length) return null;
+  const [retiring, setRetiring] = useState<Notice[]>([]);
+  useEffect(() => {
+    let seen = notices;
+    return shownNow.subscribe((next, instant) => {
+      const gone = seen.filter((n) => !next.some((m) => m.id === n.id));
+      seen = next;
+      // A note culled for room is not one that went by itself: it is gone
+      // on this frame, not kept to fade.
+      const leaving = gone.filter((n) => !instant.includes(n.id));
+      if (leaving.length) {
+        setRetiring((current) => [
+          ...current.filter((n) => !leaving.some((g) => g.id === n.id)),
+          ...leaving,
+        ]);
+        const ids = new Set(leaving.map((n) => n.id));
+        setTimeout(
+          () => setRetiring((current) => current.filter((n) => !ids.has(n.id))),
+          EXIT_MS,
+        );
+      }
+      setShown(next);
+    });
+  }, []);
+  const rows = [...shown, ...retiring];
+  if (!rows.length) return null;
+  const leaving = new Set(retiring.map((n) => n.id));
   return (
     <div className="notice-stack" role="status" aria-live="polite">
-      {shown.map((notice) => (
+      {rows.map((notice) => (
         <div
           key={notice.id}
           className="notice floating-surface"
           data-tone={notice.tone}
-          onMouseEnter={notice.progress ? undefined : () => hold(notice.id)}
+          data-state={leaving.has(notice.id) ? "closing" : undefined}
+          aria-hidden={leaving.has(notice.id) || undefined}
+          onMouseEnter={
+            notice.progress || leaving.has(notice.id)
+              ? undefined
+              : () => hold(notice.id)
+          }
           onMouseLeave={
-            notice.progress ? undefined : () => arm(notice.id, AFTER_HOLD_MS)
+            notice.progress || leaving.has(notice.id)
+              ? undefined
+              : () => arm(notice.id, AFTER_HOLD_MS)
           }
         >
           <div className="notice-text">

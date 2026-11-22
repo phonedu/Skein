@@ -35,8 +35,7 @@
 .settings-builtin-category > .settings-row + .settings-row,
 .settings-skill-item + .settings-skill-item,
 .plugin-card + .plugin-card {
-  border-top: var(--divider-width, 1px) solid
-    color-mix(in srgb, var(--ui-border) 60%, transparent);
+  border-top: var(--divider-width, 1px) solid var(--ui-border);
 }
 
 /* Every row: the setting's name on the left, its control on the right, one

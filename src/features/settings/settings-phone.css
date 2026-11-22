@@ -19,16 +19,24 @@
   box-sizing: border-box;
 }
 
+/* The list under the page: the surface a return reveals. */
+.settings-phone-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* The bar: back at the leading edge, the title centred over the equal empty
-   slot at the end, a hairline under it. */
+   slot at the end. The board's phone bar has no hairline under it. */
 .settings-phone-top {
   flex: none;
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) 48px;
   align-items: center;
-  min-height: 64px;
-  padding: var(--space-2) var(--space-2);
-  border-bottom: 1px solid var(--ui-border);
+  min-height: var(--phone-bar-row);
+  padding: 0 var(--space-2);
+  border-bottom: 0;
 }
 
 .settings-phone-title {
@@ -49,7 +57,7 @@
   border: 0;
   padding: 0;
   background: none;
-  border-radius: var(--shape-pill);
+  border-radius: var(--shape-s);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -70,6 +78,16 @@ button.settings-phone-ic:active {
     calc(var(--space-8) + var(--safe-bottom, 0px));
 }
 
+/* A tablet's screen is 1280 wide: the list and a page's groups keep the
+   reading width they have on a phone, centred, instead of one row
+   stretching across the screen. The body still scrolls full width. */
+@media (min-width: 600px) {
+  .settings-phone-body > * {
+    max-width: 660px;
+    margin-inline: auto;
+  }
+}
+
 /* The shared search field, fitted to the body's margins: the older mobile
    sheet's side margins pushed it past the right edge. */
 .settings-phone .settings-nav-search {
@@ -78,13 +96,27 @@ button.settings-phone-ic:active {
 
 .settings-phone .settings-search {
   width: 100%;
-  height: 48px;
+  /* A bare search row: icon and placeholder, no border, no fill. Focus
+     draws nothing either. */
+  height: 44px;
   margin: 0;
   padding: 0 var(--space-4);
-  border-radius: var(--shape-m);
-  border: 1px solid var(--ui-border);
-  background: var(--ui-surface);
+  border-radius: 0;
+  border: 0;
+  background: none;
   font-size: var(--text-body);
+}
+
+.settings-phone .settings-search:focus-within {
+  border: 0;
+  box-shadow: none;
+}
+
+/* In dark, a bare row reads as plain text; a faint fill marks it as a
+   field. Light stays the bare row the board draws. */
+:root[data-theme="dark"] .settings-phone .settings-search {
+  background: var(--ui-surface);
+  border-radius: var(--shape-m);
 }
 
 .settings-phone .settings-search .tx-search-input {
@@ -98,18 +130,17 @@ button.settings-phone-ic:active {
 
 .settings-phone-section-title {
   margin: 0 0 var(--space-2);
-  padding: 0 var(--space-4);
-  font-size: var(--text-footnote);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--ui-muted);
+  /* Flush with the card: the card already sits in the page's inset. */
+  padding: 0;
 }
 
 .settings-phone-card {
   overflow: hidden;
-  border: 1px solid var(--ui-border);
-  border-radius: var(--shape-m);
+  /* Glass, not a stroked box: the shadow is the edge. */
+  border: 0;
+  border-radius: var(--shape-card);
   background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .settings-phone-row {
@@ -130,30 +161,49 @@ button.settings-phone-ic:active {
 }
 
 .settings-phone-row:active {
-  background: var(--ui-pressed);
+  background: var(--ui-pressed-row);
 }
 
-/* The hairline between rows starts where the text does. */
+/* The page the desktop dialog shows, marked in the same list it shares
+   with the phone. */
+.settings-phone-row.on {
+  background: var(--ui-selected);
+  color: var(--ui-selected-text);
+  font-weight: 600;
+}
+
+.settings-phone-row.on .settings-phone-row-ic {
+  color: var(--ui-accent);
+}
+
+/* The hairline between rows starts where the text does (after the icon's
+   column), as Obsidian's grouped lists do. */
 .settings-phone-row + .settings-phone-row::before {
   content: "";
   position: absolute;
   top: 0;
-  left: var(--space-4);
-  right: 0;
+  left: calc(var(--space-4) + 24px + var(--space-3));
+  /* Stops 16 short of the card's right edge. */
+  right: var(--space-4);
   border-top: 1px solid var(--ui-border);
 }
 
+/* The line is the row's own top edge, so a card's last row has none. */
+.settings-phone-card > .settings-phone-row:last-child::before {
+  display: none;
+}
+
+/* The page's mark: a quiet line icon, not a tinted tile (Obsidian's
+   settings lists). The tile recipe stays for chips and empty states. */
 .settings-phone-row-ic {
   flex: none;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--shape-s);
-  background: color-mix(in srgb, var(--ui-text) 6%, transparent);
   color: var(--ui-muted);
-  --icon-scale: 1.2;
+  --icon-scale: 1.15;
 }
 
 .settings-phone-row-label {
@@ -162,6 +212,22 @@ button.settings-phone-ic:active {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* A finger's switch: Obsidian's proportion (a 48×28 track, the thumb a
+   step in from its edge), where the desktop keeps the 40×24 one. */
+.settings-phone .settings-switch {
+  width: 48px;
+  height: 28px;
+}
+
+.settings-phone .settings-switch-thumb {
+  width: 24px;
+  height: 24px;
+}
+
+.settings-phone .settings-switch.on .settings-switch-thumb {
+  translate: 20px 0;
 }
 
 .settings-phone-row-chev {
@@ -176,45 +242,44 @@ button.settings-phone-ic:active {
   }
 }
 
-/* The pushed page arrives from the right, as a phone's page does. */
+/* The pushed page arrives from the right, as a phone's page does, and
+   leaves the way it came; the list under it is already there. It starts
+   below the status bar, like the list: an absolute child of a padded
+   fixed layer begins at the layer's padding box, not its content box. */
 .settings-phone-page {
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: var(--safe-top, 0px) 0 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
-  animation: settings-phone-push var(--dur-base) var(--ease-out);
+  background: var(--ui-bg);
+  animation: motion-edge-in-end var(--dur-slow) var(--ease-spring);
 }
 
-@keyframes settings-phone-push {
-  from {
-    transform: translateX(28px);
-    opacity: 0;
-  }
+.settings-phone-page[data-state="closing"] {
+  animation: motion-edge-out-end var(--dur-slow-exit) var(--ease-in) forwards;
 }
 
 /* ---- A page under the list: its sections wear the list's own cards ---- */
 
 /* A caption over a card, as the home's sections read. */
 .settings-phone .settings-content-host > .settings-page-group {
-  margin: 0 0 var(--space-6);
+  margin: 0;
 }
 
 .settings-phone .settings-content-host .settings-page-group-head {
   margin: 0 0 var(--space-2);
-  padding: 0 var(--space-4);
-}
-
-.settings-phone .settings-content-host .settings-page-group-title {
-  font-size: var(--text-footnote);
-  letter-spacing: 0.08em;
+  /* Flush with the card, as the list's captions are. */
+  padding: 0;
 }
 
 /* The rows' card: one frame, hairlines between rows inset to the text. */
 .settings-phone .settings-content-host .settings-page-group-body {
   overflow: hidden;
-  border: 1px solid var(--ui-border);
-  border-radius: var(--shape-m);
+  border: 0;
+  border-radius: var(--shape-card);
   background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
 }
 
 /* Every row in the card - a fold's nested ones included - keeps the card's
@@ -227,17 +292,32 @@ button.settings-phone-ic:active {
   padding: var(--space-1) var(--space-4);
   border-bottom: 0;
   /* The hairline between rows, inset to the text: a pixel of the card's
-     own line, drawn whether or not a wrapper (a fold) sits between two
-     rows. */
+     own line, stopping 16 short of the right edge, drawn whether or not a
+     wrapper (a fold) sits between two rows. */
   background-image: linear-gradient(
     to right,
     transparent var(--space-4),
     var(--ui-border) var(--space-4),
-    var(--ui-border) 100%
+    var(--ui-border) calc(100% - var(--space-4)),
+    transparent calc(100% - var(--space-4))
   );
   background-size: 100% 1px;
   background-position: 0 0;
   background-repeat: no-repeat;
+}
+
+/* A title and its description need the taller row: 80 written draws the
+   board's 72 at the phone's 10/11. */
+.settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  .settings-row:has(.settings-row-desc) {
+  min-height: 80px;
+}
+
+/* The control sits at the row's end. */
+.settings-phone .settings-row-value {
+  margin-left: auto;
 }
 
 /* The card's first row sits under its edge: no line above it. */
@@ -266,13 +346,20 @@ button.settings-phone-ic:active {
 /* The legacy blocks a page still carries - Custom CSS, the theme sections -
    join the same card language: paper, a hairline, the home's margins. */
 .settings-phone .settings-advanced {
-  margin: var(--space-6) 0 0;
-  border-color: var(--ui-border);
+  /* The host's own gap (settings-host.css) is the only space before this
+     block now; a margin-top here stacked a second one on top of it. */
+  margin: 0;
+  /* The same glass card as the groups around it, not the desktop's
+     bordered well. */
+  border: 0;
+  border-radius: var(--shape-card);
   background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .settings-phone .settings-advanced > summary {
-  min-height: 56px;
+  /* 62 written: the chrome's 10/11 draws the other rows' 56. */
+  min-height: 62px;
   padding: 0 var(--space-4);
   font-size: var(--text-body);
 }
@@ -288,7 +375,7 @@ button.settings-phone-ic:active {
 
 .settings-phone .settings-content-host .settings-group-head {
   margin: 0 0 var(--space-2);
-  padding: 0 var(--space-4);
+  padding: 0;
 }
 
 .settings-phone .settings-content-host .settings-group-title {
@@ -297,8 +384,10 @@ button.settings-phone-ic:active {
 }
 
 .settings-phone .settings-content-host .settings-group-body {
-  border-color: var(--ui-border);
+  border: 0;
+  border-radius: var(--shape-card);
   background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .settings-phone .settings-content-host .settings-group-body > .tx-list-note {
@@ -313,7 +402,7 @@ button.settings-phone-ic:active {
   align-items: center;
   gap: 4px 8px;
   margin: 0 0 var(--space-3);
-  padding: 0 var(--space-4);
+  padding: 0;
 }
 
 .settings-phone
@@ -413,8 +502,10 @@ button.settings-phone-ic:active {
   min-height: 62px;
   background-image: linear-gradient(
     to right,
-    var(--ui-border),
-    var(--ui-border)
+    transparent var(--space-4),
+    var(--ui-border) var(--space-4),
+    var(--ui-border) calc(100% - var(--space-4)),
+    transparent calc(100% - var(--space-4))
   );
   background-size: 100% 1px;
   background-position: 0 0;
@@ -527,7 +618,8 @@ button.settings-phone-ic:active {
     to right,
     transparent var(--space-4),
     var(--ui-border) var(--space-4),
-    var(--ui-border) 100%
+    var(--ui-border) calc(100% - var(--space-4)),
+    transparent calc(100% - var(--space-4))
   );
   background-size: 100% 1px;
   background-position: 0 0;
@@ -556,16 +648,20 @@ button.settings-phone-ic:active {
 }
 
 .settings-phone .settings-phone-body .settings-group-body {
-  border-color: var(--ui-border);
+  border: 0;
+  border-radius: var(--shape-card);
   background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .settings-phone .settings-phone-body .settings-group-body > .settings-row {
   min-height: 62px;
   background-image: linear-gradient(
     to right,
-    var(--ui-border),
-    var(--ui-border)
+    transparent var(--space-4),
+    var(--ui-border) var(--space-4),
+    var(--ui-border) calc(100% - var(--space-4)),
+    transparent calc(100% - var(--space-4))
   );
   background-size: 100% 1px;
   background-position: 0 0;
@@ -581,18 +677,8 @@ button.settings-phone-ic:active {
 
 /* ---- The spec's rulings on the pages (A–I, 2026-11-18) ---- */
 
-/* B: a page whose first section is named after the page says it twice;
-   the card can start at the top instead. */
-:root[data-window-chrome="mobile"]
-  .settings-content-host[data-settings-page="look-basic"]
-  > .settings-page-group:first-child
-  > .settings-page-group-head,
-:root[data-window-chrome="mobile"]
-  .settings-content-host[data-settings-page="edit-img"]
-  > .settings-page-group:first-child
-  > .settings-page-group-head {
-  display: none;
-}
+/* B (a page's first group named after the page) lives in
+   settings-content.css: it holds on every end, a tablet's included. */
 
 /* D: a search result wears its page's mark, as the list's rows do. The
    row's first-child rule must not stretch the chip (it carries more

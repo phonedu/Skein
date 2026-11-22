@@ -1,25 +1,17 @@
-import { inOrder } from "../../utils/in-order";
-import { loadSettings } from "../../prefs/settings-store";
-import {
-  addedSidebarTabs,
-  reserveSidebarTabIds,
-} from "../../registry/sidebar-tabs";
 import { StartActions } from "../StartActions";
 import "../start-page.css";
 import type { ComponentType } from "react";
 import { useEffect, useState } from "react";
 import { readRecents } from "../menu/recents";
+import { reserveSidebarTabIds } from "../../registry/sidebar-tabs";
 import { FileTree } from "../../files/FileTree";
 import {
   TreeTabIcon,
   OutlineTabIcon,
   SearchIcon,
-  PluginsTabIcon,
 } from "../../engine/controls/icons";
-import { Suspense } from "react";
 import { lazyModule } from "../../lazy/lazy-module";
 import { lazyComponent } from "../../lazy/lazy-component";
-import { isDesktopApp } from "../../platform/capabilities";
 import { canOpenFolder } from "../../platform/capabilities";
 import type { Strings } from "../../i18n/strings";
 import type { OpenFolder } from "../useOpenFolder";
@@ -57,6 +49,8 @@ interface SidebarTabProps {
   /** The search shortcut asked for the Search tab's box. */
   searchFocusRequest: boolean;
   onSearchFocusHandled: () => void;
+  /** The library's note count, for the view column's foot. */
+  onNoteCount?: (label: string | null) => void;
 }
 
 /**
@@ -78,6 +72,7 @@ function FilesPanel({
   activePath,
   onOpenFile,
   onEntryMoved,
+  onNoteCount,
 }: SidebarTabProps) {
   // The notes board's recents: read when the panel mounts, refreshed on the
   // window's next mount - a foot-level fact, not a live meter.
@@ -112,6 +107,8 @@ function FilesPanel({
       onCloseFolder={openFolder.closeFolder}
       onEntryMoved={onEntryMoved}
       recentFiles={recentFiles}
+      onNoteCount={onNoteCount}
+      foot={false}
     />
   );
 }
@@ -119,7 +116,8 @@ function FilesPanel({
 const BUILT_IN: SidebarTabDef[] = [
   {
     id: "tree",
-    label: (t) => t.treeTab,
+    // The view is also called Files: this one names the tree under it.
+    label: (t) => t.treeFileTree,
     Icon: TreeTabIcon,
     Panel: FilesPanel,
   },
@@ -157,82 +155,27 @@ const BUILT_IN: SidebarTabDef[] = [
   },
 ];
 
-// The plugin list, loaded when the puzzle first opens it (it registers
-// plugins' own sidebar tabs here, so not before).
-const PluginsPanel = lazyComponent(
-  lazyModule(
-    "plugins-panel",
-    () => import("../../settings/pages/PluginsPanel"),
-  ),
-  (m) => m.PluginsPanel,
+/** The Files view's own tabs: Files, Outline, Search. The plugin manager
+ *  and plugins' pages are not tabs of the view column in the H0 shell. */
+export const FILE_TABS = BUILT_IN;
+
+// The view column's names are Textus's: a plugin's tab may not take one.
+reserveSidebarTabIds(
+  (id) => id === "plugins" || BUILT_IN.some((tab) => tab.id === id),
 );
 
-/** Plugins: where they run, the desktop - the list and the ways to add one;
- *  a plugin's page opens in a tab of its own. Asked when the tabs are
- *  listed, not when this loads. */
-const PLUGINS_TAB: SidebarTabDef = {
-  id: "plugins",
-  label: (t) => t.extensionsTabPlugins,
-  Icon: PluginsTabIcon,
-  Panel: ({ t }) => (
-    <Suspense fallback={null}>
-      <PluginsPanel t={t} />
-    </Suspense>
-  ),
-};
-
-const pluginsTab = () => (isDesktopApp ? [PLUGINS_TAB] : []);
+/** The Files view's tab with this id, or Files. */
+export function fileTab(id: string): SidebarTabDef {
+  return BUILT_IN.find((tab) => tab.id === id) ?? BUILT_IN[0];
+}
 
 /** The first tab, Files: where the sidebar opens with nothing remembered. */
 export const DEFAULT_SIDEBAR_TAB = "tree";
 
-/** Textus's own tabs (Files, Outline, Search, Plugins): always first,
- *  apart from the ones plugins add. */
-export function isOwnTab(id: string): boolean {
-  return id === PLUGINS_TAB.id || BUILT_IN.some((tab) => tab.id === id);
-}
-reserveSidebarTabIds(isOwnTab);
-
-/** The tabs, in the header's order: as the user dragged them, a tab new
- *  since then where it comes - Textus's own before any a plugin adds. */
+/** The view column's tabs; plugins' pages live in the top bar's launcher,
+ *  not here. Kept for the remembered tab's validation. */
 export function sidebarTabs(): SidebarTabDef[] {
-  const all = railTabs();
-  return [
-    ...all.filter((tab) => isOwnTab(tab.id)),
-    ...all.filter((tab) => !isOwnTab(tab.id)),
-  ];
-}
-
-/** The tabs as the rail shows them: plugins' pinned among Textus's own. */
-export function railTabs(): SidebarTabDef[] {
-  // Kept in the settings since 1.3.13; before, in this window's UI state.
-  const order = loadSettings().activityRailOrder;
-  return orderTabs(
-    [...BUILT_IN, ...pluginsTab(), ...addedSidebarTabs()],
-    order,
-  );
-}
-
-/** `tabs` in `order`, those it doesn't name kept after the one before them. */
-export function orderTabs<T extends { id: string }>(
-  tabs: readonly T[],
-  order: readonly string[],
-): T[] {
-  const out = order
-    .map((id) => tabs.find((tab) => tab.id === id))
-    .filter((tab): tab is T => !!tab);
-  tabs.forEach((tab, i) => {
-    if (out.includes(tab)) return;
-    const before = i > 0 ? out.indexOf(tabs[i - 1]) : -1;
-    out.splice(before + 1, 0, tab);
-  });
-  return out;
-}
-
-/** The rail's order with the tabs shown in `shown`'s order (a rail
- *  dragged), those not shown (hidden from the rail) kept where they were. */
-export function railOrder(shown: readonly string[]): string[] {
-  return inOrder(railTabs(), (tab) => tab.id, shown).map((tab) => tab.id);
+  return [...BUILT_IN];
 }
 
 /** The tab with this id, or Files for one no longer there. */

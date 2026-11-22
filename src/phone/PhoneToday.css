@@ -1,0 +1,369 @@
+/* The phone's Today: the capture action sticks at the top of the page; the
+   rest scrolls under it. No floating button and no bottom action bar, and
+   no card side strips - a full hairline carries each block. */
+.phone-today {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  padding-top: var(--safe-top, 0px);
+}
+
+.ptop {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--phone-bar-row);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-bottom: 0;
+}
+
+/* The vault switcher: the folder tile, the name, the chevron. It is a bar
+   action, not a field: no frame or fill of its own (the phone's chip was
+   never a box), only the pressed state. */
+.ptop-vault {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  max-width: 66%;
+  min-height: 44px;
+  padding: 0 var(--space-2) 0 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: 600;
+  text-align: left;
+}
+
+.ptop-vault:active {
+  background: var(--ui-pressed);
+}
+
+/* A bar action, not a field: no focus ring either (the bar's other icons
+   are its peers). A phone has no keyboard to bring one back. */
+.ptop-vault:focus-visible {
+  outline: none;
+}
+
+.ptop-vault-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  /* A bare line icon, about 22px: the tinted tile is gone. */
+  width: 22px;
+  height: 22px;
+  background: none;
+  color: var(--ui-muted);
+  --icon-scale: 1.47;
+}
+
+.ptop-vault-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ptop-vault-chev {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.ptop-spacer {
+  flex: 1;
+}
+
+.ptop-ic {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+}
+
+.ptop-ic:active {
+  background: var(--ui-pressed);
+}
+
+.pbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-4)
+    calc(var(--space-6) + var(--safe-bottom, 0px));
+}
+
+/* The one high-frequency action: part of the page, not floating, and it
+   stays in sight as the list scrolls. */
+.pcapture {
+  position: sticky;
+  /* The scroll shadow is an absolute layer of this button. */
+  isolation: isolate;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 50px;
+  margin: 0 0 var(--space-3);
+  padding: 0 var(--space-3);
+  /* Glass, not an accent frame. The plus carries the accent. */
+  border: 0;
+  border-radius: var(--shape-card);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: 400;
+  text-align: left;
+  box-shadow: var(--shadow-card);
+}
+
+/* Where scroll-driven animation is there (a new WebView), the shadow comes
+   only once the action has stuck to the top: on the page it lies flat. The
+   shadow is the button's own layer, faded by the scroll (only opacity
+   moves). Without the timeline the shadow simply stays. */
+@supports (animation-timeline: scroll()) {
+  .pcapture {
+    box-shadow: none;
+  }
+
+  .pcapture::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+    opacity: 0;
+    animation-name: motion-fade-in;
+    animation-fill-mode: both;
+    animation-timeline: scroll(nearest);
+    animation-range: 0 24px;
+  }
+}
+
+.pcapture-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  /* The board's round accent plus, 40 drawn. */
+  width: 40px;
+  height: 40px;
+  border-radius: var(--shape-pill);
+  background: var(--ui-accent);
+  /* Paper on the accent fill: the accent-text token is a darkened accent
+     for text on paper, invisible here. */
+  color: var(--ui-bg);
+}
+
+.pcapture:active {
+  background: var(--ui-pressed);
+}
+
+.pcapture-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-muted);
+}
+
+.pheading {
+  margin: var(--space-1) var(--space-1) var(--space-3);
+  font-size: var(--text-title-lg);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.plabel {
+  margin: var(--space-4) var(--space-1) var(--space-1);
+}
+
+.pcard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-4);
+  border: 0;
+  border-radius: var(--shape-card);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--ui-text);
+  font: inherit;
+  text-align: left;
+}
+
+.pcard:active {
+  background: var(--ui-pressed-row);
+}
+
+.pcard-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.pcard-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+}
+
+.prow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  /* Written 62 at the chrome's 10/11: the list's 56 drawn, as every phone
+     list. */
+  min-height: 62px;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+
+/* Today's changes are one glass card of rows, not bare lines. */
+.pchanges {
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--shape-card);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.pchanges .prow {
+  padding: 0 var(--space-4);
+  /* The line starts where the text does - the row's own inset, the icon's
+     16px and the gap after it - and stops 16 short of the edge. */
+  background-image: linear-gradient(
+    to right,
+    transparent calc(var(--space-4) + 16px + var(--space-2)),
+    var(--ui-border) calc(var(--space-4) + 16px + var(--space-2)),
+    var(--ui-border) calc(100% - var(--space-4)),
+    transparent calc(100% - var(--space-4))
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+.prow-doc {
+  align-items: flex-start;
+  /* Written 80 draws the board's 72 two-line row at the phone's 10/11. */
+  min-height: 80px;
+  padding-block: var(--space-2);
+}
+
+.prow-doc-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-block: 2px;
+}
+
+.prow-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.prow-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+}
+
+.prow:active {
+  background-color: var(--ui-pressed-row);
+}
+
+.prow:last-child:not(.prow-doc) {
+  background-image: none;
+}
+
+.pchanges .prow:last-child {
+  background-image: none;
+}
+
+.prow-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+}
+
+.prow-ic,
+.prow-chev {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.prow-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* An empty day: the empty-state family (icon tile, a line, the hint), no
+   card and no shadow. */
+.pempty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.pempty-mark {
+  display: grid;
+  place-items: center;
+  width: var(--icon-tile-lg, 48px);
+  height: var(--icon-tile-lg, 48px);
+  border-radius: var(--shape-m);
+  background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
+  color: var(--ui-accent-text);
+}
+
+.pempty-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.pempty-hint {
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+  line-height: 1.5;
+}

@@ -209,6 +209,8 @@ export function applyContributions(
     undo.push(
       registerSidebarTab({
         id: tab.id,
+        plugin: id,
+        type: tab.type,
         label: () => text(tab.title),
         Icon: () =>
           createElement(PluginTabIcon, {

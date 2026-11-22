@@ -587,6 +587,7 @@ utiliser une.
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown, c'est tout",
   treeTab: "Fichiers",
+  treeFileTree: "Arborescence",
   phoneBackToLibrary: "Retour à la bibliothèque",
   phoneBack: "Retour",
   outlineTab: "Plan",
@@ -760,6 +761,13 @@ utiliser une.
   docForget: "Retirer de la liste",
   docActionFailed: "Action impossible",
   treeDayToday: "Aujourd’hui",
+  todayCurrent: "Livraison en cours",
+  todayPending: "À confirmer",
+  todayChanged: "Modifié aujourd’hui",
+  todayCapture: "Noter une idée…",
+  todayEmptyTitle: "Rien aujourd'hui pour l'instant",
+  todayEmptyHint:
+    "Écrivez une ligne ou ouvrez une note depuis la bibliothèque.",
   treeFolderNotes: { one: "{n} note", many: "{n} notes", other: "{n} notes" },
   treeRowMore: "Plus d’actions",
   treeOpen: "Ouvrir",
@@ -797,6 +805,7 @@ utiliser une.
     "Le texte enrichi montre le document tel qu’il se lit ; le mode source, son Markdown ; source et aperçu, les deux côte à côte.",
   settingsHelpGroup: "Aide",
   navGeneral: "Général",
+  navOptions: "Options",
   navTheme: "Thème",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
@@ -1526,19 +1535,20 @@ utiliser une.
     "Une minute pour faire le tour : la barre latérale, la page et l'IA.",
   tutorialSidebarTitle: "La barre latérale",
   tutorialSidebarBody:
-    "Cliquez sur le dossier à gauche pour ouvrir la barre latérale.",
+    "La colonne de gauche garde le coffre et le travail du jour ; le bouton de la barre supérieure l'affiche ou la masque.",
   tutorialSidebarBodyPhone:
     "Touchez le bouton de barre latérale en haut à gauche pour l'ouvrir.",
   tutorialRailTitle: "Ce qu'elle contient",
   tutorialRailBody:
-    "Chaque icône à gauche ouvre une partie de la barre latérale.",
+    "Aujourd'hui et Fichiers sont les deux vues de la colonne ; Fichiers a ses propres onglets.",
   tutorialRailFiles: "Fichiers : le dossier où vous écrivez.",
   tutorialRailOutline: "Plan : les titres de la page, pour y sauter.",
   tutorialRailSearch:
     "Recherche : trouver un fichier ou une ligne dans tout le dossier.",
-  tutorialRailPlugins: "Plugins : d'autres fonctions, ajoutées au besoin.",
+  tutorialRailPlugins:
+    "Plugins : le bouton de la barre supérieure ouvre les pages et commandes des plugins.",
   tutorialRailHide:
-    "Dans une petite fenêtre, un clic droit sur cette barre d’icônes la masque.",
+    "Le bouton de la barre supérieure affiche ou masque cette colonne.",
   tutorialSettingsTitle: "Réglages",
   tutorialSettingsBody:
     "L'engrenage réunit le thème, les polices et vos comptes d'IA.",
@@ -1996,6 +2006,7 @@ utiliser une.
   pluginStoppedAnswering: "elle ne répondait plus",
   pluginTooManyErrors: "elle a échoué trop souvent",
   pluginQuickPickEmpty: "Aucun résultat.",
+  pluginLauncherPlaceholder: "Rechercher des pages et commandes de plugins",
   pluginPermEditorRead: "Lire le document affiché et sa sélection",
   pluginPermEditorWrite:
     "Modifier directement le document ouvert (chaque modification peut être annulée)",

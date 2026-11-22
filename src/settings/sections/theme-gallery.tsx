@@ -27,6 +27,7 @@ import { openDiagramViewer } from "../../editor/diagram-zoom";
 import { AvailableSection } from "../pages/AvailableSection";
 import { installsText } from "../pages/installs-text";
 import { matchesWords } from "../../utils/match-words";
+import { fill } from "../../i18n/fill";
 
 /** The themes whose name, author or description hold every word of
  *  `query`. */
@@ -252,11 +253,13 @@ export function galleryCopies(
   return out;
 }
 
-/** Who made a gallery theme and how often it was installed. */
+/** Who made a gallery theme and how often it was installed, on one caption
+ *  line ("Author · 116 installs"): two captions under a card read as two
+ *  facts of the same weight, and the card's own line is the description. */
 export function ThemeByline({ t, theme }: { t: Strings; theme: GalleryTheme }) {
-  return (
-    <Byline t={t} author={theme.author} installs={installsText(theme, t)} />
-  );
+  const installs = installsText(theme, t);
+  const by = theme.author ? fill(t.pluginBy, { author: theme.author }) : "";
+  return <Byline t={t} lead={[by, installs].filter(Boolean).join(" · ")} />;
 }
 
 /** Screenshots fetched at once, at most: a long catalog scrolled quickly

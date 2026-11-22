@@ -64,7 +64,7 @@ export function ActionSheet({
         {head ? (
           <div className="action-sheet-head">{head}</div>
         ) : title ? (
-          <div className="action-sheet-title">{title}</div>
+          <div className="action-sheet-title tx-section-label">{title}</div>
         ) : null}
         {groups
           .filter((group) => group.length > 0)

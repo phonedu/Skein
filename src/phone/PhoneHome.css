@@ -30,69 +30,57 @@
 }
 
 .ph-top {
-  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
-}
-
-/* The hairline under the top row fades into the paper at each end, like the
-   Skein mockup's: a plain border cuts the paper into decks, a gradient hems
-   it. */
-.ph-top::after {
-  content: "";
-  position: absolute;
-  left: var(--space-6);
-  right: var(--space-6);
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--phone-ink) 10%, transparent) 18%,
-    color-mix(in srgb, var(--phone-ink) 10%, transparent) 82%,
-    transparent
-  );
+  min-height: var(--phone-bar-row);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-bottom: 0;
 }
 
 .ph-vault {
-  /* 48dp touch target per Material; the chip itself reads a touch smaller
-     with the same inside height. */
+  /* The vault switcher is a bar action: the folder tile, the name, the
+     chevron, no frame or fill of its own. */
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 48px;
-  padding: 0 var(--space-3);
-  /* A softer shoulder than shape-m, matching the mockup's 11px chip. */
+  min-height: 44px;
+  padding: 0 var(--space-2) 0 0;
   border-radius: var(--shape-s);
   border: 0;
   background: none;
   font-size: var(--text-body);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--phone-ink);
   max-width: 58%;
 }
 
 .ph-vault:active {
-  background: var(--ui-primary-pressed);
+  background: var(--ui-pressed);
+}
+
+/* A bar action, not a field: no focus ring either (the bar's other icons
+   are its peers). A phone has no keyboard to bring one back. */
+.ph-vault:focus-visible {
+  outline: none;
 }
 
 .ph-vault .vic {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--shape-s);
-  background: color-mix(in srgb, var(--phone-fire) 10%, transparent);
+  /* A bare line icon, about 22px: the tinted tile is gone. */
+  width: 22px;
+  height: 22px;
+  background: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--phone-fold);
+  color: var(--phone-muted);
   flex: none;
+  --icon-scale: 1.47;
 }
 
 .ph-vault .vic svg {
-  width: 15px;
-  height: 15px;
+  width: 22px;
+  height: 22px;
 }
 
 .ph-vault .vname {
@@ -106,6 +94,30 @@
   width: 14px;
   height: 14px;
   color: var(--phone-muted);
+}
+
+/* The library is pushed under Today: the chevron is the way back, sized as a
+   touch target and quiet so the vault chip stays the anchor. */
+.ph-back {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  margin-left: calc(var(--space-2) * -1);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+}
+
+.ph-back svg {
+  width: 22px;
+  height: 22px;
+}
+
+.ph-back:active {
+  background: var(--ui-pressed);
 }
 
 .ph-acts {
@@ -131,26 +143,22 @@
   height: 21px;
 }
 
+.ph-ic:active {
+  background: var(--ui-pressed);
+}
+
 .ph-search {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  /* 48dp Material target; at the chrome's 10/11 this draws the board's
-     46px pill and the touch keeps its depth. */
-  min-height: 50px;
+  /* A bare search row: 44 drawn, 48 written at the phone's 10/11. No
+     border, no fill, and focus draws nothing. */
+  min-height: 48px;
   margin: var(--space-3) var(--space-5) var(--space-3);
   padding: 0 var(--space-4);
-  /* The same cool hairline as the settings page and the vault chip:
-     an opaque mix, not an ink-tinted translucent one. A pale surface
-     fill underneath, so the pill reads as a trough in the paper. */
-  border: 1px solid var(--ui-border);
-  border-radius: var(--shape-m);
-  background: var(--ui-surface);
-  /* A 1px top highlight so the pill lifts off the paper, and a feather of
-     shadow below it; same recipe as the Skein mockup. */
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--ui-surface) 60%, transparent),
-    0 1px 3px color-mix(in srgb, var(--phone-ink) 5%, transparent);
+  border: 0;
+  border-radius: 0;
+  background: none;
   color: var(--phone-muted);
 }
 
@@ -176,14 +184,21 @@
   opacity: 0.72;
 }
 
-/* While the search is live, its trough warms: happening-now is the fire's
-   job, and so is this. */
+/* Focus draws no frame: the row stays bare. */
 .ph-search:focus-within {
-  border-color: color-mix(in srgb, var(--phone-fire) 45%, var(--ui-border));
+  border: 0;
+  box-shadow: none;
+}
+
+/* In dark, a bare row reads as plain text; a faint fill marks it as a
+   field. Light stays the bare row the board draws. */
+:root[data-theme="dark"] .ph-search {
+  background: var(--ui-surface);
+  border-radius: var(--shape-m);
 }
 
 .ph-search:focus-within > svg {
-  color: var(--phone-fire);
+  color: var(--phone-muted);
 }
 
 /* Our own clear takes the seat; the WebView's native one stays home. */
@@ -257,10 +272,9 @@
 .ph-tree {
   flex: 1;
   overflow: auto;
-  /* The board's library inset: rows stand in 12px from each edge. The
-     foot clears the floating action, so the last row scrolls out from
-     under it. */
-  padding: 0 var(--space-3) 80px;
+  /* The board's library inset: rows stand in 12px from each edge, the
+     list's foot at the page's own air. */
+  padding: 0 var(--space-3) var(--space-6);
 }
 
 .phone-home .tree-toolbar,
@@ -328,16 +342,12 @@
 }
 
 .phone-home .tree-row:not(.tree-row-file) .tree-icon {
-  /* The chip is the icon's own inline size (icons.tsx's iconSize wins over
-     any width here): 15px design at 2.2 draws the board's 30px square, and
-     the padding makes the glyph's room. The board tints the chip warm at
-     8% fire, corners at the 8px step (shape-s; shape-m is 14), its glyph
-     in the softened bronze. */
-  --icon-scale: 2.2;
-  padding: var(--space-2);
-  border-radius: var(--shape-s);
-  background: color-mix(in srgb, var(--phone-fire) 8%, transparent);
-  color: var(--phone-fold);
+  /* A bare line icon, about 22px: 15px design at 1.47. The tinted chip is
+     gone. */
+  --icon-scale: 1.47;
+  padding: 0;
+  background: none;
+  color: var(--phone-muted);
 }
 
 .phone-home .tree-row .tree-label {
@@ -346,12 +356,19 @@
   padding-right: var(--space-1);
 }
 
-/* The board marks the open document with the dot alone: the selection
-   block belongs to the desktop's pointer light, not the phone's paper
-   (aria-selected stays in the row for the readers). */
+/* The open document takes the selection: the selected fill, an accent
+   icon and a 600 name. The fire dot no longer marks it. In light, the
+   plain selected fill (#EEF1F5 on the page's #F0F1F3) reads as almost no
+   fill at all; an accent-tinted mix carries the mark in both themes
+   (2026-11-22 ruling). */
 .phone-home .tree-row-active {
-  background: none;
-  color: inherit;
+  background: color-mix(in srgb, var(--ui-accent) 8%, var(--ui-selected));
+  color: var(--ui-selected-text);
+  font-weight: 600;
+}
+
+.phone-home .tree-row-active .tree-icon {
+  color: var(--ui-accent);
 }
 
 .phone-home .tree-row .tree-badge {
@@ -359,22 +376,14 @@
   color: var(--phone-muted);
 }
 
-/* The board marks the open document with a fire dot before its name -
-   "happening now" is the fire's only job. The dot rides in the shared
-   file row's markup, so the default keeps it off the desktop's tree. */
+/* The fire dot rode in the shared file row. It stays off the desktop, and
+   the phone hides it too: selection replaced it (2026-11-22). */
 .tree-fdot {
   display: none;
 }
 
 .phone-home .tree-fdot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: var(--shape-xs);
-  background: var(--phone-fire);
-  margin-right: 8px;
-  vertical-align: 2px;
-  flex: none;
+  display: none;
 }
 
 /* The board's line ends: the date or the folder's note count, quiet at
@@ -391,15 +400,14 @@
 }
 
 .phone-home .tree-more {
-  /* The board's 38px tap square (42 written at the chrome's 10/11), its
-     ⋯ drawn 18px from the 16px design via the svg's own scale. */
+  /* A 44px touch target (48 written at the chrome's 10/11). */
   --icon-scale: 1.24;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
   padding: 0;
   border: 0;
   border-radius: var(--shape-s);
@@ -465,7 +473,7 @@
 
 .phone-home .tree-empty-title {
   font-size: var(--text-title);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--phone-ink);
   letter-spacing: 0.01em;
 }
@@ -515,8 +523,6 @@
   justify-content: center;
   text-align: center;
   padding: 0 var(--space-6);
-  /* Enough of the page's height to let the block sit above the FAB without
-     being pushed under it. */
   min-height: 60vh;
 }
 
@@ -539,7 +545,7 @@
 
 .ph-empty-title {
   font-size: var(--text-title);
-  font-weight: 650;
+  font-weight: 600;
   color: var(--phone-ink);
   letter-spacing: 0.01em;
 }
@@ -582,40 +588,4 @@
 
 .ph-empty-cta-quiet:active {
   background: var(--ui-pressed);
-}
-
-.ph-fab {
-  /* Fixed to the viewport, not the home page: a sheet (createPortal to
-     body, z-index --z-sheet = 500) stacks above --z-floating (200) in the
-     root context, so the scrim covers it. Absolute inside the page was
-     trapped in a child stacking context and bled through. */
-  position: fixed;
-  right: var(--space-6);
-  /* Clears the gesture bar and leaves a mockup-tight 24px above it; iOS'
-     home indicator and Android's gesture handle both live in safe-bottom. */
-  bottom: calc(var(--space-6) + var(--safe-bottom, 0px));
-  z-index: var(--z-floating);
-  width: 56px;
-  height: 56px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--phone-fire);
-  color: var(--phone-paper);
-  /* A tight shadow only: the earlier large fire-tinted halo stained the
-     paper around the FAB and made the button itself read as heavier and
-     dirtier than it is. The disc stands on its own. */
-  box-shadow: var(--shadow-1);
-  /* Held, the button asks which new thing; a held finger must not select
-     or call out anything meanwhile. */
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ph-fab svg {
-  width: 24px;
-  height: 24px;
 }

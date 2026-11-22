@@ -10,6 +10,7 @@
   inset: 0;
   z-index: var(--z-modal);
   background: var(--ui-overlay);
+  animation: motion-fade-in var(--dur-base) var(--ease-out);
 }
 
 .settings-dialog {
@@ -17,40 +18,67 @@
   inset: 0;
   z-index: var(--z-modal);
   margin: auto;
-  width: calc(880px * var(--chrome-scale, 1));
-  height: calc(556px * var(--chrome-scale, 1));
+  /* 2026-11-22 design board: the settled panel is 1040×720. */
+  width: calc(1040px * var(--chrome-scale, 1));
+  height: calc(720px * var(--chrome-scale, 1));
   /* Never past the window's edge: a small window keeps the panel whole. */
   max-width: calc(100vw - var(--space-6));
   max-height: calc(100vh - var(--space-6));
   border-radius: var(--shape-m);
   box-shadow: var(--shadow-dialog);
-  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-bg);
   color: var(--ui-text);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* The layer mounts the panel for each open: it arrives on the slow panel
+     clock, and the closing mark below plays the way out. */
+  animation: motion-dialog-in var(--dur-slow) var(--ease-out);
+}
+
+.settings-dialog[data-state="closing"] {
+  animation:
+    motion-shrink-out var(--dur-base) var(--ease-in) forwards,
+    motion-fade-out var(--dur-base) var(--ease-in) forwards;
+}
+
+.settings-dim-closing {
+  animation: motion-fade-out var(--dur-base) var(--ease-in) forwards;
 }
 
 .settings-dialog-top {
   display: flex;
   align-items: center;
+  justify-content: center;
+  position: relative;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4) 0;
+  /* The board's 44px glass strip. The blur stays on this bar: a long list
+     or the page under it is not a glass surface. WebView2 105 needs the
+     prefixed filter; the standard one follows for everything newer. */
+  height: 44px;
+  background: var(--ui-surface);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  backdrop-filter: blur(26px) saturate(160%);
+  padding: 0 var(--space-4);
   flex: none;
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .settings-dialog-title {
+  margin: 0;
   font-size: var(--text-body);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .settings-dialog-close {
-  margin-left: auto;
+  position: absolute;
+  right: var(--space-3);
   width: 26px;
   height: 26px;
-  border-radius: var(--shape-pill);
-  background: color-mix(in srgb, var(--ui-text) 5%, transparent);
+  border-radius: var(--shape-s);
+  background: none;
   color: var(--ui-muted);
   font-size: var(--text-caption);
   display: grid;
@@ -73,19 +101,91 @@
 }
 
 .settings-dialog-nav {
-  width: 200px;
+  width: calc(260px * var(--chrome-scale, 1));
   flex: none;
   border-right: 1px solid var(--ui-border);
-  background: var(--ui-bg);
-  padding: var(--space-3) var(--space-2);
+  background: var(--ui-sidebar);
+  padding: var(--space-3) var(--space-3) var(--space-4);
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-3);
 }
 
+/* The pages' list, the phone's grouped list (settings-phone-list.tsx), in
+   the column under the search field: the one arrangement on every end. */
+.settings-dialog-nav-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* The list goes on past the column's foot: its last lines fade instead
+     of being cut in half. WebKit 105 needs its prefix for the mask. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 calc(100% - 22px),
+    transparent
+  );
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 22px), transparent);
+}
+
+/* The phone's list at the dialog's density: rows a touch lower, the icons
+   and section titles at the column's scale. */
+.settings-dialog-nav .settings-phone-section {
+  margin-top: var(--space-4);
+}
+
+.settings-dialog-nav .settings-phone-section:first-child {
+  margin-top: 0;
+}
+
+.settings-dialog-nav .settings-phone-section-title {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  font-size: var(--text-footnote);
+  letter-spacing: 0.08em;
+}
+
+.settings-dialog-nav .settings-phone-row {
+  min-height: 40px;
+  border-radius: var(--shape-s);
+  padding-inline: var(--space-2);
+}
+
+.settings-dialog-nav .settings-phone-card {
+  border: none;
+  border-radius: 0;
+  background: none;
+  /* The card is transparent here but still inherits --shadow-card: left
+     alone, it draws a grey band with no fill behind it. */
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* The column is a list of pages, not a stack of destinations: the phone's
+   chevron would only say "open another page". */
+.settings-dialog-nav .settings-phone-row-chev {
+  display: none;
+}
+
+.settings-dialog-nav .settings-phone-row-ic {
+  /* Bare line icons, about 22px, not a tinted tile. */
+  width: 22px;
+  height: 22px;
+  --icon-scale: 1.05;
+}
+
+/* The nav's icons are a step larger than the phone's: the hairline follows
+   the text's start with their width. The board's nav is a bare list, so
+   the phone row's hairline is hidden here and left alone on the phone. */
+.settings-dialog-nav .settings-phone-row + .settings-phone-row::before {
+  display: none;
+}
+
+/* The content column is the page: 50 either side, 28 above and 32 below,
+   in base units so Interface Size scales them with the panel. */
 .settings-dialog-content {
   flex: 1;
   min-width: 0;
-  padding: var(--space-4) var(--space-8);
+  padding: calc(28px * var(--chrome-scale, 1))
+    calc(50px * var(--chrome-scale, 1)) calc(32px * var(--chrome-scale, 1));
 }

@@ -70,6 +70,7 @@
 
 :root[data-window-chrome="mobile"] {
   --mobile-bar: 48px;
+  --text-title-lg: 24px;
   --mobile-top: calc(var(--safe-top) + var(--mobile-bar));
   /* No grey flash over whatever a finger lands on. */
   -webkit-tap-highlight-color: transparent;
@@ -86,6 +87,48 @@
   --island-foot: 0px;
   --island-radius: 0px;
   --island-edge: none;
+}
+
+/* Every mobile top row - Today, the library, Settings, the document page -
+   is one height: 56 (2026-11-22 UI audit). A tablet's chrome is "app", so
+   the token belongs to the platform, not the phone's chrome. */
+:root:is([data-platform="ios"], [data-platform="android"]) {
+  --phone-bar-row: 56px;
+  /* A tablet's rows are a finger's: the same tile as the phone's. */
+  --icon-tile: 32px;
+  --icon-tile-sm: 28px;
+  --icon-tile-lg: 48px;
+}
+
+/* A tablet's pointer is a finger. A tablet's chrome is "app" (the desktop's
+   frame drawn by the app), not "mobile" - that one is the phone's - so this
+   is scoped by platform: the view column's and the page's edge's
+   desktop-density controls take a 44px target on every mobile surface
+   (2026-11-22 audit). */
+:root:is([data-platform="ios"], [data-platform="android"])
+  :is(
+    .sidebar-view-seg .tx-segment,
+    .sidebar-file-tab,
+    .sidebar-foot-settings,
+    .tree-row,
+    .today-row,
+    .right-panel-tab,
+    .right-panel-close,
+    .right-panel-tools .tx-icon-button
+  ) {
+  min-height: 44px;
+}
+
+:root:is([data-platform="ios"], [data-platform="android"])
+  :is(
+    .sidebar-quickadd,
+    .right-panel-tab,
+    .right-panel-close,
+    .right-panel-tools .tx-icon-button,
+    .tree-more
+  ) {
+  width: 44px;
+  height: 44px;
 }
 
 /* 16px is the least WebKit will show a focused field at without zooming

@@ -5,6 +5,10 @@ import type { Strings } from "../i18n/strings";
  *  (what ui-state remembers), its button's name and icon, and its panel. */
 interface AddedSidebarTab {
   id: string;
+  /** The plugin that added it, for opening its page as a page of its own. */
+  plugin?: string;
+  /** The panel's kind, as its manifest declares it. */
+  type?: "list" | "webview";
   label: (t: Strings) => string;
   Icon: ComponentType;
   /** Drawn with nothing of the window's: it reaches what it needs itself. */

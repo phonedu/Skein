@@ -5,11 +5,166 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
+}
+
+/* The dialog's groups as the phone's cards: the same surface, hairline and
+   radius, so both ends read as one interface (ruling 4.10, 2026-11-22). */
+.settings-dialog-content .settings-content-host {
+  max-width: calc(680px * var(--chrome-scale, 1));
+  width: 100%;
+  margin-inline: auto;
+  gap: var(--space-6);
+}
+
+/* The left list already names the page. The title stays in the markup for
+   the phone's subpage, which has no list beside it; the desktop column
+   does not draw it. */
+.settings-dialog-content .settings-page-title {
+  display: none;
+}
+
+.settings-page-title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* A page taking the place of another settles in (motion-settle-in, the
+   quick clock): the keyed wrapper remounts, so the animation plays on
+   every change, and a search's results are not a page. */
+.settings-page-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  animation: motion-settle-in var(--dur-fast) var(--ease-out);
+}
+
+/* B: a page whose first section is named after the page says it twice;
+   the card can start at the top instead. The phone's top bar names the
+   page too, so this holds on both ends (the desktop's page body wraps its
+   groups; the phone's does not). */
+.settings-content-host[data-settings-page="look-basic"]
+  .settings-page-group:first-of-type
+  > .settings-page-group-head,
+.settings-content-host[data-settings-page="edit-img"]
+  .settings-page-group:first-of-type
+  > .settings-page-group-head {
+  display: none;
+}
+
+.settings-dialog-content .settings-page-group-title {
+  min-height: 20px;
+  margin: 0 0 var(--space-2);
+}
+
+.settings-dialog-content .settings-page-group-body {
+  padding: 0;
+  background: var(--ui-surface);
+  border: none;
+  border-radius: var(--shape-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* The card has no inset of its own: each row carries 20px. The hairline
+   starts where the text does and stops 16px short of the card's right
+   edge; the card's last row has none. */
+.settings-dialog-content .settings-page-group-body .settings-row {
+  position: relative;
+  min-height: calc(56px * var(--chrome-scale, 1));
+  padding-inline: calc(20px * var(--chrome-scale, 1));
+  border-bottom: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(100% - 16px * var(--chrome-scale, 1)),
+    transparent calc(100% - 16px * var(--chrome-scale, 1))
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+/* A title and its description need the taller row. */
+.settings-dialog-content
+  .settings-page-group-body
+  .settings-row:has(.settings-row-desc) {
+  min-height: calc(72px * var(--chrome-scale, 1));
+}
+
+/* Nothing above the card's first row, and nothing under its last. */
+.settings-dialog-content .settings-page-group-body > :first-child.settings-row,
+.settings-dialog-content
+  .settings-page-group-body
+  > :first-child
+  > .settings-row:first-child,
+.settings-dialog-content .settings-page-group-body > :last-child.settings-row,
+.settings-dialog-content
+  .settings-page-group-body
+  > :last-child
+  > .settings-row:last-child {
+  background-image: none;
+}
+
+/* A fold's own hairline comes from its row's background; a border on the
+   body's children would draw a second, full-width one. */
+.settings-dialog-content .settings-page-group-body .settings-fold-body > * {
+  border-top: 0;
 }
 
 .settings-legacy-page {
   min-width: 0;
+}
+
+/* The page body's gap is the one space between the main card and these
+   leftover blocks. The legacy fold and the theme groups each add their
+   own top margin; together with the gap that reads as about 71px. */
+.settings-dialog-content .settings-advanced,
+.settings-dialog-content .settings-group {
+  margin-top: 0;
+}
+
+/* The leftover fold joins the glass cards around it. The base rule keeps
+   the overflow hidden; the summary is one desktop row, in the body's text. */
+.settings-dialog-content .settings-advanced {
+  border: 0;
+  border-radius: var(--shape-card);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.settings-dialog-content .settings-advanced > summary {
+  min-height: calc(56px * var(--chrome-scale, 1));
+  padding: 0 calc(20px * var(--chrome-scale, 1));
+  color: var(--ui-text);
+  font-size: var(--text-body);
+}
+
+/* The open fold's line starts where the summary's text does and stops
+   16px short of the card, as the rows' hairlines do. */
+.settings-dialog-content .settings-advanced[open] > summary {
+  border-bottom: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(100% - 16px * var(--chrome-scale, 1)),
+    transparent calc(100% - 16px * var(--chrome-scale, 1))
+  );
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+}
+
+/* Installed themes and the gallery: the same glass card, their lists
+   unchanged inside. */
+.settings-dialog-content .settings-group-body {
+  border: 0;
+  border-radius: var(--shape-card);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .settings-page-group {
@@ -27,9 +182,6 @@
 .settings-page-group-title {
   min-height: 24px;
   margin: 0;
-  font-size: var(--text-caption);
-  font-weight: 600;
-  color: var(--ui-muted);
   display: flex;
   align-items: center;
 }

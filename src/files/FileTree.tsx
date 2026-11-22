@@ -54,6 +54,12 @@ interface FileTreeProps {
   /** The root's entry count as it loads (the phone's + steps aside over
    *  an empty library). */
   onRootCount?: (count: number) => void;
+  /** The library's note count, for a caller that draws the foot itself
+   *  (the H0 view column). */
+  onNoteCount?: (label: string | null) => void;
+  /** Whether the tree draws its own foot; false where the surface around it
+   *  has one (the view column). */
+  foot?: boolean;
   /** A new entry to be named in place at the root, asked for elsewhere
    *  (the phone's + sheet): each seq is one ask. */
   draftRequest?: { kind: TreeDraft["kind"]; seq: number } | null;
@@ -82,6 +88,8 @@ export function FileTree({
   emptyState = null,
   noResults = null,
   onRootCount,
+  onNoteCount,
+  foot = true,
   draftRequest = null,
   onFileSelect,
   onOpenAsFolder,
@@ -95,6 +103,10 @@ export function FileTree({
   const base = folder ?? root;
   const { noteCount, view, select, draft, setDraft, finishDraft } =
     useFileTreeState(base, t, onFileSelect);
+  // The view column draws the foot itself: it is told the count.
+  useEffect(() => {
+    onNoteCount?.(noteCount);
+  }, [noteCount, onNoteCount]);
   const { generation, setGeneration } = view;
   const { sort, setSort, scope, setScope, versions, reload } = view;
   const { showHidden, setShowHidden } = view;
@@ -340,14 +352,16 @@ export function FileTree({
                 />
               </div>
             </div>
-            <ViewFoot
-              left={t.notesFootNote}
-              right={
-                noteCount === null
-                  ? undefined
-                  : fill(t.notesFootCount, { n: noteCount })
-              }
-            />
+            {foot && (
+              <ViewFoot
+                left={t.notesFootNote}
+                right={
+                  noteCount === null
+                    ? undefined
+                    : fill(t.notesFootCount, { n: noteCount })
+                }
+              />
+            )}
             <Presence show={menu !== null}>
               {menu && (
                 <ContextMenu

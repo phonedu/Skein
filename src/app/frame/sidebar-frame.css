@@ -7,11 +7,10 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  /* Beside the activity rail, from under which it slides. */
-  left: var(--rail-width, 0px);
+  left: 0;
   /* Over the editor while it slides away across it. */
   z-index: 1;
-  width: var(--sidebar-width, 316px);
+  width: var(--sidebar-width, 260px);
   background: var(--ui-frame-fill) fixed;
   border-right: 1px solid var(--ui-frame-edge);
   display: flex;
@@ -25,11 +24,7 @@
 /* A phone's sidebar lies under the page (mobile/styles/sidebar.css):
    put away, it is hidden once the page has covered it. The desktop's is
    revealed on the window's clock instead (useSidebarFrame). */
-:root[data-window-chrome="mobile"]
-  :is(
-    .sidebar-collapsed,
-    .app-shell:not([data-sidebar="open"]) > .activity-rail
-  ) {
+:root[data-window-chrome="mobile"] .sidebar-collapsed {
   visibility: hidden;
   transition: visibility 0s linear var(--dur-settle);
 }
@@ -42,18 +37,252 @@
   right: -6px;
 }
 
-/* Thin, unobtrusive sidebar scrollbar: invisible until the pointer is over
-   the sidebar, so it reads like a macOS overlay scrollbar. A plugin's list
-   scrolls inside the body and wears the same one. */
-:is(.sidebar-body, .sidebar-body .plugin-list-rows)::-webkit-scrollbar {
+/* The view column's header: the folder, Today/Files, and the Files view's
+   own tabs. It is taller than the old tab title's row; the view column's
+   content starts under it. */
+.sidebar-header.sidebar-views-header {
+  height: auto;
+  min-height: var(--header-height);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: calc(var(--window-bar-height) + var(--space-3)) var(--space-2)
+    var(--space-2);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+/* The vault switcher: the folder tile, the name, the chevron. A bar
+   action, not a field - no frame or fill of its own (the approved shell's
+   chip), only a hover/pressed tint. */
+.sidebar-vault {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-2);
+  width: auto;
+  max-width: 100%;
+  min-height: var(--control-height);
+  padding: 0 var(--space-2) 0 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (any-hover: hover) {
+  .sidebar-vault:hover {
+    background: var(--ui-hover);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.sidebar-vault-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
+  color: var(--ui-accent-text);
+}
+
+.sidebar-vault-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-vault-chev {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.sidebar-views,
+.sidebar-file-tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-1);
+}
+
+.sidebar-file-tabs {
+  gap: var(--space-2);
+}
+
+/* The views as an equal segmented control (the mockup's 今天 / 文件), the
+   quick add at the row's end: one thumb slides between the two. */
+.sidebar-views {
+  gap: var(--space-2);
+}
+
+.sidebar-view-seg {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-view-seg .tx-segment {
+  font-size: var(--text-footnote);
+}
+
+/* The day's capture action: small, in the views' row, like the mockup's
+   quick add - always in sight, never a floating button. */
+.sidebar-quickadd {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+}
+
+@media (any-hover: hover) {
+  .sidebar-quickadd:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+/* The column's foot: Settings on the left, the library's count at the end
+   when the Files view shows. One row, one hairline. */
+.sidebar-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-top: 1px solid var(--ui-border);
+}
+
+.sidebar-foot-settings {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: auto;
+  flex: none;
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+  font: inherit;
+  font-size: var(--text-footnote);
+  text-align: left;
+}
+
+.sidebar-foot-count {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (any-hover: hover) {
+  .sidebar-foot-settings:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.sidebar-file-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 28px;
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+  font: inherit;
+  font-size: var(--text-caption);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@media (any-hover: hover) {
+  .sidebar-file-tab:not(.on):hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.sidebar-file-tab.on {
+  background: var(--ui-selected);
+  color: var(--ui-selected-text);
+  font-weight: 600;
+}
+
+.sidebar-file-tab.on .sidebar-file-ic {
+  color: var(--ui-accent);
+}
+
+.sidebar-file-ic {
+  flex: none;
+}
+
+/* The view column names the vault in its own header, as the phone's home
+   does: the tree's toolbar and its "库 · name" line would say it again.
+   Recent keeps its heading. */
+.sidebar-body .file-tree .tree-toolbar,
+.sidebar-body .tree-main > .tree-section-title {
+  display: none;
+}
+
+/* Another view taking the column's body (Today or Files, a file tab)
+   settles in on the quick clock: the child is new, so it animates once. */
+.sidebar-body > * {
+  animation: motion-settle-in var(--dur-fast) var(--ease-out);
+}
+
+/* Thin, unobtrusive scrollbars on the window's columns: invisible until the
+   pointer is over the column, so they read like macOS overlay scrollbars.
+   The settings dialog and the page's edge wear the same one. */
+:is(
+  .sidebar-body,
+  .sidebar-body .plugin-list-rows,
+  .settings-dialog-nav-scroll,
+  .settings-dialog-content,
+  .right-panel-body
+)::-webkit-scrollbar {
   width: 6px;
 }
 
-:is(.sidebar-body, .sidebar-body .plugin-list-rows)::-webkit-scrollbar-track {
+:is(
+  .sidebar-body,
+  .sidebar-body .plugin-list-rows,
+  .settings-dialog-nav-scroll,
+  .settings-dialog-content,
+  .right-panel-body
+)::-webkit-scrollbar-track {
   background: transparent;
 }
 
-:is(.sidebar-body, .sidebar-body .plugin-list-rows)::-webkit-scrollbar-thumb {
+:is(
+  .sidebar-body,
+  .sidebar-body .plugin-list-rows,
+  .settings-dialog-nav-scroll,
+  .settings-dialog-content,
+  .right-panel-body
+)::-webkit-scrollbar-thumb {
   border: 0;
   background: transparent;
   border-radius: var(--shape-pill);
@@ -61,8 +290,13 @@
 }
 
 @media (any-hover: hover) {
-  .sidebar-body:hover::-webkit-scrollbar-thumb,
-  .sidebar-body:hover .plugin-list-rows::-webkit-scrollbar-thumb {
+  :is(
+      .sidebar-body,
+      .sidebar-body .plugin-list-rows,
+      .settings-dialog-nav-scroll,
+      .settings-dialog-content,
+      .right-panel-body
+    ):hover::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--ui-text) 28%, transparent);
   }
 }
@@ -70,7 +304,10 @@
 @media (any-hover: hover) {
   :is(
       .sidebar-body,
-      .sidebar-body .plugin-list-rows
+      .sidebar-body .plugin-list-rows,
+      .settings-dialog-nav-scroll,
+      .settings-dialog-content,
+      .right-panel-body
     )::-webkit-scrollbar-thumb:hover {
     background: color-mix(in srgb, var(--ui-text) 45%, transparent);
   }

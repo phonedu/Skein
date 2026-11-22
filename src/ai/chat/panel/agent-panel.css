@@ -186,8 +186,8 @@
   text-wrap: pretty;
 }
 
-/* Signed out: a card of its own - the library's empty state's family, a
-   chip, the line and the call - rather than a sentence and a box. */
+/* Signed out: the panel's empty state, without a card of its own - the
+   tile, the line and the call, on the panel's own surface. */
 .agent-panel-sign-in {
   padding: 24px;
 }
@@ -198,20 +198,15 @@
   align-items: center;
   gap: var(--space-3);
   max-width: 340px;
-  padding: 28px 24px 24px;
   text-align: center;
-  border: 1px solid var(--ui-border);
-  border-radius: var(--shape-m);
-  background: var(--ui-surface);
-  box-shadow: var(--shadow-1);
 }
 
 .agent-panel-sign-in-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: var(--icon-tile-lg);
+  height: var(--icon-tile-lg);
   border-radius: var(--shape-m);
   background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
   color: var(--ui-accent-text);
@@ -224,8 +219,15 @@
 
 .agent-panel-sign-in-cta {
   margin-top: 4px;
-  min-height: 44px;
+  min-height: var(--control-height);
   padding: 0 20px;
+}
+
+/* A finger gets the taller call (C12). */
+@media (pointer: coarse) {
+  .agent-panel-sign-in-cta {
+    min-height: 44px;
+  }
 }
 
 /* Short of room the spark goes first, then the hint once even its line

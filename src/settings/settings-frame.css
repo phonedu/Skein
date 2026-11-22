@@ -200,7 +200,9 @@
   display: flex;
   flex: none;
   align-items: center;
-  gap: 4px;
+  /* The search, the ⋯ and the main action are three separate controls: a
+     caption's width of air keeps the ⋯ from reading as the action's icon. */
+  gap: var(--space-2);
   margin-bottom: 8px;
 }
 

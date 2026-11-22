@@ -46,7 +46,7 @@
 /* Slate - cool, minimal, blue accent */
 
 [data-content-theme="slate"] {
-  --doc-bg: #f7f8fa;
+  --doc-bg: #fcfdfe;
   --doc-text: #1c2128;
   --doc-muted: #656d77;
   --doc-border: #d8dee4;

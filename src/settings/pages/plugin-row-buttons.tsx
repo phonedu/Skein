@@ -43,7 +43,7 @@ export function AvailableButton({
 
 /** A row's one action, as a small round button: the words keep the row.
  *  An update turns, in the accent: something to do, not something to get. */
-export function RowButton({
+function RowButton({
   label,
   tip,
   update = false,

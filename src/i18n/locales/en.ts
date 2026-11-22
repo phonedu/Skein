@@ -557,6 +557,7 @@ type /name in a conversation to use one.
   notesFootCount: "{n} notes",
   notesFootNote: "Markdown is everything",
   treeTab: "Files",
+  treeFileTree: "File tree",
   phoneBackToLibrary: "Back to the library",
   phoneBack: "Back",
   outlineTab: "Outline",
@@ -716,6 +717,12 @@ type /name in a conversation to use one.
   docForget: "Remove from List",
   docActionFailed: "Couldn’t do that",
   treeDayToday: "Today",
+  todayCurrent: "Current",
+  todayPending: "To confirm",
+  todayChanged: "Changed today",
+  todayCapture: "Collect a thought…",
+  todayEmptyTitle: "Nothing today yet",
+  todayEmptyHint: "Write a line, or open a note from the library.",
   treeFolderNotes: { one: "{n} note", other: "{n} notes" },
   treeRowMore: "More Actions",
   treeOpen: "Open",
@@ -750,6 +757,7 @@ type /name in a conversation to use one.
     "Rich text shows the document as it reads; Source Mode, its Markdown; Source and Preview, both side by side.",
   settingsHelpGroup: "Help",
   navGeneral: "General",
+  navOptions: "Options",
   navTheme: "Theme",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
@@ -1449,16 +1457,19 @@ type /name in a conversation to use one.
   tutorialWelcomeBody:
     "A minute to show you around: the sidebar, the page and the AI.",
   tutorialSidebarTitle: "The sidebar",
-  tutorialSidebarBody: "Click the folder on the left to open the sidebar.",
+  tutorialSidebarBody:
+    "The left column holds the vault and today's work; the top bar's button shows or hides it.",
   tutorialSidebarBodyPhone:
     "Tap the sidebar button at the top left to open it.",
   tutorialRailTitle: "What's in it",
-  tutorialRailBody: "Each icon on the left opens one part of the sidebar.",
+  tutorialRailBody:
+    "Today and Files are the column's two views; Files has its own tabs.",
   tutorialRailFiles: "Files: the folder you write in.",
   tutorialRailOutline: "Outline: the page's headings, to jump between.",
   tutorialRailSearch: "Search: find a file or a line anywhere in the folder.",
-  tutorialRailPlugins: "Plugins: more features, added when you need them.",
-  tutorialRailHide: "In a small window, right-click this icon bar to hide it.",
+  tutorialRailPlugins:
+    "Plugins: the top bar's button opens plugin pages and commands.",
+  tutorialRailHide: "The button in the top bar shows or hides this column.",
   tutorialSettingsTitle: "Settings",
   tutorialSettingsBody:
     "The gear holds the theme, the fonts and your AI accounts.",
@@ -1894,6 +1905,7 @@ type /name in a conversation to use one.
   pluginStoppedAnswering: "it stopped answering",
   pluginTooManyErrors: "it failed too often",
   pluginQuickPickEmpty: "Nothing matches.",
+  pluginLauncherPlaceholder: "Search plugin pages and commands",
   pluginPermEditorRead: "Read the document in front and its selection",
   pluginPermEditorWrite:
     "Change the document in front directly (each change can be undone)",

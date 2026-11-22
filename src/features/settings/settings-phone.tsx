@@ -1,20 +1,20 @@
 // Settings as the phone's page: fullscreen, the nav list first, and a
 // pushed page - under a back row - for the section itself. The desktop's
 // two-column dialog is the pointer's shape; this is the thumb's.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useSettings } from "../../prefs/SettingsContext";
 import type { Strings } from "../../i18n/strings";
 import type { FixedShortcutGroup } from "../../registry/fixed-shortcuts";
 import type { SettingsPageDef } from "../../settings/settings-pages";
 import type { SearchEntry } from "../../settings/settings-search";
-import { ArrowLeft } from "lucide-react";
-import { lucide } from "../../engine/controls/icons";
+import { BackChevronIcon } from "../../engine/controls/icons";
 import { SettingsPhoneList } from "./settings-phone-list";
 import { SettingsContent } from "./settings-content";
 import { settingsContentProps } from "./settings-content-props";
 import { useSettingsDialogSearch } from "./settings-search";
 import { useReveal, type SearchablePage } from "../../settings/SettingsSearch";
 import { onBack } from "../../mobile/back";
+import { Presence, usePresenceProps } from "../../engine/motion/usePresence";
 import type { ShortcutCommand } from "../../settings/pages/types";
 import "./settings-phone.css";
 
@@ -100,51 +100,67 @@ export function SettingsPhone(props: {
 
   return (
     <div className="settings-phone">
-      {page === null ? (
-        <>
-          <PhoneSettingsBar
-            title={t.settingsTitle}
-            backLabel={t.phoneBack}
-            onBack={props.onClose}
-          />
-          <div className="settings-phone-body">
-            {search.field}
-            {search.searching ? (
-              search.results
-            ) : (
-              <SettingsPhoneList t={t} pages={props.pages} onOpen={setPageId} />
-            )}
-          </div>
-        </>
-      ) : (
-        <div className="settings-phone-page">
-          <PhoneSettingsBar
-            title={page.label(t)}
-            backLabel={t.phoneBack}
-            onBack={() => setPageId(null)}
-          />
-          <div className="settings-phone-body">
-            <div
-              ref={content}
-              className="settings-content-host"
-              data-settings-page={page.id}
-            >
-              <SettingsContentNode
-                key={page.id}
-                {...props}
-                pageDef={page}
-                onOpenPage={setPageId}
-              />
-            </div>
-          </div>
+      {/* The list stays under the pushed page: it is what a return reveals,
+          and it keeps its scroll. */}
+      <div
+        className="settings-phone-list"
+        inert={page !== null || undefined}
+        aria-hidden={page !== null || undefined}
+      >
+        <PhoneSettingsBar
+          title={t.settingsTitle}
+          backLabel={t.phoneBack}
+          onBack={props.onClose}
+        />
+        <div className="settings-phone-body">
+          {search.field}
+          {search.searching ? (
+            search.results
+          ) : (
+            <SettingsPhoneList t={t} pages={props.pages} onOpen={setPageId} />
+          )}
         </div>
-      )}
+      </div>
+      <Presence show={page !== null}>
+        {page && (
+          <PhoneSettingsPage>
+            <PhoneSettingsBar
+              title={page.label(t)}
+              backLabel={t.phoneBack}
+              onBack={() => setPageId(null)}
+            />
+            <div className="settings-phone-body">
+              <div
+                ref={content}
+                className="settings-content-host"
+                data-settings-page={page.id}
+              >
+                <SettingsContentNode
+                  key={page.id}
+                  {...props}
+                  pageDef={page}
+                  onOpenPage={setPageId}
+                />
+              </div>
+            </div>
+          </PhoneSettingsPage>
+        )}
+      </Presence>
       {search.index}
     </div>
   );
 }
 
-const BackArrow = lucide(ArrowLeft, 22);
+/** A page pushed over the list: it slides in from the edge, and back out to
+ *  it as the list underneath is revealed. */
+function PhoneSettingsPage({ children }: { children: ReactNode }) {
+  const presence = usePresenceProps<HTMLDivElement>();
+  return (
+    <div className="settings-phone-page" {...presence}>
+      {children}
+    </div>
+  );
+}
 
 /** Android's top app bar: the way back at the leading edge, as the editor's
  *  bar has it, and the title centred over an equal empty slot at the end. */
@@ -161,7 +177,7 @@ function PhoneSettingsBar(props: {
         aria-label={props.backLabel}
         onClick={props.onBack}
       >
-        <BackArrow className="settings-phone-arrow" />
+        <BackChevronIcon className="settings-phone-arrow" />
       </button>
       <h1 className="settings-phone-title">{props.title}</h1>
       <span className="settings-phone-ic" aria-hidden />

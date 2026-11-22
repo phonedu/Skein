@@ -91,6 +91,7 @@ function useAiCommands({
   live,
   setShown,
   asked,
+  wide,
 }: {
   tabs: TabState;
   scope: string | null;
@@ -98,6 +99,8 @@ function useAiCommands({
   live: string | null;
   setShown: (shown: boolean) => void;
   asked: MutableRefObject<{ id: string; beside: string } | null>;
+  /** The right column is where the AI lives: no tab to make or front. */
+  wide: boolean;
 }) {
   const { tabsRef, activeTabId } = tabs;
   const phone = usePhoneLayout();
@@ -116,6 +119,13 @@ function useAiCommands({
         return true;
       }
       if (!scope) return false;
+      // At the page's edge the conversation simply becomes the live one;
+      // the column shows it.
+      if (wide) {
+        setLiveConversation(scope, id);
+        setShown(true);
+        return true;
+      }
       const open = tabsRef.current.find(
         (tab) => isAiTab(tab) && conversationOf(tab) === id,
       );
@@ -129,10 +139,11 @@ function useAiCommands({
       return true;
     });
     return () => setConversationOpener(null);
-  }, [scope, workspaceRoot, tabs, tabsRef, setShown, asked]);
+  }, [scope, workspaceRoot, tabs, tabsRef, setShown, asked, wide]);
 
   // The AI button, while shown.
   useEffect(() => {
+    if (wide) return;
     const press = () => {
       const ai = tabsRef.current.filter(isAiTab);
       const target =
@@ -151,7 +162,7 @@ function useAiCommands({
       if (onlyAi) setShown(false);
     };
     return onAiPress(press);
-  }, [tabs, tabsRef, live, activeTabId, setShown]);
+  }, [tabs, tabsRef, live, activeTabId, setShown, wide]);
 
   // Android's Back on a phone: from an AI tab it returns to the document
   // the AI was opened over. The conversation's tab stays open; the AI
@@ -185,12 +196,15 @@ export function useAiTabs({
   workspaceRoot,
   shown,
   setShown,
+  wide,
 }: {
   tabs: TabState;
   scope: string | null;
   workspaceRoot: string | null;
   shown: boolean;
   setShown: (shown: boolean) => void;
+  /** The right column is where the AI lives: no tab to make or front. */
+  wide: boolean;
 }): void {
   const { open, live } = useConversations(scope);
   const history = useChatHistory();
@@ -215,6 +229,12 @@ export function useAiTabs({
   // The tabs follow the conversations: one each, a closed one's gone, a
   // draft's tab becoming its conversation once sent.
   useEffect(() => {
+    // The right column draws the live conversation; no tab follows it, and
+    // no conversation closes because a tab did.
+    if (wide) {
+      had.current = new Set();
+      return;
+    }
     const current = tabsRef.current.filter(isAiTab);
     const have = new Set(current.map(conversationOf));
     // A tab the user closed: its conversation closes (it stays in History).
@@ -285,9 +305,9 @@ export function useAiTabs({
       tabs.setActiveTabId(made[0].id);
     had.current = new Set(wanted);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the keys stand for the lists
-  }, [aiKey, wantedKey, shown, scope]);
+  }, [aiKey, wantedKey, shown, scope, wide]);
 
   useAiTabFollows(tabs, scope, titles, aiKey, titlesKey);
 
-  useAiCommands({ tabs, scope, workspaceRoot, live, setShown, asked });
+  useAiCommands({ tabs, scope, workspaceRoot, live, setShown, asked, wide });
 }

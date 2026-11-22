@@ -4,6 +4,7 @@ import type { TabState } from "../tabs/useTabState";
 import { useDocumentInFront } from "../tabs/useDocumentInFront";
 import { useAiTabs } from "./useAiTabs";
 import { useAiRoot } from "../../ai/workspace/ai-root";
+import { useLayoutMode } from "../../engine/controls/useLayoutMode";
 
 /**
  * The window's AI: the conversations of its folder - with none, of the last
@@ -24,6 +25,10 @@ export function useWindowAi({
 }): void {
   const { tabs: list, activeTabId } = tabs;
   const workspaceRoot = useAiRoot(settings);
+  const layout = useLayoutMode();
+  // A desktop and a tablet keep the AI at the right column's edge; a phone
+  // and a fold, with no room for it, keep conversations as tabs.
+  const wide = layout === "desktop" || layout === "tablet";
   const docInFront = useDocumentInFront();
   const inFront =
     list.find((tab) => tab.id === docInFront) ??
@@ -39,5 +44,6 @@ export function useWindowAi({
     workspaceRoot,
     shown,
     setShown,
+    wide,
   });
 }

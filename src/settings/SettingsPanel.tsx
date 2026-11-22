@@ -7,7 +7,7 @@ import { SettingsGroup } from "./pages/SettingsGroup";
 import { useRef, useState } from "react";
 import { useSettings } from "../prefs/SettingsContext";
 import { useMarginAvailable } from "../ai/margin/margin-room";
-import { usePhoneLayout } from "../engine/controls/usePhoneLayout";
+import { isMobileApp } from "../platform/capabilities";
 import type { FixedShortcutGroup } from "../registry/fixed-shortcuts";
 import { ChevronIcon, CloseIcon } from "../engine/controls/icons";
 import { ThemesTab } from "./sections/theme";
@@ -102,7 +102,9 @@ export function SettingsPanel({
   const { settings, setSettings, t } = useSettings();
   // A phone never has a margin, so there is nothing to explain there.
   const marginAvailable = useMarginAvailable();
-  const phone = usePhoneLayout();
+  // Every mobile surface - the phone, the folded phone and the tablet -
+  // fills the screen; only the desktop takes the panel's floating form.
+  const phone = isMobileApp;
   const noMargin = !phone && !marginAvailable;
   const nav = useSettingsNav(initialCategory);
   // Android's Back (Escape) on a phone steps back to Settings' list before

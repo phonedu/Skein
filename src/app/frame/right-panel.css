@@ -1,0 +1,162 @@
+/* The H0 shell's right column (340): a page's edge, not a permanent third
+   column - it is drawn only while open, and the document takes the room
+   back when it closes. The window bar runs over it, so its own rows start
+   under that strip. */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding-top: var(--window-bar-height);
+  border-left: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  /* Full width at once, sliding in from the edge: a width animation would
+     reflow the document every frame. The column keeps its width for the
+     exit too (the grid follows presence.mounted), then the page takes it. */
+  animation: motion-nudge-in-end var(--dur-slow) var(--ease-out);
+}
+
+.right-panel[data-state="closing"] {
+  animation: motion-nudge-out-end var(--dur-base) var(--ease-in) forwards;
+}
+
+.right-panel-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  /* The column already clears the window bar: its header is the toolbar's
+     row, not a second window-bar-high strip. */
+  min-height: calc(var(--header-height) - var(--window-bar-height));
+  padding: 0 var(--space-1) 0 var(--space-2);
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.right-panel-seg {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.right-panel-tab {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+}
+
+.right-panel-tab[aria-selected="true"] {
+  background: var(--ui-selected);
+  color: var(--ui-accent);
+}
+
+@media (any-hover: hover) {
+  .right-panel-tab:not(:disabled):hover {
+    background: var(--ui-hover);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.right-panel-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A finger's header is wider: the tabs and the conversation's own tools
+   take the row, and a title cut to "Te…" says less than none. A plugin's
+   page keeps its name (it has no tools of its own). */
+@media (pointer: coarse) {
+  .right-panel-head:has(.right-panel-tools) .right-panel-label {
+    display: none;
+  }
+}
+
+/* The conversation's own controls in this column's one header row: Memory,
+   History, New. */
+.right-panel-tools {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.right-panel-tools .tx-icon-button {
+  width: 26px;
+  height: 26px;
+}
+
+.right-panel-tools .tx-icon-button[aria-pressed="true"] {
+  background: var(--ui-selected);
+  color: var(--ui-text);
+}
+
+/* A plugin's buttons over its view, beside the column's own. */
+.right-panel-head > .sidebar-view-actions {
+  flex: none;
+  margin: 0;
+  padding: 0;
+}
+
+.right-panel-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+}
+
+@media (any-hover: hover) {
+  .right-panel-close:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.right-panel-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Agent or a plugin's page taking the column: it settles in rather than
+   snapping (the child is new, so it animates once). */
+.right-panel-body > * {
+  animation: motion-settle-in var(--dur-fast) var(--ease-out);
+}
+
+/* The conversation's own header is not drawn: its Memory, History and New
+   controls sit in this column's header row (.right-panel-tools). */
+:root .right-panel .agent-panel-header {
+  display: none;
+}
+
+/* A plugin's list in the edge reads at the sidebar's size; its rows are
+   inset a touch less than a page's. The date/status line is a caption
+   under the name, not beside it. */
+.right-panel-list {
+  padding: 0 var(--space-1);
+}
+
+.right-panel-list .plugin-list-text {
+  flex-wrap: wrap;
+}
+
+.right-panel-list .plugin-list-description {
+  flex-basis: 100%;
+  font-size: var(--text-caption);
+}

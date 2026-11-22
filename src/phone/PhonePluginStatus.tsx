@@ -9,7 +9,7 @@ import { openExtensionsTab } from "../settings/pages/extensions-tab";
 import { openSettingsPage } from "../settings/settings-nav";
 
 /** Settings › Extensions, on its Plugins tab, from the phone's home. */
-export function openPhonePlugins() {
+function openPhonePlugins() {
   openExtensionsTab("plugins");
   openSettingsPage("extensions");
 }

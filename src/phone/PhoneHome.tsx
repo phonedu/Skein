@@ -18,12 +18,18 @@ import {
 import {
   NewDocumentIcon,
   NewFolderIcon,
-  PluginsTabIcon,
+  BackChevronIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  FolderIcon,
+  PlusIcon,
+  SearchIcon,
+  SettingsIcon,
 } from "../engine/controls/icons";
 import { useLongPress } from "../utils/hooks/useLongPress";
 import { Presence } from "../engine/motion/usePresence";
 import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
-import { openPhonePlugins, PhonePluginStatus } from "./PhonePluginStatus";
+import { PhonePluginStatus } from "./PhonePluginStatus";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
 import "./PhoneHome.css";
 
@@ -33,6 +39,7 @@ export function PhoneHome({
   t,
   openFolder,
   activePath,
+  onBack,
   onOpenFile,
   onNewFile,
   onEntryMoved,
@@ -40,6 +47,8 @@ export function PhoneHome({
   t: Strings;
   openFolder: OpenFolder;
   activePath: string | null;
+  /** The library is a pushed page under Today: the way back. */
+  onBack?: () => void;
   onOpenFile: (path: string, how?: FileOpenHow, line?: number) => void;
   /** A blank document, and the page turns to it. */
   onNewFile: () => void;
@@ -51,16 +60,14 @@ export function PhoneHome({
   const appDocuments = useAppDocumentsFolder();
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // The root's entry count, as the tree loads it: over an empty library the
-  // + steps aside, the empty state carrying the call (the user's rule).
-  const [treeCount, setTreeCount] = useState<number | null>(null);
   const [draftRequest, setDraftRequest] = useState<{
     kind: "document" | "folder";
     seq: number;
   } | null>(null);
   const [newSheetOpen, setNewSheetOpen] = useState(false);
-  // A tap makes a note; a hold asks which (the user's rule).
-  const fabPress = useLongPress(() => setNewSheetOpen(true));
+  // A tap makes a note; a hold asks which (the user's rule). In the top bar,
+  // never a floating button.
+  const newPress = useLongPress(() => setNewSheetOpen(true));
   const startNew = (kind: "document" | "folder") => {
     setNewSheetOpen(false);
     // With a library root, a named file is created there; without one, a
@@ -102,6 +109,16 @@ export function PhoneHome({
   return (
     <div className="phone-home">
       <div className="ph-top">
+        {onBack ? (
+          <button
+            type="button"
+            className="ph-back"
+            aria-label={t.phoneBack}
+            onClick={onBack}
+          >
+            <BackChevronIcon />
+          </button>
+        ) : null}
         <button
           type="button"
           className="ph-vault"
@@ -110,38 +127,23 @@ export function PhoneHome({
           onClick={() => setSwitcherOpen(true)}
         >
           <span className="vic">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinejoin="round"
-            >
-              <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
-            </svg>
+            <FolderIcon />
           </span>
           <span className="vname">{place ? baseName(place) : t.treeTab}</span>
-          <svg
-            className="vchev"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M7 10l5 5 5-5" />
-          </svg>
+          <ChevronDownIcon className="vchev" />
         </button>
         <div className="ph-acts">
           <button
             type="button"
             className="ph-ic"
-            aria-label={t.pluginsTitle}
-            onClick={openPhonePlugins}
+            aria-label={t.menuNewFile}
+            onClick={() => {
+              if (newPress.consumeClick()) return;
+              onNewFile();
+            }}
+            {...newPress.handlers}
           >
-            <PluginsTabIcon />
+            <PlusIcon />
           </button>
           <button
             type="button"
@@ -149,31 +151,12 @@ export function PhoneHome({
             aria-label={t.settingsTitle}
             onClick={() => emitToThisWindow("menu-settings")}
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-            >
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.56-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34 1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.09a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1z" />
-            </svg>
+            <SettingsIcon />
           </button>
         </div>
       </div>
       <div className="ph-search" role="search">
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
+        <SearchIcon aria-hidden="true" />
         <input
           type="search"
           value={searchQuery}
@@ -188,16 +171,7 @@ export function PhoneHome({
             aria-label={t.phoneSearchClear}
             onClick={() => setSearchQuery("")}
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              aria-hidden
-            >
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
+            <CloseIcon aria-hidden />
           </button>
         )}
       </div>
@@ -219,7 +193,6 @@ export function PhoneHome({
               start: () => startNew("document"),
             }}
             noResults={t.phoneSearchNoResults}
-            onRootCount={setTreeCount}
             draftRequest={draftRequest}
             onOpenAsFolder={canOpenFolder ? openFolder.openFolder : undefined}
             onFileSelect={onOpenFile}
@@ -229,15 +202,7 @@ export function PhoneHome({
         ) : (
           <div className="ph-empty">
             <div className="ph-empty-glyph" aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              >
-                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
-              </svg>
+              <FolderIcon />
             </div>
             <div className="ph-empty-title">{t.phoneHomeEmptyTitle}</div>
             <div className="ph-empty-hint">{t.phoneHomeEmptyHint}</div>
@@ -260,28 +225,6 @@ export function PhoneHome({
           </div>
         )}
       </div>
-      {openFolder.treeRoot && treeCount !== 0 && (
-        <button
-          type="button"
-          className="ph-fab"
-          aria-label={t.menuNewFile}
-          onClick={() => {
-            if (fabPress.consumeClick()) return;
-            onNewFile();
-          }}
-          {...fabPress.handlers}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </button>
-      )}
       <Presence show={newSheetOpen}>
         {newSheetOpen && (
           <ActionSheet

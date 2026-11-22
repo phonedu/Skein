@@ -116,13 +116,13 @@ const BUILT_IN: SettingsPageDef[] = [
     available: () => hasTextusAi && !isMobileApp,
     label: (t) => t.navExternalTools,
   },
-  // A phone's: there plugins, themes and skills are managed in Settings;
-  // the desktop and a tablet have the sidebar's plugins and these pages.
+  // Plugins, themes and skills: a phone manages them in Settings; the
+  // desktop and a tablet reach the same page from the top bar's plugin
+  // entry (the H0 shell has no rail to hold them).
   {
     id: "extensions",
     label: (t) => t.navExtensions,
     Icon: lucide(Puzzle, NAV_ICON),
-    available: () => isPhoneLayout(),
   },
   {
     id: "sync",

@@ -4,18 +4,18 @@
    the old panel's stylesheet is not loaded under the dialog. */
 
 .settings-nav-search {
-  padding: 0 var(--space-1) var(--space-2);
+  padding: 0;
   flex: none;
 }
 
 .settings-nav-search .settings-search {
   width: 100%;
-  height: var(--control-height-sm);
+  height: var(--control-height);
   border-radius: var(--shape-s);
   border: 1px solid var(--ui-border);
   background: var(--ui-surface);
   color: var(--ui-text);
-  font-size: var(--text-caption);
+  font-size: var(--text-secondary);
   padding: 0 var(--space-3);
 }
 

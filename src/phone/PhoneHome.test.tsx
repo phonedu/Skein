@@ -16,6 +16,7 @@ import {
   setStatusItem,
 } from "../plugins/contributions/status-items";
 import { extensionsStartTab } from "../settings/pages/extensions-tab";
+import { emitToThisWindow } from "../platform/menu-events";
 import { openSettingsPage } from "../settings/settings-nav";
 import { PhoneHome } from "./PhoneHome";
 
@@ -148,7 +149,7 @@ describe("the phone library home", () => {
     expect(screen.getByTestId("phone-file-tree")).toBeTruthy();
   });
 
-  it("opens Plugins from the home's top row", () => {
+  it("keeps Plugins out of the library's top row", () => {
     render(
       <PhoneHome
         t={en as Strings}
@@ -160,9 +161,11 @@ describe("the phone library home", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: en.pluginsTitle }));
-    expect(openSettingsPage).toHaveBeenCalledWith("extensions");
-    expect(extensionsStartTab()).toBe("plugins");
+    // The library is a pushed page under Today; plugins stay in Today's
+    // ⋯ sheet and the top bar's launcher, so the row keeps its room.
+    expect(screen.queryByRole("button", { name: en.pluginsTitle })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: en.settingsTitle }));
+    expect(emitToThisWindow).toHaveBeenCalledWith("menu-settings");
   });
 
   it("shows a plugin's status and opens Plugins from it", () => {
@@ -235,7 +238,7 @@ describe("the phone library home", () => {
     expect(empty.openFolder).toHaveBeenCalledWith("/app/Documents");
   });
 
-  it("steps the floating action aside over an empty library", () => {
+  it("keeps the new note in the top row, over an empty library too", () => {
     render(
       <PhoneHome
         t={en as Strings}
@@ -247,13 +250,10 @@ describe("the phone library home", () => {
       />,
     );
 
-    // Loaded, the tree reports its count; nothing there hides the +.
+    // No floating button: the top row's + is there whether the tree is
+    // empty or full.
     expect(screen.getByRole("button", { name: en.menuNewFile })).toBeTruthy();
-    const report = fileTreeProps.last?.["onRootCount"] as (n: number) => void;
-    act(() => report(0));
-    expect(screen.queryByRole("button", { name: en.menuNewFile })).toBeNull();
-    act(() => report(3));
-    expect(screen.getByRole("button", { name: en.menuNewFile })).toBeTruthy();
+    expect(document.querySelector(".ph-fab")).toBeNull();
   });
 
   it("asks which new thing on a held +, and names a folder in place", () => {
@@ -356,35 +356,43 @@ describe("the phone library home", () => {
   });
 
   it("uses the Android phone rhythm for search and library rows", () => {
-    // The user's ruling from the reference app: rows stand 56px drawn
-    // (62 written at the chrome's 10/11), and the search pill 46px (50
-    // written).
+    // Rows stay 56 drawn (62 written at the chrome's 10/11). The search is
+    // no longer a bordered pill: the 2026-11-22 board makes it a bare 44px
+    // row (48 written), icon and placeholder, with no focus ring.
     expect(phoneHomeCss).toContain("min-height: 62px;");
     expect(phoneHomeCss).toContain("padding: 0 var(--space-4);");
-    expect(phoneHomeCss).toContain("min-height: 50px;");
+    expect(phoneHomeCss).toMatch(
+      /\.ph-search \{[^}]*min-height: 48px;[^}]*border: 0;[^}]*background: none;/s,
+    );
+    expect(phoneHomeCss).toMatch(
+      /\.ph-search:focus-within \{[^}]*border: 0;[^}]*box-shadow: none;/s,
+    );
   });
 
-  it("keeps the library control unframed and the tree disclosure quiet", () => {
+  it("keeps the vault switcher borderless, its folder a bare line icon", () => {
+    // The tinted tile is gone (2026-11-22): a bare 22px line icon.
     expect(phoneHomeCss).toMatch(
       /\.ph-vault \{[^}]*border: 0;[^}]*background: none;/s,
     );
-    // The board's library inset: rows stand in 12px from each edge.
-    expect(phoneHomeCss).toContain("padding: 0 var(--space-3);");
+    expect(phoneHomeCss).toMatch(
+      /\.ph-vault \.vic \{[^}]*width: 22px;[^}]*height: 22px;[^}]*background: none;[^}]*color: var\(--phone-muted\);/s,
+    );
+    // The chip is a bar action: no frame, its inset in the bar's own air.
+    expect(phoneHomeCss).toContain("padding: 0 var(--space-2) 0 0;");
     // The board's small quiet disclosure: 13px drawn from the 10px design,
     // seated in its 22px box (24.2 written at the chrome's 10/11).
     expect(phoneHomeCss).toContain("--tree-chevron: 24.2px;");
     expect(phoneHomeCss).toContain("--icon-scale: 1.43;");
   });
 
-  it("draws the board's folder chip: fire-tinted, bronze glyph, svg-sized", () => {
-    // The chip is the icon's own inline size (icons.tsx's iconSize wins
-    // over any width here): 15px design at 2.2 draws 30px. A width rule
-    // once starved the glyph to a 0 viewport under the chip's padding.
-    expect(phoneHomeCss).toContain("--icon-scale: 2.2;");
-    expect(phoneHomeCss).toContain(
-      "background: color-mix(in srgb, var(--phone-fire) 8%, transparent);",
+  it("draws a folder as a bare line icon, not a tinted chip", () => {
+    // 2026-11-22: the fire-tinted folder chip is a bare 22px line icon.
+    // 15px design at 1.47 draws 22. The old 2.2 chip scale must not return.
+    expect(phoneHomeCss).toContain("--icon-scale: 1.47;");
+    expect(phoneHomeCss).not.toContain("--icon-scale: 2.2;");
+    expect(phoneHomeCss).toMatch(
+      /\.phone-home \.tree-row:not\(\.tree-row-file\) \.tree-icon \{[^}]*background: none;[^}]*color: var\(--phone-muted\);/s,
     );
-    expect(phoneHomeCss).toContain("color: var(--phone-fold);");
   });
 
   it("keeps the tree's depth indent under the phone row's padding", () => {
@@ -401,11 +409,26 @@ describe("the phone library home", () => {
     );
   });
 
-  it("marks the open document with the board's fire dot", () => {
-    // Off the desktop's tree by default, on at the phone's home only.
+  it("marks the open document with the selection, not the fire dot", () => {
+    // 2026-11-22: selection replaces the fire dot. The dot stays off the
+    // desktop, and the phone hides it too; the open row takes the selected
+    // fill, an accent icon and a 600 name.
     expect(phoneHomeCss).toMatch(/\.tree-fdot \{[^}]*display: none;/s);
     expect(phoneHomeCss).toMatch(
-      /\.phone-home \.tree-fdot \{[^}]*display: inline-block;[^}]*background: var\(--phone-fire\);/s,
+      /\.phone-home \.tree-fdot \{[^}]*display: none;/s,
+    );
+    // 2026-11-22: the plain --ui-selected fill (#EEF1F5 on the light
+    // page's #F0F1F3) was too faint to read as selected; the ruling tints
+    // it with the accent instead of the flat selection colour.
+    expect(phoneHomeCss).toMatch(
+      /\.phone-home \.tree-row-active \{[^}]*background: color-mix\(in srgb, var\(--ui-accent\) 8%, var\(--ui-selected\)\);[^}]*font-weight: 600;/s,
+    );
+    expect(phoneHomeCss).toMatch(
+      /\.phone-home \.tree-row-active \.tree-icon \{[^}]*color: var\(--ui-accent\);/s,
+    );
+    // The row's ⋯ stays a 44px touch target (48 written at 10/11).
+    expect(phoneHomeCss).toMatch(
+      /\.phone-home \.tree-more \{[^}]*width: 48px;[^}]*height: 48px;/s,
     );
   });
 });

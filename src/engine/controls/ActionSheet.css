@@ -42,10 +42,14 @@
 .action-sheet-head,
 .action-sheet-title {
   padding: var(--space-3) var(--space-6) var(--space-2);
+  text-align: left;
+}
+
+/* A custom head draws its own content; a plain title is a section label. */
+.action-sheet-head {
   font-size: var(--text-footnote);
   letter-spacing: 0.08em;
   color: var(--ui-muted);
-  text-align: left;
 }
 
 .action-sheet-section + .action-sheet-section {
@@ -76,8 +80,8 @@
 
 .action-sheet-ic {
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: var(--icon-tile);
+  height: var(--icon-tile);
   display: flex;
   align-items: center;
   justify-content: center;

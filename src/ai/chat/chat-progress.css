@@ -41,10 +41,12 @@
   transform: rotate(90deg);
 }
 
+/* The thought reads as an indented aside, not a card: no side strip, the
+   indentation and the smaller face set it off (the side-strip ban,
+   ruling 4.10). */
 .agent-thought-text {
   margin-top: 4px;
   padding-left: 8px;
-  border-left: 2px solid var(--ui-border);
   font-size: var(--text-caption);
   line-height: 1.55;
   white-space: pre-wrap;

@@ -565,6 +565,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   notesFootCount: "{n} Notizen",
   notesFootNote: "Markdown ist alles",
   treeTab: "Dateien",
+  treeFileTree: "Dateibaum",
   phoneBackToLibrary: "Zurück zur Bibliothek",
   phoneBack: "Zurück",
   outlineTab: "Gliederung",
@@ -732,6 +733,13 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   docForget: "Aus der Liste entfernen",
   docActionFailed: "Das hat nicht funktioniert",
   treeDayToday: "Heute",
+  todayCurrent: "Aktuelle Lieferung",
+  todayPending: "Zu bestätigen",
+  todayChanged: "Heute geändert",
+  todayCapture: "Einen Gedanken sammeln…",
+  todayEmptyTitle: "Heute noch nichts",
+  todayEmptyHint:
+    "Schreib eine Zeile oder öffne eine Notiz aus der Bibliothek.",
   treeFolderNotes: { one: "{n} Notiz", other: "{n} Notizen" },
   treeRowMore: "Weitere Aktionen",
   treeOpen: "Öffnen",
@@ -765,6 +773,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Formatierter Text zeigt das Dokument, wie es sich liest; der Quellcodemodus sein Markdown; Quelltext und Vorschau beides nebeneinander.",
   settingsHelpGroup: "Hilfe",
   navGeneral: "Allgemein",
+  navOptions: "Optionen",
   navTheme: "Design",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
@@ -1480,17 +1489,19 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Eine Minute Rundgang: die Seitenleiste, die Seite und die KI.",
   tutorialSidebarTitle: "Die Seitenleiste",
   tutorialSidebarBody:
-    "Klicke links auf den Ordner, um die Seitenleiste zu öffnen.",
+    "Die linke Spalte hält den Tresor und die Arbeit von heute; die Taste in der oberen Leiste zeigt sie oder blendet sie aus.",
   tutorialSidebarBodyPhone:
     "Tippe oben links auf die Seitenleisten-Taste, um sie zu öffnen.",
   tutorialRailTitle: "Was darin ist",
-  tutorialRailBody: "Jedes Symbol links öffnet einen Teil der Seitenleiste.",
+  tutorialRailBody:
+    "Heute und Dateien sind die beiden Ansichten der Spalte; Dateien hat eigene Tabs.",
   tutorialRailFiles: "Dateien: der Ordner, in dem du schreibst.",
   tutorialRailOutline: "Gliederung: die Überschriften der Seite, zum Springen.",
   tutorialRailSearch: "Suche: eine Datei oder Zeile im ganzen Ordner finden.",
-  tutorialRailPlugins: "Plugins: weitere Funktionen, wenn du sie brauchst.",
+  tutorialRailPlugins:
+    "Plugins: Die Taste in der oberen Leiste öffnet Plugin-Seiten und Befehle.",
   tutorialRailHide:
-    "In einem kleinen Fenster blendest du diese Symbolleiste per Rechtsklick aus.",
+    "Die Taste in der oberen Leiste zeigt oder verbirgt diese Spalte.",
   tutorialSettingsTitle: "Einstellungen",
   tutorialSettingsBody:
     "Im Zahnrad sind Design, Schriften und deine KI-Konten.",
@@ -1938,6 +1949,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   pluginStoppedAnswering: "es antwortete nicht mehr",
   pluginTooManyErrors: "es ist zu oft fehlgeschlagen",
   pluginQuickPickEmpty: "Keine Treffer.",
+  pluginLauncherPlaceholder: "Plugin-Seiten und -Befehle suchen",
   pluginPermEditorRead: "Das angezeigte Dokument und seine Auswahl lesen",
   pluginPermEditorWrite:
     "Das geöffnete Dokument direkt ändern (jede Änderung lässt sich rückgängig machen)",

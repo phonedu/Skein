@@ -3,7 +3,7 @@ import { tabTitle } from "../document/doc-tabs";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -19,11 +19,11 @@ import {
   type AppPage,
   type PageRequest,
 } from "./tabs/page-tabs";
-import { usePhoneLayout } from "../engine/controls/usePhoneLayout";
+import { usePhoneSurfaces } from "./usePhoneSurfaces";
 import { useSettings } from "../prefs/SettingsContext";
 import { formatCombo } from "../utils/shortcuts";
 import { fixedShortcutGroups } from "../registry/fixed-shortcuts";
-import { commands } from "../registry/commands";
+import { commands, runCommand } from "../registry/commands";
 import { platformName } from "../platform/window-chrome";
 import { Presence } from "../engine/motion/usePresence";
 import { AgentPanelProvider } from "../ai/chat/panel/agent-panel";
@@ -69,7 +69,14 @@ const phoneParts = lazyModule(
 );
 const DocumentList = lazyComponent(phoneParts, (m) => m.DocumentList);
 const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
+const PhoneToday = lazyComponent(phoneParts, (m) => m.PhoneToday);
 const PhoneEditorBar = lazyComponent(phoneParts, (m) => m.PhoneEditorBar);
+// The right column's pages: the AI at the edge and a plugin's list, shown
+// when the shell first opens the column.
+const RightPanel = lazyComponent(
+  lazyModule("right-panel", () => import("./frame/RightPanel")),
+  (m) => m.RightPanel,
+);
 
 /**
  * One window: its tabs, the panels around them, and the prompts and notices
@@ -80,21 +87,37 @@ function App() {
   const shell = useWindowShell({ settings, setSettings });
   const docs = useWindowDocuments({ shell, settings, t });
   const wiring = useWindowWiring({ shell, docs, settings, setSettings, t });
-  const phone = usePhoneLayout();
-  // The phone's two surfaces: the library home and the document in front.
-  // A desktop has no such state - its surfaces are the window's panels -
-  // and a phone has no tab strip, so this, not the tabs, is its navigation.
-  const [phoneView, setPhoneView] = useState<"home" | "doc">("home");
-  const phoneHome = phone && phoneView === "home";
+  const { activeTab, activeTitle, activeDirty } = docs;
+  // The phone's three surfaces (Today, the library, the page in front); a
+  // desktop has none, its surfaces are the window's panels.
+  const {
+    phone,
+    surface: phoneView,
+    setSurface: setPhoneView,
+    today: phoneToday,
+    library: phoneLibrary,
+  } = usePhoneSurfaces(activeTab.view);
 
   const { tutorial, settingsOpening, pendingClose } = shell;
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
   const { tabs, activeTabId, setActiveTabId, addBlankTab } = shell.tabState;
+  // The one action every surface keeps in reach: a note to write now. The
+  // asset plugin's collect form when it is there, a blank note otherwise.
+  // True while the plugin took the action (its form shows where it is).
+  const captureNote = (): boolean => {
+    if (runCommand("skein.collect.capture")) return true;
+    addBlankTab();
+    return false;
+  };
   const { panelOpen, setPanelOpen, toggleSidebar, sidebarWidth } = shell.panels;
-  const { agentPanel, toggleAgentPanel } = shell.panels;
+  const { agentPanel, toggleAgentPanel, rightPanel, rightOverlay } =
+    shell.panels;
   const { sidebarPresence, sidebarClosing, agentPresence } = shell.panels;
-  const { panelMode, setPanelMode } = shell.panels;
-  const { activeTab, activeTitle, activeDirty } = docs;
+  const { panelMode, setPanelMode, sidebarView, setSidebarView } = shell.panels;
+  // Today's "current" is a document, not a page: a plugin's page (the
+  // confirm center, an asset list) is what is in front, not what is being
+  // delivered.
+  const currentTitle = activeTab.view ? "" : activeTitle;
   const { openFolder, openFile, openFileDialog, handleChange } = docs;
   // The phone document page's folder line ("交付"): where the file stands
   // in its library, when it isn't at the root.
@@ -109,9 +132,9 @@ function App() {
   useBackStep({
     phone,
     agentOpen: agentPanel.open,
-    inDoc: phoneView === "doc",
+    inDoc: phoneView !== "today",
     closeAgent: toggleAgentPanel,
-    toHome: () => setPhoneView("home"),
+    toHome: () => setPhoneView("today"),
   });
 
   const { searchFiles } = docs;
@@ -182,6 +205,11 @@ function App() {
           data-tabs={tabRow}
           // Its column open: the grid and the rail's edge follow the model.
           data-sidebar={sidebarShown ? "open" : undefined}
+          // The page's edge open: the grid gives it its column.
+          data-right-panel={rightPanel.mounted ? "open" : undefined}
+          // Not enough room for a column beside the document: the edge
+          // lies over the page instead (app-shell.css).
+          data-right-panel-overlay={rightOverlay ? "on" : undefined}
           // A format bar down the right edge: the page's readouts clear it.
           data-format-bar={
             settings.formatBar && settings.formatBarSide === "right" && !phone
@@ -197,12 +225,12 @@ function App() {
                 } as React.CSSProperties)
           }
         >
-          {/* The phone's pages carry their own top rows - the home's
-             (PhoneHome's) and the document page's (PhoneEditorBar) - so the
-             window bar, whose menu and tabs belong to the desktop, stays
-             out of a phone entirely. */}
+          {/* The phone's pages carry their own top rows - Today's
+             (PhoneToday's), the library's (PhoneHome's) and the document
+             page's (PhoneEditorBar) - so the window bar, whose menu and tabs
+             belong to the desktop, stays out of a phone entirely. */}
           {phone ? (
-            !phoneHome && (
+            phoneView === "doc" && (
               <PhoneEditorBar
                 t={t}
                 title={activeTitle}
@@ -215,9 +243,9 @@ function App() {
                 agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
                 onBack={() => {
                   // A step, not a jump: from the AI page back to the
-                  // document, and from the document back to the library.
+                  // document, and from the document back to Today.
                   if (agentPanel.open) return toggleAgentPanel();
-                  setPhoneView("home");
+                  setPhoneView("today");
                 }}
                 onToggleAgent={toggleAgentPanel}
               />
@@ -230,8 +258,13 @@ function App() {
               sidebarOpen={panelOpen}
               sidebarShortcut={formatCombo(settings.shortcuts.toggleSidebar)}
               onToggleSidebar={toggleSidebar}
+              onOpenPlugins={() => {
+                void import("../plugins/views/plugin-launcher").then((m) =>
+                  m.openPluginLauncher(),
+                );
+              }}
               showAgentToggle={aiFeatures(settings, tutorial.active).chat}
-              agentOpen={agentPanel.open}
+              agentOpen={agentPanel.open && rightPanel.mode === "agent"}
               agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
               onToggleAgent={toggleAgentPanel}
               onToggleReadOnly={() => toggleReadOnly()}
@@ -244,12 +277,16 @@ function App() {
               open={sidebarShown}
               presence={sidebarPresence}
               closing={sidebarClosing}
+              view={sidebarView}
+              onViewChange={setSidebarView}
+              onCapture={captureNote}
               mode={panelMode}
               onModeChange={(id) =>
                 id === "search" ? searchFiles() : setPanelMode(id)
               }
               width={sidebarWidth}
               openFolder={openFolder}
+              activeTitle={currentTitle}
               activePath={activeTab.path}
               activeContent={activeTab.content}
               activeTabId={activeTab.id}
@@ -269,12 +306,40 @@ function App() {
               t={t}
             />
           )}
+          {/* The page's edge: the AI, or a plugin's page, on demand. A
+             phone and a fold have no room for a column beside the document
+             and open those pages full-screen instead. */}
+          {rightPanel.mounted && (
+            <RightPanel
+              presence={rightPanel.presence}
+              mode={rightPanel.mode}
+              onMode={rightPanel.setMode}
+              onClose={rightPanel.close}
+              t={t}
+            />
+          )}
 
-          {phoneHome ? (
+          {phoneToday ? (
+            <PhoneToday
+              t={t}
+              activeTitle={currentTitle}
+              activePath={activeTab.path}
+              openFolder={openFolder}
+              onOpenFile={(path) => {
+                void openFile(path);
+                setPhoneView("doc");
+              }}
+              onOpenLibrary={() => setPhoneView("library")}
+              onCapture={() => {
+                if (!captureNote()) setPhoneView("doc");
+              }}
+            />
+          ) : phoneLibrary ? (
             <PhoneHome
               t={t}
               openFolder={openFolder}
               activePath={activeTab.path}
+              onBack={() => setPhoneView("today")}
               onOpenFile={(path) => {
                 void openFile(path);
                 setPhoneView("doc");

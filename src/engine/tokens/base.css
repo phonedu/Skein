@@ -107,28 +107,38 @@
   /* What marks "here" and "now": highlights, matches, notes. */
   --doc-mark: #ff9500;
   --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 30%, var(--doc-bg));
-  /* The interface's, from the document's, so any theme recolours the whole
-     window; an imported theme's are derived and contrast-checked in
+  /* The interface's own palette: Slate, fixed, whatever the document's
+     theme - the chrome no longer takes the document's colours, so the
+     sidebar and cards read the same cool grey over a warm page or a cool
+     one. An imported theme's are still derived and contrast-checked in
      engine/tokens/palette.ts, and a theme may set any of them itself. */
-  --ui-bg: var(--doc-bg);
-  --ui-surface: var(--ui-bg);
-  --ui-text: var(--doc-text);
-  --ui-muted: var(--doc-muted);
-  --ui-accent: var(--doc-accent);
+  --ui-bg: #f0f1f3;
+  --ui-surface: rgb(255 255 255 / 94%);
+  --ui-surface-solid: #fff;
+  --ui-sidebar: #e9ebef;
+  --ui-text: #1c2128;
+  --ui-muted: #656d77;
+  --ui-accent: #3467d2;
   /* The accent as words: a step towards the text, so a bright accent still
      reads; fills, toggles and marks keep the accent itself. */
-  --ui-accent-text: color-mix(in srgb, var(--ui-accent) 80%, var(--ui-text));
+  --ui-accent-text: #2f5fc4;
   --doc-accent-text: color-mix(in srgb, var(--doc-accent) 80%, var(--doc-text));
-  --ui-border: color-mix(in srgb, var(--ui-text) 16%, var(--ui-bg));
+  --ui-border: #d8dee4;
   --ui-subtle: color-mix(in srgb, var(--ui-text) 4%, var(--ui-bg));
+  /* The area the document sits in, around the page itself - not the
+     frame, not a content theme's --doc-bg: a near-white canvas under the
+     editor and the preview, whatever the document's theme. */
+  --ui-doc-canvas: #fcfdfe;
   /* The window's frame - the title bar, the activity rail, the sidebar -
-     one surface around the document (design-language.md 5.7): the paper
-     warmed a touch, a cream a step from it rather than a grey. */
+     one surface around the document (design-language.md 5.7): the
+     chrome's own sidebar tone, not the page's. */
   --ui-frame-tint: #a08c64;
-  --ui-frame: color-mix(in srgb, var(--ui-frame-tint) 5%, var(--ui-bg));
+  --ui-frame: var(--ui-sidebar);
   /* The frame a step further back, under a floating page (several
-     documents). */
-  --ui-frame-sunk: color-mix(in srgb, var(--ui-frame-tint) 8%, var(--ui-bg));
+     documents). The tab bar reassigns --ui-frame to this, so it is the
+     sidebar's own tone: the old warm tint mixed a measured #E9E8E7 where
+     the Slate sidebar is #E9EBEF. --ui-frame-tint stays for plugins. */
+  --ui-frame-sunk: var(--ui-sidebar);
   /* What the frame is filled with: one fill for the bar, the rail and the
      sidebar, so they never differ. A theme or a plugin may paint it
      (--ui-frame-paint: a colour or a gradient, unset by default); each
@@ -153,7 +163,7 @@
     var(--ui-primary) 78%,
     var(--ui-on-primary)
   );
-  --ui-selected: color-mix(in srgb, var(--ui-accent) 13%, transparent);
+  --ui-selected: #eef1f5;
   --ui-selected-text: var(--ui-text);
   --ui-danger: #be364b;
 
@@ -254,10 +264,21 @@
     --doc-code-bg: #2b241c;
     --doc-mark: #ff9f0a;
     --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 34%, var(--doc-bg));
-    /* Dark frames recede by darkening: a lighter frame would read as
-       raised above the page. */
-    --ui-frame: color-mix(in srgb, #000 10%, var(--ui-bg));
-    --ui-frame-sunk: color-mix(in srgb, #000 30%, var(--ui-bg));
+    --ui-bg: #0d1117;
+    --ui-surface: rgb(22 27 34 / 90%);
+    --ui-surface-solid: #161b22;
+    --ui-sidebar: #11161d;
+    --ui-text: #e6edf3;
+    --ui-muted: #8b949e;
+    --ui-border: #30363d;
+    --ui-accent: #6ea8fe;
+    --ui-accent-text: #8bb9ff;
+    --ui-selected: #1b222a;
+    --ui-doc-canvas: #0d1117;
+    --ui-frame: var(--ui-sidebar);
+    /* Same surface as the sidebar: darkening it a further step read as a
+       second chrome beside the page. */
+    --ui-frame-sunk: var(--ui-sidebar);
     --ui-island-line: color-mix(in srgb, var(--ui-text) 6%, transparent);
     --ui-island-contact: rgb(0 0 0 / 40%);
     --ui-island-shadow: rgb(0 0 0 / 35%);
@@ -276,10 +297,21 @@
   --doc-code-bg: #2b241c;
   --doc-mark: #ff9f0a;
   --doc-highlight-bg: color-mix(in srgb, var(--doc-mark) 34%, var(--doc-bg));
-  /* Dark frames recede by darkening: a lighter frame would read as
-     raised above the page. */
-  --ui-frame: color-mix(in srgb, #000 10%, var(--ui-bg));
-  --ui-frame-sunk: color-mix(in srgb, #000 30%, var(--ui-bg));
+  --ui-bg: #0d1117;
+  --ui-surface: rgb(22 27 34 / 90%);
+  --ui-surface-solid: #161b22;
+  --ui-sidebar: #11161d;
+  --ui-text: #e6edf3;
+  --ui-muted: #8b949e;
+  --ui-border: #30363d;
+  --ui-accent: #6ea8fe;
+  --ui-accent-text: #8bb9ff;
+  --ui-selected: #1b222a;
+  --ui-doc-canvas: #0d1117;
+  --ui-frame: var(--ui-sidebar);
+  /* Same surface as the sidebar: darkening it a further step read as a
+     second chrome beside the page. */
+  --ui-frame-sunk: var(--ui-sidebar);
   --ui-island-line: color-mix(in srgb, var(--ui-text) 6%, transparent);
   --ui-island-contact: rgb(0 0 0 / 40%);
   --ui-island-shadow: rgb(0 0 0 / 35%);

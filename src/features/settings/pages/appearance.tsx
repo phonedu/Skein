@@ -56,12 +56,6 @@ export function AppearancePage({ t }: { t: Strings }) {
             }
           />
         </SettingsRow>
-        <SettingsRow label={t.activityRailLabel}>
-          <SettingsSwitch
-            checked={settings.activityRail}
-            onChange={(on) => setSettings({ activityRail: on })}
-          />
-        </SettingsRow>
         {canUseWindows && (
           <SettingsRow label={t.titleRowLabel}>
             <SettingsSwitch

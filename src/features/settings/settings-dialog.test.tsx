@@ -7,7 +7,7 @@ import { SettingsDialog } from "./settings-dialog";
 /**
  * The shell's contract: a Base UI Dialog skinned to the board
  * - opaque surface, the shape/shadow tokens nearest the board's values, the
- * 880×556 base box drawn at the interface's scale - with a top row (title,
+ * 1040×720 base box drawn at the interface's scale - with a top row (title,
  * close) and two slots: the nav column and the page's content.
  */
 const css = readFileSync("src/features/settings/settings-dialog.css", "utf8");
@@ -46,9 +46,11 @@ describe("the settings dialog shell", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("the sheet is the board's 880×556, at the interface's scale", () => {
-    expect(css).toContain("calc(880px * var(--chrome-scale, 1))");
-    expect(css).toContain("calc(556px * var(--chrome-scale, 1))");
+  it("the sheet is the board's 1040×720, at the interface's scale", () => {
+    // Design-board size change (2026-11-22): the settled settings panel is
+    // 1040×720, not the earlier 880×620.
+    expect(css).toContain("calc(1040px * var(--chrome-scale, 1))");
+    expect(css).toContain("calc(720px * var(--chrome-scale, 1))");
     // Clamped to the window: a small one keeps the panel whole.
     expect(css).toContain("max-width: calc(100vw");
     expect(css).toContain("max-height: calc(100vh");
@@ -66,6 +68,25 @@ describe("the settings dialog shell", () => {
 
   it("takes the modal's layer, so nothing draws over it", () => {
     expect(css).toContain("z-index: var(--z-modal)");
+  });
+
+  it("draws a 44px glass top bar, and no hairline between nav rows", () => {
+    // Design board (2026-11-22): the bar is a 44px glass strip, blur only
+    // on that strip. The nav is a bare list, so the phone row's hairline
+    // is hidden inside the column and left alone on the phone.
+    expect(css).toMatch(/\.settings-dialog-top \{[^}]*height: 44px;/s);
+    expect(css).toMatch(
+      /\.settings-dialog-top \{[^}]*background: var\(--ui-surface\);/s,
+    );
+    expect(css).toMatch(
+      /\.settings-dialog-top \{[^}]*-webkit-backdrop-filter: blur\(26px\) saturate\(160%\);[^}]*backdrop-filter: blur\(26px\) saturate\(160%\);/s,
+    );
+    expect(css).toMatch(
+      /\.settings-dialog-top \{[^}]*border-bottom: 1px solid var\(--ui-border\);/s,
+    );
+    expect(css).toMatch(
+      /\.settings-dialog-nav \.settings-phone-row \+ \.settings-phone-row::before \{[^}]*display: none;/s,
+    );
   });
 
   it("says it is a modal, and the window rests while it is open", () => {

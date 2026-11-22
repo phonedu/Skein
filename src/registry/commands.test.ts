@@ -7,7 +7,6 @@ import {
 } from "./commands";
 import { sidebarTab, sidebarTabs } from "../app/frame/sidebar-tabs";
 import { registerSidebarTab } from "./sidebar-tabs";
-import { resolveStrings } from "../i18n/strings";
 
 describe("commands", () => {
   it("run by id or by their shortcut, while they can, and go when taken back", () => {
@@ -36,21 +35,21 @@ describe("commands", () => {
 });
 
 describe("sidebar tabs", () => {
-  it("are Files, Outline and Search, then any added", () => {
-    const t = resolveStrings("en");
-    // Then Plugins, where plugins run.
-    expect(
-      sidebarTabs()
-        .map((tab) => tab.id)
-        .slice(0, 3),
-    ).toEqual(["tree", "outline", "search"]);
+  it("are Files, Outline and Search; a plugin's tab belongs to the launcher", () => {
+    expect(sidebarTabs().map((tab) => tab.id)).toEqual([
+      "tree",
+      "outline",
+      "search",
+    ]);
     const remove = registerSidebarTab({
       id: "example",
       label: () => "Example",
       Icon: () => null,
       Panel: () => null,
     });
-    expect(sidebarTabs().at(-1)?.label(t)).toBe("Example");
+    // The view column is Textus's own: a plugin's page opens from the top
+    // bar's launcher, not as a tab here.
+    expect(sidebarTabs()).toHaveLength(3);
     remove();
     // One no longer there is Files.
     expect(sidebarTab("example").id).toBe("tree");

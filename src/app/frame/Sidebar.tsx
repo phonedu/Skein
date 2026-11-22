@@ -1,32 +1,46 @@
-import { useCallback, useReducer } from "react";
+import { useCallback, useState } from "react";
 import { useSidebarFrame } from "./useSidebarFrame";
 import { useSideToTop } from "../../engine/layout/useBarLayout";
+import { Segmented } from "../../engine/controls/Segmented";
 import type { PresenceHandle } from "../../engine/motion/usePresence";
 import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
 import { ResizeHandle } from "../../engine/controls/ResizeHandle";
+import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
-import { railShown, type SidebarTabId } from "./useSidePanels";
+import type { SidebarTabId, SidebarView } from "./useSidePanels";
 import type { useSidebarWidth } from "./sidebar-width";
 import type { OpenFolder } from "../useOpenFolder";
-import { ActivityRail } from "./ActivityRail";
-import { useSettings } from "../../prefs/SettingsContext";
-import { railTabs, sidebarTab } from "./sidebar-tabs";
-import { ViewTitleActions } from "../../plugins/views/plugin-views";
+import { FILE_TABS, fileTab } from "./sidebar-tabs";
+import {
+  ChevronDownIcon,
+  FolderIcon,
+  PlusIcon,
+  SettingsIcon,
+} from "../../engine/controls/icons";
+import { emitToThisWindow } from "../../platform/menu-events";
+import { TodayPanel } from "./TodayPanel";
 import type { FileOpenHow } from "../../files/tree-shared";
 
-/** The left sidebar, with the activity rail that switches its tabs. */
+/**
+ * The left view column: the folder's name, Today and Files, and the Files
+ * view's own tabs. There is no activity rail: the column is the navigation,
+ * the desktop's two-column default.
+ */
 export function Sidebar({
   open,
   presence,
   closing,
+  view,
+  onViewChange,
+  onCapture,
   mode,
   onModeChange,
   width,
   openFolder,
+  activeTitle,
   activePath,
   activeContent,
   activeTabId,
-  onToggle,
   onClose,
   onOpenFile,
   onEntryMoved,
@@ -37,14 +51,22 @@ export function Sidebar({
   open: boolean;
   presence: PresenceHandle;
   closing: boolean;
+  view: SidebarView;
+  onViewChange: (view: SidebarView) => void;
+  /** The day's one high-frequency action, kept in the view column's row on
+   *  every surface: a note to write now. */
+  onCapture: () => void;
   mode: SidebarTabId;
   onModeChange: (mode: SidebarTabId) => void;
   width: ReturnType<typeof useSidebarWidth>;
   openFolder: OpenFolder;
+  activeTitle: string;
   activePath: string | null;
   activeContent: string;
   activeTabId: string;
-  onToggle: () => void;
+  /** The sidebar closed by its own way (a plugin page's close); the window
+   *  bar's button keeps toggling it. */
+  onToggle?: () => void;
   onClose: () => void;
   /** `beside`: in a split beside the document in front. */
   /** `line`: a line found in it, to go to (1-based). */
@@ -56,13 +78,10 @@ export function Sidebar({
   onSearchFocusHandled: () => void;
   t: Strings;
 }) {
-  // The tab chosen, or Files for one no longer there.
-  const shown = sidebarTab(mode);
-  // A tab dragged: drawn again in its new order.
-  const [, moved] = useReducer((n: number) => n + 1, 0);
-  const { settings } = useSettings();
-  // Under the window bar the header's line is covered: a plugin's buttons
-  // for its panel go to the top of the panel instead.
+  // The Files view's tab, or Files for one no longer there.
+  const shown = fileTab(mode);
+  // Under the window bar the header's line is covered: the views' header
+  // takes the bar's row.
   const titleShown = useSideToTop();
   const phone = usePhoneLayout();
   const frame = useSidebarFrame(open, !phone, width.width);
@@ -74,57 +93,99 @@ export function Sidebar({
     },
     [presenceRef, frame],
   );
-  // The rail turned off comes with the sidebar and goes with it.
-  const rail = railShown(settings, open, phone);
+  const root = openFolder.folder ?? openFolder.treeRoot;
+  const vaultName = root
+    ? (root.split(/[\\/]/).filter(Boolean).pop() ?? null)
+    : null;
+  // The library's note count (an index label, "12+" at the cap), drawn in
+  // the column's own foot.
+  const [noteCount, setNoteCount] = useState<string | null>(null);
+
   return (
-    <>
-      {rail && (
-        <ActivityRail
-          tabs={railTabs()}
-          shownId={shown.id}
-          sidebarOpen={open}
-          onSelect={(id) => {
-            // Opened first: Search's own way in opens it outright too.
-            if (!open) onToggle();
-            onModeChange(id);
-          }}
-          onCloseSidebar={onToggle}
-          onReorder={moved}
-          t={t}
-        />
-      )}
-      <aside
-        ref={asideRef}
-        aria-label={t.menuToggleSidebar}
-        className={`sidebar ${open ? "" : "sidebar-collapsed"}`}
-      >
-        {/* Contents render only while open, and are inert while sliding
+    <aside
+      ref={asideRef}
+      aria-label={t.menuToggleSidebar}
+      className={`sidebar ${open ? "" : "sidebar-collapsed"}`}
+    >
+      {/* Contents render only while open, and are inert while sliding
           away, so Tab can't land on a collapsed sidebar's buttons. */}
-        {presence.mounted && (
-          <>
-            {/* At the window's top it is the bar's row there: its bare
-                room and its name move the window. */}
-            <div
-              className="sidebar-header"
-              inert={closing || undefined}
-              data-tauri-drag-region={titleShown || undefined}
+      {presence.mounted && (
+        <>
+          <div
+            className="sidebar-header sidebar-views-header"
+            inert={closing || undefined}
+            data-tauri-drag-region={titleShown || undefined}
+          >
+            <button
+              type="button"
+              className="sidebar-vault"
+              onClick={() => void openFolder.openFolderDialog()}
+              title={t.menuOpenFolder}
             >
-              {/* With the rail holding the tabs, the header is the panel's
-                  name, on the window bar's line; the panel's own first row
-                  (its search, its tools) starts under it, level with the
-                  islands' tops. Without the rail its tabs are here. */}
-              {/* A plugin's buttons for its panel (menus "view/title")
-                  end the name's line: no row of their own. */}
-              <h2
-                className="tx-pane-title sidebar-title"
-                data-tauri-drag-region={titleShown || undefined}
+              <span className="sidebar-vault-icon">
+                <FolderIcon />
+              </span>
+              <span className="sidebar-vault-name">
+                {vaultName ?? t.menuOpenFolder}
+              </span>
+              <ChevronDownIcon className="sidebar-vault-chev" />
+            </button>
+            <div className="sidebar-views">
+              <Segmented
+                className="sidebar-view-seg"
+                label={t.menuToggleSidebar}
+                equal
+                value={view}
+                onChange={onViewChange}
+                options={[
+                  { id: "today", label: t.treeDayToday },
+                  { id: "files", label: t.treeTab },
+                ]}
+              />
+              <button
+                type="button"
+                className="sidebar-quickadd"
+                aria-label={t.todayCapture}
+                title={t.todayCapture}
+                onClick={onCapture}
               >
-                {shown.label(t)}
-              </h2>
-              {titleShown && <ViewTitleActions view={shown.id} />}
+                <PlusIcon />
+              </button>
             </div>
-            <div className="sidebar-body" inert={closing || undefined}>
-              {!titleShown && <ViewTitleActions view={shown.id} />}
+            {view === "files" ? (
+              <div className="sidebar-file-tabs" role="tablist">
+                {FILE_TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab.id === shown.id}
+                    data-file-tab={tab.id}
+                    className={
+                      "sidebar-file-tab" + (tab.id === shown.id ? " on" : "")
+                    }
+                    onClick={() => onModeChange(tab.id)}
+                  >
+                    <span className="sidebar-file-ic">
+                      <tab.Icon />
+                    </span>
+                    <span>{tab.label(t)}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <div className="sidebar-body" inert={closing || undefined}>
+            {view === "today" ? (
+              <TodayPanel
+                t={t}
+                activeTitle={activeTitle}
+                activePath={activePath}
+                openFolder={openFolder}
+                onOpenFile={(path) => onOpenFile(path)}
+                onCapture={onCapture}
+              />
+            ) : (
               <shown.Panel
                 t={t}
                 openFolder={openFolder}
@@ -136,24 +197,42 @@ export function Sidebar({
                 onEntryMoved={onEntryMoved}
                 searchFocusRequest={searchFocusRequest}
                 onSearchFocusHandled={onSearchFocusHandled}
-              />
-            </div>
-            {/* A phone's sidebar keeps the width the layout gives it. */}
-            {!phone && (
-              <ResizeHandle
-                className="sidebar-resizer"
-                edge="right"
-                width={width.width}
-                min={width.min}
-                max={width.max}
-                onResize={width.setWidth}
-                onReset={width.resetWidth}
-                label={t.sidebarResize}
+                onNoteCount={setNoteCount}
               />
             )}
-          </>
-        )}
-      </aside>
-    </>
+          </div>
+          {/* The column's one foot: Settings, and the library's count when
+             the Files view shows. */}
+          <div className="sidebar-foot">
+            <button
+              type="button"
+              className="sidebar-foot-settings"
+              onClick={() => emitToThisWindow("menu-settings")}
+            >
+              <SettingsIcon />
+              <span>{t.settingsTitle}</span>
+            </button>
+            {view === "files" && noteCount !== null ? (
+              <span className="sidebar-foot-count">
+                {fill(t.notesFootCount, { n: noteCount })}
+              </span>
+            ) : null}
+          </div>
+          {/* A phone's sidebar keeps the width the layout gives it. */}
+          {!phone && (
+            <ResizeHandle
+              className="sidebar-resizer"
+              edge="right"
+              width={width.width}
+              min={width.min}
+              max={width.max}
+              onResize={width.setWidth}
+              onReset={width.resetWidth}
+              label={t.sidebarResize}
+            />
+          )}
+        </>
+      )}
+    </aside>
   );
 }

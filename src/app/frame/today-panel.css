@@ -1,0 +1,159 @@
+/* The view column's Today page: the note in front, the asset plugin's
+   confirmations, and today's notes. One arrangement, no card side strips:
+   a full hairline and the paper carry each block. */
+.today-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-4);
+}
+
+/* An empty day: the empty-state family (icon tile, a line, a call), no
+   card and no shadow. */
+.today-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.today-empty-mark {
+  display: grid;
+  place-items: center;
+  width: var(--icon-tile-lg, 48px);
+  height: var(--icon-tile-lg, 48px);
+  border-radius: var(--shape-m);
+  background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
+  color: var(--ui-accent-text);
+}
+
+.today-empty-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.today-empty-hint {
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+  line-height: 1.5;
+}
+
+.today-label {
+  margin: var(--space-4) var(--space-2) var(--space-1);
+}
+
+.today-current {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (any-hover: hover) {
+  .today-current:hover {
+    background: var(--ui-hover);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.today-current-ic {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.today-current-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.today-current-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-current-path {
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  width: 100%;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (any-hover: hover) {
+  .today-row:not(:disabled):hover {
+    background: var(--ui-hover);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
+.today-row-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ui-accent);
+}
+
+.today-row-ic {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.today-row-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-row-time {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+.today-row-clock {
+  width: 12px;
+  height: 12px;
+}
+
+.today-row-chev {
+  flex: none;
+  color: var(--ui-muted);
+}

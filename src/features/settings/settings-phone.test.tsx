@@ -155,6 +155,65 @@ describe("the phone's settings", () => {
     expect(settingsPhoneCss).toContain("box-sizing: border-box;");
   });
 
+  it("draws the phone list as glass cards under a borderless bar and a bare search row", () => {
+    // Design board (2026-11-22): the phone bar has no hairline, search is
+    // a bare 44px row (no border, no fill, no focus ring), section titles
+    // sit flush with the card, and the card is glass without a stroke.
+    // The row hairline starts at the text and stops 16px short of the edge.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-top \{[^}]*border-bottom: 0;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-search \{[^}]*height: 44px;[^}]*border: 0;[^}]*background: none;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-search:focus-within \{[^}]*border: 0;[^}]*box-shadow: none;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-section-title \{[^}]*padding: 0;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-card \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-row \+ \.settings-phone-row::before \{[^}]*right: var\(--space-4\);/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-card > \.settings-phone-row:last-child::before \{[^}]*display: none;/s,
+    );
+  });
+
+  it("draws a subpage's rows as a glass card: 56/72, a 48\u00d728 switch, the hairline stopping 16 short", () => {
+    // Design board (2026-11-22): the subpage keeps the real page, in the
+    // same glass card. Written 62/80 draw 56/72 at the phone's 10/11.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-page-group-body \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-page-group-body \.settings-row \{[^}]*min-height: 62px;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-row:has\(\.settings-row-desc\) \{[^}]*min-height: 80px;/s,
+    );
+    expect(settingsPhoneCss).toContain(
+      "transparent calc(100% - var(--space-4))",
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-switch \{[^}]*width: 48px;[^}]*height: 28px;/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-row-value \{[^}]*margin-left: auto;/s,
+    );
+  });
+
+  it("starts a pushed page below the status bar, as the list does", () => {
+    // The page is an absolute child of the padded fixed layer: it must add
+    // the safe area itself, or its title sits in the status bar.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-page \{[^}]*inset: var\(--safe-top, 0px\) 0 0;/s,
+    );
+  });
+
   it("keeps a result's chip beside its words, even with a description", () => {
     expect(settingsPhoneCss).toContain("flex-wrap: nowrap;");
     expect(settingsPhoneCss).toContain(

@@ -189,7 +189,7 @@ export function PluginsPage({ t }: SettingsPageProps) {
         updates.length > 1 && (
           <button
             type="button"
-            className="tx-button text-button settings-inline-button"
+            className="tx-button small"
             disabled={installing !== null}
             onClick={() => void updateAll(updates)}
           >
@@ -335,7 +335,7 @@ export function editRequest(record: PluginRecord, t: Strings): string {
 /** Installs plugins picked from disk - a folder loaded as it is, or one or
  *  more packages; the id of the one to open after (one alone), else null.
  *  One that fails doesn't stop the others: each failure is told after. */
-export async function installPluginFiles(
+async function installPluginFiles(
   t: Strings,
   folder: boolean,
 ): Promise<string | null> {

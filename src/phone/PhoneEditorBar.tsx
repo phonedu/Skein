@@ -11,6 +11,7 @@ import {
 } from "../engine/controls/ActionSheet";
 import { Presence } from "../engine/motion/usePresence";
 import { showNotice } from "../engine/controls/notices";
+import { BackChevronIcon } from "../engine/controls/icons";
 import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
 import {
   OutlineActionIcon,
@@ -132,16 +133,7 @@ export function PhoneEditorBar({
           aria-label={t.phoneBackToLibrary}
           onClick={onBack}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M15 19l-7-7 7-7" />
-          </svg>
+          <BackChevronIcon />
         </button>
         <div className={`pe-title${sub ? " pe-title-sub" : ""}`}>
           <span className="pe-name">{title}</span>

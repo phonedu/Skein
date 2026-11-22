@@ -16,7 +16,11 @@ import { Tooltip } from "../../engine/controls/Tooltip";
 import { TextusAiButton } from "../../ai/TextusAiSwitch";
 import { AgentButtons } from "../../ai/agents/AgentButtons";
 import { canUseWindows } from "../../platform/capabilities";
-import { LockIcon, SidebarToggleIcon } from "../../engine/controls/icons";
+import {
+  LockIcon,
+  PluginsTabIcon,
+  SidebarToggleIcon,
+} from "../../engine/controls/icons";
 import { useBarLayout } from "../../engine/layout/useBarLayout";
 import { useTitleRoom } from "./useTitleRoom";
 import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
@@ -55,6 +59,7 @@ export function WindowBar({
   agentShortcut,
   onToggleAgent,
   onToggleReadOnly,
+  onOpenPlugins,
   documentMenu,
 }: {
   menuChecks: MenuChecks;
@@ -64,6 +69,8 @@ export function WindowBar({
   /** The sidebar's shortcut, as shown in the button's tooltip. */
   sidebarShortcut: string;
   onToggleSidebar: () => void;
+  /** The plugin pages and commands, in one QuickPick. */
+  onOpenPlugins: () => void;
   /** The AI panel can be opened: Textus AI is on, and so is its chat. */
   showAgentToggle: boolean;
   agentOpen: boolean;
@@ -80,8 +87,10 @@ export function WindowBar({
   const bar = useBarLayout({
     menuBarShown: settings.menuBarShown,
     titleRowShown: canUseWindows && settings.titleRowShown,
-    rail: settings.activityRail || sidebarOpen,
-    railOff: !settings.activityRail,
+    // The H0 shell has no activity rail: the bar keeps the sidebar's own
+    // button, which opens and closes the view column.
+    rail: false,
+    railOff: true,
     zen: !!menuChecks.zen,
   });
   const hasStatus = useSyncExternalStore(subscribeAnyStatus, anyStatus);
@@ -151,6 +160,16 @@ export function WindowBar({
           )}
           {/* Struck through while Textus AI is off; right-click pauses or
           turns it off. */}
+          <Tooltip text={t.pluginsTitle}>
+            <button
+              type="button"
+              className="window-bar-toggle window-bar-plugins"
+              aria-label={t.pluginsTitle}
+              onClick={onOpenPlugins}
+            >
+              <PluginsTabIcon />
+            </button>
+          </Tooltip>
           <AgentButtons aiOpen={agentOpen} onToggleAi={onToggleAgent} />
           <TextusAiButton
             className="window-bar-toggle"

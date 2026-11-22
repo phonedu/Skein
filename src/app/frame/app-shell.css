@@ -27,58 +27,114 @@ body {
   background: var(--ui-frame-fill) fixed;
 }
 
-/* On a phone the shell is one column: the page's own top row (the home's
-   or PhoneEditorBar's), then the document's pane under it. The desktop's
-   row is its panels' rail-and-sidebar arrangement, which a phone has
-   none of. */
-:root[data-window-chrome="mobile"] .app-shell {
-  flex-direction: column;
+/* On a phone the shell is one column: the page's own top row (Today's or
+   PhoneEditorBar's), then the document's pane under it. A tablet, a fold
+   and the desktop have the two columns below. */
+@media (max-width: 599px) {
+  :root[data-window-chrome="mobile"] .app-shell {
+    flex-direction: column;
+  }
+
+  /* In that column the pane is what fills the rest. One step more specific
+     wins the cascade wherever the two files' import order lands. */
+  :root[data-window-chrome="mobile"] .app-shell > .main-pane {
+    flex: 1;
+  }
 }
 
-/* In that column the pane is what fills the rest (mobile/styles/sidebar.css
-   later sets `flex: none` on the same selector for the pushed-sidebar row,
-   and with the pane's content absolutely positioned it would collapse to
-   zero height — the editor drawn blank). One step more specific wins the
-   cascade wherever the two files' import order lands. */
-:root[data-window-chrome="mobile"] .app-shell > .main-pane {
-  flex: 1;
-}
-
-/* On the desktop the window is one grid (design-language.md 5.7): the
-   activity rail's column, the sidebar's, the islands' area; the window
-   bar's row over them, the rest under it. Each part is placed by its cell,
-   none by margins. The sidebar's column opens in one step; the motion is
-   the frame clock's (below). */
+/* The window is one grid: the sidebar's column, the islands' area, and the
+   page's edge when it shows; the window bar's row over them, the rest
+   under it. Each part is placed by its cell, none by margins. The
+   sidebar's column opens in one step; the motion is the frame clock's
+   (below). There is no activity rail: the sidebar is the view column. */
 :root:not([data-window-chrome="mobile"]) .app-shell {
   --sidebar-column: 0px;
+  --right-column: 0px;
   display: grid;
-  grid-template-columns: var(--rail-width, 0px) var(--sidebar-column) minmax(
-      0,
-      1fr
-    );
+  grid-template-columns:
+    var(--sidebar-column) minmax(0, 1fr)
+    var(--right-column);
   grid-template-rows: var(--window-bar-height) minmax(0, 1fr);
 }
 
 :root:not([data-window-chrome="mobile"]) .app-shell[data-sidebar="open"] {
-  --sidebar-column: var(--sidebar-width, 316px);
+  --sidebar-column: var(--sidebar-width, 260px);
 }
 
-/* The rail under the bar; the islands' area the full height, its top
-   rows of tabs in the bar's. */
-:root:not([data-window-chrome="mobile"]) .app-shell > .activity-rail {
-  position: relative;
-  inset: auto;
-  grid-area: 2 / 1 / 3 / 2;
+/* A tablet or an unfolded fold (600dp and over) is the desktop's shape:
+   the view column, the document, and the right column on demand. */
+@media (min-width: 600px) {
+  :root[data-window-chrome="mobile"] .app-shell {
+    --sidebar-column: 0px;
+    --right-column: 0px;
+    display: grid;
+    grid-template-columns:
+      var(--sidebar-column) minmax(0, 1fr)
+      var(--right-column);
+    grid-template-rows: var(--window-bar-height) minmax(0, 1fr);
+  }
+
+  :root[data-window-chrome="mobile"] .app-shell[data-sidebar="open"] {
+    --sidebar-column: var(--sidebar-width, 260px);
+  }
+
+  :root[data-window-chrome="mobile"] .app-shell > .main-pane {
+    grid-area: 1 / 2 / 3 / 3;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* The sidebar sits in its column, not pushed over the page. */
+  :root[data-window-chrome="mobile"] .app-shell > .sidebar {
+    position: absolute;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-right: 1px solid var(--ui-frame-edge);
+  }
+}
+
+/* The page's edge open: the right column at its width. */
+:root:not([data-window-chrome="mobile"]) .app-shell[data-right-panel="open"],
+[data-window-chrome="mobile"] .app-shell[data-right-panel="open"] {
+  --right-column: 340px;
+}
+
+/* Short of a document beside it (useSidePanels): the edge lies over the
+   page, at its own width, instead of narrowing the document under 480. */
+:is(:root:not([data-window-chrome="mobile"]), [data-window-chrome="mobile"])
+  .app-shell[data-right-panel-overlay="on"] {
+  --right-column: 0px;
+}
+
+:is(:root:not([data-window-chrome="mobile"]), [data-window-chrome="mobile"])
+  .app-shell[data-right-panel-overlay="on"]
+  > .right-panel {
+  position: absolute;
+  top: var(--window-bar-height);
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 340px;
+  padding-top: 0;
+  box-shadow: var(--shadow-popover);
 }
 
 :root:not([data-window-chrome="mobile"]) .app-shell > .main-pane {
+  grid-area: 1 / 2 / 3 / 3;
+  min-width: 0;
+  min-height: 0;
+}
+
+:root:not([data-window-chrome="mobile"]) .app-shell > .right-panel,
+:root[data-window-chrome="mobile"] .app-shell > .right-panel {
   grid-area: 1 / 3 / 3 / 4;
   min-width: 0;
   min-height: 0;
 }
 
-/* The menu bar spelled out (barLayout) is a row of its own: the islands,
-   the rail and the sidebar under it, the islands' rows of tabs their own. */
+/* The menu bar spelled out (barLayout) is a row of its own: the islands
+   and the sidebar under it, the islands' rows of tabs their own. */
 :root[data-bar-rows="2"]:not([data-window-chrome="mobile"])
   .app-shell
   > .main-pane {

@@ -106,8 +106,70 @@
 
 .tree-tool {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-button-s);
+  height: var(--icon-button-s);
+  padding: 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
   opacity: 0.7;
-  transition: opacity var(--dur-fast) var(--ease-standard);
+  transition:
+    opacity var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard);
+}
+
+@media (any-hover: hover) {
+  .tree-tool:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+    opacity: 1;
+  }
+}
+
+/* The row's ⋯ on a mobile build: the tree's menu in place of a long press.
+   It shares the row's end with the date, and keeps the row's height. */
+.tree-meta {
+  flex: none;
+  margin-left: auto;
+  padding-left: var(--space-2);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+}
+
+.tree-more {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+}
+
+/* A date before it takes the row's slack; the button follows it. */
+.tree-meta + .tree-more {
+  margin-left: 0;
+}
+
+@media (any-hover: hover) {
+  .tree-more:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+  }
+}
+
+.tree-more:active {
+  background: var(--ui-pressed);
 }
 
 /* Out of the way until wanted: shown while the pointer is over the panel
@@ -317,15 +379,31 @@
 }
 
 .recent-row {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   width: 100%;
-  padding: 4px 8px;
+  min-height: 28px;
+  padding: 2px var(--space-2);
+  border: 0;
+  background: none;
+  font: inherit;
   border-radius: var(--shape-s);
-  text-align: left;
   color: var(--ui-text);
-  white-space: nowrap;
+  text-align: left;
+  cursor: pointer;
+}
+
+.recent-row-ic {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.recent-row-name {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (any-hover: hover) {

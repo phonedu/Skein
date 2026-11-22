@@ -585,6 +585,7 @@ para usar una.
   notesFootCount: "{n} notas",
   notesFootNote: "Markdown lo es todo",
   treeTab: "Archivos",
+  treeFileTree: "Árbol de archivos",
   phoneBackToLibrary: "Volver a la biblioteca",
   phoneBack: "Atrás",
   outlineTab: "Esquema",
@@ -758,6 +759,12 @@ para usar una.
   docForget: "Quitar de la lista",
   docActionFailed: "No se pudo completar la acción",
   treeDayToday: "Hoy",
+  todayCurrent: "Entrega actual",
+  todayPending: "Por confirmar",
+  todayChanged: "Cambiado hoy",
+  todayCapture: "Recoger una idea…",
+  todayEmptyTitle: "Hoy aún no hay nada",
+  todayEmptyHint: "Escribe una línea o abre una nota de la biblioteca.",
   treeFolderNotes: { one: "{n} nota", many: "{n} notas", other: "{n} notas" },
   treeRowMore: "Más acciones",
   treeOpen: "Abrir",
@@ -799,6 +806,7 @@ para usar una.
     "El texto enriquecido muestra el documento tal como se lee; el modo fuente, su Markdown; fuente y vista previa, ambos lado a lado.",
   settingsHelpGroup: "Ayuda",
   navGeneral: "General",
+  navOptions: "Opciones",
   navTheme: "Tema",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
@@ -1520,19 +1528,20 @@ para usar una.
     "Un minuto para enseñarte todo: la barra lateral, la página y la IA.",
   tutorialSidebarTitle: "La barra lateral",
   tutorialSidebarBody:
-    "Haz clic en la carpeta de la izquierda para abrir la barra lateral.",
+    "La columna izquierda guarda la bóveda y el trabajo de hoy; el botón de la barra superior la muestra u oculta.",
   tutorialSidebarBodyPhone:
     "Toca el botón de barra lateral arriba a la izquierda para abrirla.",
   tutorialRailTitle: "Qué hay dentro",
   tutorialRailBody:
-    "Cada icono de la izquierda abre una parte de la barra lateral.",
+    "Hoy y Archivos son las dos vistas de la columna; Archivos tiene sus propias pestañas.",
   tutorialRailFiles: "Archivos: la carpeta donde escribes.",
   tutorialRailOutline:
     "Esquema: los títulos de la página, para saltar entre ellos.",
   tutorialRailSearch: "Buscar: un archivo o una línea en toda la carpeta.",
-  tutorialRailPlugins: "Plugins: más funciones, cuando las necesites.",
+  tutorialRailPlugins:
+    "Plugins: el botón de la barra superior abre páginas y comandos de plugins.",
   tutorialRailHide:
-    "En una ventana pequeña, haz clic derecho en esta barra de iconos para ocultarla.",
+    "El botón de la barra superior muestra u oculta esta columna.",
   tutorialSettingsTitle: "Ajustes",
   tutorialSettingsBody:
     "El engranaje guarda el tema, las fuentes y tus cuentas de IA.",
@@ -1983,6 +1992,7 @@ para usar una.
   pluginStoppedAnswering: "dejó de responder",
   pluginTooManyErrors: "falló demasiadas veces",
   pluginQuickPickEmpty: "Nada coincide.",
+  pluginLauncherPlaceholder: "Buscar páginas y comandos de plugins",
   pluginPermEditorRead: "Leer el documento abierto y su selección",
   pluginPermEditorWrite:
     "Cambiar directamente el documento abierto (cada cambio se puede deshacer)",

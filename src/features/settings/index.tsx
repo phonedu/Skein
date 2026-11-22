@@ -16,12 +16,13 @@ import {
 import type { SearchEntry } from "../../settings/settings-search";
 import type { ShortcutCommand } from "../../settings/pages/types";
 import { SettingsDialog } from "./settings-dialog";
-import { SettingsNavColumn } from "./settings-nav-column";
+import { SettingsPhoneList } from "./settings-phone-list";
 import { SettingsContent } from "./settings-content";
 import { SettingsPhone } from "./settings-phone";
 import type { SearchablePage } from "../../settings/SettingsSearch";
 import { useSettingsPageSearch } from "./use-settings-page-search";
 import { settingsContentProps } from "./settings-content-props";
+import { isMobileApp } from "../../platform/capabilities";
 import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
 import { PluginDetail } from "../../settings/pages/PluginDetail";
 import { AboutPage } from "../../settings/pages/AboutPage";
@@ -87,9 +88,15 @@ export function SettingsHost(props: {
   openPaths?: string[];
   fixedShortcuts?: FixedShortcutGroup[];
   pluginCommands?: ShortcutCommand[];
+  /** The dialog is playing its exit out; the layer keeps it mounted. */
+  closing?: boolean;
 }) {
   const { t } = useSettings();
-  const phone = usePhoneLayout();
+  // isMobileApp is the real split: every mobile surface (phone, fold,
+  // tablet) takes the page form. usePhoneLayout keeps a window that a test
+  // or a preview puts in the phone's layout on it too.
+  const phoneLayout = usePhoneLayout();
+  const mobile = isMobileApp || phoneLayout;
   const [pageId, setPageId] = useState(props.page);
   const [jump, setJump] = useState<SearchEntry | null>(props.jump ?? null);
   const content = useRef<HTMLDivElement>(null);
@@ -165,10 +172,12 @@ export function SettingsHost(props: {
     clearJump: () => setJump(null),
   });
 
-  // A phone takes the page form - fullscreen, list first, the section
-  // pushed under a back row (settings-phone.tsx); the dialog is the
-  // pointer's shape.
-  if (phone) {
+  // Every mobile surface - the phone, the folded phone and the tablet -
+  // takes the page form (settings-phone.tsx): fullscreen, list first, the
+  // section pushed under a back row. The desktop's dialog is the pointer's
+  // shape; its list borrows the phone's grouped list so the pages read the
+  // same on every end.
+  if (mobile) {
     return (
       <SettingsPhone
         t={t}
@@ -195,17 +204,20 @@ export function SettingsHost(props: {
     <SettingsDialog
       t={t}
       open
+      closing={props.closing}
       onClose={props.onClose}
       nav={
         <>
           {search.field}
-          <SettingsNavColumn
-            t={t}
-            pages={pages}
-            // "updates" is the About page, checking.
-            active={pageId === "updates" ? "about" : pageId}
-            onOpen={setPageId}
-          />
+          <div className="settings-dialog-nav-scroll">
+            <SettingsPhoneList
+              t={t}
+              pages={pages}
+              // "updates" is the About page, checking.
+              active={pageId === "updates" ? "about" : pageId}
+              onOpen={setPageId}
+            />
+          </div>
         </>
       }
     >
@@ -218,10 +230,10 @@ export function SettingsHost(props: {
         {search.searching ? (
           search.results
         ) : (
-          <SettingsContent
-            key={pageId}
-            {...contentProps(def(pageId), setPageId)}
-          />
+          <div className="settings-page-body" key={pageId}>
+            <h2 className="settings-page-title">{def(pageId).label(t)}</h2>
+            <SettingsContent {...contentProps(def(pageId), setPageId)} />
+          </div>
         )}
       </div>
     </SettingsDialog>

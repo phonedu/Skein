@@ -77,6 +77,7 @@ vi.mock("../../settings/sections/market-skills", () => ({
  * registered page renders the same way.
  */
 const css = readFileSync("src/features/settings/settings-content.css", "utf8");
+const paneCss = readFileSync("src/engine/controls/pane.css", "utf8");
 
 beforeEach(() => {
   localStorage.clear();
@@ -332,8 +333,10 @@ describe("the settings content column", () => {
     }
   });
 
-  it("the page keeps its own group headings from the board's style", () => {
+  it("the page keeps its group headings through the one section label", () => {
     expect(css).toContain("settings-page-group");
-    expect(css).toContain("font-size: var(--text-caption)");
+    expect(paneCss).toMatch(
+      /\.tx-section-label \{[^}]*font-size: var\(--text-footnote\);[^}]*font-weight: 600;[^}]*letter-spacing: 0\.08em;/s,
+    );
   });
 });

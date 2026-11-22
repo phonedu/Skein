@@ -1,3 +1,4 @@
+import { fileIconFor } from "../engine/controls/file-icons";
 import type { Strings } from "../i18n/strings";
 import { isWithin } from "../utils/path";
 
@@ -34,18 +35,24 @@ export function RecentSection({
     <section className="recent-section">
       <div className="tree-section-title">{t.notesRecent}</div>
       <div className="recent-list" role="list">
-        {recent.map((path) => (
-          <button
-            key={path}
-            type="button"
-            role="listitem"
-            className="recent-row"
-            title={path}
-            onClick={() => onOpen(path)}
-          >
-            {baseName(path)}
-          </button>
-        ))}
+        {recent.map((path) => {
+          const name = baseName(path);
+          const Icon = fileIconFor(name);
+          return (
+            <button
+              key={path}
+              type="button"
+              role="listitem"
+              className="recent-row"
+              title={path}
+              onClick={() => onOpen(path)}
+            >
+              {/* aria-hidden is set by the icon itself; its props don't take it. */}
+              <Icon className="recent-row-ic" />
+              <span className="recent-row-name">{name}</span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );

@@ -7,6 +7,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  min-height: calc(var(--phone-bar-row) + var(--safe-top, 0px));
   padding: var(--safe-top, 0px) var(--space-2) 0;
   background: var(--ui-bg);
   color: var(--ui-text);
@@ -18,7 +19,7 @@
   height: 48px;
   border: 0;
   background: none;
-  border-radius: var(--shape-m);
+  border-radius: var(--shape-s);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -290,8 +290,8 @@ const FileNode = memo(function FileNode({
         <Icon className="tree-icon" />
         <Tooltip text={entry.name} description={null} whenCut>
           <span className="tx-truncate tree-label">
-            {/* The board marks the open document with a fire dot - "happening
-               now" is the fire's only job (PhoneHome.css draws it). */}
+            {/* The fire dot's seat. The phone hides it: the open row's
+               selection replaced it (PhoneHome.css, 2026-11-22). */}
             {isMobileApp && active && (
               <span className="tree-fdot" aria-hidden />
             )}

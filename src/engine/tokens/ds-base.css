@@ -166,6 +166,9 @@
     var(--ui-danger) 28%,
     transparent
   );
+  --shape-card: 18px;
+  --shadow-card: 0 10px 30px rgb(28 33 40 / 8%), 0 1px 2px rgb(28 33 40 / 6%);
+  --shadow-float: 0 20px 60px rgb(28 33 40 / 16%), 0 2px 6px rgb(28 33 40 / 8%);
 }
 
 /* iOS's text styles at their default size, and its control sizes. Hit
@@ -200,6 +203,8 @@
     --shadow-1: 0 1px 3px rgb(0 0 0 / 32%);
     --shadow-2: 0 4px 18px rgb(0 0 0 / 24%);
     --shadow-3: 0 18px 52px rgb(0 0 0 / 32%);
+    --shadow-card: 0 10px 30px rgb(0 0 0 / 32%), 0 1px 2px rgb(0 0 0 / 24%);
+    --shadow-float: 0 20px 60px rgb(0 0 0 / 40%), 0 2px 6px rgb(0 0 0 / 28%);
   }
 }
 
@@ -214,6 +219,8 @@
   --shadow-1: 0 1px 3px rgb(0 0 0 / 32%);
   --shadow-2: 0 4px 18px rgb(0 0 0 / 24%);
   --shadow-3: 0 18px 52px rgb(0 0 0 / 32%);
+  --shadow-card: 0 10px 30px rgb(0 0 0 / 32%), 0 1px 2px rgb(0 0 0 / 24%);
+  --shadow-float: 0 20px 60px rgb(0 0 0 / 40%), 0 2px 6px rgb(0 0 0 / 28%);
 }
 
 /* The window's own surfaces: the interface's type and colour. */

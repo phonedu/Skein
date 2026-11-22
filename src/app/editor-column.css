@@ -6,11 +6,12 @@
 /* --content-zoom scales only the document text: the column's max-width
    grows by the factor, so it scales like page zoom. CSS `zoom`, not
    transform, so the text truly reflows. */
-/* The column's unzoomed width. "auto" keeps a 680px floor (room for the
-   margin views) and takes 62% of a wide pane, up to 960px; "Standard" is
-   760px. An imported theme that sizes #write itself takes over "auto". */
+/* The column's unzoomed width. "auto" keeps an 800px floor (the design
+   board's 680-720 text column, at the 260px sidebar this floor renders
+   there) and takes 68% of a wide pane, up to 960px; "Standard" is 760px.
+   An imported theme that sizes #write itself takes over "auto". */
 :root {
-  --content-width: var(--theme-content-width, max(680px, min(960px, 62%)));
+  --content-width: var(--theme-content-width, max(800px, min(960px, 68%)));
 }
 
 :root[data-content-width="standard"] {

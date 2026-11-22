@@ -375,6 +375,9 @@ export function usePluginWindow({
       },
       documentAt: unsavedDocumentAt,
     });
+    // A plugin that subscribed before the window published its access got
+    // no folder from the replay: tell it the one it starts from.
+    emitPluginEvent("root", { path: rootRef.current });
     setWindowFolderSource(() => rootRef.current);
     setUnsavedCheck((path) => {
       const tab = tabsRef.current.find((t) => t.path === path);

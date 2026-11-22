@@ -67,7 +67,11 @@ export interface TutorialStep {
   agentMode?: AgentMode;
 }
 
-const RAIL = (id: string) => `.activity-rail [data-rail-id="${id}"]`;
+/** A place in the H0 shell: the view column's own controls, the top bar.
+ *  The views are a segmented control (Segmented), its segments marked by
+ *  `data-segment`. */
+const VIEW = (id: string) => `.sidebar-views [data-segment="${id}"]`;
+const FILE = (id: string) => `.sidebar-file-tabs [data-file-tab="${id}"]`;
 
 const ALL_STEPS: TutorialStep[] = [
   {
@@ -80,7 +84,7 @@ const ALL_STEPS: TutorialStep[] = [
     titleKey: "tutorialSidebarTitle",
     bodyKey: "tutorialSidebarBody",
     phoneBodyKey: "tutorialSidebarBodyPhone",
-    target: RAIL("tree"),
+    target: ".sidebar-views",
     phoneTarget: ".window-bar-sidebar-toggle",
     until: "sidebar-open",
   },
@@ -89,11 +93,11 @@ const ALL_STEPS: TutorialStep[] = [
     titleKey: "tutorialRailTitle",
     bodyKey: "tutorialRailBody",
     stops: [
-      { target: RAIL("tree"), key: "tutorialRailFiles", opens: true },
-      { target: RAIL("outline"), key: "tutorialRailOutline", opens: true },
-      { target: RAIL("search"), key: "tutorialRailSearch", opens: true },
-      { target: RAIL("plugins"), key: "tutorialRailPlugins", opens: true },
-      { target: ".activity-rail", key: "tutorialRailHide" },
+      { target: VIEW("files"), key: "tutorialRailFiles", opens: true },
+      { target: FILE("outline"), key: "tutorialRailOutline", opens: true },
+      { target: FILE("search"), key: "tutorialRailSearch", opens: true },
+      { target: ".window-bar-plugins", key: "tutorialRailPlugins" },
+      { target: ".window-bar-sidebar-toggle", key: "tutorialRailHide" },
     ],
     beside: "aside.sidebar:not(.sidebar-collapsed)",
   },
@@ -101,7 +105,7 @@ const ALL_STEPS: TutorialStep[] = [
     id: "settings",
     titleKey: "tutorialSettingsTitle",
     bodyKey: "tutorialSettingsBody",
-    target: ".activity-rail-settings",
+    target: ".sidebar-foot-settings",
   },
   {
     id: "editor",

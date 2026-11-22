@@ -1,7 +1,4 @@
-import { useEffect, type RefObject } from "react";
-
-/**
- * Marks a .tx-scroll-fade scroller with the edges it has more past
+/** Marks a .tx-scroll-fade scroller with the edges it has more past
  * (data-more-up/-down, or -left/-right across): those edges fade out
  * (controls.css), so a list that goes on reads as going on. Until the
  * returned function stops it.
@@ -36,17 +33,4 @@ export function watchScrollFade(
     el.removeAttribute(before);
     el.removeAttribute(after);
   };
-}
-
-/** watchScrollFade on `ref`'s element while `on`. */
-export function useScrollFade(
-  ref: RefObject<HTMLElement | null>,
-  axis: "x" | "y" = "y",
-  on = true,
-): void {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !on) return;
-    return watchScrollFade(el, axis);
-  }, [ref, axis, on]);
 }

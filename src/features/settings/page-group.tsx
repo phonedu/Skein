@@ -13,7 +13,9 @@ export function PageGroup(props: {
       {(props.title || props.actions) && (
         <div className="settings-page-group-head">
           {props.title && (
-            <h3 className="settings-page-group-title">{props.title}</h3>
+            <h3 className="settings-page-group-title tx-section-label">
+              {props.title}
+            </h3>
           )}
           {props.actions && (
             <div className="settings-page-group-actions">{props.actions}</div>

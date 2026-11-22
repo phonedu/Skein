@@ -139,6 +139,8 @@ export const HideKeyboardIcon = lucide(KeyboardOff, 16);
 /** Back and on, a step at a time (a month, a page). */
 export const PreviousIcon = lucide(ChevronLeft, 16);
 export const NextIcon = lucide(ChevronRight, 16);
+/** A phone page's way back: one chevron, every bar. */
+export const BackChevronIcon = lucide(ChevronLeft, 22);
 export const CommentIcon = lucide(MessageSquare, 11);
 /** Take and keep, on a change the AI proposes. */
 export const TakeIcon = lucide(Check, 11);

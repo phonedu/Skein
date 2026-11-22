@@ -72,6 +72,11 @@ const LOCAL: {
     decode: (raw) => raw,
     encode: (value) => value,
   },
+  sidebarView: {
+    key: "textus-sidebar-view",
+    decode: (raw) => (raw === "files" ? "files" : "today"),
+    encode: (value) => (value === "files" ? "files" : "today"),
+  },
   iosRecentDocuments: {
     key: "textus-ios-recent-documents",
     decode: (raw) => JSON.parse(raw),

@@ -44,13 +44,11 @@
 }
 
 /* With the rail, the app menu is the rail's first icon (barLayout): in
-   its column, at its icons' size, a hairline between it and them. */
+   its column, at its icons' size. The H0 shell has no rail, so this only
+   serves a bar layout that still asks for one. */
 :root[data-menu-in-rail] .window-menu-button {
   width: 40px;
   height: 30px;
-  /* Its centre on the rail's: past the bar's own start padding. */
-  /* design: allow - centres on the rail, from its button size. */
-  margin-left: calc((var(--rail-width) - 40px) / 2 - 14px);
   border-radius: var(--shape-s);
   color: var(--ui-muted);
   opacity: 1;
@@ -61,19 +59,13 @@
   height: 20px;
 }
 
-:root[data-menu-in-rail] .activity-rail::before {
-  content: "";
-  align-self: stretch;
-  height: 1px;
-  margin: -4px 8px 0;
-  background: var(--ui-frame-edge);
-}
-
 /* The row's first control: the sidebar's toggle. */
 .window-bar-sidebar-toggle {
   flex-shrink: 0;
 }
 
+/* The plugin entry: a button with its name, wider than the bare icon
+   buttons beside it (the shared size below is the icon's). */
 .window-menu-anchor + .window-bar-sidebar-toggle,
 .window-menu-button + .window-bar-sidebar-toggle {
   margin-left: 2px;
@@ -175,12 +167,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(24px * var(--chrome-scale));
-  height: calc(22px * var(--chrome-scale));
+  width: calc(28px * var(--chrome-scale));
+  height: calc(28px * var(--chrome-scale));
   padding: 0;
   border: none;
-  border-radius: var(--shape-pill);
-  corner-shape: round;
+  border-radius: var(--shape-s);
   background: none;
   color: inherit;
   opacity: 0.6;
@@ -225,15 +216,22 @@
   --header-height: calc(var(--window-bar-height) + 40px * var(--chrome-scale));
 }
 
+/* The view column's own header is taller than one row (the vault, Today /
+   Files, the Files view's tabs): the one-line floor is the tab title's,
+   not this one's. */
 :root:not([data-window-chrome="mobile"])
-  :is(.sidebar-header, :not(.island-row) > .tab-bar) {
+  :is(
+    .sidebar-header:not(.sidebar-views-header),
+    :not(.island-row) > .tab-bar
+  ) {
   box-sizing: border-box;
   height: var(--header-height);
 }
 
 /* Its tabs centre on the document bar's: both clear the window bar and leave
    the same 4px under the row. */
-:root:not([data-window-chrome="mobile"]) .sidebar-header {
+:root:not([data-window-chrome="mobile"])
+  .sidebar-header:not(.sidebar-views-header) {
   padding-bottom: 4px;
 }
 

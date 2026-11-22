@@ -23,8 +23,9 @@ beforeAll(installTestLocalStorage);
 beforeEach(() => localStorage.clear());
 
 describe("the sidebar's width bounds", () => {
-  it("starts at 316, the boards' queue width", () => {
-    expect(SIDEBAR_DEFAULT_WIDTH).toBe(316);
+  // 2026-11-22 design board: the view column's default is 260, not 280.
+  it("starts at 260, the view column's width", () => {
+    expect(SIDEBAR_DEFAULT_WIDTH).toBe(260);
   });
 
   it("allows up to 528px on a wide window", () => {

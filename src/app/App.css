@@ -5,7 +5,6 @@
 @import "../engine/controls/pane.css";
 @import "./frame/app-shell.css";
 @import "./frame/sidebar-frame.css";
-@import "./frame/activity-rail.css";
 @import "./frame/window-bar.css";
 @import "../engine/controls/tabs/TabBar.css";
 @import "../engine/tokens/layout-tokens.css";

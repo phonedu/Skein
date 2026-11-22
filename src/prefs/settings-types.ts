@@ -381,7 +381,7 @@ export const DEFAULT_SETTINGS: Settings = {
   docLetterSpacingBy: 1,
   shortcuts: DEFAULT_SHORTCUTS,
   commandShortcuts: {},
-  themeId: "default",
+  themeId: "slate",
   userThemes: [],
   creations: [],
   startPageOnLaunch: false,

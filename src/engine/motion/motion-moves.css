@@ -230,12 +230,23 @@
     --motion-travel-fade: 0;
     --ease-spring: var(--ease-standard);
     --ease-spring-bouncy: var(--ease-standard);
+    /* The long clocks shorten to one step: an arrival still reads as one,
+       without the travel. */
+    --dur-base: 150ms;
     --dur-slow: 150ms;
     --dur-sheet: 150ms;
+    --dur-settle: 150ms;
+    --dur-land: 150ms;
+    --dur-tuck: 150ms;
   }
 
   html {
     scroll-behavior: auto;
+  }
+
+  /* A segmented control's thumb jumps to its segment instead of sliding. */
+  .tx-segmented.is-equal::before {
+    transition: none;
   }
 
   /* Important: these loops are declared in later stylesheets, and a user's

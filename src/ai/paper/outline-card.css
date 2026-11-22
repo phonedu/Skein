@@ -127,13 +127,15 @@
 }
 
 /* The outline as it reads: the thesis set off, each section a title with
-   its length, a few key points and its figures as tags. */
+   its length, a few key points and its figures as tags. The thesis sits on
+   the quiet surface, not behind a side strip (ruling 4.10). */
 .paper-outline-thesis {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding-left: 8px;
-  border-left: 2px solid var(--ui-accent, var(--ui-border));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--shape-s);
+  background: var(--ui-subtle);
 }
 
 .paper-outline-thesis p {
@@ -407,8 +409,9 @@
 }
 
 .paper-card-thesis {
-  padding-left: 8px;
-  border-left: 2px solid var(--ui-accent, var(--ui-border));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--shape-s);
+  background: var(--ui-subtle);
 }
 
 .paper-card-note {

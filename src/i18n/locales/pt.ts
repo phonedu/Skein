@@ -575,6 +575,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   notesFootCount: "{n} notas",
   notesFootNote: "Markdown é tudo",
   treeTab: "Arquivos",
+  treeFileTree: "Árvore de arquivos",
   phoneBackToLibrary: "Voltar para a biblioteca",
   phoneBack: "Voltar",
   outlineTab: "Estrutura",
@@ -744,6 +745,12 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   docForget: "Remover da Lista",
   docActionFailed: "Não foi possível concluir a ação",
   treeDayToday: "Hoje",
+  todayCurrent: "Entrega atual",
+  todayPending: "A confirmar",
+  todayChanged: "Alterado hoje",
+  todayCapture: "Recolher uma ideia…",
+  todayEmptyTitle: "Ainda nada hoje",
+  todayEmptyHint: "Escreva uma linha ou abra uma nota da biblioteca.",
   treeFolderNotes: { one: "{n} nota", many: "{n} notas", other: "{n} notas" },
   treeRowMore: "Mais ações",
   treeOpen: "Abrir",
@@ -785,6 +792,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "O texto formatado mostra o documento como se lê; o modo fonte, o seu Markdown; fonte e pré-visualização, os dois lado a lado.",
   settingsHelpGroup: "Ajuda",
   navGeneral: "Geral",
+  navOptions: "Opções",
   navTheme: "Tema",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
@@ -1502,19 +1510,21 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   tutorialWelcomeBody:
     "Um minuto para mostrar tudo: a barra lateral, a página e a IA.",
   tutorialSidebarTitle: "A barra lateral",
-  tutorialSidebarBody: "Clique na pasta à esquerda para abrir a barra lateral.",
+  tutorialSidebarBody:
+    "A coluna da esquerda guarda o cofre e o trabalho de hoje; o botão da barra superior mostra ou oculta a coluna.",
   tutorialSidebarBodyPhone:
     "Toque no botão da barra lateral no canto superior esquerdo para abri-la.",
   tutorialRailTitle: "O que tem nela",
-  tutorialRailBody: "Cada ícone à esquerda abre uma parte da barra lateral.",
+  tutorialRailBody:
+    "Hoje e Arquivos são as duas vistas da coluna; Arquivos tem as suas próprias abas.",
   tutorialRailFiles: "Arquivos: a pasta onde você escreve.",
   tutorialRailOutline:
     "Estrutura: os títulos da página, para pular entre eles.",
   tutorialRailSearch:
     "Busca: encontre um arquivo ou uma linha em toda a pasta.",
-  tutorialRailPlugins: "Plugins: mais recursos, quando precisar.",
-  tutorialRailHide:
-    "Numa janela pequena, clique com o botão direito nesta barra de ícones para ocultá-la.",
+  tutorialRailPlugins:
+    "Plugins: o botão da barra superior abre páginas e comandos de plugins.",
+  tutorialRailHide: "O botão da barra superior mostra ou oculta esta coluna.",
   tutorialSettingsTitle: "Configurações",
   tutorialSettingsBody:
     "A engrenagem guarda o tema, as fontes e suas contas de IA.",
@@ -1961,6 +1971,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   pluginStoppedAnswering: "parou de responder",
   pluginTooManyErrors: "falhou vezes demais",
   pluginQuickPickEmpty: "Nada corresponde.",
+  pluginLauncherPlaceholder: "Pesquisar páginas e comandos de plugins",
   pluginPermEditorRead: "Ler o documento aberto e a seleção",
   pluginPermEditorWrite:
     "Alterar diretamente o documento aberto (cada alteração pode ser desfeita)",

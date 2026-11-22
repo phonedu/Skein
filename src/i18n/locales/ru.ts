@@ -587,6 +587,7 @@ export default {
   notesFootCount: "Заметок: {n}",
   notesFootNote: "Markdown — это всё",
   treeTab: "Файлы",
+  treeFileTree: "Дерево файлов",
   phoneBackToLibrary: "Вернуться в библиотеку",
   phoneBack: "Назад",
   outlineTab: "Оглавление",
@@ -756,6 +757,12 @@ export default {
   docForget: "Убрать из списка",
   docActionFailed: "Не удалось выполнить действие",
   treeDayToday: "Сегодня",
+  todayCurrent: "Текущая работа",
+  todayPending: "Ждёт подтверждения",
+  todayChanged: "Изменено сегодня",
+  todayCapture: "Записать мысль…",
+  todayEmptyTitle: "На сегодня пока пусто",
+  todayEmptyHint: "Запишите строку или откройте заметку из библиотеки.",
   treeFolderNotes: {
     one: "{n} заметка",
     few: "{n} заметки",
@@ -804,6 +811,7 @@ export default {
     "Форматированный текст показывает документ как он читается, режим исходного кода — его Markdown, исходник и просмотр — оба рядом.",
   settingsHelpGroup: "Справка",
   navGeneral: "Основные",
+  navOptions: "Параметры",
   navTheme: "Тема",
   navMarkdown: "Markdown",
   navAi: AI_NAME,
@@ -1527,18 +1535,21 @@ export default {
   tutorialWelcomeBody:
     "Минута, чтобы всё показать: боковая панель, страница и ИИ.",
   tutorialSidebarTitle: "Боковая панель",
-  tutorialSidebarBody: "Нажмите на папку слева, чтобы открыть боковую панель.",
+  tutorialSidebarBody:
+    "В левой колонке — хранилище и работа на сегодня; кнопка на верхней панели показывает или скрывает её.",
   tutorialSidebarBodyPhone:
     "Коснитесь кнопки боковой панели слева вверху, чтобы открыть её.",
   tutorialRailTitle: "Что в ней",
-  tutorialRailBody: "Каждый значок слева открывает часть боковой панели.",
+  tutorialRailBody:
+    "«Сегодня» и «Файлы» — два вида колонки; у «Файлов» свои вкладки.",
   tutorialRailFiles: "Файлы: папка, в которой вы пишете.",
   tutorialRailOutline:
     "Структура: заголовки страницы, чтобы переходить между ними.",
   tutorialRailSearch: "Поиск: файл или строка во всей папке.",
-  tutorialRailPlugins: "Плагины: новые функции, когда понадобятся.",
+  tutorialRailPlugins:
+    "Плагины: кнопка на верхней панели открывает страницы и команды плагинов.",
   tutorialRailHide:
-    "В маленьком окне эту панель значков можно скрыть правым щелчком.",
+    "Кнопка на верхней панели показывает или скрывает эту колонку.",
   tutorialSettingsTitle: "Настройки",
   tutorialSettingsBody: "В шестерёнке тема, шрифты и ваши аккаунты ИИ.",
   tutorialEditorTitle: "Пишите, как видите",
@@ -1987,6 +1998,7 @@ export default {
   pluginStoppedAnswering: "он перестал отвечать",
   pluginTooManyErrors: "он слишком часто давал сбой",
   pluginQuickPickEmpty: "Ничего не найдено.",
+  pluginLauncherPlaceholder: "Поиск страниц и команд плагинов",
   pluginPermEditorRead: "Читать открытый документ и выделенный текст",
   pluginPermEditorWrite:
     "Менять открытый документ напрямую (каждое изменение можно отменить)",

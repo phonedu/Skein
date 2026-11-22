@@ -15,6 +15,11 @@
   --control-height: 34px;
   /* The small round icon button: a panel's tools (.tx-icon-button). */
   --icon-button-s: 28px;
+  /* The tinted square behind an icon: a chip's small one, a list row's,
+     an empty state's. */
+  --icon-tile-sm: 28px;
+  --icon-tile: 28px;
+  --icon-tile-lg: 48px;
   /* A tree's step in, a level at a time: files, the outline, plugin lists. */
   --tree-step: 14px;
   /* From a pane's edge to its text: its title's, and its rows'. A scrolling
@@ -34,6 +39,9 @@
   --text-list: 14px;
   --text-body: 15px;
   --text-title: 17px;
+  /* A root page's heading under the top bar (the phone's Today): between
+     title and large-title. */
+  --text-title-lg: 22px;
   --text-large-title: 34px;
   --text-mark: 10px;
   /* Spacing on a 4-point grid, 8 the default step. */
@@ -52,6 +60,9 @@
   --control-height-sm: 24px;
   --control-height: 30px;
   --icon-button-s: 24px;
+  --icon-tile-sm: 24px;
+  --icon-tile: 24px;
+  --icon-tile-lg: 40px;
   --tree-step: 12px;
   --pane-inset: 12px;
   --pane-edge: 4px;
@@ -59,6 +70,7 @@
   --text-list: 13px;
   --text-body: 14px;
   --text-title: 16px;
+  --text-title-lg: 18px;
   --text-large-title: 28px;
   --text-mark: 8px;
   --space-1: 4px;
@@ -76,6 +88,9 @@
   --control-height-sm: 32px;
   --control-height: 40px;
   --icon-button-s: 32px;
+  --icon-tile-sm: 32px;
+  --icon-tile: 32px;
+  --icon-tile-lg: 56px;
   --tree-step: 16px;
   --pane-inset: 20px;
   --pane-edge: 6px;
@@ -83,6 +98,7 @@
   --text-list: 15px;
   --text-body: 17px;
   --text-title: 20px;
+  --text-title-lg: 26px;
   --text-large-title: 40px;
   --text-mark: 12px;
   --space-1: 6px;
@@ -98,6 +114,9 @@
   /* The status bar's room and a fingertip's row: the tabs ride in it. */
   --window-bar-row: 48px;
   --icon-button-s: 24px;
+  --icon-tile-sm: 28px;
+  --icon-tile: 32px;
+  --icon-tile-lg: 48px;
   --tree-step: 12px;
   --pane-inset: 12px;
 }
