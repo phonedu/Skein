@@ -1,9 +1,9 @@
 # 任务清单归档（2026-11-19，2026-11-20 追加 S2 主体与 H3）
 
-> 来源：`docs/skein/05-状态/Textus-改造任务清单.md` v1.10。
-> 本文只作历史，不再维护；新任务与进度回[任务清单](../05-状态/Textus-改造任务清单.md)。
+> 来源：`docs/skein/STATUS.md` v1.10。
+> 本文只作历史，不再维护；新任务与进度回[任务清单](../STATUS.md)。
 > 迁出原因：已完成项与封存线长期占着进度文档，导致“最新状态”失真；2026-11-19 重排，完成项与封存线整体迁入本文。
-> **2026-11-19 后续**：文档一致性回写已完成；现行[任务清单 v2.1](../05-状态/Textus-改造任务清单.md)（含 S/H/PH/D1e/D1f 与待审区）是进度真相；本册只覆盖迁出时的 v1.10 与 2026-11-19 迁出记录。
+> **2026-11-19 后续**：文档一致性回写已完成；现行[任务清单 v2.1](../STATUS.md)（含 S/H/PH/D1e/D1f 与待审区）是进度真相；本册只覆盖迁出时的 v1.10 与 2026-11-19 迁出记录。
 > **2026-11-20 旧画板已删除**：本文中 `ui-*` 画板名与行号仅作历史引用；`04-boards/` 已不在仓库。
 
 ## 1. 已完成（有证据）
@@ -57,10 +57,10 @@ E0–E4 全部完成；规格已归档 [2026-11-17-collect-plugin.md](2026-11-17
 
 | # | 产物 | 结论 |
 | --- | --- | --- |
-| S0a | [同步 supersede 裁决](../01-纪律/同步supersede裁决.md) | 内置同步是 fork 产品能力，不推翻上游；插件先多端、内置后接管；六条安全线 + 四个退出条件 |
-| S0b | [同步协议 v1](../02-方案/同步协议-v1.md) | `/1` 冻结：布局、常量、JSON、scope、写入不变量、发布顺序、锁、加密、签名 best-effort、v2 硬切条件 |
+| S0a | [同步 supersede 裁决](2026-11-19-sync-supersede.md) | 内置同步是 fork 产品能力，不推翻上游；插件先多端、内置后接管；六条安全线 + 四个退出条件 |
+| S0b | [同步协议 v1](../specs/同步协议-v1.md) | `/1` 冻结：布局、常量、JSON、scope、写入不变量、发布顺序、锁、加密、签名 best-effort、v2 硬切条件 |
 | S0c | [插件 spike 计划](2026-11-19-sync-plugin-spike.md) | 三条轨（App Documents / 所有文件 / SAF 边界）、通过标准、华为清单、S3 → WebDAV、H9 仅轨 B 触发 |
-| S0d | [同步方案](../02-方案/同步方案.md) | 内置架构、多库、transport、宿主钩子、迁移/回滚、UX、安全、验收矩阵、S2–S6 阶段；收口 06 开放问题 |
+| S0d | [同步方案](../specs/同步方案.md) | 内置架构、多库、transport、宿主钩子、迁移/回滚、UX、安全、验收矩阵、S2–S6 阶段；收口 06 开放问题 |
 
 S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest 加 Android 为前置。
 
@@ -83,7 +83,7 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 | 桌面官方插件读同一远端 | portable 隔离构建的 0.6.1 插件下载手机上传的 5 个文件；桌面改文件后手机下载到改动 |
 | S3 | 未跑通：s3rver 不支持 `If-None-Match: *` 条件写，插件按设计中止；转 S1b（真实 S3/MinIO/R2） |
 | 轨 A / 轨 B | 未跑；U1 维持 App Documents 普通路径，H9 仍条件任务 |
-| 报告 | [同步插件多端 spike 报告](../03-调研/同步评审/spike-报告.md) |
+| 报告 | [同步插件多端 spike 报告](../research/同步评审/spike-报告.md) |
 | 插件提交 | `skein-sync-prep`：`8d57c7c` Android、`4874d4c` 安全补丁、`175b53c` 改名不误判批量删除 |
 
 ### 1.9 手机插件入口 / 同步状态（H8，2026-11-19）
@@ -122,7 +122,7 @@ S0 完成 = 同步设计门已开；S1 spike 仍以 H1–H8 与插件 manifest �
 | 第四片 | 文件系统 `LocalFiles`（scope、原子写、系统/App trash、move）；portable built app 对真实 WebDAV 上传/下载 | 构建记录 |
 | 第五片 | 设置 › 同步页；`sync.json` + 所有者-only `sync_secrets.json`；base/last 按文件夹持久化 | built app WebDAV 保存后上传 |
 | 第六片 | 冲突副本列表、云端历史版本列表与恢复 | built app WebDAV 验证 |
-| 第七片 | 四路审计后的阻塞修复：冲突保留本地并上传、`remoteMissing`、WebDAV prefix 父目录、HTTP 仅回环/禁重定向/超时、锁读回/own-lock/字节读回 + `sync_lock`/`sync_unlock`、history 稀释/限额/keep/损坏即停、块读回、expected-hash 与打开页延后、restore 语义、大小写冲突、trash 老化、no-op 不发布、移除 `sync_run` 凭据后门；设置页解锁/脏表单/provider 凭据/Android 参数/错误映射/十语 | `23f7738f`、`c62b035e`、`5bb727bb`、`7f991874`；[任务清单 v4.1–v4.3 记录](../05-状态/Textus-改造任务清单.md) |
+| 第七片 | 四路审计后的阻塞修复：冲突保留本地并上传、`remoteMissing`、WebDAV prefix 父目录、HTTP 仅回环/禁重定向/超时、锁读回/own-lock/字节读回 + `sync_lock`/`sync_unlock`、history 稀释/限额/keep/损坏即停、块读回、expected-hash 与打开页延后、restore 语义、大小写冲突、trash 老化、no-op 不发布、移除 `sync_run` 凭据后门；设置页解锁/脏表单/provider 凭据/Android 参数/错误映射/十语 | `23f7738f`、`c62b035e`、`5bb727bb`、`7f991874`；[任务清单 v4.1–v4.3 记录](../STATUS.md) |
 | 引擎级差分互通 | 插件 `MemoryStore` 写库 → Rust 读出并下载 3 文件字节一致；Rust 写库 → 插件读出并下载一致（中文路径、`.textus/agent.md`、附件） | 2026-11-20 临时夹具（双向通过，夹具已删） |
 | 故障注入单测 | head 写失败 → `publishFailed` 且锁保留，重试不重复历史；块损坏 → `missingBlock` 不落盘；假锁 → `lockLost` 不写 head | `5bb727bb` |
 | S3b 内置适配 | `S3Flavor::Oss`（`x-oss-forbid-overwrite`、409→已存在、400→`conditionalWriteUnsupported`）；设置页 S3 兼容方式 | `7f991874`；阿里云/七牛真桶未实测 |

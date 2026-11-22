@@ -2,7 +2,7 @@
 
 > **状态：桌面片完成；手机入口转 [D3 宿主壳待改清单](2026-11-21-h0-host-shell-spec.md)（归档）。**
 > 插件：`skein.collect` 0.2.0（本地 `textus-plugins/plugins/skein.collect`，未推上游）。
-> 设计依据：[改造方案 §8 阶段 1](../02-方案/Textus-改造方案.md)、[插件 API 要点](../03-调研/插件API要点.md)。
+> 设计依据：[改造方案 §8 阶段 1](../specs/Textus-改造方案.md)、[插件 API 要点](../research/插件API要点.md)。
 
 ## 1. 完成内容
 

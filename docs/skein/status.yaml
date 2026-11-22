@@ -1,0 +1,188 @@
+# The source of STATUS.md. Run `npm run docs:status` after editing; the
+# generated page and this file are checked for drift by `npm run docs:check`.
+baseline: v1.4.6
+commit: 457f6693
+branch: base-ui-settings
+updated: 2026-11-23
+workstreams:
+  - id: D1
+    name: 资产闭环
+    state: doing
+    focus: D1e 资产详情 / 来源链 / 使用记录
+    spec: specs/Textus-改造方案.md
+  - id: UI
+    name: 手机端 UI
+    state: doing
+    focus: PH3/PH4 核查；TW1 主题工坊两栏裁切
+    spec: specs/Textus-手机端元素一致性方案.md
+  - id: S
+    name: 同步（S 组）
+    state: doing
+    focus: S3q 七牛原生专项；S3b 的 S3 条件写已判负
+    spec: specs/同步方案.md
+  - id: B
+    name: 上游跟随（B 组）
+    state: doing
+    focus: v1.4.6 已并线（457f6693）；TW1 已修（879fd773）；等下一个稳定 tag
+    spec: specs/Textus-改造方案.md
+  - id: T1
+    name: 主题（T1）
+    state: doing
+    focus: 阶段 0 文档完成；阶段 1 锁皮肤代码按需插队
+    spec: specs/Textus-主题策略.md
+  - id: DOC
+    name: 文档（DOC）
+    state: doing
+    focus: 文档 / 上游 / 发布命令自动化已落地；等下一次实战
+    spec: decisions/0052-文档体系重排.md
+tasks:
+  - id: D1e
+    title: 资产详情 / 来源链 / 使用记录
+    workstream: D1
+    state: doing
+    acceptance: 桌面 + 手机能在详情里看到来源与使用历史，写入走确认流。
+    spec: specs/Textus-改造方案.md#75-资产与确认界面在办
+    context:
+      - decisions/0026-验证与淘汰状态可见化.md
+      - decisions/0027-修数入口.md
+      - decisions/0028-任务完成门槛交互.md
+      - specs/Textus-界面改造方案.md
+    estimate: 1–2 周
+    brief:
+      problem: 资产目前只有列表和确认流，看不到来源与使用历史，无法判断是否可复用。
+      expected: 资产详情分内容 / 证据 / 历史三段，显示 source_ids 与使用记录；既有数据不改。
+      standard: 桌面和 Android 详情都能看到来源链与使用历史；写入仍走 D1b 确认流；相关单测 / e2e 通过。
+      not: 不做 D2 受控写入，不做 D1f 理论淘汰，不改同步。
+      scope: D1 资产链；桌面 + Android。
+      evidence: built app 隔离库走查；相关单测；必要时补 e2e。
+  - id: D1r
+    title: 外部 AI 复核（opencode）
+    workstream: D1
+    state: todo
+    acceptance: 独立 worktree / 干净检出；只读 + 测试；阻断项修完再进 D0.5 / D1d。
+    spec: discipline/AI协作纪律.md#十外部-ai-复核2026-11-21-用户立规
+    estimate: 1–2 天
+  - id: D0.5
+    title: 理论小样本验证
+    workstream: D1
+    state: todo
+    acceptance: 4 周 10 个真实交付物；封装 ≥3 条资产并真实调用；复用率 ≥30%；≥3 条反例。
+    spec: specs/Textus-改造方案.md#8-实施计划
+    estimate: 4 周日历
+  - id: D1d
+    title: 附录 A 验收（15 条）
+    workstream: D1
+    state: todo
+    acceptance: 除 iOS 外的 15 条；第 14 条依赖 D0.5。
+    spec: specs/Textus-改造方案.md#附录-a阶段-1-验收清单
+    estimate: 1 周
+  - id: D1f
+    title: 理论淘汰 / 复盘 / 修数
+    workstream: D1
+    state: todo
+    acceptance: 30 天未验证、3 周期 deprecated、90 天复查、月度复盘。
+    spec: research/笔记资产理论.md
+    estimate: 1 周
+  - id: S3q
+    title: 七牛 Kodo 原生传输专项
+    workstream: S
+    state: todo
+    acceptance: 上传凭证 + insertOnly transport；引擎 / 设置接线；真桶首次 / 改 / 删 / 冲突。
+    spec: research/同步评审/07-S3-Provider兼容性.md
+    estimate: 5–8 天
+  - id: PH3+PH4
+    title: 手机元素一致性 + 现状收尾
+    workstream: UI
+    state: todo
+    acceptance: A/B/G/I 核查 + §4.1/§4.3 未采项；逐项标证据。
+    spec: specs/Textus-手机端元素一致性方案.md#13-执行清单
+    estimate: 5–8 天
+  - id: T1
+    title: 主题分层与 Skein 皮肤阶段 1
+    workstream: T1
+    state: todo
+    acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
+    spec: specs/Textus-主题策略.md
+    estimate: 3–5 天
+later:
+  - id: S4
+    title: 局域网 Hub
+    note: 桌面本地仓库服务 + 发现 / 配对；手机同 Wi-Fi 直连。
+    spec: research/同步评审/06-多库同步设计.md
+    estimate: 2–4 周
+  - id: S5
+    title: 同步硬化
+    note: signed head、lastRevision、history/head 一致性、块自愈、密钥存储。
+    spec: research/同步评审/05-安全与威胁模型评审.md
+    estimate: 2–3 周
+  - id: D2
+    title: 受控写入下沉
+    note: Rust 资产服务；绕过界面无法写正式状态；Android 真机。
+    spec: specs/Textus-改造方案.md
+    estimate: 4–6 周
+  - id: D3
+    title: 多端入口完善
+    note: 手机独立完成“收集 → 次日确认”；冲突中心；系统分享按待审默认不做。
+    spec: specs/Textus-改造方案.md
+    estimate: 3–5 周
+  - id: ED1
+    title: 块与呈现扩展（候选池）
+    note: Mermaid 试点 → 画廊 → 筛选视图 → 多列布局；不做块数据库。
+    spec: specs/Textus-改造方案.md
+    estimate: 按件估算
+  - id: ED2a
+    title: 代码栅栏 title + 行范围
+    note: 富文本 + 源码 + 导出三处可见；roundtrip 字节不变。
+    spec: specs/Textus-文档便携与呈现扩展方案.md
+    estimate: 3–5 天
+  - id: ED2b
+    title: 代码栅栏 max-lines 限高
+    note: 限高 + 展开；复制完整；导出时展开。
+    spec: specs/Textus-文档便携与呈现扩展方案.md
+    estimate: 2–3 天
+  - id: ED3
+    title: 单文件 Markdown 便携插件
+    note: 含 data URI 的单个 .md；支持相对图片 / <img> / ![[...]]。
+    spec: specs/Textus-文档便携与呈现扩展方案.md
+    estimate: 3–5 天
+  - id: CP1
+    title: 网页剪藏（公开页版，后期）
+    note: 贴 URL → inbox/N-*.md；只做公开页，不碰登录态。
+    spec: specs/Textus-剪藏功能方案.md
+    estimate: 桌面 1 周 + 手机 3–5 天
+waiting:
+  - 第三方 WebDAV：坚果云 / Nextcloud 无凭据，S2c-V2 等它；外部阻塞。
+  - 移动端加密：S3 v1 用明文仓库；内置 / 插件真机加密同步未做。
+  - 传输预算：协议写 32 MiB，内置引擎单文件峰值可达 128 MiB；归 S5。
+  - 服务器时间：协议要求 Date 优先，内置引擎只用本地 Utc；归 S5。
+  - 同步页俄语存量标签：Folder / Synced. / Last synced / Service / Server address / Remote folder / Save connection 仍英文；归文案清理。
+  - D1b 观察期锚点：卡片没有 activated_at，按 created_at 计；D1f 若需要真激活时间再补字段。
+  - D1b 手机入口：窄屏确认中心已在桌面 WebView 344 CSS px 验过；Android/iOS 入口归 D3。
+  - H9 SAF：2026-11-21 关闭；content:// 不做，除非出现真实用户场景。
+  - S3b：七牛 S3 条件写返回 unsafeServer，东区域 IncorrectRegion；原生 insertOnly 走 S3q；阿里云不做。
+questions:
+  - id: U11
+    text: 默认连接 / 远端子仓库改名 / 同库双连接 / 多用户共享 / 库只读
+    default: 资产库关系已定（子目录）；其余按 06 §6
+    trigger: S2a 已落连接 / 绑定 / 身份；其余待后续
+    spec: research/同步评审/06-多库同步设计.md
+  - id: U15
+    text: DSH 两用法 / 向量 RAG / 子代理编排 / WorkBuddy 自动化 / textus.git
+    default: 默认不做；DSH 触发 = 稳定版 + 插件 API 冻结；RAG = 关键词不够；textus.git = 需要 Git 提交而非 _history/
+    trigger: 待审
+    spec: research/Agent基座与竞品调研.md
+  - id: U17
+    text: S4 发现 / 配对方式
+    default: S0d 已定方向；二维码 / 短码是连接迁移建议，不是 LAN 发现方案
+    trigger: S4 前细化
+    spec: research/同步评审/06-多库同步设计.md
+  - id: U19
+    text: 内容选项卡（注释标记 + 标题前缀）
+    default: 暂缓；v1 只做点击切换 + 导出全展开；不做标题编辑 / 加 tab
+    trigger: 真实教程 / 多平台对比需求
+    spec: specs/Textus-文档便携与呈现扩展方案.md
+  - id: U20
+    text: 每文档 Base64 图片存储
+    default: 不做默认存储；先走 ED3；若做则默认关、可提取、AI / 搜索跳过
+    trigger: ED3 后仍反复要求单文件
+    spec: specs/Textus-文档便携与呈现扩展方案.md

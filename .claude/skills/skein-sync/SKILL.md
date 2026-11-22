@@ -9,11 +9,11 @@ The built-in sync is fork-specific: it lives beside upstream and must not reshap
 
 ## Read first
 
-- `docs/skein/02-方案/同步协议-v1.md` §5–§8: write invariants, publish order, lock, delete/conflict.
-- `docs/skein/02-方案/同步方案.md` §3/§7: layers and one run's algorithm.
-- `docs/skein/03-调研/同步评审/README.md`; multi-vault changes also read `06-多库同步设计.md`.
-- `docs/skein/05-状态/Textus-改造任务清单.md` S group: what is done, what is next, what is unverified.
-- `docs/skein/01-纪律/工程菜谱.md` R1 and `薄fork魔改原则.md`.
+- `docs/skein/specs/同步协议-v1.md` §5–§8: write invariants, publish order, lock, delete/conflict.
+- `docs/skein/specs/同步方案.md` §3/§7: layers and one run's algorithm.
+- `docs/skein/research/同步评审/README.md`; multi-vault changes also read `06-多库同步设计.md`.
+- `docs/skein/STATUS.md` S group: what is done, what is next, what is unverified.
+- `docs/skein/discipline/工程菜谱.md` R1 and `薄fork魔改原则.md`.
 
 ## Shape
 

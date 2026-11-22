@@ -8,7 +8,7 @@
 
 ## 0. H0 整壳（桌面 + 手机 + 折叠 + 平板）
 
-来源：[《笔记理论的传统界面落点》§2.2/§2.3](../02-方案/Textus-笔记理论的传统界面落点.md)、批准的 opencode 参考图（`C:\Project\skein-plan-scratch\opencode-h0-2026-11-21\`，2026-11-21 用户定稿）。
+来源：[《笔记理论的传统界面落点》§2.2/§2.3](../specs/Textus-笔记理论的传统界面落点.md)、批准的 opencode 参考图（`C:\Project\skein-plan-scratch\opencode-h0-2026-11-21\`，2026-11-21 用户定稿）。
 目标：一次改完；D1a 手机入口、D1b 手机 sheet、D3 手机项并入本 pass，之后不再为同一壳重复改。
 
 已落的形态（用户逐条裁决后的最终版）：
@@ -51,6 +51,6 @@
 - 插件：`C:\Project\textus-plugins\plugins\skein.collect`（本地工作区，0.3.0 + pending 状态项）。
 - 桌面：dev built app + `C:\Project\d1b-verify-vault`（5 张卡、1 条待确认）：左今天/文件、待确认行、右 340 资产列表与 Agent、插件 QuickPick、设置弹窗分组列表、扩展页。
 - Android：`app-universal-debug.apk` + 华为 PKT0220512001548（本次结果见归档）。
-- 相关文档：[H0 归档](../archive/2026-11-21-h0-host-shell.md)、[D1a 归档](../archive/2026-11-21-d1a-assets-list.md)、[任务清单](../05-状态/Textus-改造任务清单.md)。
+- 相关文档：[H0 归档](../archive/2026-11-21-h0-host-shell.md)、[D1a 归档](../archive/2026-11-21-d1a-assets-list.md)、[任务清单](../STATUS.md)。
 - 2026-11-22 P1/P2 全量收敛的截图（桌面 / 手机 / 平板各界面）：
   `C:\Project\skein-plan-scratch\ui-shots-2026-11-22\index.html`。

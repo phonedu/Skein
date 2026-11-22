@@ -11,19 +11,39 @@ this file and they ever disagree, they win - and please tell us.
 This checkout is the **Skein fork** of Textus. It follows upstream by
 release tag; everything fork-specific lives under `docs/skein/`, whose
 [README](docs/skein/README.md) is the fork's document entry and its rules
-the ones to work by. Three things differ from the upstream guide below:
+the ones to work by. [STATUS](docs/skein/STATUS.md) is the only progress
+source, [INDEX](docs/skein/INDEX.md) lists every live document, and
+[decisions](docs/skein/decisions/README.md) is the ruling register.
+Three things differ from the upstream guide below:
 
 - `docs/design/` (design-language.md included) and `docs/images/` are
   dropped: upstream's design standard and UI screenshots are not this
-  fork's reference. The interface authority is the rulings in
-  `docs/skein/02-方案/Textus-界面改造方案.md` §4; the old sealed boards
+  fork's reference. The interface authority is the decisions in
+  `docs/skein/decisions/`; the old sealed boards
   were deleted on 2026-11-20. Where the rules below cite
-  design-language.md, read those rulings instead.
+  design-language.md, read those decisions instead.
 - Upstream contributions are never built from this checkout: clone
   upstream fresh and prepare the branch there
-  ([the procedure](docs/skein/01-%E7%BA%AA%E5%BE%8B/publishing-gate.md)).
+  ([the procedure](docs/skein/discipline/publishing-gate.md)).
 - `docs/releases/` keeps only `next/` and the template: the historical
   upstream release notes are not this fork's changelog.
+
+`docs/dev/*` below is upstream's engineering manual: read it for how to
+change the code, but never put fork plans, progress or rulings in it.
+
+Docs are automated: `npm run docs:task -- brief <id>` writes the task six
+lines, `start` refuses to start without them, and `npm run docs:context --
+<id>` prints the task's context pack; `docs:new` creates a decision/spec/
+research, `docs:find` searches, and `npm run docs` regenerates `STATUS.md` /
+`INDEX.md` / the command and decision indexes and checks them. `STATUS.md` and
+the generated indexes are never edited by hand.
+
+Upstream work is one command per step: `npm run upstream:status` →
+`upstream:plan -- vX.Y.Z` → `upstream:start --apply` → `upstream:clean
+--apply` → `upstream:verify` → `upstream:record` → `upstream:finish --apply`;
+PR candidates use `upstream:ticket`, `upstream:patch`, `upstream:gate`. Daily
+close-out runs `npm run verify`; release notes use `release:new`. The full
+command list is [docs/skein/COMMANDS.md](docs/skein/COMMANDS.md).
 
 ## Where things are
 
@@ -43,7 +63,7 @@ Milkdown/ProseMirror, source mode CodeMirror 6) and a Rust backend in
 | Which test layer, the e2e helpers, CI                  | [docs/dev/testing.md](docs/dev/testing.md)                       |
 | Branches, pull requests, commits, releases             | [docs/dev/releasing.md](docs/dev/releasing.md)                   |
 | Desktop and iOS: what is shared, what is gated         | [docs/dev/ios-code-map.md](docs/dev/ios-code-map.md)             |
-| The interface's design standard                        | [docs/design/design-language.md](docs/design/design-language.md) |
+| The interface's design standard                        | [docs/skein/decisions/README.md](docs/skein/decisions/README.md) |
 | Every other document                                   | [docs/README.md](docs/README.md)                                 |
 
 ## Rules
@@ -89,10 +109,10 @@ Milkdown/ProseMirror, source mode CodeMirror 6) and a Rust backend in
   `src/i18n/locales/` ([recipes.md](docs/dev/recipes.md#add-a-ui-string)).
 - **Shapes shared by Rust and TypeScript** carry a comment on both sides
   naming the other; change both.
-- **Interface work** follows [design-language.md](docs/design/design-language.md):
-  tokens only (no raw colour, radius or font size in a component), and its
-  review checklist (section 17) before a pull request that changes how
-  something looks.
+- **Interface work** follows the Skein decisions
+  ([docs/skein/decisions/](docs/skein/decisions/README.md)): tokens only
+  (no raw colour, radius or font size in a component), and the review
+  checklist before a pull request that changes how something looks.
 - **iOS is the same app in a narrower layout**: gate only what the platform
   can't do, with `#[cfg(desktop)]` and the flags in
   `src/platform/capabilities.ts`, never to hide a feature

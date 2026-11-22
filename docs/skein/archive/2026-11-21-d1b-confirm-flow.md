@@ -1,7 +1,7 @@
 # D1b 确认流归档（2026-11-21）
 
 > **状态：完成。** 插件 `skein.collect` 0.3.0（本地 `C:\Project\textus-plugins\plugins\skein.collect`，未推上游）。
-> 出处：[改造方案 §8 阶段 1](../02-方案/Textus-改造方案.md)、[界面改造方案 §4.4 裁决 22/26–28](../02-方案/Textus-界面改造方案.md)、[Agent 工具契约 §3.5/§5/§6](../02-方案/Textus-Agent工具契约.md)。
+> 出处：[改造方案 §8 阶段 1](../specs/Textus-改造方案.md)、[界面改造方案 §4.4 裁决 22/26–28](../specs/Textus-界面改造方案.md)、[Agent 工具契约 §3.5/§5/§6](../specs/Textus-Agent工具契约.md)。
 
 ## 1. 完成内容
 

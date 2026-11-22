@@ -10,10 +10,10 @@ The interface authority is the Skein plan, not upstream design docs. `docs/desig
 ## Read first
 
 - `docs/skein/README.md` §三 (current route) and §五 (reading order).
-- `docs/skein/02-方案/Textus-界面改造方案.md` §4: every ruling, including numbers and names.
-- `docs/skein/03-调研/界面现状盘点.md`: host truth - what each panel does and where it lives.
-- Phone work: `02-方案/Textus-手机端元素一致性方案.md` and the phone sections of the interface plan; the format-bar spec is archived (`archive/2026-11-19-phone-format-toolbar.md`).
-- `docs/skein/01-纪律/工程菜谱.md` R4.
+- `docs/skein/specs/Textus-界面改造方案.md` §4: every ruling, including numbers and names.
+- `docs/skein/research/界面现状盘点.md`: host truth - what each panel does and where it lives.
+- Phone work: `specs/Textus-手机端元素一致性方案.md` and the phone sections of the interface plan; the format-bar spec is archived (`archive/2026-11-19-phone-format-toolbar.md`).
+- `docs/skein/discipline/工程菜谱.md` R4.
 
 ## Route
 
@@ -37,7 +37,7 @@ The interface authority is the Skein plan, not upstream design docs. `docs/desig
 
 1. Write the six task lines; state which ruling governs the change.
 2. If there is no ruling, stop and get one; do not invent an interface direction.
-3. Decide host vs plugin. If plugin, use `docs/skein/03-调研/插件API要点.md` and the plugin recipe.
+3. Decide host vs plugin. If plugin, use `docs/skein/research/插件API要点.md` and the plugin recipe.
 4. Make the smallest change; tokens; tests at the lowest layer.
 5. Evidence: screenshots/recording for anything visible, built-app check for native behaviour, `npm run check:quick`; update task list and release note when user-visible.
 

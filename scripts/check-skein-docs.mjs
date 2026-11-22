@@ -1,23 +1,42 @@
 #!/usr/bin/env node
 // Checks the Skein documentation's own rules: relative links resolve, every
-// non-archive document is named by another one, and the interface plan's
-// numbered rulings are unique and ascending. Run with `npm run check:skein`.
-import { readdirSync, readFileSync, statSync } from "node:fs";
+// live document carries the metadata the generated index needs, decision ids
+// are unique and match their filename and heading, the generated index covers
+// every live document, and the few documents read every day stay small.
+// Run with `npm run check:skein`.
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 import { brokenLinks } from "./check-links.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const skein = join(root, "docs/skein");
-/** Frozen records: their links may point at files deleted since. */
-const skipped = new Set(["archive", "04-boards"]);
+/** Frozen records and templates: not indexed, not held to the metadata rules. */
+const skippedDirs = new Set(["archive", "_templates"]);
+const skippedDocs = new Set([
+  "README.md",
+  "INDEX.md",
+  "COMMANDS.md",
+  "decisions/README.md",
+]);
+const types = new Set(["spec", "decision", "research", "discipline", "status"]);
+const statuses = new Set([
+  "draft",
+  "active",
+  "frozen",
+  "deferred",
+  "reference",
+  "accepted",
+  "superseded",
+]);
 
 function markdownFiles(dir) {
   const files = [];
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) {
-      if (!skipped.has(name)) files.push(...markdownFiles(path));
+      if (!skippedDirs.has(name)) files.push(...markdownFiles(path));
     } else if (name.endsWith(".md")) {
       files.push(path);
     }
@@ -25,49 +44,137 @@ function markdownFiles(dir) {
   return files;
 }
 
-const files = markdownFiles(skein);
 const rel = (file) => relative(root, file).split(sep).join("/");
+const skeinRel = (file) => relative(skein, file).split(sep).join("/");
+const files = markdownFiles(skein);
+const live = files.filter((file) => !skippedDocs.has(skeinRel(file)));
 const problems = [];
+const warnings = [];
+
+function frontMatter(text) {
+  if (!text.startsWith("---\n")) return null;
+  const end = text.indexOf("\n---\n", 4);
+  return end === -1 ? null : parse(text.slice(4, end));
+}
 
 // A relative link that leads nowhere is a lie in a document an agent reads.
-for (const broken of brokenLinks(files.map(rel), root)) {
+for (const broken of brokenLinks(files.map(rel), root))
   problems.push(`broken link: ${broken}`);
+
+const texts = new Map(live.map((file) => [file, readFileSync(file, "utf8")]));
+const metas = new Map();
+const decisionIds = new Map();
+
+for (const file of live) {
+  const path = skeinRel(file);
+  const text = texts.get(file);
+  const meta = frontMatter(text);
+  if (!meta) {
+    problems.push(`missing front matter: docs/skein/${path}`);
+    continue;
+  }
+  metas.set(file, meta);
+  if (!types.has(meta.type))
+    problems.push(`unknown type "${meta.type}": docs/skein/${path}`);
+  if (!statuses.has(meta.status))
+    problems.push(`unknown status "${meta.status}": docs/skein/${path}`);
+  if (!meta.summary) problems.push(`missing summary: docs/skein/${path}`);
+  if (meta.type !== "decision" && !meta.updated)
+    problems.push(`missing updated: docs/skein/${path}`);
+
+  const heading = /^# (.+)$/m.exec(text)?.[1].trim() ?? "";
+  if (!heading) problems.push(`missing level-one heading: docs/skein/${path}`);
+  if (meta.type === "decision") {
+    if (!Number.isInteger(meta.id))
+      problems.push(`decision id must be an integer: docs/skein/${path}`);
+    const id = String(meta.id).padStart(4, "0");
+    if (decisionIds.has(id))
+      problems.push(
+        `duplicate decision id ${id}: docs/skein/${path} and ${decisionIds.get(id)}`,
+      );
+    decisionIds.set(id, path);
+    if (!path.startsWith(`decisions/${id}-`))
+      problems.push(
+        `decision filename must start with ${id}-: docs/skein/${path}`,
+      );
+    if (!heading.startsWith(`裁决 ${meta.id} —`))
+      problems.push(
+        `decision heading must start "裁决 ${meta.id} —": docs/skein/${path}`,
+      );
+    if (!meta.date) problems.push(`missing date: docs/skein/${path}`);
+    if (!meta.spec) problems.push(`missing spec: docs/skein/${path}`);
+    if (meta.supersedes !== undefined && !Array.isArray(meta.supersedes))
+      problems.push(`supersedes must be a list: docs/skein/${path}`);
+  }
+
+  // Version headings and change tables are what made the old docs unreadable;
+  // git is the change log now.
+  if (/^## .*修订记录/m.test(text))
+    problems.push(`revision log belongs in git, not here: docs/skein/${path}`);
+  if (/^> 版本：v/m.test(text))
+    problems.push(`drop the version heading, use updated:: docs/skein/${path}`);
 }
 
-// A document nobody names is a document nobody finds. READMEs are entry points.
-const texts = new Map(files.map((file) => [file, readFileSync(file, "utf8")]));
-for (const file of files) {
-  if (file.endsWith("README.md")) continue;
-  const name = file.split(sep).pop();
-  const path = rel(file).replace(/^docs\/skein\//, "");
-  const named = [...texts].some(
-    ([other, text]) =>
-      other !== file && (text.includes(name) || text.includes(path)),
-  );
-  if (!named) problems.push(`not named by any other doc: ${rel(file)}`);
+// Decisions may only point at ids that exist.
+for (const [file, meta] of metas) {
+  if (meta.type !== "decision") continue;
+  for (const old of meta.supersedes ?? []) {
+    const id = String(old).padStart(4, "0");
+    if (!decisionIds.has(id))
+      problems.push(
+        `supersedes unknown decision ${id}: docs/skein/${skeinRel(file)}`,
+      );
+  }
 }
 
-// The interface plan's §4 holds numbered entries; a number that repeats or
-// goes backwards makes every later reference ambiguous.
-const plan = join(skein, "02-方案/Textus-界面改造方案.md");
-const text = readFileSync(plan, "utf8");
-const section = text.split(/^## 4\./m)[1]?.split(/^## 5\./m)[0] ?? "";
-const numbers = [...section.matchAll(/^\|\s*(\d+)\s*\|/gm)].map((match) =>
-  Number(match[1]),
-);
-const seen = new Set();
-let last = 0;
-for (const number of numbers) {
-  if (seen.has(number)) problems.push(`duplicate ruling number: ${number}`);
-  if (number <= last) problems.push(`ruling number not ascending: ${number}`);
-  seen.add(number);
-  last = number;
+// The generated index must cover every live document; docs-index.mjs --check
+// separately catches a stale file.
+const indexText = existsSync(join(skein, "INDEX.md"))
+  ? readFileSync(join(skein, "INDEX.md"), "utf8")
+  : "";
+const decisionsText = existsSync(join(skein, "decisions/README.md"))
+  ? readFileSync(join(skein, "decisions/README.md"), "utf8")
+  : "";
+if (!indexText) problems.push("missing generated INDEX.md");
+if (!decisionsText) problems.push("missing generated decisions/README.md");
+for (const file of live) {
+  const path = skeinRel(file);
+  const isDecision = metas.get(file)?.type === "decision";
+  if (isDecision) {
+    if (!decisionsText.includes(path.replace(/^decisions\//, "")))
+      problems.push(`not in decisions/README.md: ${path}`);
+  } else if (!indexText.includes(path)) {
+    problems.push(`not in INDEX.md: ${path}`);
+  }
 }
+
+function lines(file) {
+  return readFileSync(file, "utf8").split("\n").length;
+}
+
+if (lines(join(skein, "README.md")) > 100)
+  problems.push("README.md is over 100 lines: route, don't catalogue");
+if (lines(join(skein, "STATUS.md")) > 150)
+  problems.push("STATUS.md is over 150 lines: keep only what is current");
+for (const file of live) {
+  if (metas.get(file)?.type !== "decision") continue;
+  if (lines(file) > 120)
+    problems.push(`decision is over 120 lines: docs/skein/${skeinRel(file)}`);
+}
+for (const file of live) {
+  if (metas.get(file)?.type !== "spec") continue;
+  if (lines(file) > 600)
+    warnings.push(
+      `spec is over 600 lines: docs/skein/${skeinRel(file)} — split or delete history`,
+    );
+}
+
+for (const warning of warnings) console.warn(`warning: ${warning}`);
 
 if (problems.length) {
   console.error(`Skein docs check failed:\n  ${problems.join("\n  ")}`);
   process.exit(1);
 }
 console.log(
-  `${files.length} Skein markdown files, ${numbers.length} numbered rulings; links, names and numbers hold`,
+  `${live.length} live Skein docs, ${decisionIds.size} decisions; metadata, headings, index and links hold`,
 );

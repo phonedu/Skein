@@ -2,7 +2,7 @@
 // The publishing gate. Every push runs through here (.githooks/pre-push),
 // and the same checks are run by hand before an upstream pull request is
 // opened - the whole procedure lives in
-// docs/skein/01-纪律/publishing-gate.md.
+// docs/skein/discipline/publishing-gate.md.
 // This file belongs to the fork only and is on its own denylist
 // (CONFIG.privatePaths): it never reaches the upstream repository.
 //
@@ -171,7 +171,7 @@ const CONFIG = {
     /\.test\.[cm]?[jt]sx?$/,
   ],
   // The ruling record - which ruling number, decided when, by which
-  // review - lives in docs/skein/ (02-方案/Textus-界面改造方案.md §4) and
+  // review - lives in docs/skein/ (specs/Textus-界面改造方案.md §4) and
   // nowhere else. Code comments state the rule generically ("the design
   // boards draw the page unframed"), never the record: scanned on added
   // lines of code files in every mode.
@@ -504,7 +504,7 @@ function report(findings) {
     }
   }
   console.error(
-    "The procedure for fixing this: docs/skein/01-纪律/publishing-gate.md",
+    "The procedure for fixing this: docs/skein/discipline/publishing-gate.md",
   );
 }
 

@@ -2,7 +2,7 @@
 
 > 状态：**已裁（2026-11-21，按 §9 建议全部采纳）；spike 完成并归档（引擎级 + 保存链路 + S3 真服务，见[报告](2026-11-21-s2c-document-identity-spike-report.md)与[归档](2026-11-21-s2c-document-identity.md)）；U18 已批准推广到全部笔记（保存时分配，不做全库回填）**
 > 问题：Textus 以「路径」作文档身份；改名 + 改内容会被三路同步当成「删除 + 新建」，历史留在旧路径；两台设备各改一次名会留下两份。是否引入稳定文档 id，怎么引入？
-> 前置：[outl 对照调研](../03-调研/outl-对照与吸收.md) §B2、《同步方案》§4.3/§4.4、《同步协议 v1》
+> 前置：[outl 对照调研](../research/outl-对照与吸收.md) §B2、《同步方案》§4.3/§4.4、《同步协议 v1》
 > 性质：一页 spike。先验证，再决定；不碰块身份，不碰 CRDT，不改「md 是唯一真相」。
 
 ## 0. 结论先行
@@ -302,7 +302,7 @@ pub struct Entry {
 - `src/utils/frontmatter.ts`、`src/utils/frontmatter-yaml.ts`（front matter 读写）
 - `src-tauri/src/frontmatter.rs`（Rust 侧 front matter 读取）
 - 《同步方案》§4.3/§4.4、《同步协议 v1》
-- [outl 对照调研](../03-调研/outl-对照与吸收.md) §B2
+- [outl 对照调研](../research/outl-对照与吸收.md) §B2
 
 ## 12. 修订记录
 
