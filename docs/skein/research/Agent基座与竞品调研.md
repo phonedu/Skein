@@ -4,6 +4,7 @@ status: reference
 summary: Agent 基座与竞品调研结论
 updated: 2026-11-23
 ---
+
 # Agent 基座与竞品调研
 
 > 日期：2026-11-15（v0.2 补记 2026-11-16）

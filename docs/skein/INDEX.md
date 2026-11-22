@@ -29,11 +29,12 @@
 
 | 文档 | 状态 | 更新 | 说明 |
 | --- | --- | --- | --- |
+| [Textus 多端设计](specs/Textus-多端设计.md) | frozen | 2026-11-23 | 多端设计目标稿（部分已被 H0 壳与手机方案取代） |
 | [同步协议 v1 规范（冻结）](specs/同步协议-v1.md) | frozen | 2026-11-23 | 同步协议 v1：路径、分块、锁、发布顺序 |
 
 ## 裁决
 
-- [裁决索引](decisions/README.md) — 0 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
+- [裁决索引](decisions/README.md) — 52 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
 
 ## 纪律
 
@@ -41,7 +42,6 @@
 | --- | --- | --- | --- |
 | [AI 协作纪律（下游增补）](discipline/AI协作纪律.md) | active | 2026-11-23 | 协作纪律：任务六行、多会话红线、文档更新矩阵 |
 | [发布闸门：Skein 与上游的隔离](discipline/publishing-gate.md) | active | 2026-11-23 | 向上游推送、开 PR 的发布门禁 |
-| [同步 supersede 裁决（S0a）](discipline/同步supersede裁决.md) | frozen | 2026-11-23 | 同步方案取代与退出条件（S0a） |
 | [工程菜谱（本仓操作步骤）](discipline/工程菜谱.md) | active | 2026-11-23 | 本仓高频操作步骤：同步、插件、设置、界面、跟 tag、文档 |
 | [薄 fork 魔改原则](discipline/薄fork魔改原则.md) | active | 2026-11-23 | fork 改动最小化、跟随上游的原则 |
 
@@ -52,6 +52,7 @@
 | [Agent 基座与竞品调研](research/Agent基座与竞品调研.md) | reference | 2026-11-23 | Agent 基座与竞品调研结论 |
 | [outl 对照调研与吸收清单](research/outl-对照与吸收.md) | reference | 2026-11-23 | outl 源码、功能、界面对照与吸收清单 |
 | [上游的 AI 协作开发方式（参考）](research/上游AI协作开发方式.md) | reference | 2026-11-23 | 上游 AI 协作与文档自动化做法 |
+| [代码核对与墨契吸收清单（2026-11-15）](research/代码核对-2026-11-15.md) | reference | 2026-11-23 | 2026-11-15 逐文件代码核对与墨契吸收清单 |
 | [同步评审汇总与建议](research/同步评审/00-汇总与建议.md) | reference | 2026-11-23 | 同步评审汇总与建议 |
 | [协议兼容性评审（子代理）](research/同步评审/01-协议兼容性评审.md) | reference | 2026-11-23 | 协议兼容性与差分互通评审 |
 | [Android 移动端评审（子代理）](research/同步评审/02-Android移动端评审.md) | reference | 2026-11-23 | Android 移动端同步评审 |
@@ -64,6 +65,7 @@
 | [同步插件多端 spike 报告（S1）](research/同步评审/spike-报告.md) | reference | 2026-11-23 | 同步插件 spike 报告 |
 | [插件 API 要点（阶段 1 · 资产插件参考）](research/插件API要点.md) | reference | 2026-11-23 | 插件 API 七工具通道要点 |
 | [插件兼容性（2026-11-22 核实）](research/插件兼容性.md) | reference | 2026-11-23 | 官方插件在 Skein 上的兼容性核实 |
+| [现状核对（2026-11-15 快照）](research/现状核对-2026-11-15.md) | reference | 2026-11-23 | 2026-11-15 的技术栈与代码现状核对快照 |
 | [界面现状盘点](research/界面现状盘点.md) | reference | 2026-11-23 | 宿主界面现状：功能、实现、交互位置 |
 | [笔记资产理论](research/笔记资产理论.md) | reference | 2026-11-23 | 资产假设、指标与淘汰机制 |
 

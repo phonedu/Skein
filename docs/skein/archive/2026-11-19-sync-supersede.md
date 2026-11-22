@@ -1,14 +1,10 @@
----
-type: discipline
-status: frozen
-summary: 同步方案取代与退出条件（S0a）
-updated: 2026-11-23
----
 # 同步 supersede 裁决（S0a）
+
+> 归档：S0a 完整裁决记录（2026-11-19），保留作历史；现行裁决见 [decisions/0051](../decisions/0051-同步-supersede-S0a.md)。
 
 > **状态**：已落档，2026-11-19。本文是 fork 自建同步的**前置裁决**；没有本文，不写同步代码。
 > **性质**：supersede 早先「不改同步 / 深度分叉不建议」的口径，不是推翻上游，也不是要求上游接受本 fork 的同步实现。
-> **上游关系**：`CatVinci-Studio/Textus` 的同步仍以插件为准；本 fork 的内置同步只服务 Skein，不进入上游 PR（[publishing-gate](publishing-gate.md)）。
+> **上游关系**：`CatVinci-Studio/Textus` 的同步仍以插件为准；本 fork 的内置同步只服务 Skein，不进入上游 PR（[publishing-gate](../discipline/publishing-gate.md)）。
 
 ## 1. 被 supersede 的是什么
 

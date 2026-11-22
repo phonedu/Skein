@@ -4,12 +4,13 @@ status: reference
 summary: outl 源码、功能、界面对照与吸收清单
 updated: 2026-11-23
 ---
+
 # outl 对照调研与吸收清单
 
 > 对象：`outlmd/outl`（本地 checkout `C:\Project\ref\outl-analysis`，commit `308d232`，2026-11-19；MIT）
-> 对照：Skein / Textus v1.4.5（本仓；2026-11-21 已并入 v1.4.6-rc.3，本文快照仍以 v1.4.5 为对照）
+> 对照：Skein / Textus v1.4.5（本仓；2026-11-22 已并入 v1.4.6，本文快照仍以 v1.4.5 为对照）
 > 方法：outl 源码通读（18 个 crate）+ 官方 `DESIGN.md` / `UX.md` / `CLAUDE.md` / `docs/`；Textus 侧按 `docs/skein/` 与源码逐项核对
-> 性质：参考调研，不是裁决。文中「可吸收」= 值得立项评估，不等于已排期；推翻任何已裁事项按《界面改造方案》§4 留档。
+> 性质：参考调研，不是裁决。文中「可吸收」= 值得立项评估，不等于已排期；推翻任何已裁事项按 [`decisions/`](../decisions/README.md) 留档。
 
 ## 0. 结论先行
 

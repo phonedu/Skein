@@ -57,7 +57,7 @@ E0–E4 全部完成；规格已归档 [2026-11-17-collect-plugin.md](2026-11-17
 
 | # | 产物 | 结论 |
 | --- | --- | --- |
-| S0a | [同步 supersede 裁决](../discipline/同步supersede裁决.md) | 内置同步是 fork 产品能力，不推翻上游；插件先多端、内置后接管；六条安全线 + 四个退出条件 |
+| S0a | [同步 supersede 裁决](2026-11-19-sync-supersede.md) | 内置同步是 fork 产品能力，不推翻上游；插件先多端、内置后接管；六条安全线 + 四个退出条件 |
 | S0b | [同步协议 v1](../specs/同步协议-v1.md) | `/1` 冻结：布局、常量、JSON、scope、写入不变量、发布顺序、锁、加密、签名 best-effort、v2 硬切条件 |
 | S0c | [插件 spike 计划](2026-11-19-sync-plugin-spike.md) | 三条轨（App Documents / 所有文件 / SAF 边界）、通过标准、华为清单、S3 → WebDAV、H9 仅轨 B 触发 |
 | S0d | [同步方案](../specs/同步方案.md) | 内置架构、多库、transport、宿主钩子、迁移/回滚、UX、安全、验收矩阵、S2–S6 阶段；收口 06 开放问题 |

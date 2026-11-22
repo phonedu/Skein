@@ -5,12 +5,13 @@ summary: 手机端元素一致性与 PH3 验收清单
 updated: 2026-11-23
 verified: v1.4.6
 ---
+
 # Textus 手机端全局元素一致性方案
 
 > **状态**：**已拍板（2026-11-18，用户裁 A/D/H 按建议）；部分已推（`d3bdb2e2`）**。本文是「统一刷一遍」的施工单与验收标准；A/D/H 已定稿，执行项 = §13 清单。C/D/E/F/H 已在 `d3bdb2e2` 落地；A/B/G/I 仍待核查，PH3 跟踪。
 > **范围**：`data-window-chrome="mobile"` 下的全部界面（L0–L5 已逐屏过完日/夜两轮）。桌面沿用上游自己的规范，本方案不覆盖。
 > **真值来源**：token 表（`src/engine/tokens/`）与已验收的手机样式（`src/phone/`、`src/features/settings/settings-phone.css`、`src/mobile/styles/`）。本文只是把已落地的散点收拢成规则，不发明新值。
-> **冲突时**：《界面改造方案》的裁决优先于本文；本方案对裁决 17 的修订即 §7 裁决 A，**已于 2026-11-19 回写《界面改造方案》§4.9**。
+> **冲突时**：《界面改造方案》的裁决优先于本文；本方案对裁决 17 的修订即 §7 裁决 A，**见 [裁决 33](../decisions/0033-手机主行动胶囊.md)**。
 
 ---
 
@@ -213,4 +214,4 @@ verified: v1.4.6
 
 - 每个批次：`npx vitest run src/phone src/features/settings src/settings` + `npm run check:quick`；
 - 真机逐屏亮/暗各一轮，截图对比；
-- 本方案 §12 为审查清单；§13 的未完成项由任务清单 PH3 跟踪，完成项迁入 [archive](../archive/2026-11-19-task-list-archive.md)。
+- 本方案 §12 为审查清单；§13 的未完成项由STATUS PH3 跟踪，完成项迁入 [archive](../archive/2026-11-19-task-list-archive.md)。

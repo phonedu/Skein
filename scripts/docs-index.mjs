@@ -115,6 +115,7 @@ function decisionStatus(decision, decisions) {
 }
 
 function specCell(spec) {
+  if (spec === "README.md") return "[README](../README.md)";
   const path = join(skein, "specs", spec);
   const label = spec.replace(/\.md$/, "");
   return existsSync(path) ? `[${label}](../specs/${spec})` : label;
@@ -137,15 +138,15 @@ function buildIndex(docs, decisions) {
   const discipline = docs
     .filter((doc) => doc.meta.type === "discipline")
     .sort(byRel);
-  const research = docs.filter((doc) => doc.meta.type === "research").sort(byRel);
+  const research = docs
+    .filter((doc) => doc.meta.type === "research")
+    .sort(byRel);
   const status = docs.find((doc) => doc.meta.type === "status");
   const groups = [
     ["在办规格", specs.filter((doc) => doc.meta.status === "active")],
     [
       "提案 / 暂缓",
-      specs.filter((doc) =>
-        ["draft", "deferred"].includes(doc.meta.status),
-      ),
+      specs.filter((doc) => ["draft", "deferred"].includes(doc.meta.status)),
     ],
     ["冻结规格", specs.filter((doc) => doc.meta.status === "frozen")],
   ];
@@ -200,7 +201,10 @@ function buildIndex(docs, decisions) {
     "",
   );
   lines.push("## 归档", "");
-  lines.push("- [archive/README.md](archive/README.md) — 已关闭的件，冻结，不再维护。", "");
+  lines.push(
+    "- [archive/README.md](archive/README.md) — 已关闭的件，冻结，不再维护。",
+    "",
+  );
   return lines.join("\n");
 }
 
@@ -250,8 +254,9 @@ function compareVersions(a, b) {
 }
 
 function warnings(docs) {
-  const version = JSON.parse(readFileSync(join(root, "package.json"), "utf8"))
-    .version;
+  const version = JSON.parse(
+    readFileSync(join(root, "package.json"), "utf8"),
+  ).version;
   return docs
     .filter((doc) => doc.meta.verified)
     .filter((doc) => compareVersions(doc.meta.verified, version) < 0)

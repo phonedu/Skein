@@ -127,10 +127,20 @@ for (const [file, meta] of metas) {
 const indexText = existsSync(join(skein, "INDEX.md"))
   ? readFileSync(join(skein, "INDEX.md"), "utf8")
   : "";
+const decisionsText = existsSync(join(skein, "decisions/README.md"))
+  ? readFileSync(join(skein, "decisions/README.md"), "utf8")
+  : "";
 if (!indexText) problems.push("missing generated INDEX.md");
+if (!decisionsText) problems.push("missing generated decisions/README.md");
 for (const file of live) {
   const path = skeinRel(file);
-  if (!indexText.includes(path)) problems.push(`not in INDEX.md: ${path}`);
+  const isDecision = metas.get(file)?.type === "decision";
+  if (isDecision) {
+    if (!decisionsText.includes(path.replace(/^decisions\//, "")))
+      problems.push(`not in decisions/README.md: ${path}`);
+  } else if (!indexText.includes(path)) {
+    problems.push(`not in INDEX.md: ${path}`);
+  }
 }
 
 function lines(file) {
@@ -144,9 +154,7 @@ if (lines(join(skein, "STATUS.md")) > 150)
 for (const file of live) {
   if (metas.get(file)?.type !== "decision") continue;
   if (lines(file) > 120)
-    problems.push(
-      `decision is over 120 lines: docs/skein/${skeinRel(file)}`,
-    );
+    problems.push(`decision is over 120 lines: docs/skein/${skeinRel(file)}`);
 }
 for (const file of live) {
   if (metas.get(file)?.type !== "spec") continue;

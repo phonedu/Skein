@@ -4,9 +4,10 @@ status: active
 summary: fork 改动最小化、跟随上游的原则
 updated: 2026-11-23
 ---
+
 # 薄 fork 魔改原则
 
-> 状态：v1.3（2026-11-21 修订：补分支角色与正式版循环；用户定长期只保留 `main` + 工作分支两条；基线 v1.4.6-rc.3 清账合并、接入点补同步/宿主新增、十屏封存）
+> 状态：2026-11-21 修订（补分支角色与正式版循环；用户定长期只保留 `main` + 工作分支两条；基线 v1.4.6 清账合并、接入点补同步/宿主新增、十屏封存）
 > 规范的家：《改造方案》§12（维护与升级策略）——本文是它对日常改动的操作化，不重复论证；冲突时以《改造方案》为准并回改本文
 > 关闭时处置：长期有效，随 §12 修订同步
 
@@ -31,14 +32,14 @@ updated: 2026-11-23
 ## 三、改动形态规则（违反 = 跟随成本失控）
 
 1. **新功能住新增目录**，不散落修改现有文件：`src/features/<域>/`、`src-tauri/src/assets/` 等（《改造方案》§12.4）。
-2. **接入点集中记录**（《改造方案》§12.4，《任务清单》B2）：原五处 = 一级导航注册入口 · `src/platform/capabilities.ts` · `src-tauri/tauri.conf.json` · i18n（只新增 key，不改既有 key）· 插件权限表（仅当新增 API）；**2026-11-19 同步/宿主新增** = `src-tauri/Cargo.toml` · `src-tauri/src/lib.rs` · `src-tauri/src/invoke_handler.rs` · `src-tauri/src/bindings.rs` · Settings 页注册（`settings-pages.tsx` / `builtin-pages.tsx`）· 移动端文件/回收站原生 API（若做）。出现清单外的新接入点 = 先改《改造方案》§12.4 再动代码。
+2. **接入点集中记录**（《改造方案》§12.4 与 STATUS 上游跟随行）：原五处 = 一级导航注册入口 · `src/platform/capabilities.ts` · `src-tauri/tauri.conf.json` · i18n（只新增 key，不改既有 key）· 插件权限表（仅当新增 API）；**2026-11-19 同步/宿主新增** = `src-tauri/Cargo.toml` · `src-tauri/src/lib.rs` · `src-tauri/src/invoke_handler.rs` · `src-tauri/src/bindings.rs` · Settings 页注册（`settings-pages.tsx` / `builtin-pages.tsx`）· 移动端文件/回收站原生 API（若做）。出现清单外的新接入点 = 先改《改造方案》§12.4 再动代码。
 3. **生成文件不碰**：`src/platform/bindings/`、`docs/dev/plugins/reference.md`（各自生成命令重出）。
 4. **未完成功能用 feature flag 包住**，不让半成品裸奔在工作线里。
 5. **不重写上游公共文件**：AGENTS.md、docs/README.md、.gitignore 这类只在 fork 专属提交里做最小补丁——rebase 冲突面才小（AGENTS.md 顶部 fork 注记即此形态）。
 
 ## 四、跟随节拍（B 组操作手册）
 
-- **只跟正式 release tag**，不追 main、不追 rc（原基线 v1.4.5；2026-11-21 为收口并入 v1.4.6-rc.3，合并 `1d7cceff`，属清账例外；下一稳定 tag v1.4.6）。
+- **只跟正式 release tag**，不追 main、不追 rc（原基线 v1.4.5；2026-11-21 以 v1.4.6 预发布 rc.3 清账合并 `1d7cceff`，2026-11-22 并入稳定 v1.4.6 `457f6693`；rc 合并属清账例外）。
 - 六步（《改造方案》§12.5）：拉 tag → rebase patch 清单（五旧接入点 + 同步/宿主新增，逐一核对）→ 四层门禁 → 桌面 + 真机 smoke → 处理冲突更新清单 → 打自己的版本号（保留上游版本号可追溯）。
 - **防冲突三件套**（2026-11-17 起）：
   1. **fork-clean 提交**：上游死重（README 译文、ROADMAP、`docs/design/`、`docs/images/`、历史 release notes）在一个提交里删净，rebase 自动重放，不逐次手工删；
@@ -80,4 +81,4 @@ updated: 2026-11-23
 1. 拿上游文档当本仓规划、当审美来源——上游界面截图与 `docs/design/` 已删，别去找；
 2. 为旧实现画对照稿——旧实现是宿主，不是目标；
 3. 悄悄「沿用上游做法」替代已裁事项——推翻裁决要留档，不是换做法；
-4. 改动散落进上游文件、超出 patch 清单——B2 的 rebase 成本就是这么涨起来的（B 组冲突预警见《任务清单》§6 B2）。
+4. 改动散落进上游文件、超出 patch 清单——B2 的 rebase 成本就是这么涨起来的（B 组冲突预警见STATUS§6 B2）。

@@ -4,6 +4,7 @@ status: reference
 summary: S3 Provider 兼容性
 updated: 2026-11-23
 ---
+
 # S3 服务商兼容性（S1b 选型）
 
 > **结论（2026-11-21 更新）**：**缤纷云 S4（Bitiful）已实测通过 S1b**；内置 Rust 已有 `S3Flavor::Oss`（`x-oss-forbid-overwrite`，409/400 映射）并在设置页可选；**七牛 Kodo 2026-11-21 实测：凭据有效，但 S3 条件写不可用（`unsafeServer`）**；**阿里云 OSS 按用户 2026-11-21 决定不测试**（补充协议与版本控制限制太麻烦），代码保留但不作为验收项。

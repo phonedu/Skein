@@ -4,11 +4,12 @@ status: deferred
 summary: 网页剪藏公开页版（后期）
 updated: 2026-11-23
 ---
+
 # Textus 网页剪藏方案（公开页版）
 
-> **状态：后期功能记录（2026-11-22 定），暂不施工。** 本文只记方向、边界与实现路径；开工前按《改造任务清单》CP1 重新确认范围与优先级。
+> **状态：后期功能记录（2026-11-22 定），暂不施工。** 本文只记方向、边界与实现路径；开工前按 STATUS CP1 重新确认范围与优先级。
 > 对象：桌面端（Windows 先行；macOS/Linux 后置），Android 后置；不做 iOS。
-> 关联：[《改造任务清单》](../STATUS.md) CP1 · [《改造方案》§4.2](Textus-改造方案.md)（front matter）· [《插件API要点》](../research/插件API要点.md)
+> 关联：[STATUS](../STATUS.md) CP1 · [《改造方案》§4.2](Textus-改造方案.md)（front matter）· [《插件API要点》](../research/插件API要点.md)
 > 存放：`docs/skein/specs/`
 
 ## 0. 一句话

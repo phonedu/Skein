@@ -1,5 +1,5 @@
 #!/bin/sh
-# The publishing gate hook (docs/ryugi/publishing-gate.md). Every pushed
+# The publishing gate hook (docs/skein/discipline/publishing-gate.md). Every pushed
 # ref goes through .githooks/gate.mjs: the fork (origin) gets the privacy
 # scan, upstream gets the full gate. Install once per clone with:
 #   git config core.hooksPath .githooks

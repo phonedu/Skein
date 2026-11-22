@@ -4,10 +4,11 @@ status: active
 summary: 向上游推送、开 PR 的发布门禁
 updated: 2026-11-23
 ---
+
 # 发布闸门：Skein 与上游的隔离
 
 本仓是 `CatVinci-Studio/Textus` 的 fork。日常所有改动（代码、skein 文档、
-任务清单）都发布到自己的 fork `phonedu/Skein`；上游只在接受 pull request 的
+STATUS）都发布到自己的 fork `phonedu/Skein`；上游只在接受 pull request 的
 意义上存在，而且**只有当我说"这个能上上游"时才碰**。本文是这件事的唯一流程。
 
 ## 拓扑
@@ -162,7 +163,7 @@ git apply C:/Project/pr-<主题>.patch
    ```
    英文描述：bug 附**复现步骤**、根因、验证过什么；有 issue 写 `Fixes #N`。
 9. **合并后回填**：在上游 issue/PR 里留 fork 的对应提交/发布；fork 的
-   《任务清单》或提交信息写上 upstream `#N`。fork 也需要同一改动而还没带的，
+   STATUS或提交信息写上 upstream `#N`。fork 也需要同一改动而还没带的，
    从上游拿过来——**不再手写第二版**。
 
 **禁止**：

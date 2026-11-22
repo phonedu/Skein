@@ -49,7 +49,7 @@ Milkdown/ProseMirror, source mode CodeMirror 6) and a Rust backend in
 | Which test layer, the e2e helpers, CI                  | [docs/dev/testing.md](docs/dev/testing.md)                       |
 | Branches, pull requests, commits, releases             | [docs/dev/releasing.md](docs/dev/releasing.md)                   |
 | Desktop and iOS: what is shared, what is gated         | [docs/dev/ios-code-map.md](docs/dev/ios-code-map.md)             |
-| The interface's design standard                        | [docs/skein/decisions/README.md](docs/skein/decisions/README.md)  |
+| The interface's design standard                        | [docs/skein/decisions/README.md](docs/skein/decisions/README.md) |
 | Every other document                                   | [docs/README.md](docs/README.md)                                 |
 
 ## Rules

@@ -4,10 +4,11 @@ status: reference
 summary: 插件 API 七工具通道要点
 updated: 2026-11-23
 ---
+
 # 插件 API 要点（阶段 1 · 资产插件参考）
 
 > 来源：上游 `docs/dev/plugins/`（guide / reference / versions / pages / ui / permissions / testing / publishing）。
-> 基线快照：**v1.4.6-rc.3（API 1.9）**，2026-11-21 已并入（合并 `1d7cceff`）；下一稳定 tag = v1.4.6。API 1.6 = v1.4.2，API 1.7 = v1.4.3，API 1.8 = v1.4.4 起，API 1.9 = v1.4.6。
+> 基线快照：**v1.4.6（API 1.9）**，2026-11-22 并入稳定 tag（合并 `457f6693`）。API 1.6 = v1.4.2，API 1.7 = v1.4.3，API 1.8 = v1.4.4 起，API 1.9 = v1.4.6。
 > 本页只记**阶段 1 资产插件要用的面**与上游新增要点；全量以本地 `docs/dev/plugins/reference.md`（由 textus.d.ts 生成）为准。
 
 ## 一、资产插件的形态（对《改造方案》附录 B.2 的落点复核）
@@ -56,5 +57,5 @@ updated: 2026-11-23
 ## 五、版本与跟随注意
 
 - 插件 `engines.textus` 声明 API 需求；Textus 不向不满足的版本提供插件。
-- **B2 等稳定 tag v1.4.6**；当前基线 v1.4.6-rc.3（API 1.9），1.7–1.9 的能力已可用；七工具主体不依赖新版本，`splitFrontmatter` 等已在 1.7 起可用。`contributes.folderDocuments` 与稳定身份/S2c 一起评估。
+- **B2 等稳定 tag v1.4.6**；当前基线 v1.4.6（API 1.9），1.7–1.9 的能力已可用；七工具主体不依赖新版本，`splitFrontmatter` 等已在 1.7 起可用。`contributes.folderDocuments` 与稳定身份/S2c 一起评估。
 - catalog 要求 manifest 显式 `platforms`；desktop-only 能力（background/schedule/agents）注意标注。

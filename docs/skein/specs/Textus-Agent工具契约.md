@@ -4,6 +4,7 @@ status: active
 summary: Agent 七工具的输入输出、权限与确认门槛
 updated: 2026-11-23
 ---
+
 # Textus Agent 工具契约
 
 > 日期：2026-11-15（初版）· 2026-11-19（修订）
