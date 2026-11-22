@@ -5,7 +5,7 @@
 
 ## 一、三条定位（先记住这三句）
 
-1. **软件在这里改。** 本仓是 `CatVinci-Studio/Textus` 的下游工作仓（fork 名 Skein）：`src/`、`src-tauri/` 就是要改的软件本体，不是只读镜像。上游只跟 **release tag**（原基线 v1.4.5；2026-11-21 为收口并入 v1.4.6-rc.3，合并提交 `1d7cceff`；下一稳定 tag 为 v1.4.6）。这次 rc 合并是清账例外，长期仍不追 main/rc；跟随与发布流程见 [01-纪律/publishing-gate.md](01-纪律/publishing-gate.md)。
+1. **软件在这里改。** 本仓是 `CatVinci-Studio/Textus` 的下游工作仓（fork 名 Skein）：`src/`、`src-tauri/` 就是要改的软件本体，不是只读镜像。上游只跟 **release tag**（原基线 v1.4.5；2026-11-21 为收口并入 v1.4.6-rc.3，合并提交 `1d7cceff`；2026-11-22 已并入稳定 tag v1.4.6，合并提交 `457f6693`）。长期不追 main/rc；跟随与发布流程见 [01-纪律/publishing-gate.md](01-纪律/publishing-gate.md)。
 2. **规划只在 skein。** 产品方向、界面目标、任务进度、全部裁决，唯一来源是 `docs/skein/`。**与任何上游文档冲突时，skein 赢**——不许用"上游是这么做的"替代已裁事项。
 3. **上游文档只当工具书。** 仓库根 `AGENTS.md` → `CONTRIBUTING.md`、`docs/dev/*`（怎么跑门禁、怎么加字符串、测试分层）照常有效，但只回答"**工程上怎么做**"。上游的 `docs/design/`、`docs/images/`（产品设计标准与界面截图）已从本 fork 删除——别去找，更别按它改。
 
