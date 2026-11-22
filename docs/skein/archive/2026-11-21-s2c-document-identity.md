@@ -1,7 +1,7 @@
 # S2c 文档稳定身份归档（2026-11-21）
 
 > **状态：spike 完成；U18 已批准推广到全部笔记（保存时分配，不做全库回填）。** `textus_id` 真值 + `Entry.id` 缓存的 rename / 跨设备 move / fork / 冲突副本已在同步引擎与保存链路打通；U18（推广到全部笔记）等用户确认。
-> 设计与报告：[《文档稳定身份 v0》](../02-方案/Textus-文档稳定身份-v0.md)、[S2c spike 报告](../03-调研/同步评审/s2c-文档身份-spike报告.md)。
+> 设计与报告：[《文档稳定身份 v0》](2026-11-21-document-identity-v0.md)、[S2c spike 报告](2026-11-21-s2c-document-identity-spike-report.md)。
 > **不在本片**：块身份、CRDT、块级合并、实时协同、历史按 id（v2）、WebDAV 真服务回归（本机无凭据）。
 
 ## 1. 完成内容

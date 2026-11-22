@@ -877,12 +877,15 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 
 ### 12.5 升级流程
 
-1. 拉取上游 tag。
-2. rebase 到功能分支。
-3. 跑 `typecheck`、`lint`、`test`、`test:e2e`。
-4. 桌面 smoke + Android 真机 smoke（iOS 归上游）。
-5. 处理冲突，更新 patch 清单。
-6. 打自己的版本号，同时保留上游版本号便于追溯。
+1. 拉取上游 release tag（`git fetch upstream --tags`）。
+2. 从工作分支新开临时同步分支 `sync/upstream-X.Y.Z`，在它上面 `git merge vX.Y.Z --no-ff`；工作分支在验证期间保持可发布。
+3. 解冲突，保住 patch 清单（§12.4）。
+4. 跑 `typecheck`、`lint`、`format`、`check:repo`、全量 `vitest`、`cargo test --lib` 与 `textus-sync` 测试。
+5. 桌面 built app smoke + Android smoke（iOS 归上游）；e2e 按上游壳写的用例与 H0 壳冲突时记录差异，不为变绿改断言。
+6. 验证通过后回工作分支 `git merge --ff-only sync/upstream-X.Y.Z`，删临时分支；长期只留 `main` + 工作分支，`main` 不并。
+7. 打自己的版本号，同时保留上游版本号便于追溯；在 `archive/` 写合并记录（tag、合并提交、取舍、验证、未做项）。
+
+操作步骤以[工程菜谱 R5](../01-纪律/工程菜谱.md#r5-跟上游-tag-并线)为准；最近一次 v1.4.6 的记录见 [2026-11-22-b3-v1.4.6.md](../archive/2026-11-22-b3-v1.4.6.md)。
 
 ### 12.6 结论
 
@@ -897,7 +900,7 @@ src-tauri/plugins/textus-assets/  # 如需原生存储能力
 
 **节拍**：
 
-- 主基线 = 上游 **release tag**（原 v1.4.5；2026-11-21 清账并入 v1.4.6-rc.3；下一稳定 tag v1.4.6）；每次上游发新版 → 拉 tag → rebase patch 清单（§12.4；五个旧接入点 + 同步/宿主新增注册点）→ 跑门禁 → 真机 smoke → 打自己的版本号。
+- 主基线 = 上游 **release tag**（原 v1.4.5；2026-11-21 清账并入 v1.4.6-rc.3；2026-11-22 已并入稳定 tag v1.4.6，合并 `457f6693`）；每次上游发新版 → 拉 tag → 按临时同步分支流程并线（§12.5；五个旧接入点 + 同步/宿主新增注册点）→ 跑门禁 → 真机 smoke → 打自己的版本号。
 - **不追 main**（开发线，半成品密集——Settings 重构 / 浮层格式条都在进行时）。
 - 通用能力继续提 PR 回上游（§12.6），每提回一条分叉面小一分。
 - 接触面收敛为三类接口：`aiTools` 贡献、`broker-files`、导航/视图注册 + i18n——**接口稳定就一直跟得动；接口破坏才是分叉时刻**。

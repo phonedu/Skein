@@ -5,21 +5,21 @@ description: Work on the Skein fork's interface - host-small-change + plugin-fir
 
 # Skein interface
 
-The interface authority is the Skein plan, not upstream design docs. `docs/design/` and `docs/images/` are deleted; `04-boards/` is sealed (ruling 29). Do not look for a board or `design-language.md` to copy.
+The interface authority is the Skein plan, not upstream design docs. `docs/design/` and `docs/images/` are deleted; the old boards were deleted on 2026-11-20. Do not look for a board or `design-language.md` to copy.
 
 ## Read first
 
 - `docs/skein/README.md` §三 (current route) and §五 (reading order).
 - `docs/skein/02-方案/Textus-界面改造方案.md` §4: every ruling, including numbers and names.
 - `docs/skein/03-调研/界面现状盘点.md`: host truth - what each panel does and where it lives.
-- Phone work: `02-方案/Textus-手机端工具栏改造方案.md` and `02-方案/Textus-手机端元素一致性方案.md`.
+- Phone work: `02-方案/Textus-手机端元素一致性方案.md` and the phone sections of the interface plan; the format-bar spec is archived (`archive/2026-11-19-phone-format-toolbar.md`).
 - `docs/skein/01-纪律/工程菜谱.md` R4.
 
 ## Route
 
-- **Desktop:** host v1.4.5 is the base. Make a small host change only when a feature is blocked; features go to plugins. "Small host + plugin first" is ruling 29.
+- **Desktop:** host v1.4.6 is the base. Make a small host change only when a feature is blocked; features go to plugins. "Small host + plugin first" is ruling 29.
 - **Phone:** the Android line is ours; iOS belongs to upstream. Do not put desktop tabs, the 48px track or the push sidebar on a phone unchanged.
-- **Boards:** `04-boards/` is sealed - non-authoritative, not to be built from, not to be "corrected".
+- **Boards:** the old boards were deleted on 2026-11-20 - non-authoritative, not to be rebuilt, not to be "corrected". The interface authority is §4 of the interface plan.
 - **Design standard:** `docs/design/design-language.md` is not ours; tokens come from the code and the §4 rulings.
 
 ## Rules
@@ -43,7 +43,7 @@ The interface authority is the Skein plan, not upstream design docs. `docs/desig
 
 ## Don't
 
-- Use `04-boards/` as the target, or "fix" it.
+- Treat a deleted board as the target, or "fix" one.
 - Resurrect `docs/design/design-language.md` or `docs/images/`.
 - Overturn a ruling silently, or change the host shell for a feature that belongs in a plugin.
 - Use raw colours/radii/font sizes, half-pixel type sizes, or desktop elements on a phone.
