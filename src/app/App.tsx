@@ -100,7 +100,8 @@ function App() {
 
   const { tutorial, settingsOpening, pendingClose } = shell;
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
-  const { tabs, activeTabId, setActiveTabId, addBlankTab } = shell.tabState;
+  const { tabs, activeTabId, setActiveTabId, addBlankTab, addStartTab } =
+    shell.tabState;
   // The one action every surface keeps in reach: a note to write now. The
   // asset plugin's collect form when it is there, a blank note otherwise.
   // True while the plugin took the action (its form shows where it is).
@@ -357,11 +358,12 @@ function App() {
               showTabBar={phone ? false : showTabBar}
               onActivate={setActiveTabId}
               onClose={requestCloseTab}
-              onAdd={addBlankTab}
+              onAdd={settings.addTabShowsStartPage ? addStartTab : addBlankTab}
               onDetach={handleTabDetach}
               onMoveToNewWindow={moveTabToNewWindow}
               onToggleReadOnly={toggleReadOnly}
               onKeep={(id) => shell.tabState.updateTab(id, { preview: false })}
+              onPin={(id, pinned) => shell.tabState.updateTab(id, { pinned })}
               previewTab={dragHoverPreview}
               onChange={handleChange}
               typewriter={settings.typewriterMode}

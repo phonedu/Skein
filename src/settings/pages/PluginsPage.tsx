@@ -145,7 +145,7 @@ export function PluginsPage({ t }: SettingsPageProps) {
       help={t.pluginsInstallHelp}
       primary={{
         label: t.createMakePlugin,
-        onSelect: () => requestCreate("", "plugin", "settings"),
+        onSelect: () => requestCreate("", "plugin", undefined, "settings"),
       }}
       actions={[
         ...(canInstallPluginFile

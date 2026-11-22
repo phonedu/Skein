@@ -4,6 +4,7 @@ import {
   onCreateAsked,
   onCreateRequest,
   requestCreate,
+  requestWorkshop,
   takeCreateRequest,
 } from "./create-request";
 import { askAi } from "./ask-ai";
@@ -41,7 +42,7 @@ describe("a request for Create", () => {
     const taken: unknown[] = [];
     const stopAsked = onCreateAsked(opened);
     const stop = onCreateRequest(() => taken.push(takeCreateRequest()));
-    requestCreate("Make a theme", "theme", "settings");
+    requestCreate("Make a theme", "theme", undefined, "settings");
     stop();
     stopAsked();
     expect(taken).toEqual([]);
@@ -58,5 +59,19 @@ describe("a request for Create", () => {
       text: "Fix the plugin",
       kind: "plugin",
     });
+  });
+});
+
+describe("the theme workshop asked for", () => {
+  it("opens on a theme and brings the open Create tab to the front", () => {
+    const opened = vi.fn();
+    const taken: unknown[] = [];
+    const stopAsked = onCreateAsked(opened);
+    const stop = onCreateRequest(() => taken.push(takeCreateRequest()));
+    requestWorkshop("user-1");
+    stop();
+    stopAsked();
+    expect(taken).toEqual([{ text: "", kind: "theme", start: "user-1" }]);
+    expect(opened).toHaveBeenCalledOnce();
   });
 });

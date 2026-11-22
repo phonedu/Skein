@@ -18,11 +18,14 @@ import type { GroupShell } from "./group-shell";
 
 function ClearRow({
   label,
+  action,
   warning,
   t,
   onClear,
 }: {
   label: string;
+  /** The button's word, the row's verb: Clear a history, Delete drafts. */
+  action: string;
   warning: string;
   t: Strings;
   onClear: () => Promise<unknown> | void;
@@ -32,7 +35,7 @@ function ClearRow({
   async function clear() {
     const ok = await showConfirm(warning, {
       title: label,
-      okLabel: t.privacyClearButton,
+      okLabel: action,
       cancelLabel: t.cancel,
       danger: true,
     });
@@ -51,10 +54,10 @@ function ClearRow({
     <SettingRow label={label}>
       <button
         className="tx-button text-button settings-inline-button settings-danger-button"
-        aria-label={`${t.privacyClearButton}: ${label}`}
+        aria-label={`${action}: ${label}`}
         onClick={() => void clear()}
       >
-        {cleared ? <CheckIcon /> : t.privacyClearButton}
+        {cleared ? <CheckIcon /> : action}
       </button>
     </SettingRow>
   );
@@ -84,6 +87,7 @@ export function PrivacySections({
           />
           <ClearRow
             label={t.privacyClearChatHistory}
+            action={t.privacyClearButton}
             warning={t.privacyChatHistoryClearHint}
             t={t}
             onClear={clearAllConversations}
@@ -108,6 +112,7 @@ export function PrivacySections({
         )}
         <ClearRow
           label={t.privacyClearDrafts}
+          action={t.privacyDeleteButton}
           warning={t.privacyDraftRecoveryClearHint}
           t={t}
           onClear={() => drafts.clearAllDrafts()}

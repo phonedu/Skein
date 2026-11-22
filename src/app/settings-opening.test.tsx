@@ -69,7 +69,7 @@ it("a plugin's settings open in the dialog; its list needs no page", () => {
 it("a Create request from inside the dialog goes to Extensions on Create", () => {
   const { result } = renderHook(() => useSettingsOpening(tabs));
   act(() => result.current.openSettings());
-  act(() => requestCreate("", "theme"));
+  act(() => requestCreate("", "theme", undefined, "settings"));
   expect(settingsDialogOpen()).toMatchObject({ page: "extensions" });
   expect(extensionsStartTab()).toBe("create");
 });

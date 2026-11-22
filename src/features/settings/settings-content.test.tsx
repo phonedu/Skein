@@ -231,8 +231,7 @@ describe("the settings content column", () => {
 
   it("draws Editing with the new rows, not the legacy wrapper", () => {
     const { container } = content("edit-text");
-    expect(screen.getByText("文本")).toBeTruthy();
-    expect(screen.getByText("内容宽度")).toBeTruthy();
+    // The text's width and indent moved to Appearance with 1.4.6.
     expect(screen.getByText("视图")).toBeTruthy();
     expect(screen.getByText("打字机模式")).toBeTruthy();
     expect(container.querySelector(".settings-legacy-page")).toBeNull();

@@ -4,7 +4,7 @@ import { MoreIcon } from "../../engine/controls/icons";
 import { useMenuButton } from "../../engine/controls/useMenuButton";
 import type { ReactNode } from "react";
 import type { Strings } from "../../i18n/strings";
-import { AdvancedFold, RowHelp } from "../sections/controls";
+import { AdvancedFold } from "../sections/controls";
 import { SettingsGroup } from "./SettingsGroup";
 
 interface ExtensionsAction {
@@ -67,6 +67,8 @@ export function ExtensionsTabLayout({
         <SettingsGroup
           title={installedTitle}
           count={installedCount || undefined}
+          help={help}
+          helpLabel={intro}
           cards={installedCards}
           actions={
             <>
@@ -85,7 +87,6 @@ export function ExtensionsTabLayout({
                 />
               )}
               {installedAction}
-              {help && <RowHelp label={intro}>{help}</RowHelp>}
               {actions.length > 0 && <MoreMenu t={t} actions={actions} />}
               {primary && (
                 <button

@@ -86,6 +86,7 @@ export function ActionSheet({
                   }
                   disabled={item.disabled}
                   data-depth={item.depth}
+                  aria-current={item.current ? "location" : undefined}
                   className={rowClass(item)}
                   onClick={() => {
                     onClose();

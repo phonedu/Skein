@@ -21,11 +21,20 @@ import { UI_SIZE_NAMES, UI_TEXT_SCALES } from "../prefs/settings-values";
 import { applyThemeChrome, clearThemeChrome } from "../engine/tokens/palette";
 import { isIOSApp } from "../platform/capabilities";
 import { lazyModule } from "../lazy/lazy-module";
-import { CUSTOM_CSS_STYLE_ID, PLUGIN_COLORS_STYLE_ID } from "./style-ids";
+import { tokenPx } from "../engine/tokens/token-px";
+import {
+  CUSTOM_CSS_STYLE_ID,
+  PLUGIN_COLORS_STYLE_ID,
+  USER_THEME_STYLE_ID as STYLE_ID,
+} from "./style-ids";
 
 // What an imported theme or the user's own CSS is read through: loaded
 // when there is one, not with every window.
 const typora = lazyModule("typora-compat", () => import("./typora-compat"));
+const suppliedFont = lazyModule(
+  "supplied-font",
+  () => import("./supplied-font"),
+);
 const legacy = lazyModule(
   "legacy-variables",
   () => import("./legacy-variables"),
@@ -90,6 +99,14 @@ function systemPrefersDark(): boolean {
   return window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
 }
 
+/** Tells macOS the size's bar height, which its traffic lights centre on.
+ *  The token is a calc(), so it is read resolved; nothing is sent before
+ *  the page has laid it out. */
+export function followWindowBar(): void {
+  const height = tokenPx("--window-bar-height", { fresh: true });
+  if (height > 0) void windowBarIpc.follow(height);
+}
+
 export function isEffectiveDark(themeMode: ThemeMode): boolean {
   if (themeMode === "dark") return true;
   if (themeMode === "light") return false;
@@ -106,16 +123,20 @@ function usePageAttributes(settings: Settings): void {
     document.documentElement.dataset.layout = settings.layout;
   }, [settings.layout]);
 
+  useLayoutEffect(() => {
+    document.documentElement.toggleAttribute(
+      "data-plain-frame",
+      settings.plainFrame,
+    );
+  }, [settings.plainFrame]);
+
   useEffect(() => {
     const root = document.documentElement;
     if (settings.contentWidth === "auto")
       root.removeAttribute("data-content-width");
     else root.setAttribute("data-content-width", settings.contentWidth);
     root.toggleAttribute("data-first-line-indent", settings.firstLineIndent);
-    // The margin keeps room for the block handles only while they show.
-    if (settings.blockHandles) root.removeAttribute("data-block-handles");
-    else root.setAttribute("data-block-handles", "off");
-  }, [settings.contentWidth, settings.firstLineIndent, settings.blockHandles]);
+  }, [settings.contentWidth, settings.firstLineIndent]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -156,6 +177,8 @@ function usePageAttributes(settings: Settings): void {
       root.style.removeProperty("--doc-chosen-font");
       root.removeAttribute("data-doc-font");
     }
+    if (settings.docFont || suppliedFont.peek())
+      void suppliedFont.load().then((m) => m.supplyFont(settings.docFont));
     const tracking = letterSpacing(
       settings.docLetterSpacing,
       settings.docLetterSpacingBy,
@@ -212,13 +235,7 @@ function useApplyAppearance(
       root.style.setProperty("--ui-text-scale", String(settings.uiTextScale));
       root.dataset.uiSize = size;
     }
-    // The size's bar height, which macOS's traffic lights centre on.
-    if (root.dataset.windowChrome === "native")
-      void windowBarIpc.follow(
-        Number.parseFloat(
-          getComputedStyle(root).getPropertyValue("--window-bar-height"),
-        ),
-      );
+    if (root.dataset.windowChrome === "native") followWindowBar();
   }, [settings.uiTextScale]);
 
   useEffect(() => {
@@ -265,7 +282,6 @@ function useApplyAppearance(
   // theme/mode change and on OS switches in "system" mode.
   useEffect(() => {
     const root = document.documentElement;
-    const STYLE_ID = "textus-custom-theme";
 
     function clearInjectedStyle() {
       document.getElementById(STYLE_ID)?.remove();

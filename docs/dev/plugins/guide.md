@@ -201,6 +201,7 @@ turning it on, or leaves it off, and can take each back later.
 | `agents`         | run the AI agents it names in `contributes.agents` (programs on this computer; 1.3.13)                              |
 | `appearance`     | change Textus's colours: a palette over the theme, the frame a gradient (API 1.6)                                   |
 | `git.commit`     | commit files of the open folder with the user's git (1.4.3; reading Git history is `files.read`)                    |
+| `git.sync`       | fetch, push and pull the open folder's repository with the user's git (1.4.6)                                       |
 | `ssh`            | reach servers through the user's own ssh, SFTP only, each host allowed once by the user (API 1.9, desktop, preview) |
 | `network:<host>` | fetch from that host over HTTPS (`*.example.com`, `host:port`, `*` for the open web)                                |
 | `hidden:<path>`  | read that hidden file of the open folder, named from its top: `hidden:.vitepress/config.ts` (1.4.3)                 |
@@ -513,8 +514,16 @@ file's commits through renames, and `git.show(hash, path)` the file as a
 commit had it; these need `files.read`. `git.commit(message, paths)`
 commits those files' changes only, through the user's own git (hooks,
 signing), and needs `git.commit`. Hidden files stay out, and nothing
-pushes, pulls or switches branches. Elsewhere `status()` is `null`. Set
+switches branches. Elsewhere `status()` is `null`. Set
 `engines.textus` to `">=1.4.3"`.
+
+From API 1.9 (Textus 1.4.6), `git.fetch()`, `git.push()` and `git.pull()`
+reach the remote with the user's saved credentials and need `git.sync`;
+`status()` also says the remote branch and how many commits are `ahead`
+and `behind`. Nothing asks for a password: a remote that wants one refuses,
+saying to sign in once with git. A pull that conflicts is undone and
+refuses, so no document is left with conflict markers. Set
+`engines.textus` to `">=1.4.6"` for these.
 
 ### Margin notes - `textus.comments` (API 1.8, preview)
 
@@ -578,7 +587,7 @@ columns, types, group, date }` and answers HTML, shown without scripts or
 - `ai.registerInlineCompletion(id, { label, provide })` (`editor.read`, 1.8
   preview): grey text after the caret when typing pauses, from
   `provide({ before, after, path })`. One source at a time, picked by the
-  user in Settings › Textus AI › Writing assist.
+  user in Settings › Textus AI › Chat & writing.
 - `plugins.get(id)`: what another plugin's `activate` returned - its functions, callable from here.
 - `uri.registerHandler(fn)`: `textus://<plugin id>/<path>?<query>` links
   from a browser or another app, for "send to Textus" buttons and links
@@ -592,6 +601,127 @@ columns, types, group, date }` and answers HTML, shown without scripts or
   headings, a print footer) or `{ html }` to change its content. Scripts
   in it are taken out. A code block's picture comes from its page instead
   ([Code blocks in an export](pages.md#code-blocks-in-an-export)).
+
+### A streamed AI answer for a selection
+
+This command asks the user's writing model to summarise the selected text
+and streams the answer into a page. Closing the page aborts the request.
+The Scripts Folder format can declare commands and permissions in one
+JavaScript file, but it cannot declare a view. For this example, make a
+plugin folder with one `host.js` file and this manifest.
+
+In an empty folder, `selection-summary`, write `textus-plugin.json`:
+
+```json
+{
+  "id": "jane.selection-summary",
+  "name": "Selection Summary",
+  "version": "0.1.0",
+  "publisher": "jane",
+  "description": "Summarises the selected text with the writing model.",
+  "engines": { "textus": ">=1.4.6" },
+  "main": "host.js",
+  "permissions": ["editor.read", "ai.model"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "jane.selection-summary.summarise",
+        "title": "Summarise Selection"
+      }
+    ],
+    "views": [
+      {
+        "id": "jane.selection-summary.result",
+        "title": "Selection Summary",
+        "type": "webview"
+      }
+    ]
+  }
+}
+```
+
+Then write `host.js`:
+
+```js
+const command = "jane.selection-summary.summarise";
+const resultView = "jane.selection-summary.result";
+
+exports.activate = function () {
+  textus.views.registerWebview(resultView, {
+    async resolve(webview, { state }) {
+      const controller = new AbortController();
+      webview.onDidDispose(() => controller.abort());
+
+      webview.onDidReceiveMessage((message) => {
+        if (message?.type === "ready") start();
+      });
+
+      webview.html = `<!doctype html>
+<meta charset="utf-8">
+<main>
+  <h1>Selection Summary</h1>
+  <pre id="answer">Starting…</pre>
+</main>
+<script>
+  const api = acquireTextusApi();
+  const answer = document.getElementById("answer");
+  api.onDidReceiveMessage((message) => {
+    if (message?.type === "text") answer.textContent += message.text;
+    if (message?.type === "error") answer.textContent = message.text;
+  });
+  api.postMessage({ type: "ready" });
+</script>`;
+
+      let started = false;
+      async function start() {
+        if (started || controller.signal.aborted) return;
+        started = true;
+        const selectedText =
+          state && typeof state.text === "string" ? state.text : "";
+        try {
+          await textus.ai.stream(
+            {
+              system: "Summarise the selected text clearly and briefly.",
+              prompt: selectedText,
+            },
+            (text) => {
+              void webview.postMessage({ type: "text", text }).catch(() => {});
+            },
+            { signal: controller.signal },
+          );
+        } catch (error) {
+          if (error?.name !== "AbortError") {
+            void webview
+              .postMessage({ type: "error", text: String(error) })
+              .catch(() => {});
+          }
+        }
+      }
+    },
+  });
+
+  textus.commands.register(command, async () => {
+    if (!(await textus.ai.available())) {
+      await textus.ui.message("Turn on Textus AI before asking for a summary.");
+      return;
+    }
+    const selection = await textus.editor.getSelection();
+    if (!selection?.text.trim()) {
+      await textus.ui.message("Select some text to summarise.");
+      return;
+    }
+    await textus.layout.openView(resultView, {
+      state: { text: selection.text },
+    });
+  });
+};
+```
+
+The page sends `ready` after its message listener is set up, so the first
+streamed piece is not lost while it loads. The `onDidDispose` handler aborts
+the model call when the user closes the result tab. Install the folder with
+**Settings › Extensions › Plugins › More (…) › Load a plugin folder…**,
+then run **Summarise Selection** from the command palette on selected text.
 
 ## A database view, step by step
 

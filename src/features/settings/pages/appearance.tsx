@@ -1,25 +1,22 @@
 import { useSettings, type Settings } from "../../../prefs/SettingsContext";
 import {
   UI_TEXT_SCALES,
+  type ContentWidth,
   type UiTextScale,
 } from "../../../prefs/SettingsContext";
 import type { Strings } from "../../../i18n/strings";
 import { appDrawsWindowFrame } from "../../../platform/window-chrome";
-import { canUseWindows } from "../../../platform/capabilities";
-import {
-  ThemeSection,
-  CustomCssRow,
-  ThemesTab,
-} from "../../../settings/sections/theme";
-import { AdvancedFold } from "../../../settings/sections/controls";
+import { canUseWindows, isMobileApp } from "../../../platform/capabilities";
+import { ThemeSection, ThemesTab } from "../../../settings/sections/theme";
+import { DocTextFold } from "../../../settings/sections/text-font";
 import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
 
-/** Appearance, drawn with the new rows: the theme
- *  section keeps its existing component for now (the transition rule); the
- *  interface scale, layout, rail, title row and menu bar are new rows off
- *  the store, one's own CSS under Advanced. */
+/** Appearance, drawn with the new rows: the theme section keeps its
+ *  existing component for now (the transition rule); the interface scale,
+ *  the document's text, the window layout and menu bar are new rows off the
+ *  store. */
 const SIZE_NAMES = {
   0.85: "uiTextSmall",
   1: "uiTextMedium",
@@ -44,6 +41,38 @@ export function AppearancePage({ t }: { t: Strings }) {
             }
           />
         </SettingsRow>
+      </PageGroup>
+      <PageGroup title={t.appearanceTextGroup}>
+        <DocTextFold t={t} settings={settings} setSettings={setSettings} />
+        <SettingsRow label={t.contentWidthLabel}>
+          <SettingsSelect
+            value={settings.contentWidth}
+            options={[
+              { value: "auto", label: t.contentWidthAuto },
+              { value: "standard", label: t.contentWidthStandard },
+              { value: "full", label: t.contentWidthFull },
+            ]}
+            onChange={(value) =>
+              setSettings({ contentWidth: value as ContentWidth })
+            }
+          />
+        </SettingsRow>
+        <SettingsRow label={t.firstLineIndentLabel}>
+          <SettingsSwitch
+            checked={settings.firstLineIndent}
+            onChange={(on) => setSettings({ firstLineIndent: on })}
+          />
+        </SettingsRow>
+        {!isMobileApp && (
+          <SettingsRow label={t.smoothCaretLabel}>
+            <SettingsSwitch
+              checked={settings.smoothCaret}
+              onChange={(on) => setSettings({ smoothCaret: on })}
+            />
+          </SettingsRow>
+        )}
+      </PageGroup>
+      <PageGroup title={t.windowLayoutGroup}>
         <SettingsRow label={t.layoutLabel}>
           <SettingsSelect
             value={settings.layout}
@@ -73,9 +102,6 @@ export function AppearancePage({ t }: { t: Strings }) {
           </SettingsRow>
         )}
       </PageGroup>
-      <AdvancedFold t={t}>
-        <CustomCssRow t={t} />
-      </AdvancedFold>
       {/* The installed themes and the gallery, unchanged (the transition
           rule): the board repaints the page above, not its store. */}
       <ThemesTab t={t} />

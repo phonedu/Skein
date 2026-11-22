@@ -1,3 +1,4 @@
+import { storedLook } from "./classic-look";
 import { normaliseMcpServers } from "./mcp";
 import { hasTextusAi } from "../platform/capabilities";
 import { detectLang, isLang, type Lang } from "../i18n/strings";
@@ -18,6 +19,10 @@ import {
   type PdfTextScale,
   COLOR_SWATCH_MODES,
   type ColorSwatchMode,
+  SINGLE_TILDE_MODES,
+  type SingleTildeMode,
+  SINGLE_NEWLINE_MODES,
+  type SingleNewlineMode,
   DIAGRAM_ENGINES,
   type DiagramEngine,
   IMAGE_HOSTS,
@@ -205,6 +210,16 @@ function readSettings(parsed: Raw | null): Settings {
       )
         ? (parsed.colorSwatches as ColorSwatchMode)
         : DEFAULT_SETTINGS.colorSwatches,
+      singleTilde: SINGLE_TILDE_MODES.includes(
+        parsed.singleTilde as SingleTildeMode,
+      )
+        ? (parsed.singleTilde as SingleTildeMode)
+        : DEFAULT_SETTINGS.singleTilde,
+      singleNewline: SINGLE_NEWLINE_MODES.includes(
+        parsed.singleNewline as SingleNewlineMode,
+      )
+        ? (parsed.singleNewline as SingleNewlineMode)
+        : DEFAULT_SETTINGS.singleNewline,
       uiTextScale: UI_TEXT_SCALES.includes(parsed.uiTextScale as UiTextScale)
         ? (parsed.uiTextScale as UiTextScale)
         : (UI_TEXT_SCALES_BEFORE[String(parsed.uiTextScale)] ??
@@ -247,6 +262,15 @@ function readSettings(parsed: Raw | null): Settings {
         : DEFAULT_SETTINGS.imageHost,
       // Any profile string is kept - a newer build's may not be in this
       // build's list - but it has to be one.
+      lookBeforeClassic: storedLook(parsed.lookBeforeClassic),
+      // Saved before the frame had a setting: on where the classic look is,
+      // which now includes it, so its switch still shows on.
+      plainFrame:
+        typeof parsed.plainFrame === "boolean"
+          ? parsed.plainFrame
+          : parsed.layout === "classic" &&
+            parsed.activityRail === false &&
+            parsed.titleRowShown === true,
       textusAiResumeAt:
         typeof parsed.textusAiResumeAt === "number"
           ? parsed.textusAiResumeAt

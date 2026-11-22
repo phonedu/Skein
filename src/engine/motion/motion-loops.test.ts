@@ -18,7 +18,7 @@ const OWN_LOOPS: Record<string, string> = {
   "ai/revision/stream-follow-plugin.ts tick": "follows a growing rewrite",
   // Waits a few frames for something to be drawn; nothing moves.
   "app/useSourceModes.ts place": "until the source view exists",
-  "document-view/hold-scroll-on-return.ts drawn": "until the page settles",
+  "app/hold-on-return.ts drawn": "until the page settles",
   "settings/SettingsSearch.tsx go": "until the entry is drawn",
 };
 

@@ -2,13 +2,11 @@ import type { Strings } from "../../../i18n/strings";
 import { useSettings } from "../../../prefs/SettingsContext";
 import type {
   ColorSwatchMode,
-  ContentWidth,
   DiagramEngine,
   EmbedDisplay,
 } from "../../../prefs/SettingsContext";
 import type { ViewMode } from "../../../prefs/settings-values";
 import { AdvancedFold } from "../../../settings/sections/controls";
-import { DocTextFold } from "../../../settings/sections/text-font";
 import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
 import { SettingsSelect, SettingsSwitch } from "../settings-controls";
@@ -23,35 +21,6 @@ export function EditorPage({ t }: { t: Strings }) {
   const { settings, setSettings } = useSettings();
   return (
     <>
-      {/* How the text is set. */}
-      <PageGroup title={t.settingsTextGroup}>
-        <SettingsRow label={t.contentWidthLabel}>
-          <SettingsSelect
-            value={settings.contentWidth}
-            options={[
-              { value: "auto", label: t.contentWidthAuto },
-              { value: "standard", label: t.contentWidthStandard },
-              { value: "full", label: t.contentWidthFull },
-            ]}
-            onChange={(value) =>
-              setSettings({ contentWidth: value as ContentWidth })
-            }
-          />
-        </SettingsRow>
-        <SettingsRow label={t.firstLineIndentLabel}>
-          <SettingsSwitch
-            checked={settings.firstLineIndent}
-            onChange={(on) => setSettings({ firstLineIndent: on })}
-          />
-        </SettingsRow>
-        <SettingsRow label={t.emptyLineHintLabel}>
-          <SettingsSwitch
-            checked={settings.emptyLineHint}
-            onChange={(on) => setSettings({ emptyLineHint: on })}
-          />
-        </SettingsRow>
-        <DocTextFold t={t} settings={settings} setSettings={setSettings} />
-      </PageGroup>
       {/* One view for every document in every window. */}
       <PageGroup title={t.settingsViewGroup}>
         <SettingsRow label={t.viewModeLabel} description={t.viewModeHelp}>

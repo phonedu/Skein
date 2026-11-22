@@ -10,9 +10,11 @@ import { createSubscribers } from "../../utils/store";
 /** What Create makes; each is the name of the built-in skill that makes it. */
 export type CreateKind = "plugin" | "theme" | "skill";
 
-interface CreateRequest {
+export interface CreateRequest {
   text: string;
   kind: CreateKind;
+  /** For a theme: an installed one the workshop opens on. */
+  start?: string;
 }
 
 /** Asks the window to open Settings at Extensions › Create. */
@@ -25,9 +27,10 @@ const subscribers = createSubscribers();
 export function requestCreate(
   text: string,
   kind: CreateKind = "plugin",
+  start?: string,
   target: "auto" | "settings" = "auto",
 ): void {
-  pending = { text, kind };
+  pending = start ? { text, kind, start } : { text, kind };
   // A button on the Settings page keeps the request for the page's own
   // Create, even when a Create tab is open behind the dialog.
   if (target === "settings") {
@@ -37,6 +40,14 @@ export function requestCreate(
   subscribers.publish();
   // No tab open took it.
   if (pending) createAsks.publish();
+}
+
+/** The theme workshop on `start` (the theme in use without one), in front:
+ *  asked from a theme's card, away from Create. */
+export function requestWorkshop(start?: string): void {
+  requestCreate("", "theme", start);
+  // An open Create tab took it: it comes to the front.
+  if (!pending) createAsks.publish();
 }
 
 /** The request waiting, once: whoever takes it handles it. */
