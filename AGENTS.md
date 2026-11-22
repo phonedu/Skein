@@ -31,6 +31,13 @@ Three things differ from the upstream guide below:
 `docs/dev/*` below is upstream's engineering manual: read it for how to
 change the code, but never put fork plans, progress or rulings in it.
 
+The fork's own AI rules (task six lines, completion evidence, scope,
+external review) are in
+[AI协作纪律.md](docs/skein/discipline/AI协作纪律.md); its procedures are in
+[工程菜谱.md](docs/skein/discipline/工程菜谱.md). This file stays the
+tool-neutral entry and the upstream engineering rules; it does not
+duplicate them.
+
 Docs are automated: `npm run docs:task -- brief <id>` writes the task six
 lines, `start` refuses to start without them, and `npm run docs:context --
 <id>` prints the task's context pack; `docs:new` creates a decision/spec/
@@ -53,18 +60,20 @@ built with Tauri 2: a React + TypeScript frontend in `src/` (the editor is
 Milkdown/ProseMirror, source mode CodeMirror 6) and a Rust backend in
 `src-tauri/`.
 
-| Need                                                   | Read                                                             |
-| ------------------------------------------------------ | ---------------------------------------------------------------- |
-| Setup, the checks to run, code style, writing          | [CONTRIBUTING.md](CONTRIBUTING.md)                               |
-| Folders, layers and what ESLint enforces; the backend  | [docs/dev/architecture.md](docs/dev/architecture.md)             |
-| How to add a setting, menu item, command, string, test | [docs/dev/recipes.md](docs/dev/recipes.md)                       |
-| The one place for each common need: reuse it           | [docs/dev/reuse.md](docs/dev/reuse.md)                           |
-| Tabs, opening, saving, drafts, closing                 | [docs/dev/documents.md](docs/dev/documents.md)                   |
-| Which test layer, the e2e helpers, CI                  | [docs/dev/testing.md](docs/dev/testing.md)                       |
-| Branches, pull requests, commits, releases             | [docs/dev/releasing.md](docs/dev/releasing.md)                   |
-| Desktop and iOS: what is shared, what is gated         | [docs/dev/ios-code-map.md](docs/dev/ios-code-map.md)             |
-| The interface's design standard                        | [docs/skein/decisions/README.md](docs/skein/decisions/README.md) |
-| Every other document                                   | [docs/README.md](docs/README.md)                                 |
+| Need                                                   | Read                                                                                                   |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Setup, the checks to run, code style, writing          | [CONTRIBUTING.md](CONTRIBUTING.md)                                                                     |
+| Folders, layers and what ESLint enforces; the backend  | [docs/dev/architecture.md](docs/dev/architecture.md)                                                   |
+| How to add a setting, menu item, command, string, test | [docs/dev/recipes.md](docs/dev/recipes.md)                                                             |
+| The one place for each common need: reuse it           | [docs/dev/reuse.md](docs/dev/reuse.md)                                                                 |
+| Tabs, opening, saving, drafts, closing                 | [docs/dev/documents.md](docs/dev/documents.md)                                                         |
+| Which test layer, the e2e helpers, CI                  | [docs/dev/testing.md](docs/dev/testing.md)                                                             |
+| Branches, pull requests, commits, releases             | [docs/dev/releasing.md](docs/dev/releasing.md)                                                         |
+| Desktop and iOS: what is shared, what is gated         | [docs/dev/ios-code-map.md](docs/dev/ios-code-map.md)                                                   |
+| The interface's design standard                        | [docs/skein/decisions/README.md](docs/skein/decisions/README.md)                                       |
+| Fork planning, status and rulings                      | [docs/skein/README.md](docs/skein/README.md)                                                           |
+| Fork AI rules and procedures                           | [AI协作纪律.md](docs/skein/discipline/AI协作纪律.md), [工程菜谱.md](docs/skein/discipline/工程菜谱.md) |
+| Every other document                                   | [docs/README.md](docs/README.md)                                                                       |
 
 ## Rules
 
