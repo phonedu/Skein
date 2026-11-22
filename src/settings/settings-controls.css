@@ -1,7 +1,22 @@
 button.settings-inline-button {
   flex-shrink: 0;
   white-space: nowrap;
+  /* A drawn action, not a browser button: the native 2px outset showed as
+     a dark frame around Save and Import on the sync page. */
+  border: 0;
+  padding: 4px 8px;
+  border-radius: var(--shape-s);
   background: var(--ui-bg);
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  cursor: pointer;
+}
+
+@media (any-hover: hover) {
+  button.settings-inline-button:hover {
+    background: var(--ui-hover);
+  }
 }
 
 /* A row with two actions, stacked so a long folder path beside them has room. */
@@ -106,6 +121,7 @@ button.settings-inline-button {
    and under the label the link a paste writes. */
 .image-folder-control {
   display: flex;
+  width: 100%;
   flex-wrap: wrap;
   gap: 8px;
   min-width: 0;

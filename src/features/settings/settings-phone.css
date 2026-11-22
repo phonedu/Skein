@@ -280,6 +280,9 @@ button.settings-phone-ic:active {
   border-radius: var(--shape-card);
   background: var(--ui-surface);
   box-shadow: var(--shadow-card);
+  /* The last row's control otherwise sits 4px off the card's bottom edge;
+     the card keeps the same 16px inset the rows use at their sides. */
+  padding-block: var(--space-3);
 }
 
 /* Every row in the card - a fold's nested ones included - keeps the card's
@@ -652,6 +655,7 @@ button.settings-phone-ic:active {
   border-radius: var(--shape-card);
   background: var(--ui-surface);
   box-shadow: var(--shadow-card);
+  padding-block: var(--space-3);
 }
 
 .settings-phone .settings-phone-body .settings-group-body > .settings-row {

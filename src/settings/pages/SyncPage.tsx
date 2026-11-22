@@ -162,7 +162,7 @@ export function SyncPage({
   if (!folderRoot) {
     return (
       <>
-        <SettingsGroup title={t.navSync}>
+        <SettingsGroup className="sync-page">
           <p className="tx-list-note">{t.syncNoFolder}</p>
         </SettingsGroup>
         <SyncVaults t={t} vaults={vaults} />
@@ -431,7 +431,7 @@ export function SyncPage({
 
   return (
     <>
-      <SettingsGroup title={t.navSync}>
+      <SettingsGroup className="sync-page">
         <SyncStatusHeader
           t={t}
           folderRoot={folderRoot}

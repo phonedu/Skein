@@ -11,3 +11,7 @@
 ### Fixed
 
 - The recent files at the top of the desktop file view no longer draw as native browser buttons, and the current delivery is no longer a lone white card among bare rows.
+- Settings cards draw one hairline in the right place: the last row keeps the line above it, legacy pages no longer double it, and the card's top and bottom insets match its rows.
+- Sync uses the same card rows, rounded fields and drawn actions as the rest of Settings; Export no longer repeats its page name in the content.
+- The Create buttons under Extensions › Themes, Plugins and Skills open Create inside the Settings dialog, not a tab behind it.
+- Collecting a thought on the phone opens the note it just wrote, and that note can be opened again from Today.

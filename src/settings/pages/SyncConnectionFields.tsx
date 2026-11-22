@@ -203,6 +203,7 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
         <label className="sync-check">
           <input
             type="checkbox"
+            className="ui-check"
             checked={!!config.encrypted}
             disabled={!!savedConfig?.encrypted}
             onChange={(event) =>
@@ -297,6 +298,7 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
             <label className="sync-check">
               <input
                 type="checkbox"
+                className="ui-check"
                 disabled={locked}
                 checked={config.pathStyle}
                 onChange={(event) =>

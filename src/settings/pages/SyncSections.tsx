@@ -10,7 +10,7 @@ import { connectionLabel } from "./sync-page-model";
 
 export function SyncVaults({ t, vaults }: { t: Strings; vaults: SyncVault[] }) {
   return (
-    <SettingsGroup title={t.syncVaultsTitle}>
+    <SettingsGroup title={t.syncVaultsTitle} className="sync-page">
       {vaults.length === 0 ? (
         <p className="tx-list-note">{t.syncNoVaults}</p>
       ) : (
@@ -44,7 +44,7 @@ export function SyncConflictsHistory(props: SyncConflictsHistoryProps) {
   return (
     <>
       {status?.configured && (
-        <SettingsGroup title={t.syncConflictsTitle}>
+        <SettingsGroup title={t.syncConflictsTitle} className="sync-page">
           {conflicts.length === 0 ? (
             <p className="tx-list-note">{t.syncNoConflicts}</p>
           ) : (
@@ -64,7 +64,7 @@ export function SyncConflictsHistory(props: SyncConflictsHistoryProps) {
         </SettingsGroup>
       )}
       {status?.configured && (
-        <SettingsGroup title={t.syncHistoryTitle}>
+        <SettingsGroup title={t.syncHistoryTitle} className="sync-page">
           {historyRows.length === 0 ? (
             <p className="tx-list-note">{t.syncNoHistory}</p>
           ) : (

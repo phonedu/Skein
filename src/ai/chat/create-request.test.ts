@@ -36,6 +36,22 @@ describe("a request for Create", () => {
     expect(opened).not.toHaveBeenCalled();
   });
 
+  it("keeps a Settings button's request for Settings while a tab is open", () => {
+    const opened = vi.fn();
+    const taken: unknown[] = [];
+    const stopAsked = onCreateAsked(opened);
+    const stop = onCreateRequest(() => taken.push(takeCreateRequest()));
+    requestCreate("Make a theme", "theme", "settings");
+    stop();
+    stopAsked();
+    expect(taken).toEqual([]);
+    expect(opened).toHaveBeenCalledOnce();
+    expect(takeCreateRequest()).toEqual({
+      text: "Make a theme",
+      kind: "theme",
+    });
+  });
+
   it("is what asking the AI in Create mode does, not the document's panel", () => {
     askAi("Fix the plugin", "create");
     expect(takeCreateRequest()).toEqual({

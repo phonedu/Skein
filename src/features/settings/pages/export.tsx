@@ -23,7 +23,7 @@ export function ExportPage({ t }: { t: Strings }) {
   return (
     <>
       {canExportPdf && (
-        <PageGroup title={t.menuExport}>
+        <PageGroup>
           <SettingsRow label={t.pdfPageNumbersLabel}>
             <SettingsSwitch
               checked={settings.pdfPageNumbers}

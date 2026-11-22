@@ -261,7 +261,8 @@ describe("the settings content column", () => {
 
   it("draws Export with the new rows, not the legacy wrapper", () => {
     const { container } = content("edit-export");
-    expect(screen.getByText("导出")).toBeTruthy();
+    // The nav already names the page: the content has no second title.
+    expect(screen.queryByText("导出")).toBeNull();
     expect(screen.getByText("PDF 页码")).toBeTruthy();
     expect(container.querySelector(".settings-legacy-page")).toBeNull();
   });

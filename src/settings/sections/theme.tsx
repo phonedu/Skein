@@ -326,7 +326,7 @@ export function ThemesTab({ t }: { t: Strings }) {
       intro={t.extensionsIntroThemes}
       primary={{
         label: t.createMakeTheme,
-        onSelect: () => requestCreate("", "theme"),
+        onSelect: () => requestCreate("", "theme", "settings"),
       }}
       query={query}
       onQuery={setQuery}

@@ -1,22 +1,118 @@
+/* The sync page keeps its old field components, but sits in the dialog's
+   glass cards: rows carry the inset hairline, fields are real controls, and
+   nothing touches the card's edge. */
+.settings-dialog-content .settings-group.sync-page .settings-group-body {
+  padding: 8px 0;
+}
+
+.settings-dialog-content .sync-page .settings-row {
+  min-height: calc(56px * var(--chrome-scale, 1));
+  padding: 0 calc(20px * var(--chrome-scale, 1));
+  border-bottom: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(100% - 16px * var(--chrome-scale, 1)),
+    transparent calc(100% - 16px * var(--chrome-scale, 1))
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+.settings-dialog-content .sync-page .settings-group-body > :first-child {
+  background-image: none;
+}
+
+.sync-page .tx-list-note {
+  padding: 12px calc(20px * var(--chrome-scale, 1)) 4px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.sync-page .settings-success,
+.sync-page .settings-error {
+  margin: 8px calc(20px * var(--chrome-scale, 1));
+  padding: 12px;
+  border: 0;
+  border-radius: var(--shape-s);
+  font-size: var(--text-body);
+}
+
+.sync-page .settings-success {
+  background: color-mix(in srgb, var(--ui-success) 10%, var(--ui-subtle));
+}
+
+.sync-page .settings-error {
+  background: color-mix(in srgb, var(--ui-danger) 10%, var(--ui-subtle));
+}
+
 .sync-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin: var(--space-3) 0;
+  gap: 0;
+  margin: 0;
+  padding: 4px 0 0;
+  position: relative;
 }
 
+/* The form starts under the Service row as its own block, with the same
+   inset hairline the message and row above use. */
+.sync-form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(20px * var(--chrome-scale, 1));
+  right: calc(16px * var(--chrome-scale, 1));
+  height: 1px;
+  background: var(--ui-border);
+}
+
+/* A form row reads like the select rows above it: name at the start, the
+   field taking the rest of the line. */
 .sync-field {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 12px calc(20px * var(--chrome-scale, 1));
+}
+
+.sync-field > .settings-field-label {
+  flex: 0 0 150px;
+  min-width: 0;
+}
+
+.sync-field > :not(.settings-field-label) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sync-page .sync-field .settings-text-input {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-s);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+}
+
+.sync-page .sync-field .settings-text-input:focus {
+  border-color: var(--ui-accent);
+  outline: none;
 }
 
 .sync-check {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--ui-muted);
-  font-size: var(--text-caption);
+  padding: 12px calc(20px * var(--chrome-scale, 1));
+  color: var(--ui-text);
+  font-size: var(--text-body);
 }
 
 .sync-actions {
@@ -24,7 +120,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  margin-top: var(--space-3);
+  margin: 0;
+  padding: 8px calc(20px * var(--chrome-scale, 1))
+    calc(12px * var(--chrome-scale, 1));
 }
 
 .sync-actions .danger {
@@ -43,8 +141,8 @@
   align-items: center;
   gap: var(--space-3);
   min-height: 40px;
-  padding: var(--space-1) 0;
-  border-bottom: 1px solid var(--ui-border);
+  padding: var(--space-1) calc(20px * var(--chrome-scale, 1));
+  border-bottom: 0;
 }
 
 .sync-plugin-note {
@@ -52,6 +150,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-2);
+  padding: 8px calc(20px * var(--chrome-scale, 1));
 }
 
 .sync-list-row:last-child {

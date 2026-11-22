@@ -75,7 +75,7 @@ export function ExtensionsPage(props: SettingsPageProps) {
               help={t.extensionsSkillsHelp}
               primary={{
                 label: t.createMakeSkill,
-                onSelect: () => requestCreate("", "skill"),
+                onSelect: () => requestCreate("", "skill", "settings"),
               }}
               query={skillQuery}
               onQuery={setSkillQuery}

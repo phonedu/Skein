@@ -87,6 +87,16 @@
   background-repeat: no-repeat;
 }
 
+/* A legacy control that wraps (the image folder's two parts) takes the
+   whole line under its label, instead of shrinking beside it. */
+.settings-dialog-content
+  .settings-page-group-body
+  .settings-row
+  > .settings-row-control {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* A title and its description need the taller row. */
 .settings-dialog-content
   .settings-page-group-body
@@ -94,24 +104,57 @@
   min-height: calc(72px * var(--chrome-scale, 1));
 }
 
-/* Nothing above the card's first row, and nothing under its last. */
+/* Nothing above the card's first row. The hairline is drawn at a row's top,
+   so the last row keeps its own: it separates it from the row above. */
 .settings-dialog-content .settings-page-group-body > :first-child.settings-row,
 .settings-dialog-content
   .settings-page-group-body
   > :first-child
-  > .settings-row:first-child,
-.settings-dialog-content .settings-page-group-body > :last-child.settings-row,
-.settings-dialog-content
-  .settings-page-group-body
-  > :last-child
-  > .settings-row:last-child {
+  > .settings-row:first-child {
   background-image: none;
+}
+
+/* The legacy pages still put a border above every child after the first;
+   inside the dialog's card the row's own hairline is the only one. */
+.settings-dialog-content .settings-group-body > * + * {
+  border-top: 0;
 }
 
 /* A fold's own hairline comes from its row's background; a border on the
    body's children would draw a second, full-width one. */
 .settings-dialog-content .settings-page-group-body .settings-fold-body > * {
   border-top: 0;
+}
+
+/* The advanced fold is a card too: its rows keep the same inset hairline,
+   and its body no longer carries the old 16px inner step. */
+.settings-dialog-content .settings-advanced-body {
+  padding: 8px 0;
+}
+
+.settings-dialog-content .settings-advanced-body > * {
+  border-top: 0;
+}
+
+.settings-dialog-content .settings-advanced-body .settings-row {
+  position: relative;
+  min-height: calc(56px * var(--chrome-scale, 1));
+  padding-inline: calc(20px * var(--chrome-scale, 1));
+  border-bottom: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(20px * var(--chrome-scale, 1)),
+    var(--ui-border) calc(100% - 16px * var(--chrome-scale, 1)),
+    transparent calc(100% - 16px * var(--chrome-scale, 1))
+  );
+  background-size: 100% 1px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+}
+
+.settings-dialog-content .settings-advanced-body > :first-child.settings-row {
+  background-image: none;
 }
 
 .settings-legacy-page {
@@ -165,6 +208,7 @@
   border-radius: var(--shape-card);
   background: var(--ui-surface);
   box-shadow: var(--shadow-card);
+  padding-block: calc(8px * var(--chrome-scale, 1));
 }
 
 .settings-page-group {
@@ -193,4 +237,10 @@
 
 .settings-page-group-body {
   min-width: 0;
+}
+
+.settings-dialog-content .settings-page-group-body {
+  /* The rows keep their 56/72 height; this small inset balances the card's
+     top and bottom against the first and last row's text. */
+  padding-block: calc(8px * var(--chrome-scale, 1));
 }

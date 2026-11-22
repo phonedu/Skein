@@ -96,7 +96,7 @@ function App() {
     setSurface: setPhoneView,
     today: phoneToday,
     library: phoneLibrary,
-  } = usePhoneSurfaces(activeTab.view);
+  } = usePhoneSurfaces(activeTab.view, activeTab.path);
 
   const { tutorial, settingsOpening, pendingClose } = shell;
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;

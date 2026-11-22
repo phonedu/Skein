@@ -14,10 +14,17 @@ import {
   OPEN_SETTINGS_PAGE_EVENT,
   settingsDialogOpen,
 } from "../settings/settings-nav";
+import {
+  extensionsStartTab,
+  openExtensionsTab,
+} from "../settings/pages/extensions-tab";
+import { requestCreate, takeCreateRequest } from "../ai/chat/create-request";
 
 afterEach(() => {
   cleanup();
   closeSettingsDialog();
+  openExtensionsTab("themes");
+  takeCreateRequest();
 });
 const tabs = {
   tabsRef: { current: [] },
@@ -57,6 +64,14 @@ it("a plugin's settings open in the dialog; its list needs no page", () => {
   act(() => result.current.openPluginSettings());
   // The plugins list is the sidebar's: the dialog stays as it was.
   expect(settingsDialogOpen()!.page).toContain("cloud-sync");
+});
+
+it("a Create request from inside the dialog goes to Extensions on Create", () => {
+  const { result } = renderHook(() => useSettingsOpening(tabs));
+  act(() => result.current.openSettings());
+  act(() => requestCreate("", "theme"));
+  expect(settingsDialogOpen()).toMatchObject({ page: "extensions" });
+  expect(extensionsStartTab()).toBe("create");
 });
 
 it("close shuts the dialog", () => {

@@ -13,7 +13,9 @@
   border-bottom: 0;
 }
 
-.settings-row-label {
+/* The new row's label is its own column (name, description under it).
+   Legacy rows keep their label inline, with the "?" beside the name. */
+.settings-row > .settings-row-label {
   flex: 1;
   min-width: 0;
   display: flex;

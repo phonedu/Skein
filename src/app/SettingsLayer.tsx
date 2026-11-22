@@ -86,9 +86,11 @@ export function useSettingsOpening(tabs: TabState) {
   useEffect(() => {
     const open = () => {
       openExtensionsTab("create");
-      // Making a theme, a plugin or a skill with the AI: a tab of its own
-      // on the desktop; the iPad's Extensions page in its sheet.
-      if (inTabs) request("extensions");
+      // A request made from inside the open Settings dialog goes to its
+      // Extensions page, on Create; without it, a Create tab of its own
+      // (the desktop) or the iPad's Extensions page in its sheet.
+      if (settingsDialogOpen()) showSettingsDialog("extensions");
+      else if (inTabs) request("extensions");
       else showPage(tabs, "create");
     };
     const stopCreate = onCreateAsked(open);

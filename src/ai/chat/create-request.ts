@@ -22,8 +22,18 @@ export const onCreateAsked = createAsks.subscribe;
 let pending: CreateRequest | null = null;
 const subscribers = createSubscribers();
 
-export function requestCreate(text: string, kind: CreateKind = "plugin"): void {
+export function requestCreate(
+  text: string,
+  kind: CreateKind = "plugin",
+  target: "auto" | "settings" = "auto",
+): void {
   pending = { text, kind };
+  // A button on the Settings page keeps the request for the page's own
+  // Create, even when a Create tab is open behind the dialog.
+  if (target === "settings") {
+    createAsks.publish();
+    return;
+  }
   subscribers.publish();
   // No tab open took it.
   if (pending) createAsks.publish();
