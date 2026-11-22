@@ -95,7 +95,7 @@ describe("typographyCss", () => {
 describe("builtinThemeCss", () => {
   it("restates Paper's palette in light and dark, over the default's", () => {
     const { light, dark } = builtinThemeCss("paper", sources);
-    // The fork's page ink (ruling 14): its paper palette, not upstream's.
+    // The fork's page ink: its paper palette, not upstream's.
     expect(light).toContain("--doc-bg: #fbf8f2;");
     expect(light).toContain("--doc-highlight-bg:");
     expect(light).toContain("Charter");
