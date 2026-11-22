@@ -9,7 +9,7 @@ updated: 2026-11-23
 
 本仓是 `CatVinci-Studio/Textus` 的 fork。日常所有改动（代码、skein 文档、
 STATUS）都发布到自己的 fork `phonedu/Skein`；上游只在接受 pull request 的
-意义上存在，而且**只有当我说"这个能上上游"时才碰**。本文是这件事的唯一流程。
+意义上存在，而且**只有当我说"这个能上上游"时才碰**。本文是这件事的唯一流程。本仓用 `npm run upstream:ticket` 起工单草稿、`upstream:patch` 导出候选补丁、`upstream:gate` 手动跑闸门；命令索引见 [COMMANDS.md](../COMMANDS.md)。
 
 ## 拓扑
 
@@ -120,23 +120,13 @@ STATUS）都发布到自己的 fork `phonedu/Skein`；上游只在接受 pull re
 全程在克隆里做；本仓只负责把净差异导出成补丁：
 
 ```bash
-# ① 本仓（C:/Project/Textus）里：导出净差异；私有路径与 CI 一律排除
-git diff upstream/main...<特性分支> -- . \
-  ':(exclude)docs/skein' ':(exclude).ryugi' \
-  ':(exclude).githooks' ':(exclude).github' \
-  > C:/Project/pr-<主题>.patch
-
-# ② 上游克隆里：落地（地址见上方「拓扑」表）
-git clone <上游的 SSH 地址> C:/Project/Textus-upstream
-cd C:/Project/Textus-upstream
-git switch -c pr/<主题>
-git apply C:/Project/pr-<主题>.patch
+# ① 本仓（C:/Project/Textus）里：导出净差异；私有路径、CI、.claude 和 fork-clean 文件自动排除
+npm run upstream:patch -- <特性分支>
 ```
 
 然后按固定九步走，顺序不改：
 
-1. **写「上游工单」**（上一节）；`git fetch origin` 后从 `origin/main` 新开
-   `pr/<slug>`。旧克隆里的同名分支可能落后，不接用旧分支；不推 `main`。
+1. **写「上游工单」**（上一节）；先跑 `npm run upstream:ticket -- <分支>` 生成草稿，`git fetch origin` 后从 `origin/main` 新开 `pr/<slug>`。旧克隆里的同名分支可能落后，不接用旧分支；不推 `main`。
 2. **移植前先比基线**：`git diff origin/main:<file>` 与 fork `HEAD:<file>`
    不同，就按上游当前代码手工移植（2026-11-19 的 `drawn-caret-plugin.ts`
    就是上游已重构过），PR 里注明 `ported from fork <hash>`；**禁止整文件覆盖**。
@@ -152,6 +142,7 @@ git apply C:/Project/pr-<主题>.patch
    `origin`）：
    ```bash
    node C:/Project/Textus/.githooks/gate.mjs upstream --range "origin/main..pr/<slug>"
+   # 或在 fork 仓跑：npm run upstream:gate -- upstream --range "origin/main..pr/<slug>"
    ```
 8. 推到 fork 作为 PR head，再开 PR（fork 的 SSH 地址见「拓扑」表；闸门的
    邮箱规则会把命令行里的 `git@…` 当邮箱拦下，所以这里写占位符）：
@@ -177,8 +168,8 @@ git apply C:/Project/pr-<主题>.patch
 ## 永不上上游的清单
 
 - `base-ui-settings` 分支的全部内容：Base UI 设置页重建、界面改造（画板已于 2026-11-20 删除，仅留文档记录）。
-- 已规划的后续功能改动（见 `docs/skein/STATUS.md`）。
-- `docs/skein/`、`.ryugi/`、`.githooks/` 目录本身。
+- 已规划的后续功能改动（见 [`STATUS.md`](../STATUS.md)）。
+- `docs/skein/`、`.ryugi/`、`.githooks/`、`.claude/` 目录本身。
 
 上游只收：与本 fork 私有改造无关的 bug 修复与小改进，且按上面的流程重建。
 

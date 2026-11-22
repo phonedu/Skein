@@ -21,7 +21,12 @@ const indexPath = join(skein, "INDEX.md");
 const decisionsDir = join(skein, "decisions");
 const decisionsIndexPath = join(decisionsDir, "README.md");
 const skippedDirs = new Set(["archive", "_templates"]);
-const skippedDocs = new Set(["README.md", "INDEX.md", "decisions/README.md"]);
+const skippedDocs = new Set([
+  "README.md",
+  "INDEX.md",
+  "COMMANDS.md",
+  "decisions/README.md",
+]);
 const statuses = new Set([
   "draft",
   "active",

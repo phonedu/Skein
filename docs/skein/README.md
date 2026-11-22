@@ -10,6 +10,7 @@
 | 找某份文档         | [INDEX.md](INDEX.md)（生成，按类型和状态分组）              |
 | 找某条裁决         | [decisions/README.md](decisions/README.md)（按 ID 查）      |
 | 找某个方案         | [INDEX.md](INDEX.md) → `specs/`                             |
+| 全部命令           | [COMMANDS.md](COMMANDS.md)（生成，按类别）                  |
 | 工程上怎么做       | [AGENTS.md](../../AGENTS.md) → [CONTRIBUTING.md](../../CONTRIBUTING.md) → `docs/dev/` |
 | 查历史             | [archive/README.md](archive/README.md)                      |
 
@@ -22,10 +23,14 @@
 | 完成并归档         | `npm run docs:task -- done D1e --evidence "命令 / 输出 / commit"`   |
 | 新裁决 / 方案 / 调研 | `npm run docs:new -- decision "标题"`（spec / research 同理）       |
 | 找东西             | `npm run docs:find -- "关键词"`                                      |
-| 改完文档           | `npm run docs`（生成 STATUS / INDEX / 裁决索引并检查）               |
+| 改完文档           | `npm run docs`（生成 STATUS / INDEX / 命令 / 裁决索引并检查）        |
 | 体检               | `npm run docs:doctor`                                                |
+| 跟上游 tag         | `npm run upstream:status` → `upstream:plan -- vX.Y.Z`；步骤见工程菜谱 R5 |
+| 上游 PR 候选       | `upstream:ticket` / `upstream:patch` / `upstream:gate`               |
+| 发 release note    | `release:new` / `release:check` / `release:build -- X.Y.Z`           |
+| 日常收尾 / 发布前  | `npm run verify` / `npm run verify:full`                             |
 
-`STATUS.md` 由 `status.yaml` 生成，`INDEX.md` 与 `decisions/README.md` 由脚本生成；都不要手改。
+全部命令按类别列在 [COMMANDS.md](COMMANDS.md)。`STATUS.md` 由 `status.yaml` 生成；`INDEX.md`、`COMMANDS.md`、`decisions/README.md` 也由脚本生成；都不要手改。
 
 ## 三条定位
 

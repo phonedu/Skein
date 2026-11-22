@@ -20,7 +20,7 @@ updated: 2026-11-23
 | 同步（S 组） | ◐ | S3q 七牛原生专项；S3b 的 S3 条件写已判负 | [规格](specs/同步方案.md) |
 | 上游跟随（B 组） | ◐ | v1.4.6 已并线；等下一个稳定 tag | [规格](specs/Textus-改造方案.md) |
 | 主题（T1） | ◐ | 阶段 0 文档完成；阶段 1 锁皮肤代码按需插队 | [规格](specs/Textus-主题策略.md) |
-| 文档（DOC） | ◐ | 文档自动化；status / context / new 命令 | [规格](decisions/0052-文档体系重排.md) |
+| 文档（DOC） | ◐ | 文档 / 上游 / 发布命令自动化；COMMANDS 生成 | [规格](decisions/0052-文档体系重排.md) |
 
 ## 2. Now（按顺序）
 

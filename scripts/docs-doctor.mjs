@@ -49,7 +49,12 @@ const warnings = [];
 const titles = new Map();
 for (const file of files(skein)) {
   const rel = relative(skein, file).split(sep).join("/");
-  if (["README.md", "INDEX.md", "decisions/README.md"].includes(rel)) continue;
+  if (
+    ["README.md", "INDEX.md", "COMMANDS.md", "decisions/README.md"].includes(
+      rel,
+    )
+  )
+    continue;
   const text = readFileSync(file, "utf8");
   const meta = frontMatter(text);
   const title = /^# (.+)$/m.exec(text)?.[1].trim() ?? "";

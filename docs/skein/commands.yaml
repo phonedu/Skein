@@ -1,0 +1,138 @@
+# The fork's command surface. `npm run docs:commands` renders COMMANDS.md
+# from this file and package.json; the check fails on a name that is not a
+# real npm script, so this page cannot promise a command that does not exist.
+
+- name: docs
+  category: 文档
+  description: 生成 STATUS / INDEX / 命令索引 / 裁决索引并跑全部文档检查
+- name: docs:check
+  category: 文档
+  description: 只检查生成页是否新鲜、链接、元数据和裁决 ID
+- name: docs:status
+  category: 文档
+  description: 从 status.yaml 生成 STATUS.md
+- name: docs:commands
+  category: 文档
+  description: 从 commands.yaml 生成 COMMANDS.md
+- name: docs:new
+  category: 文档
+  description: 新建 decision / spec / research，自动编号、front-matter 和索引
+- name: docs:task
+  category: 文档
+  description: brief / start / done 任务；六行、归档和状态页一起完成
+- name: docs:context
+  category: 文档
+  description: 输出某个任务的 AI 上下文包（规格节 + 裁决 + 工程规矩）
+- name: docs:find
+  category: 文档
+  description: 按关键词搜标题、摘要和正文
+- name: docs:doctor
+  category: 文档
+  description: 体检过期规格、重复标题、缺六行的任务和索引漂移
+
+- name: verify
+  category: 验证
+  description: 文档检查 + release fragment 检查 + check:quick（日常收尾）
+- name: verify:full
+  category: 验证
+  description: 文档检查 + release 检查 + check:all（发布前）
+- name: check:quick
+  category: 验证
+  description: 只查改动文件：typecheck、lint、prettier、相关单测
+- name: check
+  category: 验证
+  description: typecheck、lint、全量单测、format、check:repo
+- name: check:repo
+  category: 验证
+  description: 仓库检查，含 docs / release 生成物新鲜度
+- name: check:native
+  category: 验证
+  description: rustfmt、clippy -D warnings、cargo test
+- name: check:all
+  category: 验证
+  description: check + e2e + native（发布前完整套件）
+
+- name: upstream:status
+  category: 上游
+  description: 当前基线、最新稳定 tag、领先/落后、patch 面、会被带回的 fork-clean 路径
+- name: upstream:plan
+  category: 上游
+  description: 规划一次 tag 合并（`-- <tag> [--fetch]`），列出重叠文件和步骤
+- name: upstream:start
+  category: 上游
+  description: 建 sync/upstream-<tag> 并 merge；默认 dry-run，`--apply` 才动 git
+- name: upstream:clean
+  category: 上游
+  description: 删除 gate absentPaths 里被 merge 带回的 fork-clean 文件；默认 dry-run
+- name: upstream:verify
+  category: 上游
+  description: 跑 check + check:native（`--full` 加 e2e），并打印 built app / Android 手测清单
+- name: upstream:record
+  category: 上游
+  description: 写 archive 合并记录，更新 status.yaml 的 baseline/commit
+- name: upstream:finish
+  category: 上游
+  description: 把 sync 分支快进回工作分支并删除；`--apply` 才动 git
+- name: upstream:patch
+  category: 上游
+  description: 导出上游 PR 候选补丁，排除私有路径、CI、`.claude` 和 fork-clean 文件
+- name: upstream:ticket
+  category: 上游
+  description: 打印「上游工单」草稿：仓、基线、分支、文件
+- name: upstream:gate
+  category: 上游
+  description: 手动跑发布闸门：`fork|upstream --range A..B`
+
+- name: release:new
+  category: 发布
+  description: 新建 release note fragment（`-- "slug" [--section Fixed]`）
+- name: release:check
+  category: 发布
+  description: 校验 docs/releases/next 的 fragment 格式
+- name: release:build
+  category: 发布
+  description: 把 fragments 收进 docs/releases/X.Y.Z.md（`-- X.Y.Z`）
+
+- name: dev
+  category: 构建 / 真机
+  description: Vite 开发服务器
+- name: build:debug
+  category: 构建 / 真机
+  description: 打 debug 桌面包，验窗口栏、拖拽区、快捷键、文件对话框
+- name: build:release
+  category: 构建 / 真机
+  description: 打正式桌面包
+- name: android:dev
+  category: 构建 / 真机
+  description: Tauri Android 开发运行
+- name: android:build
+  category: 构建 / 真机
+  description: 打 Android APK（debug）
+
+- name: tauri
+  category: 工程
+  description: 直接调用 Tauri CLI
+- name: bindings
+  category: 工程
+  description: 生成 src/platform/bindings（生成文件，勿手改）
+- name: typecheck
+  category: 工程
+  description: TypeScript 类型检查（应用和 node 配置）
+- name: lint
+  category: 工程
+  description: ESLint，零警告
+- name: format
+  category: 工程
+  description: Prettier 写回
+- name: format:check
+  category: 工程
+  description: Prettier 检查
+- name: test
+  category: 工程
+  description: Vitest 全量单测
+- name: test:e2e
+  category: 工程
+  description: Playwright e2e
+- name: test:roundtrip
+  category: 工程
+  description: Markdown round-trip 语料

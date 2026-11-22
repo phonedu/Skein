@@ -14,7 +14,12 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const skein = join(root, "docs/skein");
 /** Frozen records and templates: not indexed, not held to the metadata rules. */
 const skippedDirs = new Set(["archive", "_templates"]);
-const skippedDocs = new Set(["README.md", "INDEX.md", "decisions/README.md"]);
+const skippedDocs = new Set([
+  "README.md",
+  "INDEX.md",
+  "COMMANDS.md",
+  "decisions/README.md",
+]);
 const types = new Set(["spec", "decision", "research", "discipline", "status"]);
 const statuses = new Set([
   "draft",

@@ -34,7 +34,7 @@ workstreams:
   - id: DOC
     name: 文档（DOC）
     state: doing
-    focus: 文档自动化；status / context / new 命令
+    focus: 文档 / 上游 / 发布命令自动化；COMMANDS 生成
     spec: decisions/0052-文档体系重排.md
 
 tasks:

@@ -68,7 +68,7 @@ updated: 2026-11-23
 | 文档过期         | 移 `archive/`；跑 `npm run docs:index` 让索引跟上                      | —                              |
 | 文档两处对不上   | 实现与可执行锚（测试断言）先行；定不了的挂 `STATUS.md` §5 待审/触发点  | 带触发点与默认值               |
 
-不写版本号、修订记录和手写目录；`git log` 是历史，`INDEX.md` 与 `decisions/README.md` 由脚本生成。
+不写版本号、修订记录和手写目录；`git log` 是历史，`INDEX.md` / `COMMANDS.md` / `decisions/README.md` 由脚本生成。全部命令见 [COMMANDS.md](../COMMANDS.md)，步骤见 [工程菜谱](工程菜谱.md)。
 
 ## 六、偏差与缺口
 
@@ -103,6 +103,6 @@ updated: 2026-11-23
 
 1. **触发**：插件 / D1 资产链实现完成（D1e）后、D0.5 小样本与 D1d 验收前。同步或宿主的大改也可临时套用；不是每次小改都跑。
 2. **执行者**：`opencode run`，在独立 worktree 或干净 clone 中做，不碰主 checkout、不读 secrets、不改仓库。用 `opencode` 的只读审计/测试能力，不把它的修改直接合入。
-3. **输入**：`AGENTS.md`、`docs/skein/README.md`、D1 规格与 STATUS、本次改动范围；要求它运行现有测试、读实现、找功能性缺陷/代码错误/测试缺口，按严重度列出并给文件行号与复现步骤。
+3. **输入**：`AGENTS.md`、`docs/skein/README.md`、`npm run docs:context -- D1e` 的输出、本次改动范围；要求它运行现有测试、读实现、找功能性缺陷/代码错误/测试缺口，按严重度列出并给文件行号与复现步骤。
 4. **处理**：我们逐条复现；阻断项修复并补测试，非阻断项进 STATUS §5，opencode 的结论不等于验收，最终仍由我们的门禁、真机与用户验收。
 5. **位置**：任务 `D1r`（D1e 后，D0.5/D1d 前）；D1 后插件若继续改，发布前再跑一次窄复核。
