@@ -36,6 +36,7 @@
 | [2026-11-21-s2c-document-identity-spike-report.md](2026-11-21-s2c-document-identity-spike-report.md) | 2026-11-21 | S2c spike 报告（引擎、保存链路、S3 真服务） |
 | [2026-11-21-s3-mobile.md](2026-11-21-s3-mobile.md) | 2026-11-21 | S3 手机端同步 v1 |
 | [2026-11-22-b3-v1.4.6.md](2026-11-22-b3-v1.4.6.md) | 2026-11-22 | 上游稳定 tag v1.4.6 合并（分支流程、取舍、验证） |
+| [2026-11-19-sync-supersede.md](2026-11-19-sync-supersede.md) | 2026-11-19 | S0a 同步 supersede 完整裁决记录（现行摘要见 [decisions/0051](../decisions/0051-同步-supersede-S0a.md)） |
 
 ### 关闭的规格 / spike
 
