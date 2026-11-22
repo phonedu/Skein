@@ -335,9 +335,9 @@
 }
 
 .phone-home .tree-row .tree-icon {
-  /* The board's 16px file glyph from the 15px design (folders re-scale
-     below). */
-  --icon-scale: 1.17;
+  /* A file's 15px design, a step past the board's 16: 1.4 draws about 19
+     at the phone's 10/11, still inside the 56 row. Folders re-scale below. */
+  --icon-scale: 1.4;
   color: var(--phone-muted);
 }
 

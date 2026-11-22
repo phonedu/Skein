@@ -256,7 +256,10 @@
 }
 
 .pchanges .prow {
-  padding: 0 var(--space-4);
+  /* Sides only: a shorthand here wiped the two-line row's own block
+     padding, so its words sat on the top edge and the hairline on the
+     empty bottom. */
+  padding-inline: var(--space-4);
   /* The line starts where the text does - the row's own inset, the icon's
      16px and the gap after it - and stops 16 short of the edge. */
   background-image: linear-gradient(
@@ -271,8 +274,10 @@
   background-repeat: no-repeat;
 }
 
-.prow-doc {
-  align-items: flex-start;
+.pchanges .prow-doc {
+  /* The card's row centres a one-line row. A two-line row centres the
+     pair in the 72 it draws, instead of pinning it to the top. */
+  align-items: center;
   /* Written 80 draws the board's 72 two-line row at the phone's 10/11. */
   min-height: 80px;
   padding-block: var(--space-2);
@@ -326,6 +331,13 @@
 .prow-chev {
   flex: none;
   color: var(--ui-muted);
+}
+
+/* The shared file mark is a 15px design. The phone's 1.2 draws about 16;
+   1.6 draws about 22, level with the vault's bare folder, inside the 72
+   row. */
+.prow-ic {
+  --icon-scale: 1.6;
 }
 
 .prow-text {

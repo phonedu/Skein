@@ -178,8 +178,12 @@ describe("the phone's settings", () => {
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone-row \+ \.settings-phone-row::before \{[^}]*right: var\(--space-4\);/s,
     );
-    expect(settingsPhoneCss).toMatch(
-      /\.settings-phone-card > \.settings-phone-row:last-child::before \{[^}]*display: none;/s,
+    // The hairline is the following row's top edge. Hiding the last row's
+    // ::before removed the line above it (the card's last two entries sat
+    // together). The first row still has none: the sibling rule never
+    // matches it.
+    expect(settingsPhoneCss).not.toMatch(
+      /\.settings-phone-row:last-child::before\s*\{[^}]*display:\s*none/,
     );
   });
 
@@ -220,5 +224,56 @@ describe("the phone's settings", () => {
       ".settings-search-result:has(.settings-row-hint)",
     );
     expect(settingsPhoneCss).toContain("flex: 1 1 0;");
+  });
+
+  it("keeps a described setting beside its control, on the desktop's row", () => {
+    // The phone sheet stacks any row that explains itself. A phone settings
+    // page keeps the desktop shape: the description wraps under the label,
+    // and the control stays at the row's end.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone\s+\.settings-content-host\s+\.settings-page-group-body\s+\.settings-row:not\(\[data-stacked\]\):has\(\.settings-row-desc\)\s*\{[^}]*flex-direction:\s*row;[^}]*align-items:\s*center;[^}]*gap:\s*var\(--space-4\);/s,
+    );
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone\s+\.settings-content-host\s+\.settings-page-group-body\s+\.settings-row:has\(\.settings-row-desc\)\s*>\s*\.settings-row-value\s*\{[^}]*align-self:\s*center;/s,
+    );
+  });
+
+  it("draws a group card's rows with the inset hairline only", () => {
+    // Legacy group cards still put a border on every child after the first.
+    // The phone row also draws the inset hairline, so the row's own
+    // border would sit on top of it.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-group-body > \.settings-row \{[^}]*border-top: 0;/s,
+    );
+    // A catalog card ("可安装") is the same direct child, under another name.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host \.settings-group-body > \.plugin-card \{[^}]*border-top: 0;/s,
+    );
+    // A category caption is not a row, so the card's border still lands on
+    // the first skill under it. That row already draws the hairline.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone\s+\.settings-content-host\s+\.settings-group-body\s+\.settings-builtin-category\s+> \.settings-row \{[^}]*border-top: 0;/s,
+    );
+  });
+
+  it("names the extensions page as the workshop container", () => {
+    // Create's tab is the container on the desktop. Phone settings have no
+    // .create-tab, so the extensions page has to be one or the preview
+    // stays in the second column, past the screen.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone \.settings-content-host\[data-settings-page="extensions"\] \{[^}]*container:\s*workshop \/ inline-size;/s,
+    );
+  });
+
+  it("draws the list's icons at the desktop nav's size", () => {
+    // NAV_ICON is 17. The phone's global 1.2, then this row's 1.15, drew
+    // about 19.6; the desktop nav's 1.15 on the 1.35 root draws about 23.
+    // 1.55 on the phone's 1.2 root is the same 23, inside the 24px slot.
+    expect(settingsPhoneCss).toMatch(
+      /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.55;/s,
+    );
+    expect(settingsPhoneCss).not.toMatch(
+      /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.15;/s,
+    );
   });
 });

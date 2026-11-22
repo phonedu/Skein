@@ -188,11 +188,6 @@ button.settings-phone-ic:active {
   border-top: 1px solid var(--ui-border);
 }
 
-/* The line is the row's own top edge, so a card's last row has none. */
-.settings-phone-card > .settings-phone-row:last-child::before {
-  display: none;
-}
-
 /* The page's mark: a quiet line icon, not a tinted tile (Obsidian's
    settings lists). The tile recipe stays for chips and empty states. */
 .settings-phone-row-ic {
@@ -203,7 +198,10 @@ button.settings-phone-ic:active {
   align-items: center;
   justify-content: center;
   color: var(--ui-muted);
-  --icon-scale: 1.15;
+  /* NAV_ICON is 17. The phone root is 1.2, so 1.55 draws the desktop
+     nav's size (17 at 1.35, then its own 1.15: about 23) inside this 24px
+     slot. 1.15 here used to cancel the phone's step up. */
+  --icon-scale: 1.55;
 }
 
 .settings-phone-row-label {
@@ -316,6 +314,31 @@ button.settings-phone-ic:active {
   .settings-page-group-body
   .settings-row:has(.settings-row-desc) {
   min-height: 80px;
+}
+
+/* The phone sheet stacks a row that explains itself, and puts the control
+   under the words. A settings page keeps the desktop's row: the description
+   wraps in the label's column, the control stays at the row's end. The
+   sheet's rule is rooted, so this one is too; a row that has already
+   stacked because its name is tall (data-stacked) is left as it chose.
+   Other phone pages are not settings pages, and keep the sheet's stack. */
+:root[data-window-chrome="mobile"]
+  .settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  .settings-row:not([data-stacked]):has(.settings-row-desc) {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+:root[data-window-chrome="mobile"]
+  .settings-phone
+  .settings-content-host
+  .settings-page-group-body
+  .settings-row:has(.settings-row-desc)
+  > .settings-row-value {
+  align-self: center;
 }
 
 /* The control sits at the row's end, on the same line as the name: a long
@@ -521,6 +544,11 @@ button.settings-phone-ic:active {
   position: relative;
   /* 62 written: 56 drawn at the chrome's step. */
   min-height: 62px;
+  /* The shared card rule still borders every child after the first. That
+     border and this hairline are the same line drawn twice; the hairline
+     is the one that insets. A note or another child of the card is not a
+     row, and keeps the border it had. */
+  border-top: 0;
   background-image: linear-gradient(
     to right,
     transparent var(--space-4),
@@ -533,11 +561,35 @@ button.settings-phone-ic:active {
   background-repeat: no-repeat;
 }
 
+/* A catalog entry ("可安装") is a settings row under another name, so the
+   card's border and the hairline above land on it together. */
+.settings-phone .settings-content-host .settings-group-body > .plugin-card {
+  border-top: 0;
+}
+
+/* A category caption is not a row, so the card's border still lands on the
+   first skill under it. That skill already draws the hairline. */
+.settings-phone
+  .settings-content-host
+  .settings-group-body
+  .settings-builtin-category
+  > .settings-row {
+  border-top: 0;
+}
+
 .settings-phone
   .settings-content-host
   .settings-group-body
   > .settings-row:first-child {
   background-image: none;
+}
+
+/* Create's theme workshop stacks under @container workshop. That container
+   is the Create tab on the desktop; phone settings have no such tab, so
+   the extensions page is the container. A page wider than 820px is left
+   as two columns, which is the tab's own rule. */
+.settings-phone .settings-content-host[data-settings-page="extensions"] {
+  container: workshop / inline-size;
 }
 
 /* The sponsor line under the app's name: an action, not a web link. */

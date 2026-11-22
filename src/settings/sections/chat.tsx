@@ -212,7 +212,7 @@ export function ChatSections({
                 type="text"
                 inputMode="url"
                 {...VERBATIM_INPUT}
-                className="settings-text-input settings-proxy-host"
+                className="tx-input settings-text-input settings-proxy-host"
                 placeholder={t.proxyHostPlaceholder}
                 aria-label={t.proxyHostPlaceholder}
                 value={settings.proxyHost}
@@ -222,7 +222,7 @@ export function ChatSections({
                 type="text"
                 inputMode="numeric"
                 {...VERBATIM_INPUT}
-                className="settings-text-input settings-proxy-port"
+                className="tx-input settings-text-input settings-proxy-port"
                 placeholder={t.proxyPortPlaceholder}
                 aria-label={t.proxyPortPlaceholder}
                 value={settings.proxyPort}
@@ -234,7 +234,7 @@ export function ChatSections({
                 type="text"
                 {...VERBATIM_INPUT}
                 autoComplete="off"
-                className="settings-text-input settings-proxy-host"
+                className="tx-input settings-text-input settings-proxy-host"
                 placeholder={t.proxyUserPlaceholder}
                 aria-label={t.proxyUserPlaceholder}
                 value={settings.proxyUsername}
@@ -244,7 +244,7 @@ export function ChatSections({
                 type="password"
                 {...VERBATIM_INPUT}
                 autoComplete="off"
-                className="settings-text-input settings-proxy-host"
+                className="tx-input settings-text-input settings-proxy-host"
                 placeholder={t.proxyPasswordPlaceholder}
                 aria-label={t.proxyPasswordPlaceholder}
                 value={settings.proxyPassword}

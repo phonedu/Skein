@@ -7,7 +7,10 @@
   /* Many names at a glance: list-size text, icons at their design size. */
   font-size: var(--text-list);
   line-height: 1.35;
-  --icon-scale: 1.1;
+  /* A step under the root's 1.35, not down at the design size: 1.2 keeps
+     a long list dense (the row is 28) while the marks read. The phone's
+     library sets its own scale on the icon. */
+  --icon-scale: 1.2;
   color: var(--ui-text);
   user-select: none;
 }

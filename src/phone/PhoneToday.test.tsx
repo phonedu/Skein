@@ -50,5 +50,15 @@ describe("Phone Today, the design board", () => {
     expect(css).toMatch(
       /\.pchanges \.prow:last-child \{[^}]*background-image: none;/s,
     );
+    // The card's shorthand padding wiped the two-line row's block padding,
+    // so the title sat on the top edge and the hairline on the empty bottom.
+    // The card keeps its side inset; the two-line row keeps its own block
+    // padding and centres the pair.
+    expect(css).toMatch(
+      /\.pchanges \.prow \{[^}]*padding-inline: var\(--space-4\);/s,
+    );
+    expect(css).toMatch(
+      /\.pchanges \.prow-doc \{[^}]*align-items: center;[^}]*padding-block: var\(--space-2\);/s,
+    );
   });
 });
