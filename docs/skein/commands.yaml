@@ -51,6 +51,9 @@
 - name: check:all
   category: 验证
   description: check + e2e + native（发布前完整套件）
+- name: test:phone-shell
+  category: 验证
+  description: 手机壳计算样式契约（合并后必跑）
 
 - name: upstream:status
   category: 上游
@@ -66,7 +69,7 @@
   description: 删除 gate absentPaths 里被 merge 带回的 fork-clean 文件；默认 dry-run
 - name: upstream:verify
   category: 上游
-  description: 跑 check + check:native（`--full` 加 e2e），并打印 built app / Android 手测清单
+  description: 跑 check + check:native + test:phone-shell（--full 加 e2e），打印代码清理 / UI 过样式 / 真机清单
 - name: upstream:record
   category: 上游
   description: 写 archive 合并记录，更新 status.yaml 的 baseline/commit

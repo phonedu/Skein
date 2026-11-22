@@ -28,6 +28,7 @@
 | `npm run check:repo` | 仓库检查，含 docs / release 生成物新鲜度 |
 | `npm run check:native` | rustfmt、clippy -D warnings、cargo test |
 | `npm run check:all` | check + e2e + native（发布前完整套件） |
+| `npm run test:phone-shell` | 手机壳计算样式契约（合并后必跑） |
 
 ## 上游
 
@@ -37,7 +38,7 @@
 | `npm run upstream:plan` | 规划一次 tag 合并（`-- <tag> [--fetch]`），列出重叠文件和步骤 |
 | `npm run upstream:start` | 建 sync/upstream-<tag> 并 merge；默认 dry-run，`--apply` 才动 git |
 | `npm run upstream:clean` | 删除 gate absentPaths 里被 merge 带回的 fork-clean 文件；默认 dry-run |
-| `npm run upstream:verify` | 跑 check + check:native（`--full` 加 e2e），并打印 built app / Android 手测清单 |
+| `npm run upstream:verify` | 跑 check + check:native + test:phone-shell（--full 加 e2e），打印代码清理 / UI 过样式 / 真机清单 |
 | `npm run upstream:record` | 写 archive 合并记录，更新 status.yaml 的 baseline/commit |
 | `npm run upstream:finish` | 把 sync 分支快进回工作分支并删除；`--apply` 才动 git |
 | `npm run upstream:patch` | 导出上游 PR 候选补丁，排除私有路径、CI、`.claude` 和 fork-clean 文件 |
