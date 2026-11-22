@@ -29,4 +29,22 @@ describe("a tool call in the conversation", () => {
       toolActivityText("delegate_task", '{"question":"Gauge A?"}', labels),
     ).toBe("Handing over: Gauge A?");
   });
+
+  it("names the asset library's tools, with the card when there is one", () => {
+    expect(toolActivityText("read_note", '{"id":"A-1"}', labels)).toBe(
+      "Reading “A-1”",
+    );
+    expect(toolActivityText("create_draft", '{"title":"x"}', labels)).toBe(
+      "Drafting a card",
+    );
+    expect(toolActivityText("propose_patch", '{"id":"A-1"}', labels)).toBe(
+      "Proposing a change",
+    );
+    expect(toolActivityText("request_confirm", '{"id":"A-1"}', labels)).toBe(
+      "Asking for confirmation",
+    );
+    expect(toolActivityText("record_use", '{"assetId":"A-1"}', labels)).toBe(
+      "Recording a use",
+    );
+  });
 });

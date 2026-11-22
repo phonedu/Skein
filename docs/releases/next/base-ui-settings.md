@@ -6,6 +6,7 @@
 - The window wears the Slate skin: a cool chrome around a near-white page, glass cards with an 18px radius and a soft shadow, and selected rows that use a quiet fill, an accent icon and a 600 name. The desktop settings dialog is 1040×720, with a 260px page column, a 44px glass top bar, no page title, 56/72px rows and hairlines that start at the text and stop 16px short of the card.
 - The desktop view column is 260px and the text column about 700px at 1440; the right page edge is 340px. The notes in the view column - the current delivery and the recent files - use the same bare rows as the file tree instead of white buttons or a separate card.
 - The phone's Today, library and settings share the same glass cards, bare line icons, inset hairlines, 48×28 switches and selected-file treatment; the tablet keeps the desktop structure at a narrower width.
+- The conversation names the asset library's tools - searching, reading a card, drafting, proposing a patch, asking for confirmation and recording a use - instead of their internal names.
 
 ### Fixed
 

@@ -33,6 +33,16 @@ export function toolActivityLabels(t: Strings): Record<string, string> {
     add_note: t.toolAddNote,
     // …and a part of its question handed to a helper of its own.
     delegate_task: t.toolDelegateTask,
+    // The asset library's D1c tools: read, then the writes that ask.
+    search_notes: t.toolSearchNotes,
+    "search_notes:whole": t.toolSearchNotesWhole,
+    read_note: t.toolReadNote,
+    "read_note:whole": t.toolReadNoteWhole,
+    resolve_assets_for_trigger: t.toolResolveAssets,
+    create_draft: t.toolCreateDraft,
+    propose_patch: t.toolProposePatch,
+    request_confirm: t.toolRequestConfirm,
+    record_use: t.toolRecordUse,
     // Any MCP server's tool.
     mcp: t.toolMcp,
     // Any tool without its own line: a word, not its internal name.
@@ -78,6 +88,7 @@ export function toolActivityText(
       site,
       args.heading,
       args.path,
+      args.id,
       args.name,
       args.claim,
       args.question,
