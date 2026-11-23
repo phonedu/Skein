@@ -452,9 +452,14 @@ para usar una.
   assetCardsPending: "Pendiente",
   assetCardsOpenConfirm: "Abrir el centro de confirmación",
   assetCardsFailed: "Sin terminar",
-  assetCardsMatches: { one: "{n} resultado", other: "{n} resultados" },
+  assetCardsMatches: {
+    one: "{n} resultado",
+    many: "{n} resultados",
+    other: "{n} resultados",
+  },
   assetCardsUsed: {
     one: "Uso registrado, {n} en total",
+    many: "Usos registrados, {n} en total",
     other: "Usos registrados, {n} en total",
   },
   assetCardsDone: "Hecho",

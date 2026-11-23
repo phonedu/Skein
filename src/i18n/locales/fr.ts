@@ -455,9 +455,14 @@ utiliser une.
   assetCardsPending: "En attente",
   assetCardsOpenConfirm: "Ouvrir le centre de confirmation",
   assetCardsFailed: "Inachevé",
-  assetCardsMatches: { one: "{n} résultat", other: "{n} résultats" },
+  assetCardsMatches: {
+    one: "{n} résultat",
+    many: "{n} résultats",
+    other: "{n} résultats",
+  },
   assetCardsUsed: {
     one: "Utilisation enregistrée, {n} au total",
+    many: "Utilisation enregistrée, {n} au total",
     other: "Utilisation enregistrée, {n} au total",
   },
   assetCardsDone: "Terminé",

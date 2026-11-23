@@ -442,9 +442,14 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   assetCardsPending: "Pendente",
   assetCardsOpenConfirm: "Abrir a central de confirmação",
   assetCardsFailed: "Inacabado",
-  assetCardsMatches: { one: "{n} resultado", other: "{n} resultados" },
+  assetCardsMatches: {
+    one: "{n} resultado",
+    many: "{n} resultados",
+    other: "{n} resultados",
+  },
   assetCardsUsed: {
     one: "Uso registrado, {n} no total",
+    many: "Usos registrados, {n} no total",
     other: "Usos registrados, {n} no total",
   },
   assetCardsDone: "Feito",

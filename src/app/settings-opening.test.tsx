@@ -62,8 +62,9 @@ it("a plugin's settings open in the dialog; its list needs no page", () => {
   act(() => result.current.openPluginSettings("cloud-sync"));
   expect(settingsDialogOpen()!.page).toContain("cloud-sync");
   act(() => result.current.openPluginSettings());
-  // The plugins list is the sidebar's: the dialog stays as it was.
-  expect(settingsDialogOpen()!.page).toContain("cloud-sync");
+  // The fork has no plugins column: the list is Extensions' Plugins tab.
+  expect(settingsDialogOpen()).toMatchObject({ page: "extensions" });
+  expect(extensionsStartTab()).toBe("plugins");
 });
 
 it("a Create request from inside the dialog goes to Extensions on Create", () => {
