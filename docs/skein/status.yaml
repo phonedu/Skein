@@ -64,20 +64,6 @@ tasks:
     acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
     spec: specs/Textus-主题策略.md
     estimate: 3–5 天
-  - id: B5
-    title: fork 壳 e2e 适配
-    workstream: B
-    state: done
-    acceptance: 全量 e2e 以 fork 壳为期望通过，或把不适用项列成清单并说明；上游壳流程改写/删除；关键屏断言留在 ui-contracts。
-    spec: specs/界面契约.md
-    estimate: 3–5 天
-    brief:
-      problem: v1.4.6 后全量 e2e 是 134 通过 / 89 失败 / 2 跳过（9.8 分钟）：多数用例按上游壳写（活动轨、插件面板、主题工坊 Create 入口、旧设置壳），fork 壳红着，回归网不完整。
-      expected: 全量 e2e 对 fork 壳全绿；不适用项有清单和理由；新屏断言进 ui-contracts；不为变绿改断言或产品行为。
-      standard: npx playwright test 通过或明确 skip；失败先判断是测试假设还是真实缺陷，真实缺陷按测试分层修。
-      not: 不恢复活动轨/上游插件面板；不改产品行为迁就测试；不把这批测试改写成另一套上游壳。
-      scope: e2e/*.spec.ts、e2e/helpers.ts；只修被测试发现的真实缺陷。
-      evidence: 全量 e2e 167 过 / 53 跳 / 7 红（commit 5022ebf6）；跳项都写在不适用处（活动轨、AI 标签岛、插件侧栏、手机旧壳、主题工坊 Create 入口等）；红项 5 为插件样例仓仍停在 1.4.3-rc.5，2 为真实缺陷（见 B6）；期间修掉的真实缺陷见 commit 说明。
   - id: B6
     title: B5 留下的两处真实缺陷
     workstream: B
