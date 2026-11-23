@@ -4,7 +4,7 @@ import { hasPlugin, openWithPlugins } from "./plugin-helpers";
 // The fork's shell after H0: no activity rail; the plugin entry is the
 // window bar's button, a QuickPick over the plugins' pages and commands.
 // (The upstream rail's own flows live upstream; the fork removed the rail
-// by ruling 34, so this is the shell that must hold.)
+// with the H0 shell, so this is the shell that must hold.)
 
 test("the activity rail is gone, and plugins open from the window bar", async ({
   page,
