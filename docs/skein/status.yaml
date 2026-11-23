@@ -8,7 +8,7 @@ workstreams:
   - id: D1
     name: 资产闭环
     state: doing
-    focus: D1f 月度复盘与淘汰周期完成（插件 0.7.0）；D1 线剩 D0.5 真实使用；B5 适配 fork 壳 e2e 待做
+    focus: D1f 月度复盘与淘汰周期完成（插件 0.7.0）；D1 线剩 D0.5 真实使用
     spec: specs/Textus-改造方案.md
   - id: UI
     name: 手机端 UI
@@ -23,7 +23,7 @@ workstreams:
   - id: B
     name: 上游跟随（B 组）
     state: doing
-    focus: v1.4.6 已并线（457f6693）；TW1 已修（879fd773）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 doing：活动轨 spec 已换成 fork-shell、theme-workshop 2 过 5 跳、settings-pages 10 过 11 待改（上游设置壳假设）；等下一个稳定 tag
+    focus: v1.4.6 已并线（457f6693）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 完成：全量 167 过 / 53 明确跳 / 7 红（5 项等插件样例仓出 1.4.3-rc.5 之后版本，2 项真实缺陷转 B6）；等下一个稳定 tag
     spec: specs/界面契约.md
   - id: T1
     name: 主题（T1）
@@ -67,7 +67,7 @@ tasks:
   - id: B5
     title: fork 壳 e2e 适配
     workstream: B
-    state: doing
+    state: done
     acceptance: 全量 e2e 以 fork 壳为期望通过，或把不适用项列成清单并说明；上游壳流程改写/删除；关键屏断言留在 ui-contracts。
     spec: specs/界面契约.md
     estimate: 3–5 天
@@ -77,7 +77,21 @@ tasks:
       standard: npx playwright test 通过或明确 skip；失败先判断是测试假设还是真实缺陷，真实缺陷按测试分层修。
       not: 不恢复活动轨/上游插件面板；不改产品行为迁就测试；不把这批测试改写成另一套上游壳。
       scope: e2e/*.spec.ts、e2e/helpers.ts；只修被测试发现的真实缺陷。
-      evidence: 全量 e2e 输出（通过/失败/跳过清单）与 commit。
+      evidence: 全量 e2e 167 过 / 53 跳 / 7 红（commit 5022ebf6）；跳项都写在不适用处（活动轨、AI 标签岛、插件侧栏、手机旧壳、主题工坊 Create 入口等）；红项 5 为插件样例仓仍停在 1.4.3-rc.5，2 为真实缺陷（见 B6）；期间修掉的真实缺陷见 commit 说明。
+  - id: B6
+    title: B5 留下的两处真实缺陷
+    workstream: B
+    state: todo
+    acceptance: 标签往返后撤销历史与外部改动一致（external-change 绿）；复制的 Markdown 段间空行不带空格（clipboard 绿）；各补最低层测试。
+    spec: specs/界面契约.md
+    estimate: 1–2 天
+    brief:
+      problem: 全量 e2e 仅剩两处真实缺陷：external-change 的标签往返后撤销历史丢失；剪贴板复制出的段间空行带一个空格。
+      expected: 两处修复，全量 e2e 除环境项（插件样例仓版本）外全绿。
+      standard: 先复现、在最低层加测试、再修；不为变绿改断言。
+      not: 不顺手改标签、剪贴板的其他行为；不动插件样例仓。
+      scope: src/app/tabs、src/editor/clipboard 及其测试。
+      evidence: 两个失败用例转绿，连同全量 e2e 输出。
 later:
   - id: S4
     title: 局域网 Hub
