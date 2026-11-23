@@ -23,8 +23,8 @@ workstreams:
   - id: B
     name: 上游跟随（B 组）
     state: doing
-    focus: v1.4.6 已并线（457f6693）；TW1 已修（879fd773）；等下一个稳定 tag
-    spec: specs/Textus-改造方案.md
+    focus: v1.4.6 已并线（457f6693）；TW1 已修（879fd773）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 适配 fork 壳 e2e（134 通过 / 89 失败）；等下一个稳定 tag
+    spec: specs/界面契约.md
   - id: T1
     name: 主题（T1）
     state: doing
@@ -92,6 +92,20 @@ tasks:
       not: 不改七个工具的输入输出；不新建独立时间线页面；不让宿主直接读写插件的 project storage；不动同步。
       scope: 宿主聊天 UI（Agent 面板）；桌面 + 手机。
       evidence: chat 单测；桌面/真机 built app 走查；必要时插件 result 补状态字段。
+  - id: B5
+    title: fork 壳 e2e 适配
+    workstream: B
+    state: todo
+    acceptance: 全量 e2e 以 fork 壳为期望通过，或把不适用项列成清单并说明；上游壳流程改写/删除；关键屏断言留在 ui-contracts。
+    spec: specs/界面契约.md
+    estimate: 3–5 天
+    brief:
+      problem: v1.4.6 后全量 e2e 是 134 通过 / 89 失败 / 2 跳过（9.8 分钟）：多数用例按上游壳写（活动轨、插件面板、主题工坊 Create 入口、旧设置壳），fork 壳红着，回归网不完整。
+      expected: 全量 e2e 对 fork 壳全绿；不适用项有清单和理由；新屏断言进 ui-contracts；不为变绿改断言或产品行为。
+      standard: npx playwright test 通过或明确 skip；失败先判断是测试假设还是真实缺陷，真实缺陷按测试分层修。
+      not: 不恢复活动轨/上游插件面板；不改产品行为迁就测试；不把这批测试改写成另一套上游壳。
+      scope: e2e/*.spec.ts、e2e/helpers.ts；只修被测试发现的真实缺陷。
+      evidence: 全量 e2e 输出（通过/失败/跳过清单）与 commit。
 later:
   - id: S4
     title: 局域网 Hub
