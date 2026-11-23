@@ -707,6 +707,9 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   docDelete: "삭제",
   docDeleteConfirm: "‘{name}’ 문서를 삭제할까요? 되돌릴 수 없습니다.",
   docDeleteOk: "삭제",
+  frontmatterProps: {
+    other: "속성 · {n}개",
+  },
   docDeleteManyConfirm: {
     other: "문서 {n}개를 삭제할까요? 되돌릴 수 없습니다.",
   },

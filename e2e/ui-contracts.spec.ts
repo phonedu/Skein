@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { emit, openApp } from "./helpers";
+import { openPath } from "./plugin-helpers";
 
 /**
  * The fork shell's rendered contracts, on the desktop and on the phone. An
@@ -107,6 +108,42 @@ test.describe("the desktop shell", () => {
       expectBetween(icon.w, 18, 20);
     }
     expectBetween((await size(page, ".tree-row .chevron")).w, 12, 13.5);
+  });
+
+  test("keeps a note's front matter as one property line until opened", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as Record<string, unknown>;
+      w.__devFiles = {
+        "/work/n.md": `---
+id: A-1
+status: inbox
+---
+
+# N
+`,
+      };
+    });
+    await openApp(page);
+    await openPath(page, "/work/n.md");
+    const block = page.locator(".frontmatter-block");
+    await expect(block).toHaveClass(/frontmatter-collapsed/);
+    await expect(block.locator(".frontmatter-label")).toHaveText("属性 · 2 项");
+    await block.locator(".frontmatter-head").click();
+    await expect(block).not.toHaveClass(/frontmatter-collapsed/);
+    await expect(block.locator(".frontmatter-yaml")).toContainText("id: A-1");
+    // A save writes the YAML as it was.
+    await page.keyboard.press("ControlOrMeta+s");
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            (window as unknown as { __devFiles: Record<string, string> })
+              .__devFiles["/work/n.md"],
+        ),
+      )
+      .toContain("status: inbox");
   });
 
   test("keeps the settings dialog's nav, rows and controls", async ({

@@ -671,6 +671,9 @@ export default {
   docDelete: "刪除",
   docDeleteConfirm: "要刪除「{name}」嗎？此動作無法復原。",
   docDeleteOk: "刪除",
+  frontmatterProps: {
+    other: "屬性 · {n} 項",
+  },
   docDeleteManyConfirm: {
     other: "刪除這 {n} 個文件嗎？刪除後無法復原。",
   },

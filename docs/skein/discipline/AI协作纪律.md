@@ -122,3 +122,12 @@ updated: 2026-11-23
 3. **交付前检查**：`ls C:/Project` 不应有新增的 `verify/scratch/tmp` 目录；有就先清再报完成。
 4. **删除方式**：按字面路径删（不用变量拼路径）；删前确认不是别的会话正在写的目录，且 clone 无未推送提交。
 5. **原因**：2026-11-23 清掉 9 个历史验证目录约 0.8GB（其中旧画板归档 742MB）；磁盘经不起每个任务一套截图和 portable app。
+
+## 十三、Apple 真机 e2e：默认跳过（2026-11-23 用户立规）
+
+1. 本机没有 iPhone / iPad 真机，iOS 模拟器也无法启动（用户确认）。
+2. 凡是**必须** Apple 真机或模拟器才能执行的 e2e，默认 skip，理由写
+   `needs an Apple device (none available on this machine)`。这是环境缺失，
+   不是断言错误：不为它改产品行为、不改期望去凑绿。
+3. 只靠 Chromium 的 iPhone/iPad UA 就能跑的用例照常跑；只有真正依赖
+   Apple 设备/系统的才跳过。

@@ -736,6 +736,10 @@ type /name in a conversation to use one.
   docDelete: "Delete",
   docDeleteConfirm: "Delete “{name}”? This can’t be undone.",
   docDeleteOk: "Delete",
+  frontmatterProps: {
+    one: "Properties · {n}",
+    other: "Properties · {n}",
+  },
   docDeleteManyConfirm: {
     one: "Delete {n} document? This can’t be undone.",
     other: "Delete {n} documents? This can’t be undone.",

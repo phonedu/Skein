@@ -785,6 +785,11 @@ utiliser une.
   docDeleteConfirm:
     "Supprimer «\u00a0{name}\u00a0»\u202f? Cette action est irréversible.",
   docDeleteOk: "Supprimer",
+  frontmatterProps: {
+    one: "Propriétés · {n}",
+    many: "Propriétés · {n}",
+    other: "Propriétés · {n}",
+  },
   docDeleteManyConfirm: {
     one: "Supprimer {n} document ? Cette action est irréversible.",
     many: "Supprimer {n} documents ? Cette action est irréversible.",

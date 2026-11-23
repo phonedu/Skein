@@ -16,6 +16,7 @@ import {
   remarkFrontmatterPlugin,
   frontmatterSchema,
 } from "./markdown/frontmatter-schema";
+import { frontmatterCollapse } from "./markdown/frontmatter-collapse";
 import { createGithubAlertPlugin } from "./markdown/github-alert-plugin";
 import { inlineSyntaxPlugin } from "./markdown/inline-syntax-plugin";
 import {
@@ -141,6 +142,7 @@ export function withEditorSyntax(editor: Editor, env: CoreEnv): Editor {
       // Before anything else can misread its "---" lines as setext headings.
       .use(remarkFrontmatterPlugin)
       .use(frontmatterSchema)
+      .use(frontmatterCollapse)
 
       // Raw HTML parses to real text so it stays editable; common tags render
       // while the cursor is elsewhere.

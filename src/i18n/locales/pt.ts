@@ -769,6 +769,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   docDelete: "Apagar",
   docDeleteConfirm: "Apagar “{name}”? Esta ação não pode ser desfeita.",
   docDeleteOk: "Apagar",
+  frontmatterProps: {
+    one: "Propriedades · {n}",
+    many: "Propriedades · {n}",
+    other: "Propriedades · {n}",
+  },
   docDeleteManyConfirm: {
     one: "Excluir {n} documento? Não dá para desfazer.",
     many: "Excluir {n} documentos? Não dá para desfazer.",

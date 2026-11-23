@@ -442,3 +442,35 @@
   --pele-font-mono: var(--font-mono);
   --pele-radius: var(--doc-radius-sm);
 }
+
+/* A note's front matter: one quiet line until asked, the raw YAML then. */
+.frontmatter-block .frontmatter-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--doc-muted);
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.85em;
+  text-align: left;
+  cursor: pointer;
+}
+
+.frontmatter-block .frontmatter-chevron {
+  margin-left: auto;
+  opacity: 0.8;
+}
+
+.frontmatter-block.frontmatter-collapsed .frontmatter-body {
+  display: none;
+}
+
+.frontmatter-block .frontmatter-yaml {
+  margin: 0.4em 0 0;
+  font: inherit;
+  white-space: pre-wrap;
+}

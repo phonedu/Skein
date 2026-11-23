@@ -670,6 +670,9 @@ export default {
   docDelete: "删除",
   docDeleteConfirm: "删除“{name}”？删除后无法恢复。",
   docDeleteOk: "删除",
+  frontmatterProps: {
+    other: "属性 · {n} 项",
+  },
   docDeleteManyConfirm: {
     other: "删除这 {n} 个文档吗？删除后无法恢复。",
   },

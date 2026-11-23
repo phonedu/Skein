@@ -752,6 +752,10 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   docDelete: "Löschen",
   docDeleteConfirm: "„{name}“ löschen? Das lässt sich nicht rückgängig machen.",
   docDeleteOk: "Löschen",
+  frontmatterProps: {
+    one: "Eigenschaften · {n}",
+    other: "Eigenschaften · {n}",
+  },
   docDeleteManyConfirm: {
     one: "{n} Dokument endgültig löschen? Das lässt sich nicht rückgängig machen.",
     other:

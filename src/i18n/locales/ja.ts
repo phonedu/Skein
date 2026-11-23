@@ -719,6 +719,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   docDelete: "削除",
   docDeleteConfirm: "「{name}」を削除しますか？元に戻せません。",
   docDeleteOk: "削除",
+  frontmatterProps: {
+    other: "プロパティ · {n}",
+  },
   docDeleteManyConfirm: {
     other: "この {n} 件の文書を削除しますか？元に戻せません。",
   },

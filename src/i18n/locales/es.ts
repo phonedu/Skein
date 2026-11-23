@@ -783,6 +783,11 @@ para usar una.
   docDelete: "Eliminar",
   docDeleteConfirm: "¿Eliminar «{name}»? Esta acción no se puede deshacer.",
   docDeleteOk: "Eliminar",
+  frontmatterProps: {
+    one: "Propiedades · {n}",
+    many: "Propiedades · {n}",
+    other: "Propiedades · {n}",
+  },
   docDeleteManyConfirm: {
     one: "¿Eliminar {n} documento? Esta acción no se puede deshacer.",
     many: "¿Eliminar {n} documentos? Esta acción no se puede deshacer.",

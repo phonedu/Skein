@@ -783,6 +783,12 @@ export default {
   docDelete: "Удалить",
   docDeleteConfirm: "Удалить «{name}»? Это действие нельзя отменить.",
   docDeleteOk: "Удалить",
+  frontmatterProps: {
+    one: "Свойства · {n}",
+    few: "Свойства · {n}",
+    many: "Свойства · {n}",
+    other: "Свойства · {n}",
+  },
   docDeleteManyConfirm: {
     one: "Удалить {n} документ? Это нельзя отменить.",
     few: "Удалить {n} документа? Это нельзя отменить.",
