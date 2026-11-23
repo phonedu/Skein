@@ -47,6 +47,15 @@ export interface LeftHistory {
   done: LeftBranch;
   undone: LeftBranch;
   prevRanges: readonly number[] | null;
+  /** The leading front matter's node size in the document it left: a note
+   *  saved with an id gains one, and its history is still the body's. */
+  frontmatterSize?: number;
+}
+
+/** The leading front matter block's node size, 0 without one. */
+export function leadingFrontmatterSize(doc: ProseNode): number {
+  const first = doc.firstChild;
+  return first?.type.name === "frontmatter" ? first.nodeSize : 0;
 }
 
 /** prosemirror-history's plugin, known by its config (its key is private). */
@@ -77,6 +86,7 @@ export function leaveHistory(state: EditorState): LeftHistory | null {
     done: leave(at.done),
     undone: leave(at.undone),
     prevRanges: at.prevRanges,
+    frontmatterSize: leadingFrontmatterSize(state.doc),
   };
 }
 
@@ -93,8 +103,14 @@ function anItem(): Class<Item> {
   return itemClass!;
 }
 
-/** `left` as a history state of the library's, on an empty one's classes. */
-function enter(left: LeftHistory, fresh: HistoryState, schema: Schema) {
+/** `left` as a history state of the library's, on an empty one's classes,
+ *  its positions moved by `shift` (front matter gained or lost since). */
+function enter(
+  left: LeftHistory,
+  fresh: HistoryState,
+  schema: Schema,
+  shift: number,
+) {
   const Branch = fresh.done.constructor as new (
     items: Rope<Item>,
     eventCount: number,
@@ -112,20 +128,37 @@ function enter(left: LeftHistory, fresh: HistoryState, schema: Schema) {
     selection: unknown,
     mirrorOffset: number | undefined,
   ) => Item;
+  // A position past the start moves down with the front matter; one at the
+  // very start stays, having nothing above it to move. A document that lost
+  // front matter is not one these steps were kept against: none go over.
+  if (shift < 0) throw new Error("front matter shrank");
+  const moved = (pos: number) =>
+    pos > 0 && shift !== 0 ? Math.max(1, pos + shift) : pos;
+  const offset = new StepMap([0, 0, shift]);
   const branch = (from: LeftBranch) =>
     new Branch(
       fresh.undone.items.append(
-        from.items.map(
-          (item) =>
-            new Item(
-              item.map,
-              item.step === undefined
-                ? undefined
-                : Step.fromJSON(schema, item.step),
-              item.selection,
-              item.mirrorOffset,
-            ),
-        ),
+        from.items.map((item) => {
+          const step =
+            item.step === undefined
+              ? undefined
+              : Step.fromJSON(schema, item.step);
+          const selection = item.selection as
+            { anchor?: number; head?: number } | undefined;
+          const at = step && shift !== 0 ? step.map(offset) : step;
+          if (step && at === null) throw new Error("history does not map");
+          return new Item(
+            item.map,
+            at ?? undefined,
+            selection && typeof selection.anchor === "number"
+              ? point(
+                  moved(selection.anchor),
+                  moved(selection.head ?? selection.anchor),
+                )
+              : item.selection,
+            item.mirrorOffset,
+          );
+        }),
       ),
       from.eventCount,
     );
@@ -133,7 +166,7 @@ function enter(left: LeftHistory, fresh: HistoryState, schema: Schema) {
   return new State(
     branch(left.done),
     branch(left.undone),
-    left.prevRanges,
+    left.prevRanges?.map((pos) => moved(pos)) ?? null,
     0,
     -1,
   );
@@ -151,7 +184,7 @@ export function historyFrom(
   field.init = function (stateConfig, instance) {
     const fresh = init.call(this, stateConfig, instance) as HistoryState;
     try {
-      return enter(left, fresh, instance.schema);
+      return enter(left, fresh, instance.schema, 0);
     } catch {
       return fresh;
     }
@@ -168,8 +201,11 @@ export function takeHistory(
   const found = historyOf(state);
   if (!found || found.at.done.eventCount + found.at.undone.eventCount > 0)
     return null;
+  // Its steps were kept against a document without the front matter this
+  // one begins with: they move down by it.
+  const shift = leadingFrontmatterSize(state.doc) - (left.frontmatterSize ?? 0);
   try {
-    const historyState = enter(left, found.at, state.schema);
+    const historyState = enter(left, found.at, state.schema, shift);
     return state.tr
       .setMeta(found.plugin.spec.key!, { historyState })
       .setMeta("addToHistory", false);
@@ -215,6 +251,7 @@ export function writeHistory(left: LeftHistory): string {
     done: branch(left.done),
     undone: branch(left.undone),
     prevRanges: left.prevRanges,
+    frontmatterSize: left.frontmatterSize ?? 0,
   });
 }
 
@@ -228,6 +265,7 @@ export function readHistory(text: string): LeftHistory | null {
       done: FileBranch;
       undone: FileBranch;
       prevRanges: number[] | null;
+      frontmatterSize?: number;
     };
     if (kept.format !== FORMAT) return null;
     const branch = (from: FileBranch): LeftBranch => ({
@@ -245,6 +283,7 @@ export function readHistory(text: string): LeftHistory | null {
       done: branch(kept.done),
       undone: branch(kept.undone),
       prevRanges: kept.prevRanges,
+      frontmatterSize: kept.frontmatterSize ?? 0,
     };
   } catch {
     return null;

@@ -225,7 +225,11 @@ async function clipboardNow(page: Page) {
     const out: Record<string, string> = {};
     for (const item of await navigator.clipboard.read())
       for (const type of item.types)
-        out[type] = await (await item.getType(type)).text();
+        // Windows hands text back with CRLF, whichever way it was written.
+        out[type] = (await (await item.getType(type)).text()).replace(
+          /\r\n/g,
+          "\n",
+        );
     return out;
   });
 }

@@ -24,7 +24,7 @@ export function docHash(doc: ProseNode): string {
   const attrs = (a: object) => {
     if (Object.keys(a).length > 0) feed(JSON.stringify(a));
   };
-  doc.descendants((node) => {
+  const walk = (node: ProseNode) => {
     feed(node.type.name + "/" + node.childCount);
     attrs(node.attrs);
     if (node.text) feed(node.text);
@@ -32,6 +32,13 @@ export function docHash(doc: ProseNode): string {
       feed(mark.type.name);
       attrs(mark.attrs);
     }
+    node.forEach((child) => walk(child));
+  };
+  // A leading front matter block is the file's, not the text's: a note
+  // saved with an id gains one, and its history is still the body's.
+  doc.forEach((child, _offset, index) => {
+    if (index === 0 && child.type.name === "frontmatter") return;
+    walk(child);
   });
   return h.toString(36);
 }

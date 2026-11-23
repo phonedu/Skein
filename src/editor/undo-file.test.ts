@@ -26,6 +26,13 @@ const schema = new Schema({
   nodes: {
     doc: { content: "block+" },
     paragraph: { content: "text*", group: "block", toDOM: () => ["p", 0] },
+    // As the editor's own: the file's block above the text.
+    frontmatter: {
+      content: "text*",
+      group: "block",
+      code: true,
+      toDOM: () => ["pre", 0],
+    },
     text: {},
   },
 });
@@ -91,6 +98,65 @@ it("keeps a history in a file and gives it back as it stands, with no edit made"
   expect(text(after)).toBe("One");
   // The caret goes where the edit was, as the file kept it.
   expect(after.state.selection.head).toBeLessThanOrEqual(4);
+});
+
+it("gives the history back to a note that gained front matter when saved", () => {
+  const before = editor("One");
+  type(before, " two");
+  type(before, " three");
+  const file = writeHistory(leaveHistory(before.state)!);
+
+  // Saved: the file now names it. The editor's text is the body alone.
+  const after = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node("frontmatter", null, schema.text("textus_id: abc")),
+        schema.node("paragraph", null, schema.text("One two three")),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(after);
+  expect(docHash(after.state.doc)).toBe(docHash(before.state.doc));
+  after.dispatch(takeHistory(after.state, readHistory(file)!)!);
+  undo(after.state, after.dispatch);
+  undo(after.state, after.dispatch);
+  expect(after.state.doc.firstChild!.type.name).toBe("frontmatter");
+  expect(after.state.doc.child(1).textContent).toBe("One");
+});
+
+it("moves a history down by front matter the note already had and grew", () => {
+  const before = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node("frontmatter", null, schema.text("title: a")),
+        schema.node("paragraph", null, schema.text("One")),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(before);
+  type(before, " two");
+  const file = writeHistory(leaveHistory(before.state)!);
+
+  const after = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node(
+          "frontmatter",
+          null,
+          schema.text("title: a\ntextus_id: abc"),
+        ),
+        schema.node("paragraph", null, schema.text("One two")),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(after);
+  expect(docHash(after.state.doc)).toBe(docHash(before.state.doc));
+  after.dispatch(takeHistory(after.state, readHistory(file)!)!);
+  undo(after.state, after.dispatch);
+  expect(after.state.doc.child(1).textContent).toBe("One");
 });
 
 it("takes no history over one of its own, nor a file that isn't one", () => {
