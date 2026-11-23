@@ -53,6 +53,7 @@
 | --- | --- | --- | --- |
 | [Agent 基座与竞品调研](research/Agent基座与竞品调研.md) | reference | 2026-11-23 | Agent 基座与竞品调研结论 |
 | [outl 对照调研与吸收清单](research/outl-对照与吸收.md) | reference | 2026-11-23 | outl 源码、功能、界面对照与吸收清单 |
+| [Tau 可吸收功能清单](research/Tau-可吸收功能清单.md) | reference | 2026-11-23 | Tau（LastKnightCoder/editor）可吸收功能清单：对照 Slate 皮肤与现有浮层设置，只记建议吸收项 |
 | [上游的 AI 协作开发方式（参考）](research/上游AI协作开发方式.md) | reference | 2026-11-23 | 上游 AI 协作与文档自动化做法 |
 | [代码核对与墨契吸收清单（2026-11-15）](research/代码核对-2026-11-15.md) | reference | 2026-11-23 | 2026-11-15 逐文件代码核对与墨契吸收清单 |
 | [同步评审汇总与建议](research/同步评审/00-汇总与建议.md) | reference | 2026-11-23 | 同步评审汇总与建议 |
