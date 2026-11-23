@@ -28,8 +28,8 @@
 }
 
 .pe-ic svg {
-  width: 22px;
-  height: 22px;
+  width: calc(22px * var(--icon-growth, 1));
+  height: calc(22px * var(--icon-growth, 1));
 }
 
 .pe-ic:active {
