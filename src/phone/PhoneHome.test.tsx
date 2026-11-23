@@ -387,8 +387,8 @@ describe("the phone library home", () => {
 
   it("draws a folder as a bare line icon, not a tinted chip", () => {
     // 2026-11-22: the fire-tinted folder chip is a bare 22px line icon.
-    // 15px design at 1.6 draws about 22 (ruling 58). The old 2.2 chip
-    // scale must not return.
+    // 15px design at 1.6 draws about 22 at the phone's 10/11. The old 2.2
+    // chip scale must not return.
     expect(phoneHomeCss).toContain("--icon-scale: 1.6;");
     expect(phoneHomeCss).not.toContain("--icon-scale: 2.2;");
     expect(phoneHomeCss).toMatch(

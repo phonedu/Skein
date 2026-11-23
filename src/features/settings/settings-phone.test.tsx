@@ -288,9 +288,9 @@ describe("the phone's settings", () => {
   });
 
   it("draws the list's icons at the phone's 24px step", () => {
-    // Ruling 58: NAV_ICON is 17; 1.55 at the phone's 10/11 draws about
-    // 24 - the size a phone's settings list uses - under ruling 56's 31.1
-    // and ruling 57's 28.1. The desktop's 1.25 would drop back to 21.3.
+    // NAV_ICON is 17; 1.55 at the phone's 10/11 draws about 24 - the size
+    // a phone's settings list uses - where 1.4 with the former global
+    // growth drew about 28, and the desktop's 1.25 draws 21.3.
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.55;/s,
     );

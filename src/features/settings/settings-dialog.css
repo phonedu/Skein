@@ -175,7 +175,7 @@
 
 .settings-dialog-nav .settings-phone-row-ic {
   /* Bare line icons, about 21px, not a tinted tile: a 17px design at 1.25
-     on the desktop, a step over the 1.15 the rows had before ruling 58. */
+     on the desktop, a step over the rows' former 1.15. */
   width: 24px;
   height: 24px;
   --icon-scale: 1.25;

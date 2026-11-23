@@ -110,7 +110,7 @@ type IconProps = { className?: string };
 
 /** The line every icon is drawn with: 1.45px at its design size, which with
  *  the icon scale is about 2.0px on the desktop and 1.8-2.1px on the phone.
- *  Lucide's own 2 would draw about 2.8px at the bars' size. Ruling 58. */
+ *  Lucide's own 2 would draw about 2.8px at the bars' size. */
 export const ICON_STROKE = 1.45;
 
 /** Lucide's `Shape` as one of ours, `size` px at design size. */
