@@ -217,6 +217,12 @@
   height: 28px;
 }
 
+.agent-panel-sign-in-title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 600;
+}
+
 .agent-panel-sign-in-cta {
   margin-top: 4px;
   min-height: var(--control-height);

@@ -490,9 +490,31 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-accent) 12%, transparent);
 }
 
-/* The AI page's own words and call, in the style guide's terms: the
-   explanation at reading size, and the sign-in as the screen's one fire
-   action. */
+/* The phone's buttons are pills: the 8px corner belongs to the desktop's
+   text buttons and the square icon buttons. */
+:root[data-window-chrome="mobile"] .tx-button {
+  border-radius: var(--shape-pill);
+}
+
+/* The AI page's own words and call, in the style guide's terms: the same
+   empty family as the library's (a 64 chip, a 20 title over a 15 line),
+   and the sign-in as the screen's one fire action. */
+:root[data-window-chrome="mobile"] .agent-panel-sign-in-mark {
+  width: 64px;
+  height: 64px;
+}
+
+:root[data-window-chrome="mobile"] .agent-panel-sign-in-mark svg {
+  width: 30px;
+  height: 30px;
+}
+
+:root[data-window-chrome="mobile"] .agent-panel-sign-in-title {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
 :root[data-window-chrome="mobile"]
   .agent-panel-sign-in
   .agent-panel-empty-text {

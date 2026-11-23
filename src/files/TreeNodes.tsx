@@ -144,8 +144,11 @@ export const DirNode = memo(function DirNode({
               // A search that found nothing: not an empty vault, only no
               // matches here.
               tree.noResults ? (
+                // The phone's third empty state, in the same family as the
+                // empty vault and Today: a chip and a title.
                 <div className="tx-empty tree-empty tree-empty-search">
-                  {tree.noResults}
+                  <span className="tree-empty-glyph" aria-hidden />
+                  <div className="tree-empty-title">{tree.noResults}</div>
                 </div>
               ) : null
             ) : tree.emptyState ? (

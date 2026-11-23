@@ -367,16 +367,24 @@
 .pempty-mark {
   display: grid;
   place-items: center;
-  width: var(--icon-tile-lg, 48px);
-  height: var(--icon-tile-lg, 48px);
+  /* The same chip as the library's and the tree's empty states. */
+  width: 64px;
+  height: 64px;
   border-radius: var(--shape-m);
   background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
   color: var(--ui-accent-text);
 }
 
+.pempty-mark svg {
+  width: 30px;
+  height: 30px;
+}
+
 .pempty-title {
-  font-size: var(--text-body);
-  font-weight: 600;
+  /* As the library's and the tree's: drawn 20, over a row's 17. */
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
 }
 
 .pempty-hint {

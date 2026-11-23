@@ -479,8 +479,9 @@
 }
 
 .phone-home .tree-empty-title {
-  font-size: var(--text-title);
-  font-weight: 600;
+  /* The empty state's title is its own size (drawn 20), over a row's 17. */
+  font-size: 22px;
+  font-weight: 650;
   color: var(--phone-ink);
   letter-spacing: 0.01em;
 }
@@ -513,11 +514,19 @@
   background: var(--ui-primary-pressed);
 }
 
-/* A search with no matches reads alone: one quiet line on the paper. */
+/* A search with no matches: the same empty family as the vault's and
+   Today's - a chip, a title - marked with a magnifier. */
 .phone-home .tree-empty-search {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: var(--space-6) var(--space-4);
   text-align: center;
   color: var(--phone-muted);
+}
+
+.phone-home .tree-empty-search .tree-empty-glyph {
+  --tree-empty-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6'/%3E%3Cpath d='M16 16l4.5 4.5'/%3E%3C/svg%3E");
 }
 
 /* The phone's empty-state for the home: no folder picked yet. A plain icon
@@ -551,8 +560,9 @@
 }
 
 .ph-empty-title {
-  font-size: var(--text-title);
-  font-weight: 600;
+  /* As the trees' and Today's: one size and weight for every empty state. */
+  font-size: 22px;
+  font-weight: 650;
   color: var(--phone-ink);
   letter-spacing: 0.01em;
 }
