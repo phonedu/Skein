@@ -224,12 +224,12 @@ async function clipboardNow(page: Page) {
   return page.evaluate(async () => {
     const out: Record<string, string> = {};
     for (const item of await navigator.clipboard.read())
-      for (const type of item.types)
-        // Windows hands text back with CRLF, whichever way it was written.
-        out[type] = (await (await item.getType(type)).text()).replace(
-          /\r\n/g,
-          "\n",
-        );
+      for (const type of item.types) {
+        const text = await (await item.getType(type)).text();
+        // Windows hands plain text back with CRLF, whichever way it was
+        // written; the HTML is compared as it is.
+        out[type] = type === "text/plain" ? text.replace(/\r\n/g, "\n") : text;
+      }
     return out;
   });
 }

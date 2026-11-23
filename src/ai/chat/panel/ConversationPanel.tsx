@@ -143,9 +143,7 @@ export function ConversationPanel({
               <span className="agent-panel-sign-in-mark" aria-hidden="true">
                 <AssistantIcon />
               </span>
-              <p className="agent-panel-sign-in-title">
-                {t.tutorialSignInTitle}
-              </p>
+              <p className="agent-panel-sign-in-title">{t.chatSignInTitle}</p>
               <p className="agent-panel-empty-text">{t.chatSignInHint}</p>
               <button
                 type="button"

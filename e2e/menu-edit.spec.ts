@@ -366,19 +366,21 @@ test.describe("the app-drawn menu (Windows, Linux)", () => {
   test("the window's menu opens a section beside it, and that section's submenu beside that", async ({
     page,
   }) => {
-    // The fork's ☰ opens the command palette, not the app menu.
-    test.skip(true, "the fork's window button opens the command palette");
-    await openApp(page, { settings: { menuBarShown: false, language: "en" } });
-    await page.getByRole("button", { name: "Menu" }).click();
-    await row(page, "View").hover();
+    // The app-drawn menu bar is the one that opens a section beside it;
+    // with the bar off, the ☰ opens the command palette instead.
+    await openApp(page, { settings: { menuBarShown: true, language: "en" } });
+    await page
+      .getByRole("menubar")
+      .getByRole("menuitem", { name: "View" })
+      .click();
     await expect(row(page, "Zen Mode")).toBeVisible();
     await row(page, "Mode").hover();
-    await expect(menus(page)).toHaveCount(3);
-    const [first, second, third] = await Promise.all(
-      [0, 1, 2].map((i) => menus(page).nth(i).boundingBox()),
+    // The bar's View list is the first; Mode's submenu stands beside it.
+    await expect(menus(page)).toHaveCount(2);
+    const [first, second] = await Promise.all(
+      [0, 1].map((i) => menus(page).nth(i).boundingBox()),
     );
     expect(second!.x).toBeGreaterThanOrEqual(first!.x + first!.width);
-    expect(third!.x).toBeGreaterThanOrEqual(second!.x + second!.width);
     await page.keyboard.press("Escape");
     await expect(menus(page)).toHaveCount(0);
   });

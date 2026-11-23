@@ -783,6 +783,11 @@ para usar una.
   docDelete: "Eliminar",
   docDeleteConfirm: "¿Eliminar «{name}»? Esta acción no se puede deshacer.",
   docDeleteOk: "Eliminar",
+  docDeleteManyConfirm: {
+    one: "¿Eliminar {n} documento? Esta acción no se puede deshacer.",
+    many: "¿Eliminar {n} documentos? Esta acción no se puede deshacer.",
+    other: "¿Eliminar {n} documentos? Esta acción no se puede deshacer.",
+  },
   docForget: "Quitar de la lista",
   docActionFailed: "No se pudo completar la acción",
   treeDayToday: "Hoy",
@@ -1605,6 +1610,7 @@ para usar una.
     "Pídele que afine tus notas y luego acepta o rechaza lo que proponga.",
   tutorialDoneBody:
     "A escribir: el menú Ayuda tiene las guías y este recorrido para repetirlo.",
+  chatSignInTitle: "Sin conexión",
   chatSignInHint: "Inicia sesión en una IA para conversar aquí.",
   chatSignIn: "Iniciar sesión",
   tutorialConnectSkip: "Omitir por ahora",

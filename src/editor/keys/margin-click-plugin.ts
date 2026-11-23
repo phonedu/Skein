@@ -43,9 +43,13 @@ function createMarginClickPlugin() {
        *  text column itself, where the editor places the caret. */
       const onPage = (target: EventTarget | null, x: number): boolean => {
         if (!view.editable || !(target instanceof Node)) return false;
+        const scroller = view.dom.closest<HTMLElement>(".editor-scroll");
+        // The page around the text is this editor's scroller: not the
+        // window's frame, nor another pane's.
+        if (!scroller || !scroller.contains(target)) return false;
         if (!target.contains(view.dom)) return false;
         if (target === view.dom && inColumn(view, x)) return false;
-        return view.dom.closest(".editor-scroll") !== null;
+        return true;
       };
       // A mouse's or pen's press, on the pointer's own events: no mouse
       // events follow a touch's prevented pointerdown.

@@ -491,8 +491,16 @@
 }
 
 /* The phone's buttons are pills: the 8px corner belongs to the desktop's
-   text buttons and the square icon buttons. */
-:root[data-window-chrome="mobile"] .tx-button {
+   text buttons and the square icon buttons. A split button keeps its two
+   halves' inner corners square; a .tx-square keeps its own shape. */
+:root[data-window-chrome="mobile"]
+  .tx-button:not(
+    .tx-square,
+    .quick-ask-split-main,
+    .quick-ask-split-chevron,
+    .is-split,
+    .plugin-action-more
+  ) {
   border-radius: var(--shape-pill);
 }
 
@@ -510,7 +518,7 @@
 }
 
 :root[data-window-chrome="mobile"] .agent-panel-sign-in-title {
-  font-size: 22px;
+  font-size: calc(20px * var(--ui-text-scale, 1));
   font-weight: 650;
   letter-spacing: 0.01em;
 }

@@ -7,8 +7,10 @@ import { emit, openApp } from "./helpers";
 test("the tour walks the window, moving on as each thing is done", async ({
   page,
 }) => {
-  // Its steps light the activity rail, gone with the H0 shell.
-  test.skip(true, "the tour walks the activity rail, gone in the fork");
+  // The tour is parked (TOUR_ENABLED = false in useTutorial.ts); its H0
+  // steps are written, so re-enabling it means a ready selector and these
+  // stops, not a new test.
+  test.skip(true, "the interactive tour is parked");
   await page.setViewportSize({ width: 1200, height: 760 });
   // From the Start page, with no document open: the tour brings its own.
   await openApp(page, {

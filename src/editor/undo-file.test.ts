@@ -159,6 +159,78 @@ it("moves a history down by front matter the note already had and grew", () => {
   expect(after.state.doc.child(1).textContent).toBe("One");
 });
 
+it("keeps a multi-step event's maps with its steps when the front matter grows", () => {
+  const before = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node(
+          "paragraph",
+          null,
+          schema.text("abcdefghijklmnopqrstuvwxyz"),
+        ),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(before);
+  // One event, two steps (as Replace All builds), then a transaction kept
+  // for its map alone: its map still describes the old positions.
+  const event = before.state.tr.insertText("A", 1);
+  event.insertText("B", 6);
+  before.dispatch(closeHistory(event));
+  before.dispatch(
+    before.state.tr.insertText("Z", 27).setMeta("addToHistory", false),
+  );
+  const body = before.state.doc.child(0).textContent;
+  const file = writeHistory(leaveHistory(before.state)!);
+
+  const after = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node("frontmatter", null, schema.text("textus_id: abc")),
+        schema.node("paragraph", null, schema.text(body)),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(after);
+  expect(docHash(after.state.doc)).toBe(docHash(before.state.doc));
+  after.dispatch(takeHistory(after.state, readHistory(file)!)!);
+  undo(after.state, after.dispatch);
+  // The event's two insertions are gone; the map-only edit stays.
+  expect(after.state.doc.child(1).textContent).toBe(
+    "abcdefghijklmnopqrstuvwxZyz",
+  );
+  expect(after.state.doc.firstChild!.type.name).toBe("frontmatter");
+});
+
+it("drops a history whose front matter changed in place", () => {
+  const before = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node("frontmatter", null, schema.text("title: a")),
+        schema.node("paragraph", null, schema.text("One")),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(before);
+  type(before, " two");
+  const file = writeHistory(leaveHistory(before.state)!);
+
+  const after = new EditorView(document.createElement("div"), {
+    state: EditorState.create({
+      doc: schema.node("doc", null, [
+        schema.node("frontmatter", null, schema.text("title: b")),
+        schema.node("paragraph", null, schema.text("One two")),
+      ]),
+      plugins: [history()],
+    }),
+  });
+  views.push(after);
+  expect(takeHistory(after.state, readHistory(file)!)).toBeNull();
+});
+
 it("takes no history over one of its own, nor a file that isn't one", () => {
   const before = editor("One");
   type(before, " two");

@@ -719,6 +719,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   docDelete: "削除",
   docDeleteConfirm: "「{name}」を削除しますか？元に戻せません。",
   docDeleteOk: "削除",
+  docDeleteManyConfirm: {
+    other: "この {n} 件の文書を削除しますか？元に戻せません。",
+  },
   docForget: "リストから削除",
   docActionFailed: "操作を完了できませんでした",
   treeDayToday: "今日",
@@ -1489,6 +1492,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   tutorialAiUseBody: "メモを簡潔にするよう頼み、提案を適用か却下で決めます。",
   tutorialDoneBody:
     "書き始めましょう：ヘルプメニューにガイドがあり、この案内ももう一度見られます。",
+  chatSignInTitle: "未接続",
   chatSignInHint: "AI にログインすると、ここで会話できます。",
   chatSignIn: "ログイン",
   tutorialConnectSkip: "今はスキップ",

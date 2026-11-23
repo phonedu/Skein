@@ -736,6 +736,10 @@ type /name in a conversation to use one.
   docDelete: "Delete",
   docDeleteConfirm: "Delete “{name}”? This can’t be undone.",
   docDeleteOk: "Delete",
+  docDeleteManyConfirm: {
+    one: "Delete {n} document? This can’t be undone.",
+    other: "Delete {n} documents? This can’t be undone.",
+  },
   docForget: "Remove from List",
   docActionFailed: "Couldn’t do that",
   treeDayToday: "Today",
@@ -1526,6 +1530,7 @@ type /name in a conversation to use one.
     "Ask it to tighten your notes, then accept or reject what it proposes.",
   tutorialDoneBody:
     "Start writing: the Help menu has the guides, and this tour to take again.",
+  chatSignInTitle: "Not connected",
   chatSignInHint: "Sign in to an AI to start talking here.",
   chatSignIn: "Sign in",
   tutorialConnectSkip: "Skip for now",

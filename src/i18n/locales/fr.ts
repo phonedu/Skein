@@ -785,6 +785,11 @@ utiliser une.
   docDeleteConfirm:
     "Supprimer «\u00a0{name}\u00a0»\u202f? Cette action est irréversible.",
   docDeleteOk: "Supprimer",
+  docDeleteManyConfirm: {
+    one: "Supprimer {n} document ? Cette action est irréversible.",
+    many: "Supprimer {n} documents ? Cette action est irréversible.",
+    other: "Supprimer {n} documents ? Cette action est irréversible.",
+  },
   docForget: "Retirer de la liste",
   docActionFailed: "Action impossible",
   treeDayToday: "Aujourd’hui",
@@ -1612,6 +1617,7 @@ utiliser une.
     "Demandez-lui de resserrer vos notes, puis acceptez ou refusez ce qu'elle propose.",
   tutorialDoneBody:
     "À vous d'écrire : le menu Aide contient les guides, et cette visite à refaire.",
+  chatSignInTitle: "Non connecté",
   chatSignInHint: "Connectez-vous à une IA pour discuter ici.",
   chatSignIn: "Se connecter",
   tutorialConnectSkip: "Passer pour l'instant",

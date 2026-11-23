@@ -671,6 +671,9 @@ export default {
   docDelete: "刪除",
   docDeleteConfirm: "要刪除「{name}」嗎？此動作無法復原。",
   docDeleteOk: "刪除",
+  docDeleteManyConfirm: {
+    other: "刪除這 {n} 個文件嗎？刪除後無法復原。",
+  },
   docForget: "從列表中移除",
   docActionFailed: "無法完成這個動作",
   treeDayToday: "今天",
@@ -1419,6 +1422,7 @@ export default {
   tutorialAiUseTitle: "讓 AI 改一改",
   tutorialAiUseBody: "請它把你的筆記改得更精簡，再選擇採納或拒絕。",
   tutorialDoneBody: "開始寫吧：說明選單裡有教學，也能再看一次導覽。",
+  chatSignInTitle: "未連線",
   chatSignInHint: "登入一個 AI 後就能在這裡對話。",
   chatSignIn: "登入",
   tutorialConnectSkip: "暫時略過",

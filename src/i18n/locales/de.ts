@@ -752,6 +752,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   docDelete: "Löschen",
   docDeleteConfirm: "„{name}“ löschen? Das lässt sich nicht rückgängig machen.",
   docDeleteOk: "Löschen",
+  docDeleteManyConfirm: {
+    one: "{n} Dokument endgültig löschen? Das lässt sich nicht rückgängig machen.",
+    other:
+      "{n} Dokumente endgültig löschen? Das lässt sich nicht rückgängig machen.",
+  },
   docForget: "Aus der Liste entfernen",
   docActionFailed: "Das hat nicht funktioniert",
   treeDayToday: "Heute",
@@ -1559,6 +1564,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Bitte sie, deine Notizen zu straffen, und übernimm oder verwirf ihren Vorschlag.",
   tutorialDoneBody:
     "Leg los: Im Hilfe-Menü findest du die Anleitungen und diesen Rundgang noch einmal.",
+  chatSignInTitle: "Nicht verbunden",
   chatSignInHint: "Melde dich bei einer KI an, um hier zu schreiben.",
   chatSignIn: "Anmelden",
   tutorialConnectSkip: "Später",

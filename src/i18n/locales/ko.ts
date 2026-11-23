@@ -707,6 +707,9 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   docDelete: "삭제",
   docDeleteConfirm: "‘{name}’ 문서를 삭제할까요? 되돌릴 수 없습니다.",
   docDeleteOk: "삭제",
+  docDeleteManyConfirm: {
+    other: "문서 {n}개를 삭제할까요? 되돌릴 수 없습니다.",
+  },
   docForget: "목록에서 제거",
   docActionFailed: "작업을 완료하지 못했습니다",
   treeDayToday: "오늘",
@@ -1476,6 +1479,7 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
     "메모를 간결하게 다듬어 달라고 한 뒤 제안을 적용하거나 거절하세요.",
   tutorialDoneBody:
     "이제 써 보세요: 도움말 메뉴에 가이드가 있고, 이 안내도 다시 볼 수 있습니다.",
+  chatSignInTitle: "연결되지 않음",
   chatSignInHint: "AI에 로그인하면 여기서 대화할 수 있습니다.",
   chatSignIn: "로그인",
   tutorialConnectSkip: "나중에 하기",

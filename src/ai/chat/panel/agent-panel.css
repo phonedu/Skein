@@ -236,6 +236,18 @@
   }
 }
 
+/* A signed-out card carries a title over its hint: short of room the
+   title goes first, and the card may scroll to its call. */
+@container agent-empty (height < 170px) {
+  .agent-panel-sign-in-title {
+    display: none;
+  }
+}
+
+.agent-panel-sign-in {
+  overflow-y: auto;
+}
+
 /* Short of room the spark goes first, then the hint once even its line
    has none (spark, gap and line take about 82px; some air around them). */
 @container agent-empty (height < 110px) {

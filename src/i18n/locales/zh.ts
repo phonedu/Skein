@@ -670,6 +670,9 @@ export default {
   docDelete: "删除",
   docDeleteConfirm: "删除“{name}”？删除后无法恢复。",
   docDeleteOk: "删除",
+  docDeleteManyConfirm: {
+    other: "删除这 {n} 个文档吗？删除后无法恢复。",
+  },
   docForget: "从列表移除",
   docActionFailed: "操作没有完成",
   treeDayToday: "今天",
@@ -1417,6 +1420,7 @@ export default {
   tutorialAiUseTitle: "让 AI 改一改",
   tutorialAiUseBody: "让它把你的笔记改得更精炼，再选择采纳或拒绝。",
   tutorialDoneBody: "开始写吧：帮助菜单里有教程，也能再看一遍引导。",
+  chatSignInTitle: "未连接",
   chatSignInHint: "登录一个 AI 后就能在这里对话。",
   chatSignIn: "登录",
   tutorialConnectSkip: "暂时跳过",

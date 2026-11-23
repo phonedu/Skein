@@ -47,15 +47,26 @@ export interface LeftHistory {
   done: LeftBranch;
   undone: LeftBranch;
   prevRanges: readonly number[] | null;
-  /** The leading front matter's node size in the document it left: a note
-   *  saved with an id gains one, and its history is still the body's. */
+  /** The leading front matter the history was kept against (its text and
+   *  node size): a note saved with an id gains one, and its history is
+   *  still the body's - as long as the old text is still a prefix. */
   frontmatterSize?: number;
+  frontmatterText?: string;
 }
+
+const leadingFrontmatter = (doc: ProseNode) => {
+  const first = doc.firstChild;
+  return first?.type.name === "frontmatter" ? first : null;
+};
 
 /** The leading front matter block's node size, 0 without one. */
 export function leadingFrontmatterSize(doc: ProseNode): number {
-  const first = doc.firstChild;
-  return first?.type.name === "frontmatter" ? first.nodeSize : 0;
+  return leadingFrontmatter(doc)?.nodeSize ?? 0;
+}
+
+/** Its text, "" without one. */
+export function leadingFrontmatterText(doc: ProseNode): string {
+  return leadingFrontmatter(doc)?.textContent ?? "";
 }
 
 /** prosemirror-history's plugin, known by its config (its key is private). */
@@ -87,6 +98,7 @@ export function leaveHistory(state: EditorState): LeftHistory | null {
     undone: leave(at.undone),
     prevRanges: at.prevRanges,
     frontmatterSize: leadingFrontmatterSize(state.doc),
+    frontmatterText: leadingFrontmatterText(state.doc),
   };
 }
 
@@ -128,13 +140,34 @@ function enter(
     selection: unknown,
     mirrorOffset: number | undefined,
   ) => Item;
-  // A position past the start moves down with the front matter; one at the
-  // very start stays, having nothing above it to move. A document that lost
-  // front matter is not one these steps were kept against: none go over.
+  // A document that lost front matter is not one these steps were kept
+  // against: none go over.
   if (shift < 0) throw new Error("front matter shrank");
-  const moved = (pos: number) =>
-    pos > 0 && shift !== 0 ? Math.max(1, pos + shift) : pos;
   const offset = new StepMap([0, 0, shift]);
+  /** A step map moved down by the shift: a map-only history item (a
+   *  transaction kept for its map alone) describes old positions too. */
+  const shiftMap = (map: StepMap) => {
+    if (!shift) return map;
+    const raw = map as unknown as { ranges: number[]; inverted: boolean };
+    const ranges = raw.ranges.slice();
+    for (let i = 0; i < ranges.length; i += 3) ranges[i] += shift;
+    return new StepMap(ranges, raw.inverted);
+  };
+  /** A bookmark moved down by the shift, of its own kind: a node's stays
+   *  a node's, and the body's start (position 0) moves to the body's new
+   *  start. */
+  const shiftSelection = (selection: unknown) => {
+    if (!selection || shift === 0) return selection;
+    const at = selection as { anchor?: number; head?: number };
+    if (typeof at.anchor !== "number") return selection;
+    const next = Object.create(
+      Object.getPrototypeOf(selection) as object,
+    ) as Record<string, unknown>;
+    Object.assign(next, selection);
+    next.anchor = at.anchor + shift;
+    next.head = (at.head ?? at.anchor) + shift;
+    return next;
+  };
   const branch = (from: LeftBranch) =>
     new Branch(
       fresh.undone.items.append(
@@ -143,19 +176,12 @@ function enter(
             item.step === undefined
               ? undefined
               : Step.fromJSON(schema, item.step);
-          const selection = item.selection as
-            { anchor?: number; head?: number } | undefined;
           const at = step && shift !== 0 ? step.map(offset) : step;
           if (step && at === null) throw new Error("history does not map");
           return new Item(
-            item.map,
+            at ? at.getMap() : shiftMap(item.map),
             at ?? undefined,
-            selection && typeof selection.anchor === "number"
-              ? point(
-                  moved(selection.anchor),
-                  moved(selection.head ?? selection.anchor),
-                )
-              : item.selection,
+            shiftSelection(item.selection),
             item.mirrorOffset,
           );
         }),
@@ -166,7 +192,7 @@ function enter(
   return new State(
     branch(left.done),
     branch(left.undone),
-    left.prevRanges?.map((pos) => moved(pos)) ?? null,
+    left.prevRanges?.map((pos) => pos + shift) ?? null,
     0,
     -1,
   );
@@ -202,7 +228,11 @@ export function takeHistory(
   if (!found || found.at.done.eventCount + found.at.undone.eventCount > 0)
     return null;
   // Its steps were kept against a document without the front matter this
-  // one begins with: they move down by it.
+  // one begins with: they move down by it. A front matter edited in place
+  // is not the one they were kept against - its old text must still be a
+  // prefix - so a history never rewrites YAML it did not see.
+  const openedText = leadingFrontmatterText(state.doc);
+  if (!openedText.startsWith(left.frontmatterText ?? "")) return null;
   const shift = leadingFrontmatterSize(state.doc) - (left.frontmatterSize ?? 0);
   try {
     const historyState = enter(left, found.at, state.schema, shift);
@@ -252,6 +282,7 @@ export function writeHistory(left: LeftHistory): string {
     undone: branch(left.undone),
     prevRanges: left.prevRanges,
     frontmatterSize: left.frontmatterSize ?? 0,
+    frontmatterText: left.frontmatterText ?? "",
   });
 }
 
@@ -266,6 +297,7 @@ export function readHistory(text: string): LeftHistory | null {
       undone: FileBranch;
       prevRanges: number[] | null;
       frontmatterSize?: number;
+      frontmatterText?: string;
     };
     if (kept.format !== FORMAT) return null;
     const branch = (from: FileBranch): LeftBranch => ({
@@ -284,6 +316,7 @@ export function readHistory(text: string): LeftHistory | null {
       undone: branch(kept.undone),
       prevRanges: kept.prevRanges,
       frontmatterSize: kept.frontmatterSize ?? 0,
+      frontmatterText: kept.frontmatterText ?? "",
     };
   } catch {
     return null;

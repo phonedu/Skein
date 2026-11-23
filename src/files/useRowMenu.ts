@@ -54,6 +54,28 @@ type TreeMenu = {
  *  deleted for good. */
 const trashable = (path: string) => canTrashFiles && !farEntries(path);
 
+/** What a group's trash acts on, and whether that is permanent. A folder
+ *  goes only where there is a Trash; a phone's or a remote root's
+ *  documents go for good, and its folders stay. The folder being shown is
+ *  never one of them. */
+export function trashTargets(
+  rows: readonly TreeRow[],
+  root: string,
+): {
+  targets: TreeRow[];
+  permanent: boolean;
+} {
+  // The folder being shown first: else it encloses every other pick and
+  // the group would act on the open library itself.
+  const targets = outermost(rows.filter((row) => row.path !== root)).filter(
+    (row) => trashable(row.path) || !row.isDir,
+  );
+  return {
+    targets,
+    permanent: targets.some((row) => !trashable(row.path)),
+  };
+}
+
 export function useRowMenu(
   root: string,
   linkBase: string,
@@ -124,13 +146,22 @@ export function useRowMenu(
    *  picked folder goes with it. */
   const trashMany = useCallback(
     async (rows: readonly TreeRow[]) => {
+      const { targets, permanent } = trashTargets(rows, root);
+      if (!targets.length) return;
       const ok = await showConfirm(
-        counted(t.treeTrashManyConfirm, rows.length),
-        { okLabel: t.treeTrash, cancelLabel: t.cancel, danger: true },
+        counted(
+          permanent ? t.docDeleteManyConfirm : t.treeTrashManyConfirm,
+          targets.length,
+        ),
+        {
+          okLabel: permanent ? t.docDeleteOk : t.treeTrash,
+          cancelLabel: t.cancel,
+          danger: true,
+        },
       );
       if (!ok) return;
       selection.clear();
-      for (const { path } of outermost(rows)) {
+      for (const { path } of targets) {
         try {
           await fs.trashEntry(path, root);
           reload(parentDir(path) ?? root);
@@ -160,15 +191,21 @@ export function useRowMenu(
           },
           "separator",
         );
-      items.push({
-        label: t.treeTrash,
-        onSelect: () => void trashMany(rows),
-        danger: true,
-        Icon: TrashIcon,
-      });
+      // Where there is no Trash (a phone, a remote root) the group deletes
+      // documents only, and for good: say so, and leave folders out.
+      const { targets, permanent } = trashTargets(rows, root);
+      if (targets.length)
+        items.push({
+          label: permanent ? t.docDelete : t.treeTrash,
+          onSelect: () => void trashMany(rows),
+          danger: true,
+          Icon: TrashIcon,
+        });
+      // Nothing this group can do: no empty menu.
+      if (!items.length) return;
       setMenu({ ...at, items });
     },
-    [t, onFileSelect, trashMany],
+    [root, t, onFileSelect, trashMany],
   );
 
   const openRowMenu = useCallback(

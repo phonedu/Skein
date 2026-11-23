@@ -107,9 +107,6 @@ test("a trackpad pinch right after a scroll zooms (Windows: ctrl+wheel in fracti
 test("zoomed in a narrow window, the text's margin still holds a block's fold caret", async ({
   page,
 }) => {
-  // The wheel's island lookup misses at 700 in the fork (B5 finding); the
-  // zoom itself is covered by the wide-window tests above.
-  test.skip(true, "the fork's pointer zoom does not resolve at 700");
   await page.setViewportSize({ width: 700, height: 760 });
   await openApp(page, { settings: { menuBarShown: false }, document: true });
   await settled(page);

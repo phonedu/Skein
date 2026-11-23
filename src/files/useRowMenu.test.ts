@@ -3,7 +3,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "../i18n/locales/en";
 import { TreeSelection } from "./tree-selection";
-import { useRowMenu } from "./useRowMenu";
+import { trashTargets, useRowMenu } from "./useRowMenu";
 
 const platform = vi.hoisted(() => ({ mobile: false }));
 vi.mock("../platform/capabilities", async (real) => ({
@@ -40,6 +40,43 @@ const labelsFor = (path: string, isDir: boolean) => {
     ),
   };
 };
+
+describe("a group's trash", () => {
+  afterEach(() => {
+    platform.mobile = false;
+  });
+
+  const rows = [
+    { path: "/proj", isDir: true },
+    { path: "/proj/sub", isDir: true },
+    { path: "/proj/a.md", isDir: false },
+  ];
+
+  it("leaves the shown folder out, and takes files and folders to a Trash", () => {
+    const { targets, permanent } = trashTargets(rows, "/proj");
+    expect(targets.map((row) => row.path)).toEqual(["/proj/sub", "/proj/a.md"]);
+    expect(permanent).toBe(false);
+  });
+
+  it("without a Trash, deletes documents only, and says it is permanent", () => {
+    platform.mobile = true;
+    expect(trashTargets(rows, "/proj")).toEqual({
+      targets: [{ path: "/proj/a.md", isDir: false }],
+      permanent: true,
+    });
+  });
+
+  it("is empty when only the shown folder or non-trashable folders are picked", () => {
+    platform.mobile = true;
+    expect(trashTargets([{ path: "/proj", isDir: true }], "/proj")).toEqual({
+      targets: [],
+      permanent: false,
+    });
+    expect(trashTargets([{ path: "/proj/sub", isDir: true }], "/proj")).toEqual(
+      { targets: [], permanent: false },
+    );
+  });
+});
 
 describe("a tree row's menu", () => {
   afterEach(() => {

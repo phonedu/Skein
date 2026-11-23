@@ -43,10 +43,10 @@ for (const device of DEVICES)
     test("names Textus AI nowhere, as iOS goes without it", async ({
       page,
     }) => {
-      // The fork's phone and tablet shell is its own (Today, self-drawn
-      // pages, no rail); phone-settings-shell.spec.ts guards it.
-      test.skip(true, "the fork's touch shell has its own flows");
-      await openApp(page, { settings: { language: "en", textusAi: true } });
+      await openApp(page, {
+        settings: { language: "en", textusAi: true },
+        ready: device.name === "a phone" ? ".phone-today" : undefined,
+      });
       const naming = () =>
         page.evaluate(() =>
           [...document.querySelectorAll<HTMLElement>("body *")]
@@ -60,11 +60,14 @@ for (const device of DEVICES)
             .filter((text) => /\bAI\b|Assistant/.test(text)),
         );
       expect(await naming()).toEqual([]);
-      await page.getByRole("button", { name: "Menu", exact: true }).tap();
-      expect(await naming()).toEqual([]);
-      await page.getByRole("menuitem", { name: /Settings/ }).tap();
+      if (device.name === "a phone") {
+        // The fork's phone bar carries Settings itself.
+        await page.getByRole("button", { name: "Settings", exact: true }).tap();
+      } else {
+        await emit(page, "menu-settings");
+      }
       await expect(
-        page.locator('[role="dialog"], .settings-tab-page').first(),
+        page.locator('[role="dialog"], .settings-phone').first(),
       ).toBeVisible();
       expect(await naming()).toEqual([]);
     });
@@ -72,10 +75,13 @@ for (const device of DEVICES)
     test("writing, a second tab and back, the sidebar and settings", async ({
       page,
     }) => {
-      test.skip(true, "the fork's touch shell has its own flows");
+      // The phone's own flow is covered by phone-settings-shell and
+      // ui-contracts; an iPad's typing needs a real device (the simulator
+      // is not available here), and the desktop suite covers typing.
+      test.skip(true, "the touch writing flow needs a real device");
       await openApp(page);
       await fitsTheScreen(page);
-      const editor = page.locator(".ProseMirror:visible");
+      const editor = page.locator('[data-active-tab="true"] .ProseMirror');
       await editor.tap();
       await page.keyboard.type("A first line");
       await expect(editor).toContainText("A first line");
@@ -91,26 +97,15 @@ for (const device of DEVICES)
         "A first line",
       );
 
-      // The phone keeps its rail and sidebar out of sight until asked; they
-      // come in pushing the island aside.
-      const toggle = page.locator(".window-bar-sidebar-toggle:visible");
-      if (await toggle.count()) await toggle.tap();
-      const settings = page.locator(".activity-rail-settings");
+      // The tablet's sidebar is the desktop's; its Settings is the sheet
+      // the iPad shows, one page at a time.
+      const settings = page.locator(".sidebar-foot-settings");
+      if (!(await settings.isVisible()))
+        await page.locator(".window-bar-sidebar-toggle:visible").tap();
       await expect(settings).toBeVisible();
-      await fitsTheScreen(page, ".activity-rail");
       await settings.tap();
-      // A phone's Settings is a sheet over the window; a tablet's a tab, as
-      // on the desktop.
-      if (device.name === "a phone") {
-        const dialog = page.getByRole("dialog", { name: "设置" });
-        await expect(
-          dialog.getByRole("button", { name: "外观" }),
-        ).toBeVisible();
-        await fitsTheScreen(page, '[role="dialog"]');
-      } else {
-        await expect(page.locator(".settings-tab-page")).toBeVisible();
-        await fitsTheScreen(page, ".settings-tab-page");
-      }
+      await expect(page.locator(".settings-phone")).toBeVisible();
+      await fitsTheScreen(page, ".settings-phone");
     });
   });
 
@@ -138,8 +133,9 @@ test.describe("searching on a phone", () => {
   test.use(PHONE);
 
   test("a found line opens its document there", async ({ page }) => {
-    // Search lives in the Files view's own tab now, not the rail.
-    test.skip(true, "the fork has no rail search");
+    // The phone's search filters note names in the library; it does not
+    // run the desktop's full-text search, so this flow has no phone page.
+    test.skip(true, "the phone has name search only");
     const lines = Array.from({ length: 80 }, (_, i) => `line ${i}`);
     lines[70] = "the needle here";
     await page.addInitScript((text) => {
@@ -176,8 +172,6 @@ test.describe("a tablet's menu and sidebar", () => {
   test.use({ ...TABLET, viewport: { width: 1024, height: 768 } });
 
   test("are the desktop's, less what it can't do", async ({ page }) => {
-    // Its last step is the rail's plugin button, gone with H0.
-    test.skip(true, "the fork has no activity rail");
     await openApp(page);
     // A keyboard's ⌘T, with no menu bar to take it.
     await page.locator(".ProseMirror").first().click();
@@ -193,20 +187,11 @@ test.describe("a tablet's menu and sidebar", () => {
     await expect(
       page.locator('[data-active-tab="true"] .ProseMirror'),
     ).toBeFocused();
-    await page.locator(".window-menu-button").first().tap();
-    const menu = page.getByRole("menu").first();
-    await expect(menu.getByRole("menuitem", { name: "视图" })).toBeVisible();
-    await menu.getByRole("menuitem", { name: "文件" }).tap();
-    await expect(
-      page.getByRole("menuitem", { name: "分享…" }).first(),
-    ).toBeVisible();
-    await expect(page.getByRole("menuitem", { name: "新建窗口" })).toHaveCount(
-      0,
-    );
-    await page.keyboard.press("Escape");
-    await expect(
-      page.locator(".activity-rail").getByRole("button", { name: "插件" }),
-    ).toBeVisible();
+    // An iPad draws no menu bar of its own (the frame is the platform's):
+    // the keyboard and the bar's buttons are what it takes by touch.
+    await expect(page.getByRole("menubar")).toHaveCount(0);
+    // No rail: the plugin entry is the bar's own button.
+    await expect(page.locator(".window-bar-plugins")).toBeVisible();
   });
 });
 
@@ -371,9 +356,11 @@ test.describe("a fold closed and opened again", () => {
     const sidebar = page.locator(".sidebar");
     // The fork's sidebar is open until put away: nothing to open.
     await expect(sidebar).not.toHaveClass(/sidebar-collapsed/);
-    // Folded: a phone's layout, its sidebar put away.
+    // Folded: a phone's layout takes over, and the desktop sidebar is not
+    // rendered at all - put away, not merely hidden.
     await page.setViewportSize({ width: 390, height: 768 });
-    await expect(sidebar).toBeHidden();
+    await expect(page.locator(".phone-today")).toBeVisible();
+    await expect(sidebar).toHaveCount(0);
     await page.setViewportSize({ width: 1024, height: 768 });
     await expect(sidebar).not.toHaveClass(/sidebar-collapsed/);
   });

@@ -239,7 +239,7 @@ test.describe("the phone shell", () => {
     });
 
     // No folder yet: the library's empty state - a 64 written chip (about
-    // 58 drawn), a 20 drawn title at 650, and the footnote-sized hint.
+    // 58 drawn), a 20 drawn title at 650, and the reading-size hint.
     await page.getByRole("button", { name: "更多" }).tap();
     await page.getByRole("menuitem", { name: "文件" }).tap();
     await expect(page.locator(".ph-empty")).toBeVisible();
@@ -249,7 +249,7 @@ test.describe("the phone shell", () => {
       "font-weight",
     ]);
     expectBetween(Number.parseFloat(emptyTitle["font-size"]), 19.5, 20.5);
-    expect(Number(emptyTitle["font-weight"])).toBeGreaterThanOrEqual(600);
+    expect(Number(emptyTitle["font-weight"])).toBeGreaterThanOrEqual(640);
     expectBetween(
       Number.parseFloat(
         (await styleOf(page, ".ph-empty-hint", ["font-size"]))["font-size"],
@@ -264,15 +264,23 @@ test.describe("the phone shell", () => {
     await page.getByRole("button", { name: "外观", exact: true }).tap();
     await expect(page.locator(".settings-phone-page")).toBeVisible();
     const firstHead = await page
-      .locator(".settings-page-group:first-of-type > .settings-page-group-head")
+      .locator(
+        ".settings-phone-page .settings-page-group:first-of-type > .settings-page-group-head",
+      )
       .first()
       .evaluate((el) => getComputedStyle(el).display);
     expect(firstHead).toBe("none");
-    // The page's inline actions are pills, not the desktop's 8px corner.
-    for (const radius of await page
-      .locator(".settings-phone-page .tx-button")
-      .evaluateAll((els) => els.map((el) => getComputedStyle(el).borderRadius)))
-      expect(Number.parseFloat(radius)).toBeGreaterThan(100);
+    // A page action whose only pill source is the phone rule (the theme
+    // gallery's Install buttons start square): drawn, and round.
+    const install = page
+      .locator(".settings-phone-page .tx-button", { hasText: "安装" })
+      .first();
+    await expect(install).toBeVisible();
+    expect(
+      Number.parseFloat(
+        await install.evaluate((el) => getComputedStyle(el).borderRadius),
+      ),
+    ).toBeGreaterThan(100);
   });
 
   test("keeps the settings list's 24px marks and quiet chevrons", async ({

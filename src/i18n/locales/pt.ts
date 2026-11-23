@@ -769,6 +769,11 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   docDelete: "Apagar",
   docDeleteConfirm: "Apagar “{name}”? Esta ação não pode ser desfeita.",
   docDeleteOk: "Apagar",
+  docDeleteManyConfirm: {
+    one: "Excluir {n} documento? Não dá para desfazer.",
+    many: "Excluir {n} documentos? Não dá para desfazer.",
+    other: "Excluir {n} documentos? Não dá para desfazer.",
+  },
   docForget: "Remover da Lista",
   docActionFailed: "Não foi possível concluir a ação",
   treeDayToday: "Hoje",
@@ -1588,6 +1593,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "Peça para enxugar suas notas e depois aceite ou rejeite a proposta.",
   tutorialDoneBody:
     "Comece a escrever: o menu Ajuda tem os guias e este tour para refazer.",
+  chatSignInTitle: "Não conectado",
   chatSignInHint: "Entre em uma IA para conversar aqui.",
   chatSignIn: "Entrar",
   tutorialConnectSkip: "Pular por agora",
