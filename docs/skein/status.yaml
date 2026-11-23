@@ -43,13 +43,6 @@ tasks:
     acceptance: 4 周 10 个真实交付物；封装 ≥3 条资产并真实调用；复用率 ≥30%；≥3 条反例。
     spec: specs/Textus-改造方案.md#8-实施计划
     estimate: 4 周日历
-  - id: D1d
-    title: 附录 A 验收（15 条）
-    workstream: D1
-    state: todo
-    acceptance: 除 iOS 外的 15 条；第 14 条依赖 D0.5。
-    spec: specs/Textus-改造方案.md#附录-a阶段-1-验收清单
-    estimate: 1 周
   - id: D1f
     title: 理论淘汰 / 复盘 / 修数
     workstream: D1
