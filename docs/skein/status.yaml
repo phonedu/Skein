@@ -23,7 +23,7 @@ workstreams:
   - id: B
     name: 上游跟随（B 组）
     state: doing
-    focus: v1.4.6 已并线（457f6693）；TW1 已修（879fd773）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 适配 fork 壳 e2e（134 通过 / 89 失败）；等下一个稳定 tag
+    focus: v1.4.6 已并线（457f6693）；TW1 已修（879fd773）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 doing：活动轨 spec 已换成 fork-shell、theme-workshop 2 过 5 跳、settings-pages 10 过 11 待改（上游设置壳假设）；等下一个稳定 tag
     spec: specs/界面契约.md
   - id: T1
     name: 主题（T1）
@@ -67,7 +67,7 @@ tasks:
   - id: B5
     title: fork 壳 e2e 适配
     workstream: B
-    state: todo
+    state: doing
     acceptance: 全量 e2e 以 fork 壳为期望通过，或把不适用项列成清单并说明；上游壳流程改写/删除；关键屏断言留在 ui-contracts。
     spec: specs/界面契约.md
     estimate: 3–5 天
