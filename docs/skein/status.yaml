@@ -85,20 +85,6 @@ tasks:
       not: 不恢复活动轨/上游插件面板；不改产品行为迁就测试；不把这批测试改写成另一套上游壳。
       scope: e2e/*.spec.ts、e2e/helpers.ts；只修被测试发现的真实缺陷。
       evidence: 全量 e2e 输出（通过/失败/跳过清单）与 commit。
-  - id: D1u
-    title: 插件界面样式对齐宿主
-    workstream: D1
-    state: doing
-    acceptance: 插件四个页面（收集面板、确认中心、卡片详情、资产列表）与宿主 Slate 皮肤一套视觉；令牌桥接方案有小裁决；桌面 + 手机截图走查；webview 内不写原始颜色/圆角/字号。
-    spec: specs/界面契约.md
-    estimate: 3–5 天
-    brief:
-      problem: 插件 webview 是沙箱 frame，宿主的 --ui-*/--shape-*/--text-* 令牌进不去，页面自带一套浅灰样式，与宿主界面两种观感、非常割裂（用户 2026-11-23 复看指出）。
-      expected: 宿主向 webview 桥接令牌（CSS 变量注入或 postMessage 主题包，方案先裁决），四个页面按界面契约重排，深浅色跟随宿主。
-      standard: 桌面 + 手机 built app 走查截图；webview 内样式只用桥接令牌；手机断点（320dp）可用；插件单测全绿。
-      not: 不改宿主皮肤；不做与主题系统的深度联动（归 T1）；不改插件功能与确认流。
-      scope: skein-collect 的四个页面、宿主令牌桥接（插件 API 或 view state）、插件 0.6.0。
-      evidence: 走查截图与插件测试输出。
 later:
   - id: S4
     title: 局域网 Hub

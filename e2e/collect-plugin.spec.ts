@@ -60,3 +60,62 @@ test("skein.collect: capture lands the form's line as an inbox note", async ({
   expect(note!.text).not.toMatch(/^type:/m);
   expect(note!.text).toContain("\n买一台除湿机\n");
 });
+
+// The frame's look comes from the host (ruling 62): the plugin asks the
+// host for the open colours, derives the in-betweens and stamps them on
+// each message. This asserts the bridge reached the page, not the styles.
+test("skein.collect: the confirm center's frame takes the host's colours", async ({
+  page,
+}) => {
+  test.skip(
+    !hasPlugin("skein.collect"),
+    "no skein.collect in the plugins checkout",
+  );
+  await page.setViewportSize({ width: 1280, height: 760 });
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    w.__devFs = { "/proj/one.md": "# One\n" };
+    w.__devPickFolder = "/proj";
+  });
+  await openWithPlugins(page, {
+    plugins: { "skein.collect": ["files.read", "files.write"] },
+    language: "zh",
+  });
+  await emit(page, "menu-open-folder");
+  await page.waitForFunction(() =>
+    (
+      window as unknown as { __devListening: (n: string) => boolean }
+    ).__devListening("menu-plugin-command"),
+  );
+  await emit(page, "menu-plugin-command", "skein.collect.confirm");
+  const frame = page.frameLocator(".plugin-webview-frame").first();
+  await expect(frame.locator("html")).toBeVisible();
+  await expect
+    .poll(() => frame.locator("html").evaluate((el) => el.style.getPropertyValue("--ui-bg")))
+    .not.toBe("");
+  const vars = await frame.locator("html").evaluate((el) => ({
+    bg: el.style.getPropertyValue("--ui-bg"),
+    text: el.style.getPropertyValue("--ui-text"),
+    muted: el.style.getPropertyValue("--ui-muted"),
+    body: el.style.getPropertyValue("--text-body"),
+  }));
+  expect(vars.bg).toMatch(/^rgb\(|^#/);
+  expect(vars.text).toMatch(/^rgb\(|^#/);
+  expect(vars.muted).toMatch(/^rgb\(/);
+  expect(vars.body).toBe("15px");
+  // The same background the host window draws, not a second palette. The
+  // host's token may be written as a hex; read it back the way the frame's
+  // answer is given (a computed colour, rgb()).
+  const hostBg = await page.evaluate(() => {
+    const token = getComputedStyle(document.documentElement)
+      .getPropertyValue("--ui-bg")
+      .trim();
+    const probe = document.createElement("span");
+    probe.style.color = token;
+    document.body.appendChild(probe);
+    const rgb = getComputedStyle(probe).color;
+    probe.remove();
+    return rgb;
+  });
+  expect(vars.bg).toBe(hostBg);
+});
