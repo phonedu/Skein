@@ -23,6 +23,7 @@
     "test:e2e": "playwright test",
     "test:perf": "TEXTUS_PERF=1 playwright test --project=chromium --workers=1",
     "test:phone-shell": "playwright test e2e/phone-settings-shell.spec.ts --project=chromium --workers=1",
+    "test:ui-contracts": "playwright test e2e/ui-contracts.spec.ts --project=chromium --workers=1",
     "bench:large-doc": "playwright test -c playwright.perf.config.ts large-doc.perf.ts",
     "bench:plugins": "playwright test -c playwright.perf.config.ts plugins.perf.ts",
     "setup:e2e": "playwright install chromium",

@@ -10,6 +10,7 @@
 | 找某份文档         | [INDEX.md](INDEX.md)（生成，按类型和状态分组）              |
 | 找某条裁决         | [decisions/README.md](decisions/README.md)（按 ID 查）      |
 | 找某个方案         | [INDEX.md](INDEX.md) → `specs/`                             |
+| 上游新界面怎么适配 | [specs/界面契约.md](specs/界面契约.md)（令牌、桌面/手机模式、图标档位、屏幕索引） |
 | 全部命令           | [COMMANDS.md](COMMANDS.md)（生成，按类别）                  |
 | 工程上怎么做       | [AGENTS.md](../../AGENTS.md) → [CONTRIBUTING.md](../../CONTRIBUTING.md) → `docs/dev/` |
 | 查历史             | [archive/README.md](archive/README.md)                      |

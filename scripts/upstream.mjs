@@ -316,8 +316,8 @@ function clean(flags) {
 
 function verify(flags) {
   const scripts = flags.full
-    ? ["check:all", "test:phone-shell"]
-    : ["check", "check:native", "test:phone-shell"];
+    ? ["check:all", "test:phone-shell", "test:ui-contracts"]
+    : ["check", "check:native", "test:phone-shell", "test:ui-contracts"];
   for (const script of scripts) {
     console.log(`\n=== npm run ${script}`);
     const result = spawnSync("npm", ["run", script], {
@@ -336,8 +336,9 @@ function verify(flags) {
   UI:      desktop built app - settings dialog, appearance, document, theme workshop,
            Today/sidebar; Android - settings list, document, model, chat/proxy,
            extensions' installable lists, Today changes, theme workshop
-  new upstream UI: adapt to the fork's row/card/token contract and add a
-           phone-settings-shell assertion, or do not merge it
+  new upstream UI: adapt to the fork's row/card/token contract
+           (docs/skein/specs/界面契约.md) and add a phone-settings-shell or
+           ui-contracts assertion, or do not merge it
   npm run tauri build -- --debug`);
 }
 

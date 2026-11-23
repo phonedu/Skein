@@ -16,6 +16,7 @@
 | [Textus 改造方案（项目基线）](specs/Textus-改造方案.md) | active | 2026-11-23 | 产品定位、架构、数据模型、阶段与验收 |
 | [Textus 界面改造方案（界面基线）](specs/Textus-界面改造方案.md) | active | 2026-11-23 | 界面现状、设置浮层规格与剩余 pass |
 | [同步方案（内置）](specs/同步方案.md) | active | 2026-11-23 | 内置同步分层、多库、加密与迁移 |
+| [界面契约](specs/界面契约.md) | active | 2026-11-23 | 界面适配的权威基准：令牌、桌面/手机模式、图标档位、上游新界面的适配流程与屏幕索引 |
 
 ## 提案 / 暂缓
 
@@ -34,7 +35,7 @@
 
 ## 裁决
 
-- [裁决索引](decisions/README.md) — 58 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
+- [裁决索引](decisions/README.md) — 59 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
 
 ## 纪律
 
