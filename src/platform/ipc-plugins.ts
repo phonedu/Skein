@@ -14,12 +14,32 @@ import { dirname } from "../utils/path";
 
 /** A package picked in the Files app, copied where the install can read it
  *  by path; null when cancelled. */
+/** A flat, safe file name for the copy: an Android content id can carry a
+ *  path ("primary:Download/x"), and a copy under it would sit in a folder
+ *  that does not exist. */
+function packageName(url: string, name?: string): string {
+  const shown = name || decodeURIComponent(url.slice(url.lastIndexOf("/") + 1));
+  const base =
+    shown
+      .split(/[\\/]/)
+      .pop()
+      ?.replace(/[^A-Za-z0-9._-]+/g, "_") || "plugin";
+  return /\.(textusplugin|zip)$/i.test(base)
+    ? base
+    : `${base.replace(/\.[^.]+$/, "")}.textusplugin`;
+}
+
 async function pickFilesPackage(): Promise<string[] | null> {
-  const url = await nativeFiles.pickDocument(["textusplugin", "zip"]);
-  if (!url) return null;
-  const name = decodeURIComponent(url.slice(url.lastIndexOf("/") + 1));
-  const copy = await nativeFiles.scratchPath(name);
-  await command("write_base64_file", copy, await nativeFiles.readBase64(url));
+  const picked = await nativeFiles.pickDocumentFile(["textusplugin", "zip"]);
+  if (!picked) return null;
+  const copy = await nativeFiles.scratchPath(
+    packageName(picked.url, picked.name),
+  );
+  await command(
+    "write_base64_file",
+    copy,
+    await nativeFiles.readBase64(picked.url),
+  );
   return [copy];
 }
 

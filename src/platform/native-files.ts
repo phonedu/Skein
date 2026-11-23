@@ -75,6 +75,21 @@ export const nativeFiles = {
         ),
       ).url,
     ),
+  /** The same pick with the name the system shows for it: a content://
+   *  URL's last segment can be a document id carrying a path, which makes
+   *  a copy path land in a folder that does not exist. */
+  pickDocumentFile: async (
+    extensions?: string[],
+  ): Promise<{ url: string; name?: string } | null> => {
+    const picked = named(
+      await call<Picked>(
+        "pick_document",
+        extensions ? { allowedExtensions: extensions } : undefined,
+      ),
+    );
+    const url = await inDocuments(picked.url);
+    return url ? { url, name: picked.name } : null;
+  },
   /** Android's image picker, named so the image store knows its extension;
    *  null when cancelled. */
   pickImage: async (): Promise<string | null> =>
