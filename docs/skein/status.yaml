@@ -64,20 +64,6 @@ tasks:
     acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
     spec: specs/Textus-主题策略.md
     estimate: 3–5 天
-  - id: B6
-    title: B5 留下的两处真实缺陷
-    workstream: B
-    state: todo
-    acceptance: 标签往返后撤销历史与外部改动一致（external-change 绿）；复制的 Markdown 段间空行不带空格（clipboard 绿）；各补最低层测试。
-    spec: specs/界面契约.md
-    estimate: 1–2 天
-    brief:
-      problem: 全量 e2e 仅剩两处真实缺陷：external-change 的标签往返后撤销历史丢失；剪贴板复制出的段间空行带一个空格。
-      expected: 两处修复，全量 e2e 除环境项（插件样例仓版本）外全绿。
-      standard: 先复现、在最低层加测试、再修；不为变绿改断言。
-      not: 不顺手改标签、剪贴板的其他行为；不动插件样例仓。
-      scope: src/app/tabs、src/editor/clipboard 及其测试。
-      evidence: 两个失败用例转绿，连同全量 e2e 输出。
 later:
   - id: S4
     title: 局域网 Hub
