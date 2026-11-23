@@ -5,7 +5,11 @@ import type {
   DiagramEngine,
   EmbedDisplay,
 } from "../../../prefs/SettingsContext";
-import type { ViewMode } from "../../../prefs/settings-values";
+import type {
+  SingleNewlineMode,
+  SingleTildeMode,
+  ViewMode,
+} from "../../../prefs/settings-values";
 import { AdvancedFold } from "../../../settings/sections/controls";
 import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
@@ -74,6 +78,31 @@ export function EditorPage({ t }: { t: Strings }) {
           <SettingsSwitch
             checked={settings.codeLineNumbers}
             onChange={(on) => setSettings({ codeLineNumbers: on })}
+          />
+        </SettingsRow>
+        <SettingsRow label={t.singleTildeLabel}>
+          <SettingsSelect
+            value={settings.singleTilde}
+            options={[
+              { value: "subscript", label: t.singleTildeSubscript },
+              { value: "strikethrough", label: t.singleTildeStrikethrough },
+              { value: "text", label: t.singleTildeText },
+            ]}
+            onChange={(value) =>
+              setSettings({ singleTilde: value as SingleTildeMode })
+            }
+          />
+        </SettingsRow>
+        <SettingsRow label={t.singleNewlineLabel}>
+          <SettingsSelect
+            value={settings.singleNewline}
+            options={[
+              { value: "join", label: t.singleNewlineJoin },
+              { value: "break", label: t.singleNewlineBreak },
+            ]}
+            onChange={(value) =>
+              setSettings({ singleNewline: value as SingleNewlineMode })
+            }
           />
         </SettingsRow>
         <SettingsRow label={t.autoCloseBracketsLabel}>

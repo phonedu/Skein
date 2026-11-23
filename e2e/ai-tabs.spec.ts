@@ -12,6 +12,11 @@ import { openPath } from "./plugin-helpers";
 // Textus AI's conversations are tabs: the AI button opens one in an island
 // of its own on the right; they drag like any tab; the button collapses
 // them only from an island of AI tabs alone.
+//
+// The fork keeps Textus AI in the on-demand right panel instead (the H0
+// shell), so none of that model is the fork's: the panel's own flows are
+// in sidebar-panels.spec.ts and the phone shell's spec.
+test.skip(true, "the fork keeps Textus AI in the right panel");
 
 const tabs = (page: Page) => page.locator(".tab-pill");
 const islands = (page: Page) => page.locator(".main-pane > section.island");

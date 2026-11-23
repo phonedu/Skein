@@ -52,6 +52,9 @@ export async function openApp(
     animations?: boolean;
     /** What shows once the window is ready; an editor by default. */
     ready?: string;
+    /** Opens a blank document first: the fork's window starts on Today,
+     *  where upstream's opened one. */
+    document?: boolean;
   } = {},
 ) {
   await page.emulateMedia({ colorScheme: options.colorScheme ?? "light" });
@@ -91,8 +94,22 @@ export async function openApp(
         "*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }",
     });
   await page.waitForSelector(
-    options.ready ?? '[data-active-tab="true"] .ProseMirror',
+    options.ready ??
+      (options.document
+        ? ".app-shell"
+        : '[data-active-tab="true"] .ProseMirror'),
   );
+  if (options.document) {
+    // The window opens a blank document of its own (none on a phone): only
+    // make one when no tab came up at all.
+    const editor = '[data-active-tab="true"] .ProseMirror';
+    await page
+      .waitForSelector(".tab-pill", { timeout: 2000 })
+      .catch(() => undefined);
+    if ((await page.locator(".tab-pill").count()) === 0)
+      await emit(page, "menu-new-file");
+    await page.waitForSelector(editor);
+  }
 }
 
 /** Puts markdown into the active editor the way a paste does. */

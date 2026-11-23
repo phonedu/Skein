@@ -51,7 +51,7 @@ test("a revision kept for a file not open shows in its text once it opens", asyn
   await page.addInitScript((files) => {
     (window as unknown as { __devFiles: object }).__devFiles = files;
   }, files);
-  await openApp(page);
+  await openApp(page, { document: true });
   await keep(
     page,
     "/notes/a.md",

@@ -14,44 +14,67 @@ import { gapCaret } from "../click-below-end";
 function createMarginClickPlugin() {
   return new Plugin({
     view(view) {
-      const scroller = view.dom.closest<HTMLElement>(".editor-scroll");
       let endDrag = () => {};
-      const onDown = (event: MouseEvent) => {
-        if (event.button !== 0 || event.detail > 1 || !view.editable) return;
-        const target = event.target;
-        // Only the page around the text: anything drawn there (a margin
-        // card, a button) handles its own clicks.
-        if (!(target instanceof Node) || !target.contains(view.dom)) return;
-        // Between blocks in the text column the editor places the caret, and
-        // a drag from there selects.
-        if (target === view.dom && inColumn(view, event.clientX)) return;
-        // The scroller's own scrollbar.
-        if (scroller && onScrollbar(scroller, event)) return;
-        // Beside a table's gap, as a tap in the column there.
-        const pos =
-          gapCaret(view, event.clientY) ??
-          nearestPos(view, event.clientX, event.clientY);
-        if (pos === null) return;
-        event.preventDefault();
+      /** Puts the caret for a press at (x, y), when the press is the
+       *  page's own: beside the text, or in a table's gap. True when it
+       *  took the press. The scroller is looked up as the press comes:
+       *  the editor may be built before it is put inside one. */
+      const press = (x: number, y: number, shift: boolean): boolean => {
+        const scroller = view.dom.closest<HTMLElement>(".editor-scroll");
+        if (!scroller || onScrollbar(scroller, x, y)) return false;
+        // The scroller's own scrollbar, or a gap beside a table.
+        const pos = gapCaret(view, y) ?? nearestPos(view, x, y);
+        if (pos === null) return false;
         const { doc, selection } = view.state;
         // With Shift it reaches there from where the selection began.
-        const next = event.shiftKey
+        const next = shift
           ? TextSelection.between(selection.$anchor, doc.resolve(pos))
           : TextSelection.near(doc.resolve(pos));
         view.dispatch(view.state.tr.setSelection(next).scrollIntoView());
         view.focus();
-        // The press was kept from the web view, so it selects nothing as
-        // the mouse moves on: the drag is followed here.
+        // The press is kept from the web view, so it selects nothing as the
+        // pointer moves on: the drag is followed here.
         endDrag();
         endDrag = followDrag(view, scroller, next.anchor);
+        return true;
       };
-      // Captured, so the editor's own mousedown handlers see the press is
-      // taken and start no selection of their own.
-      scroller?.addEventListener("mousedown", onDown, true);
+      /** Whether the press is the page's own: only the page around the
+       *  text, not anything drawn there (a margin card, a button) or the
+       *  text column itself, where the editor places the caret. */
+      const onPage = (target: EventTarget | null, x: number): boolean => {
+        if (!view.editable || !(target instanceof Node)) return false;
+        if (!target.contains(view.dom)) return false;
+        if (target === view.dom && inColumn(view, x)) return false;
+        return view.dom.closest(".editor-scroll") !== null;
+      };
+      // A mouse's or pen's press, on the pointer's own events: no mouse
+      // events follow a touch's prevented pointerdown.
+      const onDown = (event: PointerEvent) => {
+        if (event.pointerType === "touch") return;
+        if (event.button !== 0 || event.detail > 1) return;
+        if (!onPage(event.target, event.clientX)) return;
+        if (press(event.clientX, event.clientY, event.shiftKey))
+          event.preventDefault();
+      };
+      // A finger's: touchstart is where its default - the caret moved and
+      // the editor blurred after the press - is kept from the web view.
+      const onTouch = (event: TouchEvent) => {
+        const touch = event.touches[0] ?? event.changedTouches[0];
+        if (!touch || !onPage(event.target, touch.clientX)) return;
+        if (press(touch.clientX, touch.clientY, false)) event.preventDefault();
+      };
+      // Captured, so the editor's own handlers see the press is taken and
+      // start no selection of their own.
+      document.addEventListener("pointerdown", onDown, true);
+      document.addEventListener("touchstart", onTouch, {
+        capture: true,
+        passive: false,
+      });
       return {
         destroy() {
           endDrag();
-          scroller?.removeEventListener("mousedown", onDown, true);
+          document.removeEventListener("pointerdown", onDown, true);
+          document.removeEventListener("touchstart", onTouch, true);
         },
       };
     },
@@ -81,7 +104,7 @@ function followDrag(
     view.dispatch(view.state.tr.setSelection(next));
   };
   const edge = edgeScroll(() => scroller, follow);
-  const move = (event: MouseEvent) => {
+  const move = (event: PointerEvent) => {
     if (!(event.buttons & 1)) return stop();
     pointer = { x: event.clientX, y: event.clientY };
     edge.at(pointer.y);
@@ -93,11 +116,11 @@ function followDrag(
   };
   const stop = () => {
     edge.stop();
-    window.removeEventListener("mousemove", move, true);
-    window.removeEventListener("mouseup", up, true);
+    window.removeEventListener("pointermove", move, true);
+    window.removeEventListener("pointerup", up, true);
   };
-  window.addEventListener("mousemove", move, true);
-  window.addEventListener("mouseup", up, true);
+  window.addEventListener("pointermove", move, true);
+  window.addEventListener("pointerup", up, true);
   return stop;
 }
 
@@ -110,11 +133,11 @@ function inColumn(view: EditorView, x: number): boolean {
   );
 }
 
-function onScrollbar(scroller: HTMLElement, event: MouseEvent): boolean {
+function onScrollbar(scroller: HTMLElement, x: number, y: number): boolean {
   const box = scroller.getBoundingClientRect();
   return (
-    event.clientX >= box.left + scroller.clientLeft + scroller.clientWidth ||
-    event.clientY >= box.top + scroller.clientTop + scroller.clientHeight
+    x >= box.left + scroller.clientLeft + scroller.clientWidth ||
+    y >= box.top + scroller.clientTop + scroller.clientHeight
   );
 }
 

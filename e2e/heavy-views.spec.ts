@@ -180,7 +180,9 @@ test("jumped to from the outline past many formulas, a heading lands at the top 
   await settled(page);
   // The editor taking the keys doesn't scroll it away (WebKit would, to
   // where it thought the caret was).
-  await page.locator('[data-rail-id="outline"]').click();
+  // The fork's outline is a tab of the sidebar's Files view.
+  await page.locator(".sidebar-view-seg button", { hasText: "文件" }).click();
+  await page.locator('[data-file-tab="outline"]').click();
   await page.locator(".outline-row", { hasText: "结尾" }).click();
   const end = page.locator(".ProseMirror h2", { hasText: "结尾" });
   await expect(end).toBeInViewport();

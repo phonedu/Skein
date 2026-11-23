@@ -11,7 +11,6 @@ import {
 import type { SettingsPanelProps } from "../settings/SettingsPanel";
 import { Presence } from "../engine/motion/usePresence";
 import { isIOSApp, isMobileApp } from "../platform/capabilities";
-import { SHOW_SIDEBAR_TAB_EVENT } from "../utils/events";
 import {
   closeSettingsDialog,
   onSettingsDialogChange,
@@ -124,12 +123,13 @@ export function useSettingsOpening(tabs: TabState) {
       showSettingsDialog("updates");
     },
     openPluginSettings: (id?: string) => {
-      if (!inTabs)
-        return id
-          ? showSettingsDialog(pluginPageId(id))
-          : window.dispatchEvent(
-              new CustomEvent(SHOW_SIDEBAR_TAB_EVENT, { detail: "plugins" }),
-            );
+      // The desktop has no plugins column any more: managing them is the
+      // dialog's Extensions page, on its Plugins tab.
+      if (!inTabs) {
+        if (id) return showSettingsDialog(pluginPageId(id));
+        openExtensionsTab("plugins");
+        return showSettingsDialog("extensions");
+      }
       if (id) openPluginPage(id);
       else openExtensionsTab("plugins");
       request("extensions");

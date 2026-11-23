@@ -117,7 +117,8 @@
   --ui-surface-solid: #fff;
   --ui-sidebar: #e9ebef;
   --ui-text: #1c2128;
-  --ui-muted: #656d77;
+  /* Quiet text still clears 4.5:1 on the sidebar's grey (a11y.spec). */
+  --ui-muted: #5b626c;
   --ui-accent: #3467d2;
   /* The accent as words: a step towards the text, so a bright accent still
      reads; fills, toggles and marks keep the accent itself. */
@@ -411,7 +412,7 @@
    !important on :root); the hairlines and an island's rim still mark the
    edges. */
 html:root[data-plain-frame] {
-  --ui-frame: var(--ui-bg) !important;
-  --ui-frame-sunk: var(--ui-bg) !important;
+  --ui-frame: var(--doc-bg) !important;
+  --ui-frame-sunk: var(--doc-bg) !important;
   --ui-frame-paint: initial !important;
 }

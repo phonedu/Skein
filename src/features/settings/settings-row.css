@@ -38,4 +38,7 @@
   flex: none;
   display: flex;
   align-items: center;
+  /* A long choice gives way to the label rather than the dialog's edge. */
+  min-width: 0;
+  max-width: 60%;
 }

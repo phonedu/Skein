@@ -366,6 +366,8 @@ test.describe("the app-drawn menu (Windows, Linux)", () => {
   test("the window's menu opens a section beside it, and that section's submenu beside that", async ({
     page,
   }) => {
+    // The fork's ☰ opens the command palette, not the app menu.
+    test.skip(true, "the fork's window button opens the command palette");
     await openApp(page, { settings: { menuBarShown: false, language: "en" } });
     await page.getByRole("button", { name: "Menu" }).click();
     await row(page, "View").hover();
@@ -392,6 +394,8 @@ test.describe("the phone's menu", () => {
   });
 
   test("opens a submenu in place under its row", async ({ page }) => {
+    // The fork's phone draws its own menus; the desktop's is below.
+    test.skip(true, "the fork's phone shell has its own menus");
     await openApp(page, { settings: { language: "en" } });
     await page.getByRole("button", { name: "Menu" }).first().tap();
     const group = page

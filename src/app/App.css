@@ -6,6 +6,7 @@
 @import "./frame/app-shell.css";
 @import "./frame/sidebar-frame.css";
 @import "./frame/window-bar.css";
+@import "./frame/window-controls.css";
 @import "../engine/controls/tabs/TabBar.css";
 @import "../engine/tokens/layout-tokens.css";
 @import "../engine/layout/layout.css";

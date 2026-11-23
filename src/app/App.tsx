@@ -3,7 +3,7 @@ import { tabTitle } from "../document/doc-tabs";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense } from "react";
+import { Suspense, useCallback } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -100,8 +100,25 @@ function App() {
 
   const { tutorial, settingsOpening, pendingClose } = shell;
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
-  const { tabs, activeTabId, setActiveTabId, addBlankTab, addStartTab } =
-    shell.tabState;
+  const {
+    tabs,
+    activeTabId,
+    setActiveTabId,
+    liveTabs,
+    addBlankTab,
+    addStartTab,
+  } = shell.tabState;
+  // A tab brought to the front takes the editors' latest text into the
+  // model first: what was typed a moment ago is not lost with the view.
+  const activateDocument = useCallback(
+    (id: string) => {
+      liveTabs();
+      // The switch comes after the render that carries the flushed text:
+      // the editor the tab mounts with must read its latest content.
+      requestAnimationFrame(() => setActiveTabId(id));
+    },
+    [liveTabs, setActiveTabId],
+  );
   // The one action every surface keeps in reach: a note to write now. The
   // asset plugin's collect form when it is there, a blank note otherwise.
   // True while the plugin took the action (its form shows where it is).
@@ -356,7 +373,7 @@ function App() {
               tabs={tabs}
               activeTabId={activeTabId}
               showTabBar={phone ? false : showTabBar}
-              onActivate={setActiveTabId}
+              onActivate={activateDocument}
               onClose={requestCloseTab}
               onAdd={settings.addTabShowsStartPage ? addStartTab : addBlankTab}
               onDetach={handleTabDetach}

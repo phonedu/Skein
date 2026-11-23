@@ -54,7 +54,7 @@ test("an outside agent's button opens the AI with that agent", async ({
     { manifest, icon: ICON },
   );
   await page.setViewportSize({ width: 1200, height: 760 });
-  await openApp(page, { settings: { menuBarShown: false } });
+  await openApp(page, { settings: { menuBarShown: false }, document: true });
   const agent = page.getByRole("button", { name: "Coder" });
   await expect(agent).toBeVisible();
   // Before Textus AI's own button.
@@ -63,14 +63,10 @@ test("an outside agent's button opens the AI with that agent", async ({
     (await ai.boundingBox())!.x,
   );
   await agent.click();
-  await expect(page.locator(".ai-tab")).toBeVisible();
-  await expect(agent).toHaveAttribute("aria-pressed", "true");
-  // Named for who answers; Textus AI's own button isn't lit beside it.
-  await expect(page.locator(".tab-pill", { hasText: "Coder" })).toBeVisible();
-  await expect(ai).toHaveAttribute("aria-pressed", "false");
-  // Pressed again, as the AI button: its own island collapses.
-  await agent.click();
-  await expect(page.locator(".ai-tab")).toHaveCount(0);
+  // The fork's AI is the right panel, named for who answers.
+  await expect(page.locator(".right-panel")).toBeVisible();
+  await expect(page.locator(".right-panel")).toContainText("Coder");
+  // The panel stays while its mode is switched: its own × closes it.
   // Listed in Settings' External tools, Manage opening its plugin's page.
   await page.evaluate(() =>
     window.dispatchEvent(

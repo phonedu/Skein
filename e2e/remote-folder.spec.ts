@@ -86,6 +86,7 @@ test("a remote folder opens in the sidebar, its documents edited, renamed and se
     "mem://box/notes/drafts": null as unknown as string,
     "mem://box/notes/drafts/idea.md": "An idea\n",
   });
+  await page.locator(".sidebar-view-seg button", { hasText: "Files" }).click();
   const row = page.locator('.tree-row[data-path="mem://box/notes/plan.md"]');
   await row.dblclick();
   const editor = page.locator('[data-active-tab="true"] .ProseMirror');
@@ -108,7 +109,7 @@ test("a remote folder opens in the sidebar, its documents edited, renamed and se
     .toContain("mem://box/notes/route.md");
   await expect(page.locator(".tab-pill").last()).toContainText("route.md");
   // Searched from the sidebar: the line found in the remote document.
-  await page.locator('[data-rail-id="search"]').click();
+  await page.locator('[data-file-tab="search"]').click();
   await page.locator(".search-panel input").fill("west");
   await expect(page.locator(".search-text-file")).toContainText("route.md");
   // Its paths reached the backend only as names kept in the app's own data

@@ -17,9 +17,16 @@ async function open(page: Page) {
   await openApp(page, { settings: { menuBarShown: false } });
 }
 
+/** The fork's sidebar opens on Today: the tree is under the Files view. */
+const showFiles = (page: Page) =>
+  page.locator(".sidebar-view-seg button", { hasText: "文件" }).click();
+
 test("a plugin in the list opens its page in a tab named for it", async ({
   page,
 }) => {
+  // The fork has no plugins column: plugins are managed on Settings'
+  // Extensions page, and their pages open from the window bar's QuickPick.
+  test.skip(true, "the fork has no sidebar plugin list");
   await open(page);
   await emit(page, "menu-manage-plugins");
   const row = page.locator(".plugins-panel-row").first();
@@ -39,6 +46,8 @@ test("a plugin in the list opens its page in a tab named for it", async ({
 test("too narrow for the islands at their least, the sidebar steps aside, then the AI folds; they come back in turn", async ({
   page,
 }) => {
+  // The AI is a right panel in the fork, not a tab island of its own.
+  test.skip(true, "the fork keeps Textus AI in the right panel");
   await open(page);
   await pasteMarkdown(page, "# 第三章");
   const sidebar = page.locator(".sidebar");
@@ -91,8 +100,8 @@ test("its edge dragged out, the sidebar widens and the islands make room", async
   page,
 }) => {
   await open(page);
-  await emit(page, "menu-toggle-sidebar");
   const sidebar = page.locator(".sidebar");
+  // The fork's sidebar is open until it is put away: nothing to open first.
   await expect(sidebar).not.toHaveClass(/sidebar-collapsed/);
   await settled(page);
   const edge = (await page.locator(".sidebar-resizer").boundingBox())!;
@@ -124,6 +133,9 @@ test("its edge dragged out, the sidebar widens and the islands make room", async
 test("the folder's tools coming on hover move none of the tree's rows", async ({
   page,
 }) => {
+  // The fork's view column names the vault in its header; the tree's own
+  // toolbar is not drawn there (sidebar-frame.css).
+  test.skip(true, "the fork's sidebar hides the tree's toolbar");
   await page.addInitScript(() => {
     const w = window as unknown as Record<string, unknown>;
     w.__devFs = { "/proj/a.md": "# A\n", "/proj/b.md": "# B\n" };
@@ -131,6 +143,7 @@ test("the folder's tools coming on hover move none of the tree's rows", async ({
   });
   await openApp(page);
   await emit(page, "menu-open-folder");
+  await showFiles(page);
   const row = page.locator(".tree-row").first();
   await expect(row).toBeVisible();
   await page.mouse.move(900, 400);
@@ -148,6 +161,7 @@ test("a file closed at once opens again at once", async ({ page }) => {
   });
   await openApp(page);
   await emit(page, "menu-open-folder");
+  await showFiles(page);
   // Another tab, so closing this one leaves the window open.
   await page.locator(".tree-row", { hasText: "b.md" }).dblclick();
   await expect(page.locator(".tab-pill", { hasText: "b.md" })).toBeVisible();
@@ -177,6 +191,7 @@ test("a file dragged onto a folder moves into it; with Esc it stays; picked file
   });
   await openApp(page);
   await emit(page, "menu-open-folder");
+  await showFiles(page);
   const row = (name: string) => page.locator(".tree-row", { hasText: name });
   await expect(row("a.md")).toBeVisible();
   const drag = async (escape: boolean, name = "a.md") => {
@@ -233,6 +248,8 @@ test("a file dragged onto a folder moves into it; with Esc it stays; picked file
 test("the AI's edge stepped past what the window can show stops there, and steps back at once", async ({
   page,
 }) => {
+  // The AI is a right panel in the fork, not a tab island of its own.
+  test.skip(true, "the fork keeps Textus AI in the right panel");
   await page.setViewportSize({ width: 1100, height: 760 });
   await openApp(page);
   await page.getByRole("button", { name: "Textus AI" }).first().click();
@@ -265,6 +282,9 @@ test("the AI's edge stepped past what the window can show stops there, and steps
 test("a split the window has no room for is not made, and says why", async ({
   page,
 }) => {
+  // The fork's sidebar steps aside at 900, so the room runs out at another
+  // count than this test's 3; the split itself is in the island specs.
+  test.skip(true, "the fork's sidebar changes the count at 900");
   await page.setViewportSize({ width: 900, height: 600 });
   // The page's clock, to let each note's time pass at once.
   await page.clock.install();
@@ -345,6 +365,7 @@ test("another folder takes the open one's place: its documents close, and come b
   });
   await openApp(page);
   await emit(page, "menu-open-folder");
+  await showFiles(page);
   await page.locator(".tree-row", { hasText: "a.md" }).dblclick();
   const a = page.locator(".tab-pill", { hasText: "a.md" });
   await expect(a).toBeVisible();
@@ -380,12 +401,13 @@ test("a sidebar tab's own key shows it, and again puts the sidebar away; Search 
     },
   });
   await emit(page, "menu-open-folder");
+  await showFiles(page);
   await page.locator(".tree-row", { hasText: "a.md" }).click();
   await expect(page.locator(".ProseMirror:visible h1")).toContainText("A");
   const mod = MAC ? "Meta" : "Control";
   await page.keyboard.press(`${mod}+Shift+u`);
-  await expect(page.locator('[data-rail-id="outline"]')).toHaveAttribute(
-    "aria-pressed",
+  await expect(page.locator('[data-file-tab="outline"]')).toHaveAttribute(
+    "aria-selected",
     "true",
   );
   // A heading clicked there: the caret at its end, typing goes on in it.
@@ -397,7 +419,7 @@ test("a sidebar tab's own key shows it, and again puts the sidebar away; Search 
   await expect(page.locator(".tree-row")).toHaveCount(0);
   await page.keyboard.press(`${mod}+Shift+y`);
   await expect(page.locator(".tree-row", { hasText: "a.md" })).toBeVisible();
-  await page.locator('[data-rail-id="search"]').click();
+  await page.locator('[data-file-tab="search"]').click();
   await expect(page.locator(".search-panel input").first()).toBeFocused();
 });
 
@@ -407,6 +429,8 @@ test.describe("on a phone", () => {
   test("a document brought to the front is read first: the keyboard comes up for a tap in its text", async ({
     page,
   }) => {
+    // The fork's phone opens on Today, not on an empty document.
+    test.skip(true, "the fork's phone shell opens on Today");
     await openApp(page);
     const editor = page.locator(".ProseMirror:visible");
     await editor.tap();
@@ -443,6 +467,7 @@ test("a file that takes the preview tab starts with its own history, not the las
   });
   await openApp(page, { settings: { menuBarShown: false } });
   await emit(page, "menu-open-folder");
+  await showFiles(page);
   await page.locator(".tree-row", { hasText: "a.md" }).click();
   const doc = page.locator('[data-active-tab="true"] .ProseMirror');
   await expect(doc.locator("h1")).toContainText("Alpha");
@@ -458,6 +483,9 @@ test("a file that takes the preview tab starts with its own history, not the las
 test("the sidebar stepping aside and back leaves the rows of tabs in place, not drawn anew", async ({
   page,
 }) => {
+  // It needs the AI's own island to make the window fill up; the fork's AI
+  // is a right panel, so the window is never that full.
+  test.skip(true, "the fork keeps Textus AI in the right panel");
   await open(page);
   await pasteMarkdown(page, "# 第三章");
   await emit(page, "menu-toggle-sidebar");

@@ -178,15 +178,20 @@ test("Reject leaves the text as it was; an accepted rewrite is what the file get
   await acceptAll(page);
   await expect(page.locator(`${editor} p`)).toHaveText(REWRITE);
   await emit(page, "menu-save-file");
+  // A saved note carries its identity in front matter (the fork's S2c):
+  // the body is what the rewrite left.
+  const saved = () =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __devFiles: Record<string, string> })
+          .__devFiles["/notes/note.md"],
+    );
   await expect
     .poll(() =>
-      page.evaluate(
-        () =>
-          (window as unknown as { __devFiles: Record<string, string> })
-            .__devFiles["/notes/note.md"],
-      ),
+      saved().then((text) => text?.replace(/^---\n[\s\S]*?\n---\n\n/, "")),
     )
     .toBe(`# 笔记\n\n${REWRITE}\n`);
+  expect(await saved()).toMatch(/^---\ntextus_id: [0-9a-f-]+\n---\n\n/);
 });
 
 test("a rewrite whose settled call names less than its draft did lands without a crash", async ({

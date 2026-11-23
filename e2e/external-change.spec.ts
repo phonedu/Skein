@@ -242,7 +242,6 @@ test("a document comes back with its caret, its undo and its redo", async ({
   await expect(line).toHaveText("A line 60. ONE TWO");
   await settled(page);
   const read = await scroller.evaluate((el) => Math.round(el.scrollTop));
-
   // The caret is where it was: typing goes on after the last word, with
   // no click, and the page has not moved.
   await away();

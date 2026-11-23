@@ -42,7 +42,11 @@ for (const colorScheme of ["light", "dark"] as const) {
     // Every surface opened and scanned: near 30 s in WebKit.
     test.setTimeout(60_000);
     await page.setViewportSize({ width: 1280, height: 800 });
-    await openApp(page, { colorScheme, settings: { menuBarShown: false } });
+    await openApp(page, {
+      colorScheme,
+      settings: { menuBarShown: false },
+      document: true,
+    });
     await pasteMarkdown(page, SAMPLE_DOC);
     await scan(page, "document");
 
@@ -59,12 +63,17 @@ for (const colorScheme of ["light", "dark"] as const) {
     await page.keyboard.press("Escape");
     await expect(page.locator(".settings-dialog")).toHaveCount(0);
 
+    // The fork manages plugins on Settings' Extensions page.
     await emit(page, "menu-manage-plugins");
-    await expect(page.locator(".plugins-panel-row").first()).toBeVisible();
-    await scan(page, "plugins");
+    await expect(page.locator(".settings-dialog")).toBeVisible();
+    await expect(page.getByRole("tabpanel", { name: "插件" })).toBeVisible();
+    await scan(page, "plugins", ".settings-dialog");
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".settings-dialog")).toHaveCount(0);
 
+    // Textus AI is the right panel in the fork.
     await page.getByRole("button", { name: "Textus AI" }).first().click();
-    await expect(page.locator(".ai-tab")).toBeVisible();
-    await scan(page, "ai");
+    await expect(page.locator(".right-panel")).toBeVisible();
+    await scan(page, "ai", ".right-panel");
   });
 }

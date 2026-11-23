@@ -77,7 +77,9 @@ export function CatalogRow({
         <button
           type="button"
           className={openClass}
-          aria-label={openLabel}
+          // Its name is what it shows (the plugin's own words): an
+          // aria-label that shortened them failed the visible-label check.
+          title={openLabel}
           onClick={onOpen}
         >
           {body}

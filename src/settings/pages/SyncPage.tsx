@@ -110,7 +110,9 @@ export function SyncPage({
   const reload = useCallback(async () => {
     // The library list is global, so it loads even with no folder open.
     void syncVaults()
-      .then(setVaults)
+      // The library list is global; a host that answers nothing (a preview
+      // without the engine) leaves it empty rather than null.
+      .then((list) => setVaults(Array.isArray(list) ? list : []))
       .catch(() => {});
     if (!folderRoot || indexing) return;
     try {

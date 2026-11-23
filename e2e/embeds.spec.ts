@@ -42,6 +42,8 @@ for (const phone of [false, true]) {
   test.describe(phone ? "on a phone" : "on the desktop", () => {
     if (phone) test.use(PHONE);
     test("[TOC] lists the headings", async ({ page }) => {
+      // The fork's phone opens on Today; its own flows guard that shell.
+      test.skip(phone, "the fork's phone shell opens on Today");
       await page.addInitScript(() => {
         (
           window as unknown as { __devFiles: Record<string, string> }
@@ -122,7 +124,8 @@ test("a heading folds its section away, keeps the text, and opens for a caret", 
   // Kept through the editor being made again. Arrows pass it by; a caret
   // sent into it (the outline's heading under it) opens it.
   await expect(doc.getByText("first body")).toBeHidden();
-  await page.locator('[data-rail-id="outline"]').click();
+  await page.locator(".sidebar-view-seg button", { hasText: "文件" }).click();
+  await page.locator('[data-file-tab="outline"]').click();
   await page.locator(".outline-row", { hasText: "Inner" }).click();
   await expect(doc.getByText("first body")).toBeVisible();
   await expect(doc.getByText("inner body")).toBeVisible();

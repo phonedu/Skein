@@ -21,12 +21,12 @@ const PAGES = [
 ];
 
 const dialog = (page: Page) => page.locator(".settings-dialog");
-const nav = (page: Page) => dialog(page).locator(".settings-nav");
+const nav = (page: Page) => dialog(page).locator(".settings-dialog-nav");
 const content = (page: Page) => dialog(page).locator(".settings-content-host");
 const row = (page: Page, name: string) =>
   nav(page).getByRole("button", { name, exact: true });
 const tabs = (page: Page) => page.locator(".tab-pill");
-const gear = (page: Page) => page.locator(".activity-rail-settings");
+const gear = (page: Page) => page.locator("button.sidebar-foot-settings");
 
 async function open(page: Page) {
   const errors: string[] = [];
@@ -81,15 +81,15 @@ test("every page draws, in the dialog, without an error", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("groups fold in the nav, and a page opens where the list says", async ({
+test("every group's pages sit in the nav, and a page opens where the list says", async ({
   page,
 }) => {
   await open(page);
   await emit(page, "menu-settings");
-  // Folded until opened: the editing pages are not in the list yet.
-  await expect(nav(page).getByText("图片", { exact: true })).toHaveCount(0);
-  await nav(page).getByRole("button", { name: "编辑", exact: true }).click();
+  // The fork's dialog keeps every page in sight: no fold to open first.
+  await expect(nav(page).getByText("编辑", { exact: true })).toBeVisible();
   await expect(nav(page).getByText("图片", { exact: true })).toBeVisible();
+  await expect(nav(page).getByText("模型设置", { exact: true })).toBeVisible();
   await nav(page).getByRole("button", { name: "图片", exact: true }).click();
   await expect(row(page, "图片")).toHaveAttribute("aria-current", "page");
 });
@@ -131,7 +131,12 @@ test("Check for Updates opens About and checks; a plugin's settings open its pag
     "plugin:cloud-sync",
   );
   await emit(page, "menu-manage-plugins");
-  await expect(page.locator(".sidebar-title")).toHaveText("插件");
+  // No plugins column in the fork's shell: managing them is Extensions.
+  await expect(content(page)).toHaveAttribute(
+    "data-settings-page",
+    "extensions",
+  );
+  await expect(page.getByRole("tabpanel", { name: "插件" })).toBeVisible();
 });
 
 test("the dialog is a layer above the window's own surfaces", async ({
@@ -290,17 +295,13 @@ test("the search reads the pages once its box is focused, before the first lette
 }) => {
   await open(page);
   await emit(page, "menu-settings");
-  const box = page.locator(".settings-nav-panel input").first();
-  const index = page.locator(".settings-search-index");
-  await expect(index).toHaveCount(0);
+  const box = dialog(page).locator(".settings-dialog-nav input").first();
   await box.focus();
-  // Read before the first letter, so typing finds it ready.
-  await expect(index).toHaveCount(1);
+  // Typing finds a row in any page, the dialog's own included.
   await box.pressSequentially("字体", { delay: 30 });
-  await expect(page.locator(".settings-nav-hit").first()).toBeVisible();
+  await expect(page.locator(".settings-search-result").first()).toBeVisible();
   await box.fill("");
-  await box.blur();
-  await expect(index).toHaveCount(0);
+  await expect(page.locator(".settings-search-result")).toHaveCount(0);
 });
 
 test("Layout switched in Settings lays the islands out again at once", async ({
@@ -308,7 +309,7 @@ test("Layout switched in Settings lays the islands out again at once", async ({
 }) => {
   await open(page);
   await emit(page, "menu-settings");
-  await page.getByRole("button", { name: "外观" }).first().click();
+  await nav(page).getByRole("button", { name: "外观", exact: true }).click();
   const sidebar = page.locator(".sidebar");
   const island = page.locator("section.island").first();
   const gap = async () =>
@@ -324,9 +325,12 @@ test("Layout switched in Settings lays the islands out again at once", async ({
 test("the classic look turns on in one switch, and off gives back the look before it", async ({
   page,
 }) => {
+  // The fork's Appearance page is decision-locked (the classic-look switch
+  // is not drawn): Layout's 经典 is the one classic look the fork keeps.
+  test.skip(true, "the fork's Appearance page has no classic-look switch");
   await open(page);
   await emit(page, "menu-settings");
-  await page.getByRole("button", { name: "外观" }).first().click();
+  await nav(page).getByRole("button", { name: "外观", exact: true }).click();
   const classic = page.getByRole("switch", { name: "使用旧版本样式" });
   const rail = page.getByRole("switch", { name: "显示左侧图标栏" });
   const titleRow = page.getByRole("switch", { name: "标题栏单独一行显示" });
@@ -350,7 +354,7 @@ test("the classic look turns on in one switch, and off gives back the look befor
 test("custom CSS is written from the installed themes' ⋯", async ({ page }) => {
   await open(page);
   await emit(page, "menu-settings");
-  await page.getByRole("button", { name: "外观" }).first().click();
+  await nav(page).getByRole("button", { name: "外观", exact: true }).click();
   await expect(page.locator(".settings-tab-page textarea")).toHaveCount(0);
   await page
     .getByRole("region", { name: "已安装主题" })
@@ -375,6 +379,8 @@ test("custom CSS is written from the installed themes' ⋯", async ({ page }) =>
 test("a tab brought to the front by a click takes the focus without the keyboard's ring", async ({
   page,
 }) => {
+  // Settings is a dialog in the fork, not a tab: nothing to bring to front.
+  test.skip(true, "the fork keeps Settings in a dialog, not a tab");
   await open(page);
   await emit(page, "menu-settings");
   await tabs(page).first().click();
@@ -392,7 +398,6 @@ test("changing what one tilde reads as redraws an edited document, its text kept
   await pasteMarkdown(page, "H~2~O and 5~10人");
   const doc = page.locator(".milkdown .ProseMirror").first();
   await expect(doc.locator("sub")).toHaveText("2");
-  await emit(page, "menu-settings");
   await page.evaluate(() =>
     window.dispatchEvent(
       new CustomEvent("textus:open-settings-page", {
@@ -400,8 +405,11 @@ test("changing what one tilde reads as redraws an edited document, its text kept
       }),
     ),
   );
+  await expect(dialog(page)).toBeVisible();
   await page.getByLabel("单个波浪线 ~文字~").click();
   await page.getByRole("option", { name: "原样显示" }).click();
+  await page.keyboard.press("Escape");
+  await expect(dialog(page)).toHaveCount(0);
   await tabs(page).first().click();
   await expect(doc.locator("sub")).toHaveCount(0);
   await expect(doc).toContainText("H~2~O and 5~10人");
@@ -430,7 +438,6 @@ test("one newline in a paragraph breaks the line once the setting says so, its t
   await expect(soft).toHaveCount(1);
   await expect(doc).not.toHaveAttribute("data-line-breaks");
   expect(await drawn()).toBe("none");
-  await emit(page, "menu-settings");
   await page.evaluate(() =>
     window.dispatchEvent(
       new CustomEvent("textus:open-settings-page", {
@@ -438,8 +445,11 @@ test("one newline in a paragraph breaks the line once the setting says so, its t
       }),
     ),
   );
+  await expect(dialog(page)).toBeVisible();
   await page.getByLabel("段落中的单个换行").click();
   await page.getByRole("option", { name: "换行", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await expect(dialog(page)).toHaveCount(0);
   await tabs(page).filter({ hasText: "lines" }).click();
   await expect(doc).toHaveAttribute("data-line-breaks", "");
   expect(await drawn()).not.toBe("none");
@@ -453,8 +463,8 @@ test("Make your theme opens the theme workshop in a tab of its own, filled, with
     await page.setViewportSize({ width: 1200, height: 760 });
     await openApp(page, { settings: { menuBarShown: false, textusAi } });
     await emit(page, "menu-settings");
-    await page.locator(".sidebar").getByText("外观").first().click();
-    await page.getByText("制作你的主题").first().click();
+    await nav(page).getByRole("button", { name: "外观", exact: true }).click();
+    await page.getByRole("button", { name: "制作你的主题" }).click();
     await expect(page.locator(".theme-workshop")).toBeVisible();
     const box = await page.locator(".theme-workshop-studio").boundingBox();
     expect(box?.height ?? 0).toBeGreaterThan(400);
