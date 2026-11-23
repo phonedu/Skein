@@ -11,11 +11,14 @@ import { type ThoughtRowLabels } from "./ThoughtRow";
 import type { AiErrorKind } from "../error-messages";
 import { type PendingSentence } from "../revision/pending-types";
 import { type MemoryChipLabels } from "./MemoryChip";
+import type { AssetCardLabels } from "./AssetToolCard";
 
 /** What ChatMessages is given: its words and its props. */
 
 export interface ChatMessagesLabels
   extends AgentTurnLabels, MemoryChipLabels, ThoughtRowLabels {
+  /** The asset library's tool-call cards (D1t). */
+  assetCards: AssetCardLabels;
   thinking: string;
   /** "{n} seconds", after the indicator's label once nothing has moved
    *  for a while. */

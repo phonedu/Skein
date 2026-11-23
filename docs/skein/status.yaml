@@ -71,20 +71,6 @@ tasks:
     acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
     spec: specs/Textus-主题策略.md
     estimate: 3–5 天
-  - id: D1t
-    title: Agent 时间线：工具调用卡片
-    workstream: D1
-    state: todo
-    acceptance: 聊天里每次资产工具调用一张卡：工具名、参数摘要、结果、确认状态；确认状态接 D1b 队列；桌面 + 手机。未改动确认流本身。
-    spec: specs/Textus-改造方案.md#75-资产与确认界面在办
-    estimate: 2–3 天
-    brief:
-      problem: D1c 的七个工具调用在聊天里只有一行文字，看不到参数、结果和是否待确认，时间线无法回看。
-      expected: 每次工具调用一张卡，显示工具名、参数摘要、结果和确认状态；待确认项能从卡片进确认中心；其余工具的现有显示不变。
-      standard: chat 单测覆盖 call/result 配对、结果摘要与待确认徽标；桌面 + 手机 built app 走查通过；不改 D1c 工具契约与 D1b 队列。
-      not: 不改七个工具的输入输出；不新建独立时间线页面；不让宿主直接读写插件的 project storage；不动同步。
-      scope: 宿主聊天 UI（Agent 面板）；桌面 + 手机。
-      evidence: chat 单测；桌面/真机 built app 走查；必要时插件 result 补状态字段。
   - id: B5
     title: fork 壳 e2e 适配
     workstream: B

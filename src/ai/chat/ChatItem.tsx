@@ -8,6 +8,7 @@ import { CommentCard, CommentGroup } from "./CommentCard";
 import { SkillOfferChip } from "./SkillOfferChip";
 import { FileChangesCard } from "./FileChangesCard";
 import { AgentSteps } from "./AgentSteps";
+import { AssetToolCard } from "./AssetToolCard";
 import { PaperCard } from "../paper/lazy";
 import type { ChatItem as Item, Transcript } from "./chat-transcript";
 import type { ChatMessagesProps } from "./chat-messages-types";
@@ -162,6 +163,12 @@ export function ChatItem({
       );
     case "steps":
       return <AgentSteps steps={item.steps} looked={labels.agentLooks} />;
+    case "asset":
+      return (
+        <div className={revealed()} style={style}>
+          <AssetToolCard call={item.call} labels={labels.assetCards} />
+        </div>
+      );
     case "files":
       return (
         <FileChangesCard

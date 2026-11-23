@@ -11,6 +11,7 @@ import { PAPER_TURN, parsePaperCard } from "../paper/paper-store";
 import { OUT_OF_STEPS } from "./out-of-steps";
 import { fileRunsOf, type FileChangeCall } from "./file-changes";
 import { agentStepRuns, type AgentStep } from "./agent-steps";
+import { assetCallsOf, type AssetCall } from "./asset-calls";
 
 /**
  * A conversation's turns read for the panel: which tool calls are edit
@@ -45,6 +46,8 @@ export interface Transcript {
   fileRuns: Map<string, FileChangeCall[]>;
   /** An external agent's steps in a row, under the first. */
   agentSteps: Map<string, AgentStep[]>;
+  /** The asset library's tool calls with their results, by call id (D1t). */
+  assetCalls: Map<string, AssetCall>;
 }
 
 export function readTranscript(
@@ -87,6 +90,7 @@ export function readTranscript(
     imageCalls,
     fileRuns: fileRunsOf(turns),
     agentSteps: agentStepRuns(turns),
+    assetCalls: assetCallsOf(turns),
   };
 }
 
@@ -112,6 +116,8 @@ export type ChatItem =
   | { kind: "files"; run: FileChangeCall[] }
   /** An external agent's steps, a row each and looks in a row folded. */
   | { kind: "steps"; steps: AgentStep[] }
+  /** An asset library tool call and its result, one card (D1t). */
+  | { kind: "asset"; call: AssetCall }
   /** The model stopped at its step limit. */
   | { kind: "stopped" }
   /** A plain turn: the user's, a reply, a step. */
@@ -129,6 +135,10 @@ export function itemOf(turn: AgentTurn, t: Transcript): ChatItem {
   }
   if (turn.kind === "ToolCall") {
     const id = turn.call_id;
+    // The asset library's tools draw as their own cards, their result
+    // folded in (D1t); the result turn itself shows nothing.
+    const assetCall = t.assetCalls.get(id);
+    if (assetCall) return { kind: "asset", call: assetCall };
     if (isProposalTool(turn.name)) {
       const parsed = t.proposals.get(id);
       if (!parsed?.proposal) return { kind: "call", turn };
@@ -152,6 +162,8 @@ export function itemOf(turn: AgentTurn, t: Transcript): ChatItem {
   }
   if (turn.kind === "ToolResult") {
     const id = turn.call_id;
+    // An asset card's result is its card.
+    if (t.assetCalls.has(id)) return NONE;
     // A proposal's or a note's card is its result.
     if (
       t.proposals.has(id) ||

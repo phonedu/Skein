@@ -1,0 +1,75 @@
+/* An asset tool call's card in the conversation (D1t): one row for the
+   tool and its argument, the result under, the pending badge at the end.
+   A quieter cousin of the proposal cards - the same left edge, less frame. */
+.agent-asset-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-text) 3%, transparent);
+  font-size: var(--text-list);
+}
+
+.agent-asset-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.agent-asset-card-icon {
+  flex: none;
+  color: var(--ui-muted);
+}
+
+.agent-asset-card-name {
+  flex: none;
+  font-weight: 600;
+}
+
+.agent-asset-card-params {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--ui-muted);
+}
+
+/* The badge is the way in, not a state the panel tracks: the confirm
+   center's queue is the truth. */
+.agent-asset-card-badge {
+  flex: none;
+  max-width: 40%;
+  padding: 1px var(--space-2);
+  border: 0;
+  border-radius: var(--shape-pill);
+  background: color-mix(in srgb, var(--ui-accent) 14%, transparent);
+  color: var(--ui-accent-text);
+  font: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-asset-card-badge:hover {
+  background: color-mix(in srgb, var(--ui-accent) 24%, transparent);
+}
+
+.agent-asset-card-result {
+  color: var(--ui-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-asset-card-result.is-live::after {
+  content: "…";
+}
+
+.agent-asset-card-result.is-failed {
+  color: var(--ui-danger);
+}
+
+.agent-asset-card-error {
+  color: var(--ui-muted);
+}

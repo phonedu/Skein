@@ -5,7 +5,7 @@ import type { InlineChatLabels } from "./quick-ask/InlineChat";
 import { pickerLabels } from "./ComposerPicker";
 import { permissionLabel } from "../../plugins/store/permissions";
 import { aiErrorTexts } from "../error-messages";
-import { toolActivityLabels } from "./tool-activity";
+import { toolActivityLabels, toolActivityText } from "./tool-activity";
 import { MODES } from "../modes";
 import type { PanelMode } from "../../prefs/settings-values";
 
@@ -120,6 +120,27 @@ function buildLabels(t: Strings, lang: Lang): InlineChatLabels {
     memoryForgot: t.memoryChipForgot,
     memoryRestored: t.memoryChipRestored,
     memoryActionFailed: t.memoryActionFailed,
+    assetCards: {
+      titles: {
+        search_notes: t.assetCardsSearchNotes,
+        read_note: t.assetCardsReadNote,
+        resolve_assets_for_trigger: t.assetCardsResolve,
+        create_draft: t.assetCardsCreateDraft,
+        propose_patch: t.assetCardsProposePatch,
+        request_confirm: t.assetCardsRequestConfirm,
+        record_use: t.assetCardsRecordUse,
+      },
+      pending: t.assetCardsPending,
+      openConfirm: t.assetCardsOpenConfirm,
+      failed: t.assetCardsFailed,
+      matches: (n) => plural(t.assetCardsMatches, n, lang),
+      used: (n) => plural(t.assetCardsUsed, n, lang),
+      done: t.assetCardsDone,
+      working: (call) =>
+        toolActivityText(call.name, call.arguments, {
+          toolActivity: toolActivityLabels(t),
+        }),
+    },
     toolResult: t.toolResult,
     sources: t.webSources,
     useTheme: t.chatUseTheme,
