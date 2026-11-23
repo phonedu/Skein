@@ -26,6 +26,8 @@ test("skein.collect: capture lands the form's line as an inbox note", async ({
     language: "zh",
   });
   await emit(page, "menu-open-folder");
+  // The shell opens on Today; the tree lives under the Files segment.
+  await page.locator(".sidebar-view-seg button", { hasText: "文件" }).click();
   await expect(page.locator(".tree-row", { hasText: "one.md" })).toBeVisible();
 
   // The command, the way its Plugins-menu item reaches the app.
@@ -42,12 +44,13 @@ test("skein.collect: capture lands the form's line as an inbox note", async ({
   await dialog.getByRole("button", { name: "收下" }).click();
   await settled(page);
 
-  // The note is in the dev FS: inbox/N-…, front matter without `type`.
+  // The note is in the dev FS: the library's inbox/N-…, front matter
+  // without `type` (ruling 60: a capture is a card of the loop).
   const note = await page.evaluate(() => {
     const files = (window as unknown as { __devFs?: Record<string, string> })
       .__devFs;
     const path = Object.keys(files ?? {}).find((p) =>
-      /inbox\/N-\d{8}-[0-9a-f]{4}\.md$/.test(p),
+      /asset-library\/inbox\/N-\d{8}-[0-9a-f]{4}\.md$/.test(p),
     );
     return path ? { path, text: files![path] } : null;
   });
