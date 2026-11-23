@@ -8,7 +8,7 @@ workstreams:
   - id: D1
     name: 资产闭环
     state: doing
-    focus: D1d 验收完成（14/15，第 14 条归 D0.5）；裁决 60/61 已落地（插件 0.5.1）；D1u 插件样式对齐、D1t 时间线、D1f 待排
+    focus: D1d 验收完成（14/15，第 14 条归 D0.5）；裁决 60/61 已落地（插件 0.5.1）；顺序定为 D1t 时间线 → D1u 插件样式对齐 → D1f（用户 2026-11-23 定）
     spec: specs/Textus-改造方案.md
   - id: UI
     name: 手机端 UI
