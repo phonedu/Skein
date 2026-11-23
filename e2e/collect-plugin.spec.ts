@@ -123,3 +123,83 @@ test("skein.collect: the confirm center's frame takes the host's colours", async
   });
   expect(vars.bg).toBe(hostBg);
 });
+
+// The monthly review (D1f): the page draws the report the host computes,
+// and completing it writes the month's record as a card in the vault.
+test("skein.collect: the monthly review writes its record", async ({
+  page,
+}) => {
+  test.skip(
+    !hasPlugin("skein.collect"),
+    "no skein.collect in the plugins checkout",
+  );
+  await page.setViewportSize({ width: 1280, height: 760 });
+  const card = `---
+schema_version: 1
+theory_version: 1
+id: "A-9"
+title: "旧清单"
+type: asset
+status: active
+created_at: 2026-09-01T09:00:00+08:00
+updated_at: 2026-09-01T09:00:00+08:00
+revision: 1
+created_by: user
+source_ids: []
+use_count: 0
+---
+
+body
+`;
+  const review = (month: string) =>
+    `---
+type: review
+month: ${month}
+at: ${month}-28T10:00:00+08:00
+unused:
+  - "A-9"
+---
+`;
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    w.__devPickFolder = "/work";
+  });
+  await openWithPlugins(page, {
+    plugins: { "skein.collect": ["files.read", "files.write"] },
+    folder: {
+      "/work/asset-library/assets/A-9.md": card,
+      "/work/asset-library/_reviews/2026-09.md": review("2026-09"),
+      "/work/asset-library/_reviews/2026-10.md": review("2026-10"),
+    },
+    language: "zh",
+  });
+  await page.waitForFunction(() =>
+    (
+      window as unknown as { __devListening: (n: string) => boolean }
+    ).__devListening("menu-open-folder"),
+  );
+  await emit(page, "menu-open-folder");
+  await page.waitForFunction(() =>
+    (
+      window as unknown as { __devListening: (n: string) => boolean }
+    ).__devListening("menu-plugin-command"),
+  );
+  await emit(page, "menu-plugin-command", "skein.collect.review");
+  // A view opened as a tab hosts its page in a tab pane's iframe.
+  const frame = page.frameLocator("iframe").first();
+  await expect(frame.locator("html")).toContainText("月度复盘");
+  await expect(frame.locator("body")).toContainText("复用率");
+  await frame.getByRole("button", { name: "完成本月复盘" }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const files = (
+          window as unknown as { __devFs?: Record<string, string> }
+        ).__devFs;
+        return Object.keys(files ?? {}).some((p) =>
+          /asset-library\/_reviews\/\d{4}-\d{2}\.md$/.test(p),
+        );
+      }),
+    )
+    .toBe(true);
+});

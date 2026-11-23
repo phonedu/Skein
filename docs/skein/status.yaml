@@ -8,7 +8,7 @@ workstreams:
   - id: D1
     name: 资产闭环
     state: doing
-    focus: D1d 验收完成（14/15，第 14 条归 D0.5）；裁决 60/61 已落地（插件 0.5.1）；D1t 时间线、D1u 插件样式已完（插件 0.6.0）；下一步 D1f 理论淘汰/复盘
+    focus: D1f 月度复盘与淘汰周期完成（插件 0.7.0）；D1 线剩 D0.5 真实使用；B5 适配 fork 壳 e2e 待做
     spec: specs/Textus-改造方案.md
   - id: UI
     name: 手机端 UI
@@ -43,13 +43,6 @@ tasks:
     acceptance: 4 周 10 个真实交付物；封装 ≥3 条资产并真实调用；复用率 ≥30%；≥3 条反例。
     spec: specs/Textus-改造方案.md#8-实施计划
     estimate: 4 周日历
-  - id: D1f
-    title: 理论淘汰 / 复盘 / 修数
-    workstream: D1
-    state: todo
-    acceptance: 30 天未验证、3 周期 deprecated、90 天复查、月度复盘。
-    spec: research/笔记资产理论.md
-    estimate: 1 周
   - id: S3q
     title: 七牛 Kodo 原生传输专项
     workstream: S
