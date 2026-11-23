@@ -7,7 +7,7 @@ updated: 2026-11-23
 
 # Tau 可吸收功能清单
 
-> 对象：[`LastKnightCoder/editor`](https://github.com/LastKnightCoder/editor)（Tau，taunote.app），本地 checkout `C:\Project\ref\lastknight-editor-analysis`，commit `c648165f`（0.66.1，2026-11-22）。
+> 对象：[`LastKnightCoder/editor`](https://github.com/LastKnightCoder/editor)（Tau，taunote.app），调研时 checkout 于 `C:\Project\ref\lastknight-editor-analysis`（commit `c648165f`，0.66.1，2026-11-22；**2026-11-23 调研后已删除**，需要时按该 commit 重新 clone）。
 > **仓库没有 LICENSE（GitHub license: null）**：代码、文案、CSS 一律不能复制，本文只记结构与交互，落地时全部自己实现。
 > 对照：本仓 `base-ui-settings`（1.4.6）2026-11-23 现状——界面锁 **Slate**（浅 `#f0f1f3` / 深 `#0d1117`，accent `#3467d2` / `#6ea8fe`，裁决 36/37）；桌面设置是 **1040×720 浮层**（左导航 260 / 内容 680 / 44 玻璃顶栏）；右页边 340；手机单栏；手机格式条 = PH1 七键主条 + 就地面板。
 > 方法：Tau 源码与 `docs/architecture/` 通读；181 份设计稿渲染成图核对（截图在 `C:\Project\ref\_lastknight-shots\out\`）；本仓逐项 grep 现状后才写入「我们现状」一栏。
@@ -155,7 +155,7 @@ Tau 的强项恰好补在 H0 之后最缺细节的地方：右页边只有「有
 
 ## 5. 证据索引
 
-- Tau 本地 checkout：`C:\Project\ref\lastknight-editor-analysis`（只读参考，不在里面跑构建）
+- Tau 源码：调研时 checkout `C:\Project\ref\lastknight-editor-analysis`（commit `c648165f`；**2026-11-23 已删**，证据以该 commit 与下列渲染图为准）
 - 设计稿渲染图：`C:\Project\ref\_lastknight-shots\out\`（设置、洞见、脉络、预览块、数据库工具栏、Markdown 窗口等 10 张）
 - Tau 关键原文：`docs/architecture/desktop/ui-interaction.md`、`docs/architecture/mobile.md`、`docs/notes/2026-10-01-knowledge-loop-product-direction.md`、`apps/website/content/docs/editor.md`
 - 本仓对照点：`src/engine/tokens/base.css`（Slate 取值）、`src/features/settings/settings-dialog.tsx`（浮层 1040×720）、`src/app/frame/app-shell.css`（右页边 340 / 覆盖阈值）、`src/settings/pages/SyncStatusHeader.tsx`（同步只有文字状态）、`src/editor/blocks/block-menu.ts`（块菜单现状）、`src/editor/clipboard/unmerge-cells.ts`（表格合并现状）
