@@ -75,12 +75,14 @@
   justify-content: center;
   color: var(--phone-muted);
   flex: none;
-  --icon-scale: 1.47;
+  /* 15px design at 1.6, the phone's 10/11 taken: about 21.8, level with
+     the bar's actions. */
+  --icon-scale: 1.6;
 }
 
 .ph-vault .vic svg {
-  width: calc(22px * var(--icon-growth, 1));
-  height: calc(22px * var(--icon-growth, 1));
+  width: 22px;
+  height: 22px;
 }
 
 .ph-vault .vname {
@@ -109,6 +111,8 @@
   border-radius: var(--shape-s);
   background: none;
   color: var(--ui-text);
+  /* A 22px design at 1.1 draws 22: the bar's own size, not a page's. */
+  --icon-scale: 1.1;
 }
 
 .ph-back svg {
@@ -132,9 +136,9 @@
   border: 0;
   background: none;
   border-radius: var(--shape-s);
-  /* The bar's icons read at the bar's size, not at a row's, and level with
-     the library's folder mark (1.47). */
-  --icon-scale: 1.47;
+  /* The bar's icons read at the bar's size, not at a row's: the settings'
+     15px design draws about 21.8 and the ⋯'s 16px about 23.3. */
+  --icon-scale: 1.6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,8 +146,8 @@
 }
 
 .ph-ic svg {
-  width: calc(21px * var(--icon-growth, 1));
-  height: calc(21px * var(--icon-growth, 1));
+  width: 22px;
+  height: 22px;
 }
 
 .ph-ic:active {
@@ -322,10 +326,10 @@
 }
 
 .phone-home .tree-row .chevron {
-  /* The board's disclosure is small and quiet: 13px drawn, centred in its
-     22px box (the side margins make the box up around the svg), at the
+  /* The board's disclosure is small and quiet: 13px drawn from its 10px
+     design (1.4 at the phone's 10/11), centred in its 22px box, at the
      tree's own muted ink (FileTree.css's 0.6 opacity stands). */
-  --icon-scale: 1.43;
+  --icon-scale: 1.4;
   margin-inline: var(--space-1);
 }
 
@@ -338,16 +342,16 @@
 }
 
 .phone-home .tree-row .tree-icon {
-  /* A file's 15px design, a step past the board's 16: 1.4 draws about 19
-     at the phone's 10/11, still inside the 56 row. Folders re-scale below. */
-  --icon-scale: 1.4;
+  /* A file's 15px design, level with a folder's: 1.6 draws about 21.8 at
+     the phone's 10/11, inside the 62 row. */
+  --icon-scale: 1.6;
   color: var(--phone-muted);
 }
 
 .phone-home .tree-row:not(.tree-row-file) .tree-icon {
-  /* A bare line icon, about 22px: 15px design at 1.47. The tinted chip is
+  /* A bare line icon, about 22px: 15px design at 1.6. The tinted chip is
      gone. */
-  --icon-scale: 1.47;
+  --icon-scale: 1.6;
   padding: 0;
   background: none;
   color: var(--phone-muted);
@@ -403,8 +407,8 @@
 }
 
 .phone-home .tree-more {
-  /* A 44px touch target (48 written at the chrome's 10/11). */
-  --icon-scale: 1.24;
+  /* A 44px touch target, its 16px ⋯ drawing about 20. */
+  --icon-scale: 1.4;
   flex: none;
   display: flex;
   align-items: center;

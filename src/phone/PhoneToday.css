@@ -61,7 +61,8 @@
   height: 22px;
   background: none;
   color: var(--ui-muted);
-  --icon-scale: 1.47;
+  /* 15px design at 1.6, the phone's 10/11 taken: about 21.8. */
+  --icon-scale: 1.6;
 }
 
 .ptop-vault-name {
@@ -88,9 +89,9 @@
   height: 48px;
   border: 0;
   border-radius: var(--shape-s);
-  /* The bar's icons read at the bar's size, not at a row's, and level with
-     the library's folder mark (1.47). */
-  --icon-scale: 1.47;
+  /* The bar's icons read at the bar's size, not at a row's: the settings'
+     15px design draws about 21.8 and the ⋯'s 16px about 23.3. */
+  --icon-scale: 1.6;
   background: none;
   color: var(--ui-text);
 }
@@ -338,11 +339,10 @@
   color: var(--ui-muted);
 }
 
-/* The shared file mark is a 15px design. The phone's 1.2 draws about 16;
-   1.6 draws about 22, level with the vault's bare folder, inside the 72
-   row. */
+/* The shared file mark is a 15px design; 1.55 draws about 21 at the
+   phone's 10/11, inside the 80px two-line row. */
 .prow-ic {
-  --icon-scale: 1.6;
+  --icon-scale: 1.55;
 }
 
 .prow-text {

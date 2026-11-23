@@ -91,12 +91,12 @@ import {
 } from "lucide-react";
 
 /** An icon's drawn size: its design size (the svg's own width and height)
- *  times one step up (--icon-scale), the global icon growth (--icon-growth)
- *  and the interface's scale, so every icon grows with the interface as its
- *  text does, and with one step for all icons at once. */
+ *  times one step (--icon-scale) and the interface's scale, so every icon
+ *  grows with the interface as its text does. A component sets its own step
+ *  where it needs a platform size; there is no further multiplier. */
 export function iconSize(width: number, height: number): CSSProperties {
   const at = (n: number) =>
-    `calc(${n}px * var(--icon-scale, 1) * var(--icon-growth, 1) * var(--chrome-scale, 1))`;
+    `calc(${n}px * var(--icon-scale, 1) * var(--chrome-scale, 1))`;
   return { width: at(width), height: at(height), flexShrink: 0 };
 }
 
@@ -108,10 +108,10 @@ export function iconSize(width: number, height: number): CSSProperties {
  */
 type IconProps = { className?: string };
 
-/** The line every icon is drawn with: 1.5px at its design size, which with
- *  the icon scale and growth is about 2.2px on the desktop and 2.1px on the
- *  phone - Lucide's own 2 is a little heavier. Ruling 56. */
-export const ICON_STROKE = 1.5;
+/** The line every icon is drawn with: 1.45px at its design size, which with
+ *  the icon scale is about 2.0px on the desktop and 1.8-2.1px on the phone.
+ *  Lucide's own 2 would draw about 2.8px at the bars' size. Ruling 58. */
+export const ICON_STROKE = 1.45;
 
 /** Lucide's `Shape` as one of ours, `size` px at design size. */
 export function lucide(Shape: LucideIcon, size: number) {
@@ -327,7 +327,7 @@ export function iconMarkup(Shape: LucideIcon, size: number): string {
         .join(" ")}/>`,
   );
   const stroke = (ICON_STROKE * 24) / size;
-  const box = `calc(${size}px * var(--icon-scale, 1) * var(--icon-growth, 1) * var(--chrome-scale, 1))`;
+  const box = `calc(${size}px * var(--icon-scale, 1) * var(--chrome-scale, 1))`;
   return `<svg width="${size}" height="${size}" style="width:${box};height:${box};flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${parts.join("")}</svg>`;
 }
 

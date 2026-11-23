@@ -287,16 +287,15 @@ describe("the phone's settings", () => {
     );
   });
 
-  it("draws the list's icons a step over the pre-growth size", () => {
-    // Ruling 57: NAV_ICON is 17. With the phone's 1.2 root and the 1.3 icon
-    // growth, 1.4 draws about 28 - bigger than the pre-growth intent (about
-    // 24), under the 31.1 of ruling 56's first pass. 1.15 here would cancel
-    // the phone's step up.
+  it("draws the list's icons at the phone's 24px step", () => {
+    // Ruling 58: NAV_ICON is 17; 1.55 at the phone's 10/11 draws about
+    // 24 - the size a phone's settings list uses - under ruling 56's 31.1
+    // and ruling 57's 28.1. The desktop's 1.25 would drop back to 21.3.
     expect(settingsPhoneCss).toMatch(
-      /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.4;/s,
+      /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.55;/s,
     );
     expect(settingsPhoneCss).not.toMatch(
-      /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.15;/s,
+      /\.settings-phone-row-ic \{[^}]*--icon-scale: 1\.25;/s,
     );
   });
 });

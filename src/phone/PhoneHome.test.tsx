@@ -379,16 +379,17 @@ describe("the phone library home", () => {
     );
     // The chip is a bar action: no frame, its inset in the bar's own air.
     expect(phoneHomeCss).toContain("padding: 0 var(--space-2) 0 0;");
-    // The board's small quiet disclosure: 13px drawn from the 10px design,
-    // seated in its 22px box (24.2 written at the chrome's 10/11).
+    // The board's small quiet disclosure: 13px drawn from the 10px design
+    // (1.4 at the phone's 10/11), seated in its 22px box.
     expect(phoneHomeCss).toContain("--tree-chevron: 24.2px;");
-    expect(phoneHomeCss).toContain("--icon-scale: 1.43;");
+    expect(phoneHomeCss).toContain("--icon-scale: 1.4;");
   });
 
   it("draws a folder as a bare line icon, not a tinted chip", () => {
     // 2026-11-22: the fire-tinted folder chip is a bare 22px line icon.
-    // 15px design at 1.47 draws 22. The old 2.2 chip scale must not return.
-    expect(phoneHomeCss).toContain("--icon-scale: 1.47;");
+    // 15px design at 1.6 draws about 22 (ruling 58). The old 2.2 chip
+    // scale must not return.
+    expect(phoneHomeCss).toContain("--icon-scale: 1.6;");
     expect(phoneHomeCss).not.toContain("--icon-scale: 2.2;");
     expect(phoneHomeCss).toMatch(
       /\.phone-home \.tree-row:not\(\.tree-row-file\) \.tree-icon \{[^}]*background: none;[^}]*color: var\(--phone-muted\);/s,

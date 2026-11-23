@@ -25,11 +25,20 @@
   justify-content: center;
   color: var(--ui-text);
   flex: none;
+  /* A 22px design at 1.1 draws 22: the bar's own size, as the home's
+     back row. */
+  --icon-scale: 1.1;
 }
 
 .pe-ic svg {
-  width: calc(22px * var(--icon-growth, 1));
-  height: calc(22px * var(--icon-growth, 1));
+  width: 22px;
+  height: 22px;
+}
+
+/* The AI mark is a 16px design where the chevron is 22: 1.5 draws it at
+   about 21.8, level with the other bar icons. */
+.pe-ai {
+  --icon-scale: 1.5;
 }
 
 .pe-ic:active {
