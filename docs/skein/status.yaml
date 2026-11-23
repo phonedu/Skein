@@ -8,7 +8,7 @@ workstreams:
   - id: D1
     name: 资产闭环
     state: doing
-    focus: D1e 已完成（2026-11-23）；下一步 D1r 外部复核
+    focus: D1e / D1r 完成（2026-11-23）；下一步 D0.5 或 D1d；D1t 时间线待排
     spec: specs/Textus-改造方案.md
   - id: UI
     name: 手机端 UI
@@ -36,13 +36,6 @@ workstreams:
     focus: 文档 / 上游 / 发布命令自动化已落地；等下一次实战
     spec: decisions/0052-文档体系重排.md
 tasks:
-  - id: D1r
-    title: 外部 AI 复核（opencode）
-    workstream: D1
-    state: todo
-    acceptance: 独立 worktree / 干净检出；只读 + 测试；阻断项修完再进 D0.5 / D1d。
-    spec: discipline/AI协作纪律.md#十外部-ai-复核2026-11-21-用户立规
-    estimate: 1–2 天
   - id: D0.5
     title: 理论小样本验证
     workstream: D1
@@ -155,6 +148,7 @@ waiting:
   - D1b 手机入口：窄屏确认中心已在桌面 WebView 344 CSS px 验过；Android/iOS 入口归 D3。
   - D1e 手机返回栈：从插件启动器打开的资产列表进入详情后，系统/应用返回回「今天」而不是列表；插件页导航归 D3（详情页内的来源链返回已可用）。
   - 桌面窄窗详情：800 CSS 左右且右页边（资产列表）打开时，详情被三栏挤压；属 H0 右页边断点，归 D3/UI，不在插件页内硬改。
+  - D1r 复核非阻断：详情页触控沿用 App 手机 40px、计数仍西文数字、历史上限 50 条无截断提示、取消对话框无专门提示；不影响验收，归 D3/UI 文案清理。
   - H9 SAF：2026-11-21 关闭；content:// 不做，除非出现真实用户场景。
   - S3b：七牛 S3 条件写返回 unsafeServer，东区域 IncorrectRegion；原生 insertOnly 走 S3q；阿里云不做。
 questions:
