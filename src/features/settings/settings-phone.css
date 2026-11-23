@@ -198,10 +198,12 @@ button.settings-phone-ic:active {
   align-items: center;
   justify-content: center;
   color: var(--ui-muted);
-  /* NAV_ICON is 17. The phone root is 1.2, so 1.55 draws the desktop
-     nav's size (17 at 1.35, then its own 1.15: about 23) inside this 24px
-     slot. 1.15 here used to cancel the phone's step up. */
-  --icon-scale: 1.55;
+  /* NAV_ICON is 17. The phone root is 1.2 and the icon growth is 1.3, so
+     1.4 draws about 28 - bigger than the pre-growth intent (about 24) and
+     a clear step under the 31.1 of ruling 56's first pass, leaving air in
+     the 62px row. The 24px slot sets its leading edge; the drawing is
+     centred and may overhang it. */
+  --icon-scale: 1.4;
 }
 
 .settings-phone-row-label {

@@ -88,8 +88,9 @@
   height: 48px;
   border: 0;
   border-radius: var(--shape-s);
-  /* The bar's icons read at the bar's size, not at a row's. */
-  --icon-scale: 1.35;
+  /* The bar's icons read at the bar's size, not at a row's, and level with
+     the library's folder mark (1.47). */
+  --icon-scale: 1.47;
   background: none;
   color: var(--ui-text);
 }

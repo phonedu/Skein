@@ -79,8 +79,8 @@
 }
 
 .ph-vault .vic svg {
-  width: 22px;
-  height: 22px;
+  width: calc(22px * var(--icon-growth, 1));
+  height: calc(22px * var(--icon-growth, 1));
 }
 
 .ph-vault .vname {
@@ -132,8 +132,9 @@
   border: 0;
   background: none;
   border-radius: var(--shape-s);
-  /* The bar's icons read at the bar's size, not at a row's. */
-  --icon-scale: 1.35;
+  /* The bar's icons read at the bar's size, not at a row's, and level with
+     the library's folder mark (1.47). */
+  --icon-scale: 1.47;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -141,8 +142,8 @@
 }
 
 .ph-ic svg {
-  width: 21px;
-  height: 21px;
+  width: calc(21px * var(--icon-growth, 1));
+  height: calc(21px * var(--icon-growth, 1));
 }
 
 .ph-ic:active {
