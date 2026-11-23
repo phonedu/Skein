@@ -61,9 +61,9 @@ test("skein.collect: capture lands the form's line as an inbox note", async ({
   expect(note!.text).toContain("\n买一台除湿机\n");
 });
 
-// The frame's look comes from the host (ruling 62): the plugin asks the
-// host for the open colours, derives the in-betweens and stamps them on
-// each message. This asserts the bridge reached the page, not the styles.
+// The frame's look comes from the host: the plugin asks the host for the
+// open colours, derives the in-betweens and stamps them on each message.
+// This asserts the bridge reached the page, not the styles.
 test("skein.collect: the confirm center's frame takes the host's colours", async ({
   page,
 }) => {
@@ -91,7 +91,11 @@ test("skein.collect: the confirm center's frame takes the host's colours", async
   const frame = page.frameLocator(".plugin-webview-frame").first();
   await expect(frame.locator("html")).toBeVisible();
   await expect
-    .poll(() => frame.locator("html").evaluate((el) => el.style.getPropertyValue("--ui-bg")))
+    .poll(() =>
+      frame
+        .locator("html")
+        .evaluate((el) => el.style.getPropertyValue("--ui-bg")),
+    )
     .not.toBe("");
   const vars = await frame.locator("html").evaluate((el) => ({
     bg: el.style.getPropertyValue("--ui-bg"),
