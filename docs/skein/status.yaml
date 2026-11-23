@@ -13,7 +13,7 @@ workstreams:
   - id: UI
     name: 手机端 UI
     state: doing
-    focus: PH3/PH4 核查
+    focus: PH3+PH4 完成（2026-11-23）：A/B/G/I 逐项证据见规格 §13；手机空态/按钮/三色统一；下一次手机任务归 D3
     spec: specs/Textus-手机端元素一致性方案.md
   - id: S
     name: 同步（S 组）
@@ -49,13 +49,6 @@ tasks:
     state: todo
     acceptance: 上传凭证 + insertOnly transport；引擎 / 设置接线；真桶首次 / 改 / 删 / 冲突。
     spec: research/同步评审/07-S3-Provider兼容性.md
-    estimate: 5–8 天
-  - id: PH3+PH4
-    title: 手机元素一致性 + 现状收尾
-    workstream: UI
-    state: todo
-    acceptance: A/B/G/I 核查 + §4.1/§4.3 未采项；逐项标证据。
-    spec: specs/Textus-手机端元素一致性方案.md#13-执行清单
     estimate: 5–8 天
   - id: T1
     title: 主题分层与 Skein 皮肤阶段 1
