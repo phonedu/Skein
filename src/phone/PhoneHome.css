@@ -132,6 +132,8 @@
   border: 0;
   background: none;
   border-radius: var(--shape-s);
+  /* The bar's icons read at the bar's size, not at a row's. */
+  --icon-scale: 1.35;
   display: flex;
   align-items: center;
   justify-content: center;

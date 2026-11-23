@@ -1,12 +1,14 @@
 // Icons for the phone editor's action sheet. Stroke-based paper-and-ink,
 // so they sit in the sheet's muted capsule and take the fire tint when a
 // row is the one strong action.
+import { iconSize } from "../engine/controls/icons";
 
 function baseProps(className?: string) {
   return {
     viewBox: "0 0 24 24",
     width: "20",
     height: "20",
+    style: iconSize(20, 20),
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 1.8,

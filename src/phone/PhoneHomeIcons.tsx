@@ -1,12 +1,14 @@
 // Icons for the phone home's library-switcher sheet. The vault icon echoes
 // the chip in the top bar, so the sheet's current row and the chip read as
 // one place.
+import { iconSize } from "../engine/controls/icons";
 
 function baseProps(className?: string) {
   return {
     viewBox: "0 0 24 24",
     width: "20",
     height: "20",
+    style: iconSize(20, 20),
     fill: "none",
     stroke: "currentColor",
     strokeWidth: 1.8,
