@@ -42,6 +42,7 @@
 | 文档 | 状态 | 更新 | 说明 |
 | --- | --- | --- | --- |
 | [AI 协作纪律（下游增补）](discipline/AI协作纪律.md) | active | 2026-11-23 | 协作纪律：任务六行、多会话红线、文档更新矩阵 |
+| [fork 触点清单（上游合并的回归面）](discipline/fork-触点清单.md) | active | 2026-11-23 | fork 住在上游也有的文件里的改动清单；上游 tag 合并（如 1.4.7）前后按它核对回归面 |
 | [发布闸门：Skein 与上游的隔离](discipline/publishing-gate.md) | active | 2026-11-23 | 向上游推送、开 PR 的发布门禁 |
 | [工程菜谱（本仓操作步骤）](discipline/工程菜谱.md) | active | 2026-11-23 | 本仓高频操作步骤：同步、插件、设置、界面、跟 tag、文档 |
 | [薄 fork 魔改原则](discipline/薄fork魔改原则.md) | active | 2026-11-23 | fork 改动最小化、跟随上游的原则 |
