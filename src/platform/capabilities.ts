@@ -69,8 +69,9 @@ export const canRevealInFileManager = isDesktopApp;
 export const canPickImageFile = isDesktopApp || isIOSApp;
 
 /** Settings › Plugins › Install from File: a package picked on the
- *  desktop, or in Files on iOS. */
-export const canInstallPluginFile = isDesktopApp || isIOSApp;
+ *  desktop, in Files on iOS, or with the system picker on Android (the
+ *  catalog installs without it; a private plugin has no catalog entry). */
+export const canInstallPluginFile = isDesktopApp || isMobileApp;
 
 /** Load Plugin Folder and the scripts folder: a folder the app watches,
  *  on the desktop. */
