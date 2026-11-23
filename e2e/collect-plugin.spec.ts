@@ -45,7 +45,8 @@ test("skein.collect: capture lands the form's line as an inbox note", async ({
   await settled(page);
 
   // The note is in the dev FS: the library's inbox/N-…, front matter
-  // without `type` (ruling 60: a capture is a card of the loop).
+  // without `type` - a capture is a card of the loop from the moment it
+  // is saved.
   const note = await page.evaluate(() => {
     const files = (window as unknown as { __devFs?: Record<string, string> })
       .__devFs;
