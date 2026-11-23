@@ -88,7 +88,7 @@ tasks:
   - id: D1u
     title: 插件界面样式对齐宿主
     workstream: D1
-    state: todo
+    state: doing
     acceptance: 插件四个页面（收集面板、确认中心、卡片详情、资产列表）与宿主 Slate 皮肤一套视觉；令牌桥接方案有小裁决；桌面 + 手机截图走查；webview 内不写原始颜色/圆角/字号。
     spec: specs/界面契约.md
     estimate: 3–5 天
