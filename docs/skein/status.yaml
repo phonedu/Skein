@@ -57,6 +57,20 @@ tasks:
     acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
     spec: specs/Textus-主题策略.md
     estimate: 3–5 天
+  - id: UI-p3
+    title: 完整属性表呈现
+    workstream: UI
+    state: todo
+    acceptance: YAML 画成键值行：增删改、类型推断、嵌套；源码模式/导出/往返一致；桌面与手机同族。
+    spec: specs/界面契约.md
+    estimate: 3–5 天
+    brief:
+      problem: 折叠只解决噪音；成熟编辑器还能查看与编辑属性。
+      expected: 属性表格可查看、增删改，底层仍是同一份 YAML。
+      standard: 先写裁决再动；复用现有 token；round-trip 测试。
+      not: 不改 front matter 存储格式；不做自定义 schema 校验。
+      scope: 编辑器 NodeView、界面契约、i18n、测试。
+      evidence: 逐屏截图 + 单测 + 导出往返。
 later:
   - id: S4
     title: 局域网 Hub
