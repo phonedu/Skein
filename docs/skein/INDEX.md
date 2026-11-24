@@ -68,8 +68,8 @@
 | [架构与维护评审（子代理）](research/同步评审/04-架构与维护评审.md) | reference | 2026-11-23 | 架构与维护评审 |
 | [安全与威胁模型评审（子代理）](research/同步评审/05-安全与威胁模型评审.md) | reference | 2026-11-23 | 安全与威胁模型评审 |
 | [多库同步设计](research/同步评审/06-多库同步设计.md) | reference | 2026-11-23 | 多库同步设计 |
-| [S3 服务商兼容性（S1b 选型）](research/同步评审/07-S3-Provider兼容性.md) | reference | 2026-11-24 | S3 Provider 兼容性 |
-| [同步 Provider 支持矩阵与测试边界](research/同步评审/08-Provider支持矩阵与测试边界.md) | reference | 2026-11-24 | 同步 Provider 支持矩阵、未适配清单与测试边界 |
+| [S3 服务商兼容性（S1b 选型）](research/同步评审/07-S3-Provider兼容性.md) | reference | 2026-11-25 | S3 Provider 兼容性 |
+| [同步 Provider 支持矩阵与测试边界](research/同步评审/08-Provider支持矩阵与测试边界.md) | reference | 2026-11-25 | 同步 Provider 支持矩阵、未适配清单与测试边界 |
 | [同步回馈上游：形态、成熟度门与测试边界](research/同步评审/09-上游同步提案与成熟度门.md) | reference | 2026-11-24 | 同步回馈上游的形态（插件/功能）、成熟度门与 Docker 测试边界 |
 | [同步方向评审（讨论中）](research/同步评审/README.md) | reference | 2026-11-24 | 同步评审的阅读顺序与结论索引 |
 | [同步插件多端 spike 报告（S1）](research/同步评审/spike-报告.md) | reference | 2026-11-23 | 同步插件 spike 报告 |

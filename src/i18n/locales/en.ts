@@ -2148,6 +2148,8 @@ type /name in a conversation to use one.
   syncS3Standard: "Standard S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (native upload)",
+  syncRegionChoose: "Choose a region",
+  syncKodoNote: "The server address is set from the region.",
   syncErrorRegion:
     "This region has no known Qiniu upload address. Use a Qiniu S3 region such as cn-south-1.",
   syncHubTitle: "Local network Hub",

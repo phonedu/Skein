@@ -107,6 +107,14 @@ tasks:
       not: 不做多活动连接并行同步；不做云端合并；不改协议 v1；不做 S5 的签名/重试硬化。
       scope: specs 的规则与矩阵、src-tauri/src/sync 的绑定/切换逻辑、同步页切换入口、store 单测与桌面/手机 e2e。
       evidence: 3×3 场景矩阵结果、切换/回切/复制库 e2e、store 单测与规则评审记录。
+  - id: S6c
+    title: Android 真机冒烟同步页 v3
+    workstream: S
+    kind: task
+    state: todo
+    acceptance: 设备可用后完成 Android 真机冒烟：扫码配对、WebDAV/S3 表单（含 Kodo 区域）、切换与预览；补截图。当前无设备，保持 backlog。
+    spec: specs/同步页面改版.md
+    estimate: 0.5 天（等设备）
 later:
   - id: S5
     title: 同步硬化

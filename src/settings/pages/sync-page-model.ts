@@ -33,6 +33,28 @@ export const EMPTY_CREDENTIALS: SyncCredentials = {
   syncPassword: "",
 };
 
+/** Qiniu's S3 regions and the upload host each one uses. Kodo's settings
+ *  offer only these: a region the upload service does not know cannot
+ *  create the remote lock. Kept in step with `kodo::REGIONS` in
+ *  `textus-sync/src/kodo.rs`. */
+export const KODO_REGIONS = [
+  { id: "cn-east-1", host: "up-z0.qiniup.com" },
+  { id: "cn-east-2", host: "up-cn-east-2.qiniup.com" },
+  { id: "cn-north-1", host: "up-z1.qiniup.com" },
+  { id: "cn-south-1", host: "up-z2.qiniup.com" },
+  { id: "us-north-1", host: "up-na0.qiniup.com" },
+  { id: "ap-southeast-1", host: "up-as0.qiniup.com" },
+  { id: "ap-southeast-2", host: "up-ap-southeast-2.qiniup.com" },
+  { id: "ap-southeast-3", host: "up-ap-southeast-3.qiniup.com" },
+] as const;
+
+export const isKodoRegion = (region: string): boolean =>
+  KODO_REGIONS.some((known) => known.id === region);
+
+/** Kodo has no address field: the region decides the S3 endpoint. */
+export const kodoEndpoint = (region: string): string =>
+  `https://s3.${region}.qiniucs.com`;
+
 export function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("identityFork")) return t.syncErrorIdentityFork;
   if (reason.includes("identityConflict")) return t.syncErrorIdentityConflict;
@@ -60,6 +82,7 @@ export function errorText(t: SettingsPageProps["t"], reason: string): string {
     return t.syncErrorIntegrity;
   if (reason.includes("conditionalWriteUnsupported"))
     return t.syncErrorConditional;
+  if (reason.includes("regionRequired")) return t.syncErrorRegion;
   if (reason.includes("unsupportedRegion")) return t.syncErrorRegion;
   if (reason.includes("noLanAddress")) return t.syncHubNoAddress;
   if (reason.includes("portInUse")) return t.syncHubPortBusy;

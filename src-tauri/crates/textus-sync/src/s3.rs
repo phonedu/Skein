@@ -13,12 +13,21 @@ use crate::store::ObjectStore;
 use async_trait::async_trait;
 use chrono::Utc;
 use hmac::{Hmac, Mac};
-use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE, DATE, RETRY_AFTER};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use sha2::Sha256;
 use std::collections::BTreeMap;
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 type HmacSha256 = Hmac<Sha256>;
+
+/// How often one request is sent: the first time and three retries, as the
+/// Cloud Sync plugin does. A busy server (429, 503) or, for a repeatable
+/// request, a gateway (502, 504) and a lost answer are waited out.
+const ATTEMPTS: usize = 4;
+/// The longest a server may ask us to wait before the sync stops for now.
+const LONGEST_WAIT: Duration = Duration::from_secs(60);
 
 /// How a service spells a conditional create. OSS rejects
 /// `If-None-Match` on PutObject and uses its own header instead; Kodo has
@@ -42,6 +51,11 @@ pub struct S3Store {
     flavor: S3Flavor,
     /// The native upload host, set for Kodo only.
     upload_host: Option<String>,
+    /// The server's clock minus ours, in milliseconds, from its last Date.
+    /// Kodo's upload token is dated by the server, not this device.
+    skew: Mutex<i64>,
+    /// Until when every request waits: a busy server asked to be left.
+    quiet_until: Mutex<Option<Instant>>,
 }
 
 impl S3Store {
@@ -112,7 +126,67 @@ impl S3Store {
             path_style,
             flavor,
             upload_host,
+            skew: Mutex::new(0),
+            quiet_until: Mutex::new(None),
         })
+    }
+
+    /// The server's clock, once one of its answers has carried a Date.
+    fn server_now_secs(&self) -> i64 {
+        let skew = *self.skew.lock().unwrap_or_else(|error| error.into_inner());
+        (Utc::now().timestamp_millis() + skew) / 1000
+    }
+
+    fn observe_date(&self, response: &Response) {
+        let Some(value) = response
+            .headers()
+            .get(DATE)
+            .and_then(|value| value.to_str().ok())
+        else {
+            return;
+        };
+        let Some(server) = http_date_ms(value) else {
+            return;
+        };
+        let mut skew = self.skew.lock().unwrap_or_else(|error| error.into_inner());
+        *skew = server - Utc::now().timestamp_millis();
+    }
+
+    /// Wait while a busy server asked every request to hold back.
+    async fn wait_quiet(&self) {
+        loop {
+            let wait = {
+                let quiet = self
+                    .quiet_until
+                    .lock()
+                    .unwrap_or_else(|error| error.into_inner());
+                quiet
+                    .map(|until| until.saturating_duration_since(Instant::now()))
+                    .unwrap_or_default()
+            };
+            if wait.is_zero() {
+                return;
+            }
+            tokio::time::sleep(wait).await;
+        }
+    }
+
+    fn hold_until(&self, wait: Duration) {
+        let mut quiet = self
+            .quiet_until
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        let until = Instant::now() + wait;
+        *quiet = Some(quiet.map_or(until, |current| current.max(until)));
+    }
+
+    /// Whether `key` holds exactly `bytes`: a create refused after a lost
+    /// answer was ours only when it does.
+    async fn holds(&self, key: &str, bytes: &[u8]) -> Result<bool> {
+        let Some(there) = self.get(key).await? else {
+            return Ok(false);
+        };
+        Ok(hash_hex(&there) == hash_hex(bytes))
     }
 
     fn url_for(&self, key: &str) -> Result<Url> {
@@ -165,71 +239,111 @@ impl S3Store {
         }
     }
 
+    /// One signed request. Repeatable requests are sent again after a lost
+    /// answer or a gateway, and every request waits out a busy server; the
+    /// answer says whether a resend could have landed (`resent`), which is
+    /// what a refused create uses to tell its own first try from another's.
     async fn send(
         &self,
         method: Method,
         key: &str,
         body: Option<Vec<u8>>,
         extra: BTreeMap<String, String>,
-    ) -> Result<Response> {
-        let url = self.url_for(key)?;
-        let payload = body.as_deref().unwrap_or(&[]);
-        let payload_hash = hash_hex(payload);
-        let now = Utc::now();
-        let amz_date = now.format("%Y%m%dT%H%M%SZ").to_string();
-        let date = now.format("%Y%m%d").to_string();
+        repeat: bool,
+    ) -> Result<Sent> {
+        let mut resent = false;
+        for attempt in 0..ATTEMPTS {
+            self.wait_quiet().await;
+            let url = self.url_for(key)?;
+            let payload = body.as_deref().unwrap_or(&[]);
+            let payload_hash = hash_hex(payload);
+            let now = Utc::now();
+            let amz_date = now.format("%Y%m%dT%H%M%SZ").to_string();
+            let date = now.format("%Y%m%d").to_string();
 
-        let mut headers: BTreeMap<String, String> = BTreeMap::new();
-        headers.insert("host".to_string(), Self::host_header(&url));
-        headers.insert("x-amz-content-sha256".to_string(), payload_hash.clone());
-        headers.insert("x-amz-date".to_string(), amz_date.clone());
-        for (name, value) in extra {
-            headers.insert(name.to_ascii_lowercase(), value);
-        }
-        let signed_headers = headers.keys().cloned().collect::<Vec<_>>().join(";");
-        let canonical_headers = headers
-            .iter()
-            .map(|(name, value)| format!("{name}:{}\n", value.trim()))
-            .collect::<String>();
-        let canonical_request = format!(
-            "{}\n{}\n\n{}\n{}\n{}",
-            method.as_str(),
-            url.path(),
-            canonical_headers,
-            signed_headers,
-            payload_hash
-        );
-        let scope = format!("{date}/{}/s3/aws4_request", self.region);
-        let string_to_sign = format!(
-            "AWS4-HMAC-SHA256\n{amz_date}\n{scope}\n{}",
-            hash_hex(canonical_request.as_bytes())
-        );
-        let signature = self.signature(&date, &string_to_sign);
-        let authorization = format!(
-            "AWS4-HMAC-SHA256 Credential={}/{scope}, SignedHeaders={signed_headers}, Signature={signature}",
-            self.access_key
-        );
-
-        let mut request_headers = HeaderMap::new();
-        for (name, value) in &headers {
-            request_headers.insert(
-                HeaderName::from_bytes(name.as_bytes())
-                    .map_err(|_| SyncError::new("invalidConfig"))?,
-                HeaderValue::from_str(value).map_err(|_| SyncError::new("invalidConfig"))?,
+            let mut headers: BTreeMap<String, String> = BTreeMap::new();
+            headers.insert("host".to_string(), Self::host_header(&url));
+            headers.insert("x-amz-content-sha256".to_string(), payload_hash.clone());
+            headers.insert("x-amz-date".to_string(), amz_date.clone());
+            for (name, value) in &extra {
+                headers.insert(name.to_ascii_lowercase(), value.clone());
+            }
+            let signed_headers = headers.keys().cloned().collect::<Vec<_>>().join(";");
+            let canonical_headers = headers
+                .iter()
+                .map(|(name, value)| format!("{name}:{}\n", value.trim()))
+                .collect::<String>();
+            let canonical_request = format!(
+                "{}\n{}\n\n{}\n{}\n{}",
+                method.as_str(),
+                url.path(),
+                canonical_headers,
+                signed_headers,
+                payload_hash
             );
+            let scope = format!("{date}/{}/s3/aws4_request", self.region);
+            let string_to_sign = format!(
+                "AWS4-HMAC-SHA256\n{amz_date}\n{scope}\n{}",
+                hash_hex(canonical_request.as_bytes())
+            );
+            let signature = self.signature(&date, &string_to_sign);
+            let authorization = format!(
+                "AWS4-HMAC-SHA256 Credential={}/{scope}, SignedHeaders={signed_headers}, Signature={signature}",
+                self.access_key
+            );
+
+            let mut request_headers = HeaderMap::new();
+            for (name, value) in &headers {
+                request_headers.insert(
+                    HeaderName::from_bytes(name.as_bytes())
+                        .map_err(|_| SyncError::new("invalidConfig"))?,
+                    HeaderValue::from_str(value).map_err(|_| SyncError::new("invalidConfig"))?,
+                );
+            }
+            request_headers.insert(
+                HeaderName::from_static("authorization"),
+                HeaderValue::from_str(&authorization)
+                    .map_err(|_| SyncError::new("invalidConfig"))?,
+            );
+            let mut request = self
+                .client
+                .request(method.clone(), url)
+                .headers(request_headers);
+            if let Some(body) = &body {
+                request = request.body(body.clone());
+            }
+            let response = match request.send().await {
+                Ok(response) => response,
+                Err(_) if repeat && attempt + 1 < ATTEMPTS => {
+                    // No answer: the request may still have been carried out.
+                    resent = true;
+                    tokio::time::sleep(backoff(attempt)).await;
+                    continue;
+                }
+                Err(_) => return Err(SyncError::new("networkError")),
+            };
+            self.observe_date(&response);
+            let status = response.status().as_u16();
+            let busy = matches!(status, 429 | 503);
+            let gateway = matches!(status, 502 | 504);
+            if !(busy || (gateway && repeat)) || attempt + 1 >= ATTEMPTS {
+                return Ok(Sent { response, resent });
+            }
+            if gateway {
+                // A gateway may have passed the request on before it failed.
+                resent = true;
+            }
+            let asked = retry_after(&response);
+            if asked > LONGEST_WAIT {
+                return Err(SyncError::new("rateLimited"));
+            }
+            let wait = backoff(attempt).max(asked);
+            if busy {
+                self.hold_until(wait);
+            }
+            tokio::time::sleep(wait).await;
         }
-        request_headers.insert(
-            HeaderName::from_static("authorization"),
-            HeaderValue::from_str(&authorization).map_err(|_| SyncError::new("invalidConfig"))?,
-        );
-        let mut request = self.client.request(method, url).headers(request_headers);
-        if let Some(body) = body {
-            request = request.body(body);
-        }
-        request
-            .send()
-            .await
-            .map_err(|_| SyncError::new("networkError"))
+        Err(SyncError::new("networkError"))
     }
 
     fn signature(&self, date: &str, string_to_sign: &str) -> String {
@@ -258,9 +372,10 @@ impl S3Store {
     }
 
     /// Kodo's conditional create: a native form upload whose token allows
-    /// this one key and refuses to replace it. 614 is "file exists". Kodo
-    /// also accepts the same bytes again (it compares the etag), which is
-    /// harmless because the content is already what the caller wanted.
+    /// this one key and refuses to replace it. 614 is "file exists". The
+    /// upload is sent again like a conditional PUT; after a lost answer a
+    /// 614 may be this run's own first try, so the key is read back and
+    /// only the same bytes count as ours.
     async fn kodo_create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
         let host = self
             .upload_host
@@ -271,7 +386,9 @@ impl S3Store {
         } else {
             format!("{}/{}", self.prefix, key)
         };
-        let policy = kodo::put_policy(&self.bucket, &full_key, true, Utc::now().timestamp() + 3600);
+        // Dated by the server's clock: a device whose clock is wrong still
+        // gets a token the upload host accepts.
+        let policy = kodo::put_policy(&self.bucket, &full_key, true, self.server_now_secs() + 3600);
         let token = kodo::upload_token(
             &self.access_key,
             &self.secret_key,
@@ -279,25 +396,106 @@ impl S3Store {
         );
         let boundary = format!("----textus{}", uuid::Uuid::new_v4().simple());
         let body = kodo::multipart(&boundary, &token, &full_key, &bytes);
-        let url =
-            Url::parse(&format!("https://{host}/")).map_err(|_| SyncError::new("invalidConfig"))?;
-        let response = self
-            .client
-            .post(url)
-            .header(
-                CONTENT_TYPE,
-                format!("multipart/form-data; boundary={boundary}"),
-            )
-            .body(body)
-            .send()
-            .await
-            .map_err(|_| SyncError::new("networkError"))?;
-        match response.status().as_u16() {
-            200..=299 => Ok(true),
-            614 => Ok(false),
-            code => Err(upload_refused(code)),
+        // The region table holds public hosts; the loopback form exists
+        // only for the transport test, which serves this endpoint itself.
+        let scheme = if host.starts_with("127.0.0.1:") || host.starts_with("localhost:") {
+            "http"
+        } else {
+            "https"
+        };
+        let url = Url::parse(&format!("{scheme}://{host}/"))
+            .map_err(|_| SyncError::new("invalidConfig"))?;
+        let mut resent = false;
+        for attempt in 0..ATTEMPTS {
+            self.wait_quiet().await;
+            let response = match self
+                .client
+                .post(url.clone())
+                .header(
+                    CONTENT_TYPE,
+                    format!("multipart/form-data; boundary={boundary}"),
+                )
+                .body(body.clone())
+                .send()
+                .await
+            {
+                Ok(response) => response,
+                Err(_) if attempt + 1 < ATTEMPTS => {
+                    // No answer: the upload may still have landed.
+                    resent = true;
+                    tokio::time::sleep(backoff(attempt)).await;
+                    continue;
+                }
+                Err(_) => return Err(SyncError::new("networkError")),
+            };
+            self.observe_date(&response);
+            let status = response.status().as_u16();
+            let busy = matches!(status, 429 | 503);
+            let gateway = matches!(status, 502 | 504);
+            if !(busy || gateway) || attempt + 1 >= ATTEMPTS {
+                return match status {
+                    200..=299 => Ok(true),
+                    614 => Ok(resent && self.holds(key, &bytes).await?),
+                    code => Err(upload_refused(code)),
+                };
+            }
+            if gateway {
+                resent = true;
+            }
+            let asked = retry_after(&response);
+            if asked > LONGEST_WAIT {
+                return Err(SyncError::new("rateLimited"));
+            }
+            let wait = backoff(attempt).max(asked);
+            if busy {
+                self.hold_until(wait);
+            }
+            tokio::time::sleep(wait).await;
         }
+        Err(SyncError::new("networkError"))
     }
+}
+
+/// One answer, and whether a resend before it could have landed.
+struct Sent {
+    response: Response,
+    resent: bool,
+}
+
+/// A pause before sending again: doubling from half a second, give or take
+/// a fifth, so requests that met the same busy server spread out.
+fn backoff(attempt: usize) -> Duration {
+    let base = 500u64.saturating_mul(1u64 << attempt.min(10));
+    let nanos = Utc::now().timestamp_subsec_nanos() as u64;
+    let factor = 80 + nanos % 41;
+    Duration::from_millis(base * factor / 100)
+}
+
+/// Retry-After as a wait: seconds, or HTTP's date form.
+fn retry_after(response: &Response) -> Duration {
+    let Some(value) = response
+        .headers()
+        .get(RETRY_AFTER)
+        .and_then(|value| value.to_str().ok())
+    else {
+        return Duration::ZERO;
+    };
+    let value = value.trim();
+    if let Ok(seconds) = value.parse::<u64>() {
+        return Duration::from_secs(seconds);
+    }
+    let Some(at) = http_date_ms(value) else {
+        return Duration::ZERO;
+    };
+    Duration::from_millis((at - Utc::now().timestamp_millis()).max(0) as u64)
+}
+
+/// An HTTP date in milliseconds since the epoch. IMF-fixdate is the form
+/// servers send; the RFC 2822 parser also accepts the older forms.
+fn http_date_ms(value: &str) -> Option<i64> {
+    chrono::DateTime::parse_from_rfc2822(value)
+        .ok()
+        .map(|at| at.timestamp_millis())
 }
 
 fn upload_refused(code: u16) -> SyncError {
@@ -344,7 +542,10 @@ fn hex(bytes: &[u8]) -> String {
 #[async_trait]
 impl ObjectStore for S3Store {
     async fn get(&self, key: &str) -> Result<Option<Vec<u8>>> {
-        let response = self.send(Method::GET, key, None, BTreeMap::new()).await?;
+        let sent = self
+            .send(Method::GET, key, None, BTreeMap::new(), true)
+            .await?;
+        let response = sent.response;
         if response.status() == StatusCode::NOT_FOUND {
             return Ok(None);
         }
@@ -359,7 +560,10 @@ impl ObjectStore for S3Store {
     }
 
     async fn has(&self, key: &str) -> Result<bool> {
-        let response = self.send(Method::HEAD, key, None, BTreeMap::new()).await?;
+        let sent = self
+            .send(Method::HEAD, key, None, BTreeMap::new(), true)
+            .await?;
+        let response = sent.response;
         if response.status() == StatusCode::NOT_FOUND {
             return Ok(false);
         }
@@ -370,9 +574,10 @@ impl ObjectStore for S3Store {
     }
 
     async fn put(&self, key: &str, bytes: Vec<u8>) -> Result<()> {
-        let response = self
-            .send(Method::PUT, key, Some(bytes), BTreeMap::new())
+        let sent = self
+            .send(Method::PUT, key, Some(bytes), BTreeMap::new(), true)
             .await?;
+        let response = sent.response;
         if response.status().is_success() {
             Ok(())
         } else {
@@ -385,12 +590,14 @@ impl ObjectStore for S3Store {
             return self.kodo_create(key, bytes).await;
         }
         let extra = create_headers(self.flavor);
-        let response = self.send(Method::PUT, key, Some(bytes), extra).await?;
-        let exists = || async { self.has(key).await.unwrap_or(false) };
+        let sent = self
+            .send(Method::PUT, key, Some(bytes.clone()), extra, true)
+            .await?;
+        let response = sent.response;
         match self.flavor {
             S3Flavor::Oss => {
                 if response.status() == StatusCode::CONFLICT {
-                    return Ok(false);
+                    return Ok(sent.resent && self.holds(key, &bytes).await?);
                 }
                 if response.status() == StatusCode::BAD_REQUEST {
                     return Err(SyncError::new("conditionalWriteUnsupported"));
@@ -398,9 +605,11 @@ impl ObjectStore for S3Store {
             }
             S3Flavor::Standard | S3Flavor::Kodo => {
                 if response.status() == StatusCode::PRECONDITION_FAILED
-                    || (response.status() == StatusCode::CONFLICT && exists().await)
+                    || response.status() == StatusCode::CONFLICT
                 {
-                    return Ok(false);
+                    // Sent again after no answer, a refusal may be to our
+                    // own first try; other bytes mean another device's.
+                    return Ok(sent.resent && self.holds(key, &bytes).await?);
                 }
             }
         }
@@ -412,9 +621,13 @@ impl ObjectStore for S3Store {
     }
 
     async fn delete(&self, key: &str) -> Result<()> {
-        let response = self
-            .send(Method::DELETE, key, None, BTreeMap::new())
+        // The lock's DELETE is not sent again: done the first time, a
+        // second could remove another device's lock.
+        let repeat = key != crate::protocol::LOCK_KEY;
+        let sent = self
+            .send(Method::DELETE, key, None, BTreeMap::new(), repeat)
             .await?;
+        let response = sent.response;
         if response.status().is_success() || response.status() == StatusCode::NOT_FOUND {
             Ok(())
         } else {
@@ -426,6 +639,161 @@ impl ObjectStore for S3Store {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::{BufRead, BufReader, Read, Write};
+    use std::net::{TcpListener, TcpStream};
+    use std::sync::atomic::{AtomicBool, AtomicU16, AtomicUsize, Ordering};
+    use std::sync::Arc;
+    use std::thread::JoinHandle;
+    use std::time::Duration;
+
+    /// A tiny S3/upload host for the transport test: the first POST gets no
+    /// answer (a lost reply), later ones get 614, and GET returns the bytes
+    /// another device or this one left.
+    struct TestHost {
+        port: u16,
+        posts: Arc<AtomicUsize>,
+        drop_first: Arc<AtomicBool>,
+        post_status: Arc<AtomicU16>,
+        object: Arc<Mutex<Vec<u8>>>,
+        stop: Arc<AtomicBool>,
+        thread: Option<JoinHandle<()>>,
+    }
+
+    impl TestHost {
+        fn start() -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let port = listener.local_addr().unwrap().port();
+            let posts = Arc::new(AtomicUsize::new(0));
+            let drop_first = Arc::new(AtomicBool::new(true));
+            let post_status = Arc::new(AtomicU16::new(0));
+            let object = Arc::new(Mutex::new(Vec::new()));
+            let stop = Arc::new(AtomicBool::new(false));
+            let thread = {
+                let posts = posts.clone();
+                let drop_first = drop_first.clone();
+                let post_status = post_status.clone();
+                let object = object.clone();
+                let stop = stop.clone();
+                std::thread::spawn(move || {
+                    while !stop.load(Ordering::SeqCst) {
+                        match listener.accept() {
+                            Ok((mut stream, _)) => {
+                                let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
+                                if let Ok((line, _)) = read_request(&mut stream) {
+                                    if line.starts_with("POST ") {
+                                        let first = posts.fetch_add(1, Ordering::SeqCst) == 0;
+                                        let forced = post_status.load(Ordering::SeqCst);
+                                        if forced != 0 {
+                                            respond(&mut stream, forced, &[]);
+                                            continue;
+                                        }
+                                        if first && drop_first.load(Ordering::SeqCst) {
+                                            // No answer at all: the client
+                                            // cannot know it landed.
+                                            continue;
+                                        }
+                                        respond(&mut stream, 614, &[]);
+                                    } else if line.starts_with("GET ") {
+                                        let body = object.lock().unwrap().clone();
+                                        respond(&mut stream, 200, &body);
+                                    } else {
+                                        respond(&mut stream, 200, &[]);
+                                    }
+                                }
+                            }
+                            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                                std::thread::sleep(Duration::from_millis(2));
+                            }
+                            Err(_) => break,
+                        }
+                    }
+                })
+            };
+            Self {
+                port,
+                posts,
+                drop_first,
+                post_status,
+                object,
+                stop,
+                thread: Some(thread),
+            }
+        }
+
+        fn refuse_with(&self, status: u16) {
+            self.drop_first.store(false, Ordering::SeqCst);
+            self.post_status.store(status, Ordering::SeqCst);
+        }
+
+        fn store(&self) -> S3Store {
+            let address = format!("127.0.0.1:{}", self.port);
+            let mut store = S3Store::new(
+                &format!("http://{address}"),
+                "bucket",
+                "",
+                "cn-south-1",
+                "ak",
+                "sk",
+                true,
+                S3Flavor::Kodo,
+            )
+            .unwrap();
+            store.upload_host = Some(address);
+            store
+        }
+    }
+
+    impl Drop for TestHost {
+        fn drop(&mut self) {
+            self.stop.store(true, Ordering::SeqCst);
+            let _ = TcpStream::connect(("127.0.0.1", self.port));
+            if let Some(thread) = self.thread.take() {
+                let _ = thread.join();
+            }
+        }
+    }
+
+    fn read_request(stream: &mut TcpStream) -> std::io::Result<(String, Vec<u8>)> {
+        let mut reader = BufReader::new(stream.try_clone()?);
+        let mut line = String::new();
+        reader.read_line(&mut line)?;
+        let mut length = 0;
+        loop {
+            let mut header = String::new();
+            if reader.read_line(&mut header)? == 0 || header == "\r\n" {
+                break;
+            }
+            if let Some(value) = header.to_ascii_lowercase().strip_prefix("content-length:") {
+                length = value.trim().parse().unwrap_or(0);
+            }
+        }
+        let mut body = vec![0; length];
+        reader.read_exact(&mut body)?;
+        Ok((line, body))
+    }
+
+    fn respond(stream: &mut TcpStream, status: u16, body: &[u8]) {
+        let reason = match status {
+            200 => "OK",
+            400 => "Bad Request",
+            401 => "Unauthorized",
+            403 => "Forbidden",
+            429 => "Too Many Requests",
+            502 => "Bad Gateway",
+            503 => "Service Unavailable",
+            504 => "Gateway Timeout",
+            614 => "File Exists",
+            631 => "Bucket Not Found",
+            _ => "Error",
+        };
+        let _ = write!(
+            stream,
+            "HTTP/1.1 {status} {reason}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        );
+        let _ = stream.write_all(body);
+    }
 
     #[test]
     fn a_flavor_picks_its_conditional_header() {
@@ -510,5 +878,89 @@ mod tests {
             hosted.url_for("v1/head.json").unwrap().as_str(),
             "https://bucket.s3.example.com/notes/v1/head.json"
         );
+    }
+
+    #[test]
+    fn an_http_date_and_retry_after_are_read() {
+        assert_eq!(http_date_ms("Thu, 01 Jan 1970 00:00:00 GMT"), Some(0));
+        assert_eq!(
+            http_date_ms("Wed, 21 Oct 2015 07:28:00 GMT"),
+            Some(1_445_412_480_000)
+        );
+        assert_eq!(http_date_ms("not a date"), None);
+        let store = S3Store::new(
+            "https://s3.example.com",
+            "bucket",
+            "",
+            "cn-east-1",
+            "ak",
+            "sk",
+            true,
+            S3Flavor::Standard,
+        )
+        .unwrap();
+        *store.skew.lock().unwrap() = 3_600_000;
+        assert!(store.server_now_secs() >= Utc::now().timestamp() + 3_599);
+    }
+
+    #[tokio::test]
+    async fn a_614_after_a_lost_upload_is_ours_only_for_the_same_bytes() {
+        let host = TestHost::start();
+        let store = host.store();
+        *host.object.lock().unwrap() = b"ours".to_vec();
+        assert!(store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap());
+        assert_eq!(host.posts.load(Ordering::SeqCst), 2);
+
+        // The retry's 614 belongs to another device's different bytes.
+        host.posts.store(0, Ordering::SeqCst);
+        *host.object.lock().unwrap() = b"other".to_vec();
+        assert!(!store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap());
+
+        // A 614 with no lost answer is never this run's create.
+        host.posts.store(0, Ordering::SeqCst);
+        host.drop_first.store(false, Ordering::SeqCst);
+        assert!(!store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn upload_refusals_name_what_the_settings_can_fix() {
+        let host = TestHost::start();
+        let store = host.store();
+        for (status, code) in [
+            (400, "invalidConfig"),
+            (631, "invalidConfig"),
+            (401, "permissionError"),
+            (403, "permissionError"),
+            (507, "quotaError"),
+        ] {
+            host.refuse_with(status);
+            let error = store
+                .create("v1/lock.json", b"ours".to_vec())
+                .await
+                .unwrap_err();
+            assert_eq!(error.code, code, "status {status}");
+        }
+    }
+
+    #[tokio::test]
+    async fn a_busy_upload_host_is_waited_out_until_the_last_try() {
+        let host = TestHost::start();
+        let store = host.store();
+        host.refuse_with(429);
+        let error = store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap_err();
+        assert_eq!(error.code, "rateLimited");
+        assert_eq!(host.posts.load(Ordering::SeqCst), ATTEMPTS);
     }
 }

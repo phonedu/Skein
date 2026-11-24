@@ -2222,6 +2222,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncS3Standard: "S3 padrão",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (envio nativo)",
+  syncRegionChoose: "Escolher uma região",
+  syncKodoNote: "O endereço do servidor é definido pela região.",
   syncErrorRegion:
     "Esta região não tem um endereço de envio da Qiniu conhecido. Use uma região S3 da Qiniu, como cn-south-1.",
   syncHubTitle: "Hub de rede local",

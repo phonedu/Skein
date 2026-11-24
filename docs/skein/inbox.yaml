@@ -22,4 +22,5 @@ items:
     text: S6c Android 真机冒烟：扫码配对、WebDAV/S3 表单、切换与预览；当前无设备，等设备连接后补截图。
     source: manual
     kind: idea
-    status: new
+    status: resolved
+    resolved_at: 2026-11-25

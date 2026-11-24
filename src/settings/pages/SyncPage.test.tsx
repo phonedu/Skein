@@ -563,13 +563,51 @@ it("reads Qiniu's native mode and region from the address", async () => {
   });
   const region = (await screen.findByLabelText(
     t.syncRegionLabel,
-  )) as HTMLInputElement;
+  )) as HTMLSelectElement;
   expect(region.value).toBe("cn-south-1");
-  expect(screen.queryByLabelText(t.syncS3FlavorLabel)).toBeNull();
+  expect(
+    (screen.getByLabelText(t.syncS3FlavorLabel) as HTMLSelectElement).value,
+  ).toBe("kodo");
+  expect(screen.queryByLabelText(t.syncEndpointLabel)).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
   await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
   const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
   expect(saved.provider).toBe("s3");
   expect(saved.s3Flavor).toBe("kodo");
   expect(saved.region).toBe("cn-south-1");
+  expect(saved.endpoint).toBe("https://s3.cn-south-1.qiniucs.com");
+  expect(saved.pathStyle).toBe(true);
+});
+
+it("picks Qiniu Kodo first and asks for one of its regions", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncSettingsSave).mockClear();
+  vi.mocked(syncSettingsSave).mockResolvedValue();
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+
+  render(page());
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
+  fireEvent.click(typeButton("S3"));
+  fireEvent.change(await screen.findByLabelText(t.syncS3FlavorLabel), {
+    target: { value: "kodo" },
+  });
+  expect(screen.queryByLabelText(t.syncEndpointLabel)).toBeNull();
+  const region = screen.getByLabelText(t.syncRegionLabel) as HTMLSelectElement;
+  expect(region.value).toBe("");
+  fireEvent.change(region, { target: { value: "ap-southeast-1" } });
+  fireEvent.change(screen.getByLabelText(t.syncBucketLabel), {
+    target: { value: "textus" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
+  await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
+  const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
+  expect(saved.s3Flavor).toBe("kodo");
+  expect(saved.region).toBe("ap-southeast-1");
+  expect(saved.endpoint).toBe("https://s3.ap-southeast-1.qiniucs.com");
+  expect(saved.pathStyle).toBe(true);
 });

@@ -2,12 +2,12 @@
 type: research
 status: reference
 summary: S3 Provider 兼容性
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
 # S3 服务商兼容性（S1b 选型）
 
-> **结论（2026-11-24 更新）**：**缤纷云 S4（Bitiful）已实测通过 S1b**；内置 Rust 已有 `S3Flavor::Oss`（`x-oss-forbid-overwrite`，409/400 映射）并在设置页可选；**七牛 Kodo 2026-11-21 实测：凭据有效，但 S3 条件写不可用（`unsafeServer`）；S3q 已用原生上传凭证 + `insertOnly` 接入（§3 第 6 条），设置页可选「七牛 Kodo（原生上传）」**；**阿里云 OSS 按用户 2026-11-21 决定不测试**（补充协议与版本控制限制太麻烦），代码保留但不作为验收项。
+> **结论（2026-11-25 更新）**：**缤纷云 S4（Bitiful）已实测通过 S1b**；内置 Rust 已有 `S3Flavor::Oss`（`x-oss-forbid-overwrite`，409/400 映射）并在设置页可选；**七牛 Kodo 2026-11-21 实测：凭据有效，但 S3 条件写不可用（`unsafeServer`）；S3q 已用原生上传凭证 + `insertOnly` 接入（§3 第 6 条）**；**S9（2026-11-25）已按上游 PR #90 对齐**：Kodo 改为区域必选、地址由区域生成，原生上传复用重试/退避/服务器时钟，重试后的 614 只在同字节时算自己的创建（§3 第 7 条）；**阿里云 OSS 按用户 2026-11-21 决定不测试**（补充协议与版本控制限制太麻烦），代码保留但不作为验收项。
 >
 > 协议要求见[同步协议 v1](../../specs/同步协议-v1.md)；插件当前 S3 transport 见 `textus-plugins/development/cloud-sync/src/transport.ts`。
 
@@ -66,6 +66,16 @@ updated: 2026-11-24
    - 真桶验证（同一测试桶）：probe 第一次创建成功、第二次 614；首次上传、修改、删除、两设备冲突（保留两份）全部通过。
    - 桌面双实例验证（portable debug，两个独立 `TextusData`，同一连接/prefix/加密密码，均选「七牛 Kodo（原生上传）」）：A 首次上传 1 → B 首次 1 上 1 下 → A/B 各自编辑互传各 1 上 1 下 → 同时改同一文件产生 1 个冲突副本（`Sync conflicts/…`，两端一致）→ 一端删除后另一端收敛（各 removed 1）。每次运行前的 probe 均通过，说明条件创建走的是原生 `insertOnly`。
    - 已知边界：Kodo 对“同 key、同 etag”的 `insertOnly` 上传返回成功而非 614；内容相同，故无害。没有原生 GET/DELETE/列举（仍走 S3）。上传域名只覆盖七牛当前的 8 个 S3 区域。
+7. **S9 对齐上游 PR #90（2026-11-25）**：上游把 Kodo 改成 provider 数据，Textus 内置实现同步改为：
+   - 设置页「S3 兼容方式」显式选「七牛 Kodo（原生上传）」；Kodo 只显示 bucket + region，region 从 8 个已映射上传域的区域里选且必填，服务器地址不再显示也不保存，保存时由 region 生成 `https://s3.<region>.qiniucs.com`，`pathStyle=true`。未知/空 region 分别报 `unsupportedRegion` / `regionRequired`。
+   - 原生 insertOnly 上传复用与 S3 相同的有界重试：429/503 等待（尊重 `Retry-After`，最长 60 秒），502/504 与“没有回答”的请求重发；上传 token 的 deadline 取最近一次服务器 `Date` 的时钟 + 3600 秒，避免本机时钟偏差。
+   - 重发后收到 614 时读回对象：只有内容与本机要写的字节一致才返回“本次创建成功”；另一台设备的锁（不同字节）返回“已存在”，不会被误认为自己的。条件 PUT 的 412/409 同样只在重发后且同字节时算自己的。
+   - 导入插件配置接受新 provider `kodo`，也接受旧插件写成的 `s3` + `*.qiniucs.com` 地址，统一导入为 Kodo。
+   - 2026-11-25 真桶三问与回归（同一测试桶，临时前缀，跑完清理）：
+     1. **Q1 条件 PUT**：同一 key 连发两次 `If-None-Match: *`，body 分别为 `one`、`two`，两次都 `200`，ETag 分别为 `f97c5d…`、`b8a9f7…`，读回 `two`。**确认七牛 S3 忽略条件头并覆盖**，只有原生 insertOnly 可做锁。
+     2. **Q2 连续同步与锁重建**：两次完整 sync（第二次 0 上传）通过；删除 `v1/lock.json` 后立即用 insertOnly 重建同 key 成功，读回新字节。
+     3. **Q3 上传后立即读**：原生上传创建成功后立刻经 S3 endpoint GET，字节一致。
+     `cargo test -p textus-sync --test kodo_live -- --ignored` 四项（probe/round-trip、首次/改/删/冲突、锁重建、连续同步+立即读）全部通过；新本地单测覆盖 614 同字节/异字节、无重发 614、400/631/401/403/507 映射与 429 有界重试。
 
 ## 4. 适配层要改哪里
 
@@ -89,7 +99,7 @@ return true;
 ## 5. 结论
 
 - **S1b 已用缤纷云 S4 通过**；它是三家最接近标准 S3 的，把“协议/插件问题”和“服务商差异”分开了。
-- 七牛云 Kodo 作为第二家已实测：凭据有效，S3 条件写不可用，见 §3.5；原生 `insertOnly` 已由 S3q 接入（§3 第 6 条），设置页可选「七牛 Kodo（原生上传）」。
+- 七牛云 Kodo 作为第二家已实测：凭据有效，S3 条件写不可用，见 §3.5；原生 `insertOnly` 已由 S3q 接入（§3 第 6 条），S9 已按上游 PR #90 对齐区域/地址/重试/614 语义（§3 第 7 条）。
 - 阿里云 OSS 按用户 2026-11-21 决定不做真桶验收。
 - 阿里云 OSS 作为适配目标，不污染首轮 spike，尚未跑。
 - 三家都只给专用桶/子账号，AK/SK 不进仓库、不进日志。

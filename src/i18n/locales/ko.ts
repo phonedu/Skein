@@ -2087,6 +2087,8 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncS3Standard: "표준 S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo(네이티브 업로드)",
+  syncRegionChoose: "리전 선택",
+  syncKodoNote: "서버 주소는 리전에서 설정됩니다.",
   syncErrorRegion:
     "이 리전에는 알려진 Qiniu 업로드 주소가 없습니다. cn-south-1 같은 Qiniu S3 리전을 사용하세요.",
   syncHubTitle: "로컬 네트워크 허브",

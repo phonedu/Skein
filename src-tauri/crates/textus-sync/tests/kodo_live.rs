@@ -180,3 +180,64 @@ async fn first_modify_delete_and_conflict() {
 
     cleanup(&remote, &revisions, &[b"one", b"two", b"three"]).await;
 }
+
+#[tokio::test]
+#[ignore = "needs a throwaway Qiniu bucket in the environment"]
+async fn a_deleted_lock_can_be_created_again_at_once() {
+    let prefix = format!("s3q-relock-{}", uuid::Uuid::new_v4());
+    let remote = store(&prefix);
+    probe(&remote).await.unwrap();
+    assert!(remote
+        .create("v1/lock.json", b"first".to_vec())
+        .await
+        .unwrap());
+    remote.delete("v1/lock.json").await.unwrap();
+    assert_eq!(remote.get("v1/lock.json").await.unwrap(), None);
+    assert!(remote
+        .create("v1/lock.json", b"second".to_vec())
+        .await
+        .unwrap());
+    assert_eq!(
+        remote.get("v1/lock.json").await.unwrap(),
+        Some(b"second".to_vec())
+    );
+    remote.delete("v1/lock.json").await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "needs a throwaway Qiniu bucket in the environment"]
+async fn two_full_syncs_and_an_upload_read_back_through_s3() {
+    let prefix = format!("s3q-repeat-{}", uuid::Uuid::new_v4());
+    let remote = store(&prefix);
+    probe(&remote).await.unwrap();
+    let mut revisions = Vec::new();
+    let a = MemoryLocal::new([("Notes/a.md".to_string(), b"one".to_vec())]);
+    let first = sync(&remote, &a, options()).await.unwrap();
+    revisions.push(first.result.revision.clone());
+    // The lock was released at the end of the first run; the second run
+    // creates the same key again. An immediate S3 read must see what the
+    // native upload wrote.
+    let again = sync(
+        &remote,
+        &a,
+        SyncOptions {
+            base: first.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(again.result.uploaded, 0);
+    revisions.push(again.result.revision.clone());
+    let key = format!("s3q-read-{}", uuid::Uuid::new_v4());
+    assert!(remote
+        .create(&key, b"native-create".to_vec())
+        .await
+        .unwrap());
+    assert_eq!(
+        remote.get(&key).await.unwrap(),
+        Some(b"native-create".to_vec())
+    );
+    remote.delete(&key).await.unwrap();
+    cleanup(&remote, &revisions, &[b"one"]).await;
+}

@@ -2108,6 +2108,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncS3Standard: "標準 S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo（ネイティブアップロード）",
+  syncRegionChoose: "リージョンを選択",
+  syncKodoNote: "サーバーアドレスはリージョンから設定されます。",
   syncErrorRegion:
     "このリージョンには既知の Qiniu アップロード先がありません。cn-south-1 などの Qiniu S3 リージョンを使用してください。",
   syncHubTitle: "ローカルネットワークHub",

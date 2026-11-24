@@ -106,6 +106,16 @@
   outline: none;
 }
 
+/* Kodo's region is a picker, with the reason the address is not asked for
+   underneath it rather than beside the label. */
+.sync-kodo-region {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .sync-check {
   display: flex;
   align-items: center;

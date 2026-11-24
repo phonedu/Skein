@@ -1,12 +1,18 @@
-// A connection's required fields only: an address and the credentials that
-// service asks for. The remote folder, the provider and the S3 compatibility
-// are decided by the app; encryption is the one choice kept under Advanced.
+// A connection's required fields only: its service-specific address (or
+// Kodo's region) and the credentials that service asks for. The remote
+// folder, the provider and the S3 compatibility are decided by the app;
+// encryption is the one choice kept under Advanced.
 import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
 import type { SyncConfig, SyncCredentials } from "../../platform/ipc-sync";
 import { ChevronIcon } from "../../engine/controls/icons";
 import { MaskedKeyInput } from "../sections/controls";
-import { s3DefaultsFromEndpoint } from "./sync-page-model";
+import {
+  KODO_REGIONS,
+  isKodoRegion,
+  kodoEndpoint,
+  s3DefaultsFromEndpoint,
+} from "./sync-page-model";
 
 export interface SyncConnectionFieldsProps {
   t: Strings;
@@ -36,9 +42,11 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
     sharedCount,
   } = props;
   const isS3 = config.provider === "s3";
+  const flavor = config.s3Flavor ?? "standard";
+  const isKodo = isS3 && flavor === "kodo";
 
-  // The address is the one thing every provider must be told; what it says
-  // about the region and the S3 flavour is filled in, not asked.
+  // A standard S3 address says which service and region it is; what it
+  // implies is filled in, not asked. Kodo has no address field (below).
   const changeEndpoint = (endpoint: string) => {
     const next = { ...config, endpoint };
     if (isS3) {
@@ -51,6 +59,36 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
     setConfig(next);
   };
 
+  // Kodo's address is not a field: picking it drops any other address, and
+  // only the regions Qiniu publishes are offered.
+  const changeFlavor = (nextFlavor: NonNullable<SyncConfig["s3Flavor"]>) => {
+    if (nextFlavor === "kodo") {
+      const region = isKodoRegion(config.region) ? config.region : "";
+      setConfig({
+        ...config,
+        s3Flavor: "kodo",
+        region,
+        endpoint: region ? kodoEndpoint(region) : "",
+        pathStyle: true,
+      });
+      return;
+    }
+    setConfig({
+      ...config,
+      s3Flavor: nextFlavor,
+      endpoint: flavor === "kodo" ? "" : config.endpoint,
+    });
+  };
+
+  const changeKodoRegion = (region: string) => {
+    setConfig({
+      ...config,
+      region,
+      endpoint: region ? kodoEndpoint(region) : "",
+      pathStyle: true,
+    });
+  };
+
   return (
     <>
       {sharedCount > 1 && (
@@ -59,18 +97,39 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
         </p>
       )}
       <div className="sync-form">
-        <label className="sync-field">
-          <span className="settings-field-label">{t.syncEndpointLabel}</span>
-          <input
-            className="settings-text-input"
-            type="url"
-            spellCheck={false}
-            placeholder="https://"
-            disabled={locked}
-            value={config.endpoint}
-            onChange={(event) => changeEndpoint(event.target.value)}
-          />
-        </label>
+        {isS3 && (
+          <label className="sync-field">
+            <span className="settings-field-label">{t.syncS3FlavorLabel}</span>
+            <select
+              className="settings-text-input"
+              disabled={locked}
+              value={flavor}
+              onChange={(event) =>
+                changeFlavor(
+                  event.target.value as NonNullable<SyncConfig["s3Flavor"]>,
+                )
+              }
+            >
+              <option value="standard">{t.syncS3Standard}</option>
+              <option value="oss">{t.syncS3Oss}</option>
+              <option value="kodo">{t.syncS3Kodo}</option>
+            </select>
+          </label>
+        )}
+        {!isKodo && (
+          <label className="sync-field">
+            <span className="settings-field-label">{t.syncEndpointLabel}</span>
+            <input
+              className="settings-text-input"
+              type="url"
+              spellCheck={false}
+              placeholder="https://"
+              disabled={locked}
+              value={config.endpoint}
+              onChange={(event) => changeEndpoint(event.target.value)}
+            />
+          </label>
+        )}
         {isS3 && (
           <>
             <label className="sync-field">
@@ -85,18 +144,45 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
                 }
               />
             </label>
-            <label className="sync-field">
-              <span className="settings-field-label">{t.syncRegionLabel}</span>
-              <input
-                className="settings-text-input"
-                spellCheck={false}
-                disabled={locked}
-                value={config.region}
-                onChange={(event) =>
-                  setConfig({ ...config, region: event.target.value })
-                }
-              />
-            </label>
+            {isKodo ? (
+              <div className="sync-field">
+                <span className="settings-field-label">
+                  {t.syncRegionLabel}
+                </span>
+                <div className="sync-kodo-region">
+                  <select
+                    className="settings-text-input"
+                    aria-label={t.syncRegionLabel}
+                    disabled={locked}
+                    value={config.region}
+                    onChange={(event) => changeKodoRegion(event.target.value)}
+                  >
+                    <option value="">{t.syncRegionChoose}</option>
+                    {KODO_REGIONS.map((region) => (
+                      <option key={region.id} value={region.id}>
+                        {region.id}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="tx-list-note">{t.syncKodoNote}</span>
+                </div>
+              </div>
+            ) : (
+              <label className="sync-field">
+                <span className="settings-field-label">
+                  {t.syncRegionLabel}
+                </span>
+                <input
+                  className="settings-text-input"
+                  spellCheck={false}
+                  disabled={locked}
+                  value={config.region}
+                  onChange={(event) =>
+                    setConfig({ ...config, region: event.target.value })
+                  }
+                />
+              </label>
+            )}
           </>
         )}
         {!locked && (

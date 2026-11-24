@@ -36,23 +36,39 @@ fn store_for(config: &Config, credentials: &Credentials) -> Result<Box<dyn Objec
             )
             .map_err(|e| e.to_string())?,
         )),
-        "s3" => Ok(Box::new(
-            S3Store::new(
-                &config.endpoint,
-                &config.bucket,
-                &config.prefix,
-                &config.region,
-                &credentials.access_key,
-                &credentials.secret_key,
-                config.path_style,
-                match config.s3_flavor.as_str() {
-                    "oss" => textus_sync::s3::S3Flavor::Oss,
-                    "kodo" => textus_sync::s3::S3Flavor::Kodo,
-                    _ => textus_sync::s3::S3Flavor::Standard,
-                },
-            )
-            .map_err(|e| e.to_string())?,
-        )),
+        "s3" => {
+            // Kodo's address is the region's, never a stored field: an old
+            // connection with another address still talks to the region it
+            // names.
+            let kodo = config.s3_flavor == "kodo";
+            let region = if kodo {
+                config.region.trim().to_ascii_lowercase()
+            } else {
+                config.region.clone()
+            };
+            let endpoint = if kodo {
+                textus_sync::kodo::s3_endpoint(&region)
+            } else {
+                config.endpoint.clone()
+            };
+            Ok(Box::new(
+                S3Store::new(
+                    &endpoint,
+                    &config.bucket,
+                    &config.prefix,
+                    &region,
+                    &credentials.access_key,
+                    &credentials.secret_key,
+                    if kodo { true } else { config.path_style },
+                    match config.s3_flavor.as_str() {
+                        "oss" => textus_sync::s3::S3Flavor::Oss,
+                        "kodo" => textus_sync::s3::S3Flavor::Kodo,
+                        _ => textus_sync::s3::S3Flavor::Standard,
+                    },
+                )
+                .map_err(|e| e.to_string())?,
+            ))
+        }
         _ => Err(crate::errors::error("invalidConfig")),
     }
 }

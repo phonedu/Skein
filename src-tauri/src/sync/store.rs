@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tauri::Manager;
 use textus_sync::chunk::hash_hex;
+use textus_sync::kodo;
 use textus_sync::path::relative_path;
 use textus_sync::protocol::{Base, KEEP_DAYS};
 use textus_sync::SyncError;
@@ -133,6 +134,26 @@ struct Connection {
     path_style: bool,
     #[serde(default = "s3_flavor")]
     s3_flavor: String,
+}
+
+/// Kodo keeps no address field: its region decides the S3 endpoint, and
+/// only the regions Qiniu publishes (each with an upload host) are valid.
+/// Every other provider keeps the address the user typed.
+fn normalize_connection(connection: &mut Connection) -> Result<(), String> {
+    if connection.provider != "s3" || connection.s3_flavor != "kodo" {
+        return Ok(());
+    }
+    let region = connection.region.trim().to_ascii_lowercase();
+    if region.is_empty() {
+        return Err(SyncError::new("regionRequired").to_string());
+    }
+    if kodo::upload_host(&region).is_none() {
+        return Err(SyncError::new("unsupportedRegion").to_string());
+    }
+    connection.region = region;
+    connection.endpoint = kodo::s3_endpoint(&connection.region);
+    connection.path_style = true;
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -464,7 +485,6 @@ fn new_prefix(connection: &Connection, root: &Path, vault_id: &str) -> String {
         format!("{base}/{sub}")
     }
 }
-
 
 #[path = "store_ops.rs"]
 mod store_ops;

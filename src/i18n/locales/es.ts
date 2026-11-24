@@ -2244,6 +2244,8 @@ para usar una.
   syncS3Standard: "S3 estándar",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (carga nativa)",
+  syncRegionChoose: "Elegir una región",
+  syncKodoNote: "La dirección del servidor se toma de la región.",
   syncErrorRegion:
     "Esta región no tiene una dirección de carga de Qiniu conocida. Usa una región S3 de Qiniu como cn-south-1.",
   syncHubTitle: "Hub de red local",

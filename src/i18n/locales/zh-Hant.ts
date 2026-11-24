@@ -1998,6 +1998,8 @@ export default {
   syncS3Standard: "標準 S3",
   syncS3Oss: "阿里雲 OSS",
   syncS3Kodo: "七牛 Kodo（原生上傳）",
+  syncRegionChoose: "選擇區域",
+  syncKodoNote: "伺服器位址由區域自動產生。",
   syncErrorRegion:
     "此區域沒有已知的七牛上傳位址。請使用七牛 S3 區域，例如 cn-south-1。",
   syncHubTitle: "區域網路 Hub",

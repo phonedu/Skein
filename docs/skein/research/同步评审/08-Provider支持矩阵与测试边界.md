@@ -2,7 +2,7 @@
 type: research
 status: reference
 summary: 同步 Provider 支持矩阵、未适配清单与测试边界
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
 # 同步 Provider 支持矩阵与测试边界
@@ -48,11 +48,11 @@ updated: 2026-11-24
 |                                              | `Oss`：`x-oss-forbid-overwrite: true`，409 视为已存在，400 报 `conditionalWriteUnsupported`                       |
 |                                              | `Kodo`：原生表单上传 + 上传凭证（policy `bucket:key` + `insertOnly=1`），614 视为已存在；读/改/删仍走 S3 endpoint |
 | 读写                                         | `GET` / `HEAD` / `PUT` / `DELETE`                                                                                 |
-| Region                                       | 用户填写；Kodo 额外按 8 个 S3 区域映射 `up-*.qiniup.com`                                                          |
+| Region                                       | 标准 S3 用户填写；Kodo 从 8 个已映射 `up-*.qiniup.com` 的区域中选，地址由 region 生成、不再手填                     |
 | 超时/重定向                                  | 与 WebDAV 相同（20 s / 180 s、不跟随）                                                                            |
-| 重试                                         | **无**                                                                                                            |
+| 重试                                         | 最多 4 次：429/503 等待（尊重 `Retry-After`，>60 s 报 rateLimited）；502/504 与无回答的重发；锁的 DELETE 不重发 |
 | Multipart / List / 预签名 / STS / 服务端加密 | **均不做**（协议按 2 MiB 块逐块 PUT；不需要 List）                                                                |
-| 状态映射                                     | 401/403 → permission；429 → rateLimited；507 → quota；409 → locked（条件创建）；其余 → httpError                  |
+| 状态映射                                     | 401/403 → permission；429 → rateLimited；507 → quota；条件创建 412/409/614 重发后按内容判断；其余 → httpError    |
 
 ## 3. Provider 支持矩阵
 
@@ -62,7 +62,7 @@ updated: 2026-11-24
 | --------------------------------------------- | ---------------- | ------------ | ----------------------------------------------------------------------------------------- |
 | 本机 Node WebDAV                              | WebDAV           | **验收通过** | S1 spike + S2 built app；S3t5 又跑了文字/移动，本地 DAV 服务作为夹具                      |
 | 缤纷云 Bitiful                                | S3 Standard      | **验收通过** | 真桶：首次/增量/16/32 MiB/冲突/杀进程/锁恢复；桌面插件互认（S1b/S2）                      |
-| 七牛 Kodo                                     | S3 + 原生 create | **验收通过** | 真桶：probe 第二次 614、首次/改/删/冲突；桌面双实例（S3q，2026-11-24）                    |
+| 七牛 Kodo                                     | S3 + 原生 create | **验收通过** | 真桶：probe 第二次 614、首次/改/删/冲突；桌面双实例（S3q，2026-11-24）；S9 三问与连续同步/锁重建/立即读（2026-11-25） |
 | 七牛标准 S3 条件写                            | S3 Standard      | **不兼容**   | 第二次 `If-None-Match` 未被拒（`unsafeServer`）；必须选 Kodo 模式                         |
 | 阿里云 OSS                                    | S3 Oss           | 实现未实测   | 用户 2026-11-21 决定不做真桶；版本控制开启后 `x-oss-forbid-overwrite` 会失效              |
 | AWS S3 / Cloudflare R2 / MinIO / Backblaze B2 | S3 Standard      | 实现未实测   | 标准路径应可用；S1 曾计划 MinIO，最终用 Bitiful；无证据不写成通过                         |
@@ -97,8 +97,8 @@ updated: 2026-11-24
 2. **条件写依赖服务商**：标准 S3 之外，OSS/Kodo 各有一套；新服务商需要新 flavor 与真桶验证。
 3. **Kodo 边界**：同 key 同 etag 的 `insertOnly` 上传返回成功而非 614（内容相同，无害）；没有原生 GET/DELETE/列举；上传域名只覆盖官方 8 个 S3 区域。
 4. **OSS 边界**：只支持 virtual-host；`x-oss-forbid-overwrite` 在开启/暂停过版本控制后失效；未真桶验收。
-5. **Region 手填**：无自动发现；填错时错误可能是 400/403/`IncorrectRegion`。
-6. **无重试/退避**：5xx/429 直接失败；锁会安全释放，重试需用户再点。
+5. **Region**：标准 S3 手填，无自动发现；Kodo 从固定 8 区域中选，避免填错。标准 S3 填错时错误可能是 400/403/`IncorrectRegion`。
+6. **有界重试**：GET/HEAD/PUT/DELETE 与 Kodo 原生上传最多 4 次，429/503 退避、502/504 与无回答重发；锁的 DELETE 不重发。超过上限仍失败，但锁会安全释放，用户可再点。
 7. **无服务器时间**：只用本地 Utc；归 S5。
 8. **128 MiB 峰值**：单文件整块读入内存，协议写 32 MiB 预算但引擎峰值可达 128 MiB；归 S5。
 
@@ -132,6 +132,7 @@ updated: 2026-11-24
 | 2026-11-20（scale）          | `tests/scale.rs`                                               | 20k 文件首轮 20,000、改 1 只传 1；128 MiB 单文件；块上传中被杀留锁；瞬时 5xx 后重试成功                          | 32 MiB 预算、真实超时         |
 | 2026-11-24（S3q crate）      | 真实七牛桶                                                     | probe 首建成功/二次 614；首次/改/删/两设备冲突 2/2 通过                                                          | UI、媒体                      |
 | 2026-11-24（S3q 桌面双实例） | 两个 portable debug，真实七牛桶，同 connection/prefix/加密密码 | A 首传 1；B 1 上 1 下；双向编辑各 1 上 1 下；同改一文件 B 产生 1 冲突副本；B 删后 A 收敛 removed 1               | 图片/视频/大文件、多库、境外  |
+| 2026-11-25（S9 真桶三问）    | 真实七牛桶，临时前缀                                           | 条件 PUT 两次 200 且第二次覆盖；两次完整 sync 通过；删锁后立即重建同 key；原生上传后立即 S3 读一致                | UI 双实例、媒体、境外         |
 
 ## 6. 第三方 / 境外服务商怎么测
 

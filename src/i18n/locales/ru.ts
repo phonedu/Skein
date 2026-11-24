@@ -2253,6 +2253,8 @@ export default {
   syncS3Standard: "Стандартный S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (собственная загрузка)",
+  syncRegionChoose: "Выберите регион",
+  syncKodoNote: "Адрес сервера задаётся регионом.",
   syncErrorRegion:
     "Для этого региона неизвестен адрес загрузки Qiniu. Используйте регион Qiniu S3, например cn-south-1.",
   syncHubTitle: "Хаб локальной сети",

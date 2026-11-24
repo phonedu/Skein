@@ -175,6 +175,7 @@ pub(super) fn save_at(
         if is_new {
             connection.prefix = config.prefix.trim_matches('/').to_string();
         }
+        normalize_connection(&mut connection)?;
     }
     validate_connection(&connection)?;
     if config.provider == "s3"

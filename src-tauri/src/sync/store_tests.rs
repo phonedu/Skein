@@ -596,3 +596,51 @@ use super::store_ops::*;
         assert_eq!(list[0]["provider"], "s3");
         assert_eq!(list[0]["s3Flavor"], "kodo");
     }
+
+    #[test]
+    fn kodo_takes_its_endpoint_from_the_region_only() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        let mut config = webdav_config();
+        config.provider = "s3".to_string();
+        // An address from another provider (or an old setup) is not kept.
+        config.endpoint = "https://wrong.example.com".to_string();
+        config.bucket = "bucket".to_string();
+        config.region = "CN-SOUTH-1".to_string();
+        config.path_style = false;
+        config.s3_flavor = "kodo".to_string();
+        let credentials = Credentials {
+            access_key: "ak".to_string(),
+            secret_key: "sk".to_string(),
+            ..Credentials::default()
+        };
+        save_at(&paths, &root, config, credentials).unwrap();
+        let (saved, _) = load_at(&paths, &root).unwrap().unwrap();
+        assert_eq!(saved.region, "cn-south-1");
+        assert_eq!(saved.endpoint, "https://s3.cn-south-1.qiniucs.com");
+        assert!(saved.path_style);
+    }
+
+    #[test]
+    fn a_kodo_vault_without_a_region_is_refused() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        let mut config = webdav_config();
+        config.provider = "s3".to_string();
+        config.endpoint = "https://s3.cn-south-1.qiniucs.com".to_string();
+        config.bucket = "bucket".to_string();
+        config.region = String::new();
+        config.s3_flavor = "kodo".to_string();
+        let credentials = Credentials {
+            access_key: "ak".to_string(),
+            secret_key: "sk".to_string(),
+            ..Credentials::default()
+        };
+        assert!(save_at(&paths, &root, config, credentials)
+            .unwrap_err()
+            .contains("regionRequired"));
+    }

@@ -55,7 +55,7 @@ fn configured_at(plugin: &Path, root: &Path) -> bool {
             .is_some_and(|config| {
                 matches!(
                     config["provider"].as_str().unwrap_or_default(),
-                    "s3" | "webdav" | "nutstore"
+                    "s3" | "kodo" | "webdav" | "nutstore"
                 )
             })
     })
@@ -68,22 +68,44 @@ fn find_at(plugin: &Path, secrets_path: &Path, root: &Path) -> Result<Option<Imp
             continue;
         };
         let provider = config["provider"].as_str().unwrap_or_default();
-        if !matches!(provider, "s3" | "webdav" | "nutstore") {
+        if !matches!(provider, "s3" | "kodo" | "webdav" | "nutstore") {
             continue;
         }
-        let transport = if provider == "s3" { "s3" } else { "dav" };
-        let endpoint = config["endpoint"].as_str().unwrap_or_default();
-        let endpoint = if provider == "nutstore" && endpoint.is_empty() {
+        let transport = if matches!(provider, "s3" | "kodo") {
+            "s3"
+        } else {
+            "dav"
+        };
+        let raw_endpoint = config["endpoint"].as_str().unwrap_or_default();
+        let endpoint = if provider == "nutstore" && raw_endpoint.is_empty() {
             "https://dav.jianguoyun.com/dav"
         } else {
-            endpoint
+            raw_endpoint
         };
         let bucket = config["bucket"].as_str().unwrap_or_default();
         let region = config["region"].as_str().unwrap_or_default();
+        // PR #90 names Qiniu Kodo as its own provider; older plugin
+        // versions wrote `s3` with a Qiniu address. Both import as Kodo.
+        let kodo = provider == "kodo"
+            || (provider == "s3" && endpoint.to_ascii_lowercase().contains(".qiniucs.com"));
+        let endpoint = if kodo {
+            textus_sync::kodo::s3_endpoint(region)
+        } else {
+            endpoint.to_string()
+        };
+        let path_style = if kodo {
+            true
+        } else {
+            config["pathStyle"].as_bool().unwrap_or(false)
+        };
         let prefix = config["prefix"].as_str().unwrap_or_default();
-        let path_style = config["pathStyle"].as_bool().unwrap_or(false);
         let identity = serde_json::to_string(&serde_json::json!([
-            transport, endpoint, bucket, region, path_style, prefix
+            transport,
+            endpoint.clone(),
+            bucket,
+            region,
+            path_style,
+            prefix
         ]))
         .map_err(|error| error.to_string())?;
 
@@ -117,19 +139,19 @@ fn find_at(plugin: &Path, secrets_path: &Path, root: &Path) -> Result<Option<Imp
         return Ok(Some(Imported {
             config: Config {
                 connection_id: String::new(),
-                provider: if provider == "s3" { "s3" } else { "webdav" }.to_string(),
-                endpoint: endpoint.to_string(),
+                provider: if transport == "s3" { "s3" } else { "webdav" }.to_string(),
+                endpoint: endpoint.clone(),
                 bucket: bucket.to_string(),
                 prefix: prefix.to_string(),
                 region: region.to_string(),
                 path_style,
-                s3_flavor: "standard".to_string(),
+                s3_flavor: if kodo { "kodo" } else { "standard" }.to_string(),
                 keep_days,
                 keep_chosen: config["keepPending"].as_bool().unwrap_or(false),
                 encrypted,
                 vault_id: String::new(),
             },
-            credentials: if provider == "s3" {
+            credentials: if transport == "s3" {
                 Credentials {
                     access_key: account.to_string(),
                     secret_key: password.to_string(),
@@ -319,5 +341,61 @@ mod tests {
 
         assert!(configured_at(&plugin, Path::new(root)));
         assert!(!configured_at(&plugin, Path::new("C:/Other")));
+    }
+
+    #[test]
+    fn a_kodo_plugin_config_imports_as_kodo() {
+        let root = "C:/Vault";
+        let (dir, plugin) = plugin_with_config(
+            root,
+            &serde_json::json!({
+                "provider": "kodo",
+                "endpoint": "",
+                "region": "cn-south-1",
+                "bucket": "textus",
+                "prefix": "notes",
+                "pathStyle": true
+            }),
+        );
+        let identity = serde_json::to_string(&serde_json::json!([
+            "s3",
+            "https://s3.cn-south-1.qiniucs.com",
+            "textus",
+            "cn-south-1",
+            true,
+            "notes"
+        ]))
+        .unwrap();
+        let secret_key = format!(
+            "connection:{}",
+            hash_hex(format!("{root}{identity}").as_bytes())
+        );
+        let secrets_path = dir.path().join("plugin_secrets.json");
+        let mut secrets = BTreeMap::new();
+        let mut plugin_secrets = BTreeMap::new();
+        plugin_secrets.insert(
+            secret_key,
+            serde_json::to_string(&serde_json::json!({
+                "account": "ak",
+                "secret": "sk"
+            }))
+            .unwrap(),
+        );
+        secrets.insert(PLUGIN_ID, plugin_secrets);
+        std::fs::write(&secrets_path, serde_json::to_vec(&secrets).unwrap()).unwrap();
+
+        assert!(configured_at(&plugin, Path::new(root)));
+        let imported = find_at(&plugin, &secrets_path, Path::new(root))
+            .unwrap()
+            .unwrap();
+        assert_eq!(imported.config.provider, "s3");
+        assert_eq!(imported.config.s3_flavor, "kodo");
+        assert_eq!(imported.config.region, "cn-south-1");
+        assert_eq!(
+            imported.config.endpoint,
+            "https://s3.cn-south-1.qiniucs.com"
+        );
+        assert!(imported.config.path_style);
+        assert_eq!(imported.credentials.access_key, "ak");
     }
 }

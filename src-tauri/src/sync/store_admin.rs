@@ -164,6 +164,7 @@ pub(super) fn update_connection_at(
     connection.region = config.region;
     connection.path_style = config.path_style;
     connection.s3_flavor = config.s3_flavor;
+    normalize_connection(&mut connection)?;
     let remote_changed = connection != existing;
     if let Some(prefix) = default_prefix {
         let prefix = prefix.trim_matches('/').to_string();
@@ -255,11 +256,13 @@ pub(super) fn validate_connection(connection: &Connection) -> Result<(), String>
     {
         return Err(SyncError::new("invalidConfig").to_string());
     }
-    if connection.provider == "s3"
-        && connection.s3_flavor == "kodo"
-        && textus_sync::kodo::upload_host(&connection.region).is_none()
-    {
-        return Err(SyncError::new("unsupportedRegion").to_string());
+    if connection.provider == "s3" && connection.s3_flavor == "kodo" {
+        if connection.region.trim().is_empty() {
+            return Err(SyncError::new("regionRequired").to_string());
+        }
+        if textus_sync::kodo::upload_host(&connection.region).is_none() {
+            return Err(SyncError::new("unsupportedRegion").to_string());
+        }
     }
     Ok(())
 }

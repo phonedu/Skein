@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { resolveStrings } from "../../i18n/strings";
 import { fill } from "../../i18n/fill";
 import {
+  KODO_REGIONS,
   errorText,
+  isKodoRegion,
+  kodoEndpoint,
   parseHubPairPayload,
   s3DefaultsFromEndpoint,
   syncStatusText,
@@ -44,6 +47,16 @@ describe("S3 defaults from an address", () => {
     expect(s3DefaultsFromEndpoint("https://s3.cn-south-1.qiniucs.com")).toEqual(
       { region: "cn-south-1", s3Flavor: "kodo" },
     );
+  });
+
+  it("offers exactly Qiniu's eight upload regions", () => {
+    expect(KODO_REGIONS).toHaveLength(8);
+    expect(isKodoRegion("cn-south-1")).toBe(true);
+    expect(isKodoRegion("eu-west-1")).toBe(false);
+    expect(kodoEndpoint("cn-south-1")).toBe(
+      "https://s3.cn-south-1.qiniucs.com",
+    );
+    expect(errorText(t, "regionRequired")).toBe(t.syncErrorRegion);
   });
 
   it("reads Alibaba OSS's flavour and region", () => {

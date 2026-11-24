@@ -10,21 +10,35 @@ use sha1::Sha1;
 
 type HmacSha1 = Hmac<Sha1>;
 
-/// The native upload host for a Qiniu S3 region. Regions are the ids the
-/// S3 endpoint uses (`cn-south-1`), not Kodo's short ids (`z2`); the
-/// endpoint signs with one and the uploader routes by the other.
+/// Qiniu's S3 regions and the upload host each uses. Regions are the ids
+/// the S3 endpoint uses (`cn-south-1`), not Kodo's short ids (`z2`); the
+/// endpoint signs with one and the uploader routes by the other. The
+/// settings page offers exactly this list, so a region it accepts is one
+/// this transport can upload to.
+pub const REGIONS: [(&str, &str); 8] = [
+    ("cn-east-1", "up-z0.qiniup.com"),
+    ("cn-east-2", "up-cn-east-2.qiniup.com"),
+    ("cn-north-1", "up-z1.qiniup.com"),
+    ("cn-south-1", "up-z2.qiniup.com"),
+    ("us-north-1", "up-na0.qiniup.com"),
+    ("ap-southeast-1", "up-as0.qiniup.com"),
+    ("ap-southeast-2", "up-ap-southeast-2.qiniup.com"),
+    ("ap-southeast-3", "up-ap-southeast-3.qiniup.com"),
+];
+
+/// The upload host for a Qiniu S3 region.
 pub fn upload_host(region: &str) -> Option<&'static str> {
-    match region.to_ascii_lowercase().as_str() {
-        "cn-east-1" => Some("up-z0.qiniup.com"),
-        "cn-east-2" => Some("up-cn-east-2.qiniup.com"),
-        "cn-north-1" => Some("up-z1.qiniup.com"),
-        "cn-south-1" => Some("up-z2.qiniup.com"),
-        "us-north-1" => Some("up-na0.qiniup.com"),
-        "ap-southeast-1" => Some("up-as0.qiniup.com"),
-        "ap-southeast-2" => Some("up-ap-southeast-2.qiniup.com"),
-        "ap-southeast-3" => Some("up-ap-southeast-3.qiniup.com"),
-        _ => None,
-    }
+    let region = region.to_ascii_lowercase();
+    REGIONS
+        .iter()
+        .find(|(id, _)| *id == region)
+        .map(|(_, host)| *host)
+}
+
+/// The S3 address for a region. Kodo has no endpoint field in the settings:
+/// the region decides the address, so the two cannot disagree.
+pub fn s3_endpoint(region: &str) -> String {
+    format!("https://s3.{}.qiniucs.com", region.to_ascii_lowercase())
 }
 
 /// A put policy that allows one key only and refuses to replace it. The
@@ -122,17 +136,12 @@ mod tests {
 
     #[test]
     fn every_s3_region_has_an_upload_host() {
-        for (region, host) in [
-            ("cn-east-1", "up-z0.qiniup.com"),
-            ("cn-east-2", "up-cn-east-2.qiniup.com"),
-            ("cn-north-1", "up-z1.qiniup.com"),
-            ("cn-south-1", "up-z2.qiniup.com"),
-            ("us-north-1", "up-na0.qiniup.com"),
-            ("ap-southeast-1", "up-as0.qiniup.com"),
-            ("ap-southeast-2", "up-ap-southeast-2.qiniup.com"),
-            ("ap-southeast-3", "up-ap-southeast-3.qiniup.com"),
-        ] {
+        for (region, host) in REGIONS {
             assert_eq!(upload_host(region), Some(host));
+            assert_eq!(
+                s3_endpoint(region),
+                format!("https://s3.{region}.qiniucs.com")
+            );
         }
         assert_eq!(upload_host("CN-SOUTH-1"), Some("up-z2.qiniup.com"));
         assert_eq!(upload_host("z2"), None);
