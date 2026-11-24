@@ -717,6 +717,7 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   docActionFailed: "작업을 완료하지 못했습니다",
   treeDayToday: "오늘",
   todayCurrent: "현재 작업",
+  todayDraftUnsaved: "초안 · 저장 안 됨",
   todayPending: "확인 대기",
   todayChanged: "오늘 변경",
   todayCapture: "한 줄 수집…",

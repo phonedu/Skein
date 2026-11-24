@@ -350,6 +350,24 @@ test.describe("the phone shell", () => {
     );
   });
 
+  test("names an unsaved document a draft, and still opens it", async ({
+    page,
+  }) => {
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    // A blank tab opened from the menu stays on Today; a new tab with no
+    // path is no page to turn to.
+    await emit(page, "menu-new-file");
+    const card = page.locator(".pcard");
+    await expect(card.locator(".pcard-draft")).toHaveText("草稿 · 未保存");
+    await card.tap();
+    await expect(page.locator(".phone-editor-bar")).toBeVisible();
+    // The page says it too, where a saved page shows its folder.
+    await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
+  });
+
   test("starts an ordinary new document when no collect plugin is there", async ({
     page,
   }) => {

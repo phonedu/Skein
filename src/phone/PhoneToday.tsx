@@ -171,7 +171,12 @@ export function PhoneToday({
                 <span className="pcard-path">
                   {activePath.split(/[\\/]/).slice(-2).join(" / ")}
                 </span>
-              ) : null}
+              ) : (
+                // No file yet: named as what it is, and still the way in.
+                <span className="pcard-path pcard-draft">
+                  {t.todayDraftUnsaved}
+                </span>
+              )}
             </button>
           </>
         ) : null}

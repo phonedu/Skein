@@ -681,6 +681,7 @@ export default {
   docActionFailed: "無法完成這個動作",
   treeDayToday: "今天",
   todayCurrent: "當前交付",
+  todayDraftUnsaved: "草稿 · 未儲存",
   todayPending: "待確認",
   todayChanged: "今天改動",
   todayCapture: "記一句…",

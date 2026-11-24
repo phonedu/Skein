@@ -106,9 +106,10 @@ function renderToday(props: {
 }
 
 describe("Phone Today, the current document card", () => {
-  it("opens an unsaved document by its tab, not only a saved one by path", () => {
+  it("opens an unsaved document by its tab, and says it is a draft", () => {
     // The card opened only a path, so a capture's unsaved document - which
-    // has none - could not be tapped at all.
+    // has none - could not be tapped at all. It keeps the way in, and its
+    // line says what it is rather than leaving the card looking broken.
     const onOpenFile = vi.fn();
     const onOpenCurrent = vi.fn();
     renderToday({
@@ -117,7 +118,8 @@ describe("Phone Today, the current document card", () => {
       onOpenFile,
       onOpenCurrent,
     });
-    fireEvent.click(screen.getByRole("button", { name: "未命名" }));
+    expect(screen.getByText("Draft · not saved")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /未命名/ }));
     expect(onOpenCurrent).toHaveBeenCalledTimes(1);
     expect(onOpenFile).not.toHaveBeenCalled();
   });
@@ -134,5 +136,6 @@ describe("Phone Today, the current document card", () => {
     fireEvent.click(screen.getByRole("button", { name: /note\.md/ }));
     expect(onOpenFile).toHaveBeenCalledWith("/proj/note.md");
     expect(onOpenCurrent).not.toHaveBeenCalled();
+    expect(screen.queryByText("Draft · not saved")).toBeNull();
   });
 });

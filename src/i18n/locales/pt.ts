@@ -783,6 +783,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   docActionFailed: "Não foi possível concluir a ação",
   treeDayToday: "Hoje",
   todayCurrent: "Entrega atual",
+  todayDraftUnsaved: "Rascunho · não guardado",
   todayPending: "A confirmar",
   todayChanged: "Alterado hoje",
   todayCapture: "Recolher uma ideia…",

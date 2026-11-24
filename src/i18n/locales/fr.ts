@@ -799,6 +799,7 @@ utiliser une.
   docActionFailed: "Action impossible",
   treeDayToday: "Aujourd’hui",
   todayCurrent: "Livraison en cours",
+  todayDraftUnsaved: "Brouillon · non enregistré",
   todayPending: "À confirmer",
   todayChanged: "Modifié aujourd’hui",
   todayCapture: "Noter une idée…",

@@ -797,6 +797,7 @@ para usar una.
   docActionFailed: "No se pudo completar la acción",
   treeDayToday: "Hoy",
   todayCurrent: "Entrega actual",
+  todayDraftUnsaved: "Borrador · sin guardar",
   todayPending: "Por confirmar",
   todayChanged: "Cambiado hoy",
   todayCapture: "Recoger una idea…",

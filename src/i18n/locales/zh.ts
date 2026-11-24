@@ -680,6 +680,7 @@ export default {
   docActionFailed: "操作没有完成",
   treeDayToday: "今天",
   todayCurrent: "当前交付",
+  todayDraftUnsaved: "草稿 · 未保存",
   todayPending: "待确认",
   todayChanged: "今天改动",
   todayCapture: "记一句…",

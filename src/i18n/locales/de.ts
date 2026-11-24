@@ -765,6 +765,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   docActionFailed: "Das hat nicht funktioniert",
   treeDayToday: "Heute",
   todayCurrent: "Aktuelle Lieferung",
+  todayDraftUnsaved: "Entwurf · nicht gespeichert",
   todayPending: "Zu bestätigen",
   todayChanged: "Heute geändert",
   todayCapture: "Einen Gedanken sammeln…",

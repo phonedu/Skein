@@ -729,6 +729,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   docActionFailed: "操作を完了できませんでした",
   treeDayToday: "今日",
   todayCurrent: "現在の納品",
+  todayDraftUnsaved: "下書き · 未保存",
   todayPending: "確認待ち",
   todayChanged: "今日の変更",
   todayCapture: "ひとこと収集…",

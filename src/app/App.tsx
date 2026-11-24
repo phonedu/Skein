@@ -1,5 +1,5 @@
 import { provideAiFileMarks } from "../ai/revision/file-marks";
-import { tabTitle } from "../document/doc-tabs";
+import { isPlainDraft, tabTitle } from "../document/doc-tabs";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
@@ -138,10 +138,13 @@ function App() {
   const currentTitle = activeTab.view ? "" : activeTitle;
   const { openFolder, openFile, openFileDialog, handleChange } = docs;
   // The phone document page's folder line ("交付"): where the file stands
-  // in its library, when it isn't at the root.
+  // in its library, when it isn't at the root. A draft has no file yet, so
+  // it says that instead - the page is still the one in front.
   const phoneSub = (() => {
+    if (!activeTab.path)
+      return isPlainDraft(activeTab) ? t.todayDraftUnsaved : null;
     const rootDir = openFolder.folder ?? openFolder.treeRoot;
-    const parent = activeTab.path ? parentDir(activeTab.path) : null;
+    const parent = parentDir(activeTab.path);
     if (!rootDir || !parent) return null;
     const rel = relativePath(rootDir, parent);
     return rel && rel !== "." && !rel.startsWith("..") ? rel : null;

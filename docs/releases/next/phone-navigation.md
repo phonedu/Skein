@@ -13,7 +13,7 @@
 
 ### Fixed
 
-- A document not saved yet opens from Today's current-delivery card: a capture has no path, so the card used to do nothing.
+- A document not saved yet opens from Today's current-delivery card — it used to do nothing — and its line says "Draft · not saved" instead of leaving the card looking broken.
 - A plugin whose manifest names Android installs and runs on an Android phone: the app refused `android` as an unknown platform, so an updated plugin was turned away with "No platform android".
 - Android's left-edge Back gesture reaches the app again: the phone layout no longer reserves a band of the left edge for a sidebar it does not show. Both edges step back now.
 - Android's Back steps back through the app instead of leaving it: an open sheet or the find bar closes, the AI page returns to the document, the document to the library, and Settings' pages go back to its list. From the library, Back puts the app away as before.

@@ -799,6 +799,7 @@ export default {
   docActionFailed: "Не удалось выполнить действие",
   treeDayToday: "Сегодня",
   todayCurrent: "Текущая работа",
+  todayDraftUnsaved: "Черновик · не сохранён",
   todayPending: "Ждёт подтверждения",
   todayChanged: "Изменено сегодня",
   todayCapture: "Записать мысль…",

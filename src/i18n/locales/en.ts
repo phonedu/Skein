@@ -748,6 +748,7 @@ type /name in a conversation to use one.
   docActionFailed: "Couldn’t do that",
   treeDayToday: "Today",
   todayCurrent: "Current",
+  todayDraftUnsaved: "Draft · not saved",
   todayPending: "To confirm",
   todayChanged: "Changed today",
   todayCapture: "Collect a thought…",
