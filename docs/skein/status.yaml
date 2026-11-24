@@ -28,7 +28,7 @@ workstreams:
   - id: T1
     name: 主题（T1）
     state: doing
-    focus: 阶段 0 文档完成；阶段 1 锁皮肤代码按需插队
+    focus: 阶段 0 文档完成；阶段 1 锁皮肤代码按需插队；阶段 2 内置皮肤主题已排 T2
     spec: specs/Textus-主题策略.md
   - id: DOC
     name: 文档（DOC）
@@ -50,6 +50,20 @@ tasks:
     acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
     spec: specs/Textus-主题策略.md
     estimate: 3–5 天
+  - id: T2
+    title: 内置并完整适配上游皮肤主题（Paper/Forest 起）
+    workstream: T1
+    state: todo
+    acceptance: 至少 2 个上游主题成为 Skein 皮肤主题（显式 --ui-*/--doc-*，浅/深两套）；桌面/手机/平板逐屏过；主题选择器分组标出“Skein 皮肤”；默认仍是 Slate。
+    spec: specs/Textus-主题策略.md
+    estimate: 5–8 天
+    brief:
+      problem: 用户 2026-11-22 定了“精选几个上游主题内置并完整适配”，但到现在只有阶段 0 文档：界面锁 Slate，上游 Paper/Forest/Prism 只当文档主题，整套界面还没有第二个可选皮肤。
+      expected: 从 Paper/Forest 起（Prism 是帧主题，成本另估），把选中的主题做成完整皮肤主题：皮肤与正文一起换，浅/深两套，桌面/手机/平板一致；选择器能看出“Skein 皮肤”与“仅正文”。
+      standard: 排在 T1 分层之后；只用 token，不在组件里写死颜色；许可证干净的才收；每个皮肤补浅/深截图与对比度抽查；沿用裁决 37。
+      not: 不做自有主题包格式/主题编辑器；不给全部上游/社区主题逐个适配；不换默认 Slate。
+      scope: 主题模块与内置主题表、设置›外观的主题选择器、i18n、ui-contracts/e2e 选择器分组、截图证据。
+      evidence: 每个皮肤浅/深 × 桌面/手机截图；切换时界面不闪、--ui-* 按皮肤变化；对比度抽查记录。
   - id: UI-p3
     title: 完整属性表呈现
     workstream: UI
