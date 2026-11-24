@@ -348,7 +348,7 @@ updated: 2026-11-23
 ## 5. 内置阶段必须补的移动端设计
 
 1. **生命周期**：明确“前台同步 / 后台尽力而为 / 无保证”三档；Rust 同步核心可在无 WebView 的 Worker 中运行；WorkManager 周期任务 + 前台服务（用户发起）+ 通知；Android 14/15 的类型与时长限制；EMUI 白名单引导。
-2. **存储抽象**：`AssetStorage` 能力位（atomicWrite / mtime / binary / trash / move / watch），桌面=Rust，iOS=scope，Android 普通路径=Rust，Android SAF=ContentResolver；能力不足时 UI 明确降级，不假装有保证（与[《Textus-多端设计》](../../specs/Textus-多端设计.md)的路线 A 一致）。
+2. **存储抽象**：`AssetStorage` 能力位（atomicWrite / mtime / binary / trash / move / watch），桌面=Rust，iOS=scope，Android 普通路径=Rust，Android SAF=ContentResolver；能力不足时 UI 明确降级，不假装有保证（与[《Textus-多端设计》（归档）](../../archive/2026-11-24-Textus-多端设计.md)的路线 A 一致）。
 3. **SAF 原子性**：临时文档 + rename + 启动恢复，或明确规定 SAF 只读/只新建；禁止在 SAF 上做覆盖式同步。
 4. **删除**：App trash（保留期、容量、恢复入口、清理），并统一 App 自身删除与插件删除的语义；桌面仍用系统回收站。
 5. **附件**：SAF 二进制写、图片解析与粘贴、导出；否则在 SAF 模式排除附件并在设置里说明。

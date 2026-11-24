@@ -3,7 +3,7 @@
 // then the slow drifts a hard check should not fail on (stale active specs,
 // long summaries, duplicate titles, tasks without a brief).
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
@@ -44,9 +44,11 @@ const hard = [
   run("scripts/docs-status.mjs", ["--check"]),
   run("scripts/docs-index.mjs", ["--check"]),
   run("scripts/check-skein-docs.mjs"),
+  run("scripts/check-docs-state.mjs"),
 ];
 const warnings = [];
 const titles = new Map();
+const specTasks = new Map();
 for (const file of files(skein)) {
   const rel = relative(skein, file).split(sep).join("/");
   if (
@@ -74,12 +76,32 @@ for (const file of files(skein)) {
     warnings.push(
       `active spec not updated in 90 days: ${rel} (${meta.updated})`,
     );
+  if (meta.type === "spec" && Array.isArray(meta.tasks))
+    specTasks.set(rel, meta.tasks);
 }
 
 const status = parse(readFileSync(join(skein, "status.yaml"), "utf8"));
 const workstreams = new Set(status.workstreams?.map((line) => line.id));
+const openIds = new Set([
+  ...(status.tasks ?? []).map((task) => task.id),
+  ...(status.later ?? []).map((task) => task.id),
+]);
+for (const [rel, ids] of specTasks)
+  if (ids.length && !ids.some((id) => openIds.has(String(id))))
+    warnings.push(`active spec has no open task; archive candidate: ${rel}`);
+
+const inboxPath = join(skein, "inbox.yaml");
+const inbox = existsSync(inboxPath)
+  ? (parse(readFileSync(inboxPath, "utf8"))?.items ?? [])
+  : [];
+const openInbox = inbox.filter((item) => item.status === "new");
+if (openInbox.length)
+  warnings.push(
+    `inbox has ${openInbox.length} untriaged item(s): ${openInbox.map((item) => item.id).join(", ")}; run docs:audit and triage`,
+  );
+
 for (const task of status.tasks ?? []) {
-  if (task.state === "doing") {
+  if (task.state === "doing" && (task.kind ?? "task") !== "chore") {
     const missing = [
       "problem",
       "expected",
@@ -98,6 +120,9 @@ for (const task of status.tasks ?? []) {
       `task ${task.id} names unknown workstream ${task.workstream}`,
     );
 }
+
+const audit = run("scripts/docs-audit.mjs", ["--summary"]);
+if (audit.output) console.log(`audit: ${audit.output}`);
 
 for (const result of hard) if (result.output) console.log(result.output);
 if (warnings.length) {

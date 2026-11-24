@@ -28,12 +28,12 @@ workstreams:
   - id: T1
     name: 主题（T1）
     state: doing
-    focus: 阶段 0 文档完成；阶段 1 锁皮肤代码按需插队；阶段 2 内置皮肤主题已排 T2
+    focus: T1 锁皮肤（3–5 天）→ T2 Paper/Forest 完整适配（5–8 天）→ 默认仍 Slate；阶段 0 文档完成
     spec: specs/Textus-主题策略.md
   - id: DOC
     name: 文档（DOC）
     state: doing
-    focus: 文档 / 上游 / 发布命令自动化已落地；等下一次实战
+    focus: 文档 v3 分层 / 台账 / 硬门禁实施中（DOC-v3）
     spec: decisions/0052-文档体系重排.md
 tasks:
   - id: D0.5
@@ -92,6 +92,20 @@ tasks:
       not: 不做 D 组（转场/内存/Mac/Linux/iOS 专属）；B1 文件图标主题、B2 插件代码语言、B4 多 AI 端点、C3 手机插件能力核对暂缓；不整体 rebase 到 1.4.7。
       scope: src/files、src/editor、src/plugins（商店/插件页/菜单）、src/settings、e2e；桌面为主，插件页触控涉手机。
       evidence: 先做批：单测 + e2e + 桌面构建冒烟；下一批：桌面拖放真机与手机插件页验收。
+  - id: DOC-v3
+    title: 文档 v3：分层、台账、硬门禁
+    workstream: DOC
+    state: doing
+    acceptance: docs:check/check:repo 全绿；T2 在 STATUS 第一屏；分层完成；代码提交无 Task 被拒
+    spec: specs/文档体系-v3.md
+    estimate: 1–2 天
+    brief:
+      problem: 文档仍会丢承诺：T2 虽记录但被 Now 暂无埋住；specs 混生命周期；代码提交无任务号；研究/裁决被当规格；归档索引缺 17 条
+      expected: 一个台账 + 四层目录 + 生成视图 + 双向链接 + 提交硬门禁；承诺有入口，完成件离开 specs
+      standard: "docs:check 查图/层/状态；docs:wrap 要求 inbox 清零；代码提交 Task: id 通过；T2 第一屏可见；specs 只留在用件"
+      not: 不重写 622 行改造方案/645 行 Agent 契约；不合并 63 条裁决；不改外部评审 AI；不碰未提交 WIP
+      scope: docs/skein/**、scripts/docs-*、.githooks、CI、package/commands
+      evidence: docs:check/check:repo；capture→wrap；无 Task/todo/doing 提交模拟；归档链接检查
 later:
   - id: S4
     title: 局域网 Hub
@@ -121,22 +135,22 @@ later:
   - id: ED2a
     title: 代码栅栏 title + 行范围
     note: 富文本 + 源码 + 导出三处可见；roundtrip 字节不变。
-    spec: specs/Textus-文档便携与呈现扩展方案.md
+    spec: proposals/Textus-文档便携与呈现扩展方案.md
     estimate: 3–5 天
   - id: ED2b
     title: 代码栅栏 max-lines 限高
     note: 限高 + 展开；复制完整；导出时展开。
-    spec: specs/Textus-文档便携与呈现扩展方案.md
+    spec: proposals/Textus-文档便携与呈现扩展方案.md
     estimate: 2–3 天
   - id: ED3
     title: 单文件 Markdown 便携插件
     note: 含 data URI 的单个 .md；支持相对图片 / <img> / ![[...]]。
-    spec: specs/Textus-文档便携与呈现扩展方案.md
+    spec: proposals/Textus-文档便携与呈现扩展方案.md
     estimate: 3–5 天
   - id: CP1
     title: 网页剪藏（公开页版，后期）
     note: 贴 URL → inbox/N-*.md；只做公开页，不碰登录态。
-    spec: specs/Textus-剪藏功能方案.md
+    spec: proposals/Textus-剪藏功能方案.md
     estimate: 桌面 1 周 + 手机 3–5 天
 waiting:
   - 第三方 WebDAV/境外 Provider：坚果云 2026-11-24 用户裁定不推荐（限流之外有丢文件反馈）；Nextcloud/境外服务商无账号，归 U25/S3t 找外部测试者；不阻塞 fork。
@@ -178,13 +192,13 @@ questions:
     default: 暂缓；v1 只做点击切换 + 导出全展开；不做标题编辑 / 加 tab
     trigger: 真实教程 / 多平台对比需求
     when: D0.5 收尾复盘时定；无真实需求即关闭
-    spec: specs/Textus-文档便携与呈现扩展方案.md
+    spec: proposals/Textus-文档便携与呈现扩展方案.md
   - id: U20
     text: 每文档 Base64 图片存储
     default: 不做默认存储；先走 ED3；若做则默认关、可提取、AI / 搜索跳过
     trigger: ED3 后仍反复要求单文件
     when: ED3 落地后复核
-    spec: specs/Textus-文档便携与呈现扩展方案.md
+    spec: proposals/Textus-文档便携与呈现扩展方案.md
   - id: U21
     text: Tau 可吸收功能（11 项；P0 = 设置页同步状态卡 / 右页边宽度阶梯 / 表格行列手柄）
     default: 按「进度时点」分项吸收；右页边改可拖需先改裁决 36 的固定 340

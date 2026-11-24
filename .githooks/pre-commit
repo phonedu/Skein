@@ -1,0 +1,9 @@
+#!/bin/sh
+# Generated pages and the doc graph must be current before a commit. The gate
+# is intentionally small: repository checks stay in npm run check.
+set -e
+node scripts/docs-status.mjs --check
+node scripts/docs-index.mjs --check
+node scripts/docs-commands.mjs --check
+node scripts/check-skein-docs.mjs
+node scripts/check-docs-state.mjs

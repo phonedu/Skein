@@ -30,6 +30,24 @@
   category: 文档
   description: 体检过期规格、重复标题、缺六行的任务和索引漂移
 
+- name: docs:capture
+  category: 文档
+  description: 一句话承诺进 inbox.yaml；--list / --check / --resolve / --drop
+- name: docs:audit
+  category: 文档
+  description: 扫 specs/proposals 的待做/后续/暂缓，列出可能未登记项
+- name: docs:wrap
+  category: 文档
+  description: 收工门：inbox 清零 + audit 摘要 + docs:check
+- name: docs:review
+  category: 文档
+  description: 给外部评审 AI 的只读包（上下文 + 规格 + 裁决 + diff）
+- name: docs:archive
+  category: 文档
+  description: 关闭规格移入 archive/，打印旧引用；--stub 留 redirect
+- name: docs:propose
+  category: 文档
+  description: 草案/暂缓移入 proposals/
 - name: verify
   category: 验证
   description: 文档检查 + release fragment 检查 + check:quick（日常收尾）
@@ -45,6 +63,12 @@
 - name: check:repo
   category: 验证
   description: 仓库检查，含 docs / release 生成物新鲜度
+- name: check:commits
+  category: 验证
+  description: "检查提交范围：碰代码的提交必须有 Task: <id>"
+- name: setup:hooks
+  category: 工程
+  description: 把 core.hooksPath 指到 .githooks（新克隆一次）
 - name: check:native
   category: 验证
   description: rustfmt、clippy -D warnings、cargo test

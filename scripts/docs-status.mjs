@@ -11,6 +11,11 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const skein = join(root, "docs/skein");
 const sourcePath = join(skein, "status.yaml");
 const pagePath = join(skein, "STATUS.md");
+const inboxPath = join(skein, "inbox.yaml");
+const inbox = existsSync(inboxPath)
+  ? (parse(readFileSync(inboxPath, "utf8"))?.items ?? [])
+  : [];
+const openInbox = inbox.filter((item) => item.status === "new");
 const briefFields = [
   "problem",
   "expected",
@@ -58,7 +63,8 @@ function workstreams() {
 
 function nowTasks() {
   const tasks = data.tasks.filter((task) => task.state === "doing");
-  if (!tasks.length) return "暂无。";
+  if (!tasks.length)
+    return "暂无进行中的任务；已排任务按优先级见 §3 Next，顶部「承诺一览」列了下一批。";
   return tasks
     .map((task, index) => {
       const missing = briefMissing(task);
@@ -113,6 +119,50 @@ function questions() {
   ].join("\n");
 }
 
+function commitments() {
+  const doing = data.tasks
+    .filter((task) => task.state === "doing")
+    .map((task) => `${task.id} ${task.title}`);
+  const next = data.tasks
+    .filter((task) => task.state !== "doing")
+    .slice(0, 6)
+    .map((task) => `${task.id} ${task.title}`);
+  const later = (data.later ?? [])
+    .slice(0, 6)
+    .map((task) => `${task.id} ${task.title}`);
+  const open = openInbox.length
+    ? `${openInbox.length} 条（\`npm run docs:audit\` → 分诊）`
+    : "无";
+  const ask = data.questions?.length
+    ? `${data.questions.length} 条（前 3：${data.questions
+        .slice(0, 3)
+        .map((item) => item.id)
+        .join("、")}）`
+    : "无";
+  return [
+    `- **现在**：${doing.length ? doing.join("；") : "无进行中的任务"}`,
+    `- **下一批**：${next.length ? next.join("；") : "无"}`,
+    `- **以后**：${later.length ? later.join("；") : "无"}`,
+    `- **待你裁**：${ask}`,
+    `- **未分诊**：${open}`,
+  ].join("\n");
+}
+
+function inboxSection() {
+  if (!openInbox.length) return "";
+  return `## 7. Inbox（未分诊）
+
+| ID | 日期 | 内容 | 来源 |
+| --- | --- | --- | --- |
+${openInbox
+  .map(
+    (item) =>
+      `| ${cell(item.id)} | ${cell(item.date)} | ${cell(item.text)} | ${cell(item.source ?? "—")} |`,
+  )
+  .join("\n")}
+`;
+}
+
 const page = `---
 type: status
 status: active
@@ -125,6 +175,10 @@ updated: ${data.updated}
 > **自动生成，勿手改。** 源：[status.yaml](status.yaml)；生成：\`npm run docs:status\`。
 > 只写未完成 / 进行中；完成项由 \`npm run docs:task -- done <id> --evidence "..."\` 删除并归档。
 > 基线：上游稳定 tag **${data.baseline}**（合并 \`${data.commit}\`）· 分支 \`${data.branch}\`。
+
+## 0. 承诺一览
+
+${commitments()}
 
 ## 1. 工作线
 
@@ -149,6 +203,8 @@ ${waiting()}
 ## 6. 待审 / 触发点
 
 ${questions()}
+
+${inboxSection()}
 `;
 
 const stale = !existsSync(pagePath) || readFileSync(pagePath, "utf8") !== page;

@@ -1,0 +1,21 @@
+name: Skein gates
+
+on:
+  pull_request:
+    branches: [main, base-ui-settings]
+
+jobs:
+  docs-and-tasks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+      - run: npm ci
+      - run: npm run docs:check
+      - run: npm run release:check
+      - name: Task trailers on code commits
+        run: node scripts/check-commits.mjs --range "${{ github.event.pull_request.base.sha }}..HEAD"

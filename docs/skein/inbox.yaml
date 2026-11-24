@@ -1,0 +1,12 @@
+# Captured commitments: things said in a session that are not yet a task or
+# a decision. `npm run docs:capture -- "..."` appends; `npm run docs:wrap`
+# refuses to pass while an item is still `new`. Triage moves it into
+# status.yaml (task) or decisions/ (ruling), then marks it resolved.
+items:
+  - id: I-20261124-1
+    date: 2026-11-24
+    text: 测试承诺：验证 inbox 流程
+    source: DOC-v3
+    kind: idea
+    status: resolved
+    resolved_at: 2026-11-24

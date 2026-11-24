@@ -16,6 +16,12 @@
 | `npm run docs:context` | 输出某个任务的 AI 上下文包（规格节 + 裁决 + 工程规矩） |
 | `npm run docs:find` | 按关键词搜标题、摘要和正文 |
 | `npm run docs:doctor` | 体检过期规格、重复标题、缺六行的任务和索引漂移 |
+| `npm run docs:capture` | 一句话承诺进 inbox.yaml；--list / --check / --resolve / --drop |
+| `npm run docs:audit` | 扫 specs/proposals 的待做/后续/暂缓，列出可能未登记项 |
+| `npm run docs:wrap` | 收工门：inbox 清零 + audit 摘要 + docs:check |
+| `npm run docs:review` | 给外部评审 AI 的只读包（上下文 + 规格 + 裁决 + diff） |
+| `npm run docs:archive` | 关闭规格移入 archive/，打印旧引用；--stub 留 redirect |
+| `npm run docs:propose` | 草案/暂缓移入 proposals/ |
 
 ## 验证
 
@@ -26,9 +32,25 @@
 | `npm run check:quick` | 只查改动文件：typecheck、lint、prettier、相关单测 |
 | `npm run check` | typecheck、lint、全量单测、format、check:repo |
 | `npm run check:repo` | 仓库检查，含 docs / release 生成物新鲜度 |
+| `npm run check:commits` | 检查提交范围：碰代码的提交必须有 Task: <id> |
 | `npm run check:native` | rustfmt、clippy -D warnings、cargo test |
 | `npm run check:all` | check + e2e + native（发布前完整套件） |
 | `npm run test:phone-shell` | 手机壳计算样式契约（合并后必跑） |
+
+## 工程
+
+| 命令 | 说明 |
+| --- | --- |
+| `npm run setup:hooks` | 把 core.hooksPath 指到 .githooks（新克隆一次） |
+| `npm run tauri` | 直接调用 Tauri CLI |
+| `npm run bindings` | 生成 src/platform/bindings（生成文件，勿手改） |
+| `npm run typecheck` | TypeScript 类型检查（应用和 node 配置） |
+| `npm run lint` | ESLint，零警告 |
+| `npm run format` | Prettier 写回 |
+| `npm run format:check` | Prettier 检查 |
+| `npm run test` | Vitest 全量单测 |
+| `npm run test:e2e` | Playwright e2e |
+| `npm run test:roundtrip` | Markdown round-trip 语料 |
 
 ## 上游
 
@@ -62,17 +84,3 @@
 | `npm run build:release` | 打正式桌面包 |
 | `npm run android:dev` | Tauri Android 开发运行 |
 | `npm run android:build` | 打 Android APK（debug） |
-
-## 工程
-
-| 命令 | 说明 |
-| --- | --- |
-| `npm run tauri` | 直接调用 Tauri CLI |
-| `npm run bindings` | 生成 src/platform/bindings（生成文件，勿手改） |
-| `npm run typecheck` | TypeScript 类型检查（应用和 node 配置） |
-| `npm run lint` | ESLint，零警告 |
-| `npm run format` | Prettier 写回 |
-| `npm run format:check` | Prettier 检查 |
-| `npm run test` | Vitest 全量单测 |
-| `npm run test:e2e` | Playwright e2e |
-| `npm run test:roundtrip` | Markdown round-trip 语料 |

@@ -3,6 +3,7 @@ type: spec
 status: draft
 summary: 笔记理论落到现有界面的考虑稿
 updated: 2026-11-23
+tasks: []
 ---
 
 # 笔记理论的传统界面落点（考虑稿）
@@ -389,9 +390,9 @@ H0 先行、P0 后做（2026-11-20 用户定）。H0 完成后，P0 的插件入
 
 - `docs/dev/plugins/reference.md`：`Ui`、`Layout`、`Views`、`Editor`、`Ai`、`Files`、`Commands`
 - [插件API要点](../research/插件API要点.md)
-- [Textus-Agent工具契约](Textus-Agent工具契约.md)
+- [Textus-Agent工具契约](../specs/Textus-Agent工具契约.md)
 - [笔记资产理论](../research/笔记资产理论.md)
-- [Textus-改造方案](Textus-改造方案.md)
+- [Textus-改造方案](../specs/Textus-改造方案.md)
 - [界面现状盘点](../research/界面现状盘点.md)
 
 ---

@@ -20,6 +20,8 @@ const skein = join(root, "docs/skein");
 const indexPath = join(skein, "INDEX.md");
 const decisionsDir = join(skein, "decisions");
 const decisionsIndexPath = join(decisionsDir, "README.md");
+const archiveDir = join(skein, "archive");
+const archiveIndexPath = join(archiveDir, "INDEX.md");
 const skippedDirs = new Set(["archive", "_templates"]);
 const skippedDocs = new Set([
   "README.md",
@@ -240,6 +242,39 @@ function buildDecisions(decisions) {
   return lines.join("\n");
 }
 
+function buildArchive() {
+  const files = readdirSync(archiveDir)
+    .filter(
+      (name) =>
+        name.endsWith(".md") && !["README.md", "INDEX.md"].includes(name),
+    )
+    .map((name) => {
+      const text = readFileSync(join(archiveDir, name), "utf8");
+      return {
+        name,
+        date: /^(\d{4}-\d{2}-\d{2})/.exec(name)?.[1] ?? "—",
+        title: /^# (.+)$/m.exec(text)?.[1].trim() ?? name,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.date.localeCompare(a.date) || a.name.localeCompare(b.name, "en"),
+    );
+  return [
+    "# 归档索引",
+    "",
+    "> 自动生成，勿手改。运行 `npm run docs:index` 重新生成；归档件只作证据，不作现行规格。",
+    "",
+    table(
+      files,
+      ["日期", "文件", "标题"],
+      (file) =>
+        `| ${file.date} | [${file.name}](${file.name}) | ${file.title} |`,
+    ),
+    "",
+  ].join("\n");
+}
+
 function versionParts(version) {
   return String(version)
     .replace(/^v/, "")
@@ -276,6 +311,7 @@ const decisions = docs.filter((doc) => doc.meta.type === "decision");
 validateDecisions(decisions);
 const index = buildIndex(docs, decisions);
 const decisionIndex = buildDecisions(decisions);
+const archiveIndex = buildArchive();
 
 for (const warning of warnings(docs)) console.warn(`warning: ${warning}`);
 
@@ -284,6 +320,7 @@ if (process.argv.includes("--check")) {
   for (const [path, expected] of [
     [indexPath, index],
     [decisionsIndexPath, decisionIndex],
+    [archiveIndexPath, archiveIndex],
   ]) {
     if (!existsSync(path) || readFileSync(path, "utf8") !== expected)
       stale.push(relative(root, path).split(sep).join("/"));
@@ -300,7 +337,8 @@ if (process.argv.includes("--check")) {
 } else {
   writeFileSync(indexPath, index);
   writeFileSync(decisionsIndexPath, decisionIndex);
+  writeFileSync(archiveIndexPath, archiveIndex);
   console.log(
-    `Wrote docs/skein/INDEX.md and docs/skein/decisions/README.md (${docs.length} live docs, ${decisions.length} decisions)`,
+    `Wrote docs/skein/INDEX.md, the decision index and archive/INDEX.md (${docs.length} live docs, ${decisions.length} decisions)`,
   );
 }

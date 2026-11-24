@@ -45,6 +45,12 @@ research, `docs:find` searches, and `npm run docs` regenerates `STATUS.md` /
 `INDEX.md` / the command and decision indexes and checks them. `STATUS.md` and
 the generated indexes are never edited by hand.
 
+- **Start and finish with the ledger.** Before changing code, run
+  `npm run docs:task -- start <id>` (or add a chore). Any "later / next time"
+  goes into `npm run docs:capture -- "..."`. Every code commit ends with
+  `Task: <id>`; `npm run docs:wrap` must pass before you finish a session.
+  Merge commits and docs-only commits are exempt from the task trailer.
+
 Upstream work is one command per step: `npm run upstream:status` →
 `upstream:plan -- vX.Y.Z` → `upstream:start --apply` → `upstream:clean
 --apply` → `upstream:verify` → `upstream:record` → `upstream:finish --apply`;

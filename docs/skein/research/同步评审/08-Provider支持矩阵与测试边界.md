@@ -24,54 +24,54 @@ updated: 2026-11-24
 
 ### 2.1 WebDAV
 
-| 项 | 实现 |
-| --- | --- |
-| 协议 | HTTPS + Basic auth；HTTP 仅允许 localhost/127.0.0.1/::1 |
-| 原子创建 | `PUT <key>.tmp-<uuid>`，再 `MOVE` 到目标，`Destination` + `Overwrite: F`；412/409 视为已存在 |
-| 目录 | 每个新前缀逐级 `MKCOL`；失败时 `PROPFIND Depth: 0` 复核是否已存在 |
-| 读写 | `GET` / `HEAD` / `PUT` / `DELETE` |
-| 超时 | 连接 20 s，总 180 s；连接池 4 s 空闲回收 |
-| 重定向 | 不跟随（`redirect::Policy::none()`） |
-| 状态映射 | 401/403 → `permissionError`；429 → `rateLimited`；507 → `quotaError`；其余 → `httpError` |
-| 重试 | **无**（429/5xx 直接失败，运行安全停下） |
-| ETag / If-Match | **不用**；不依赖弱 ETag |
-| 锁 | 不用 WebDAV `LOCK`；用协议自己的 `v1/lock.json`（create） |
-| 列表 | **不用**（不 `PROPFIND` 列目录，除 MKCOL 复核） |
-| 大文件 | 整文件在内存中 PUT；无分片/断点续传 |
+| 项              | 实现                                                                                         |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| 协议            | HTTPS + Basic auth；HTTP 仅允许 localhost/127.0.0.1/::1                                      |
+| 原子创建        | `PUT <key>.tmp-<uuid>`，再 `MOVE` 到目标，`Destination` + `Overwrite: F`；412/409 视为已存在 |
+| 目录            | 每个新前缀逐级 `MKCOL`；失败时 `PROPFIND Depth: 0` 复核是否已存在                            |
+| 读写            | `GET` / `HEAD` / `PUT` / `DELETE`                                                            |
+| 超时            | 连接 20 s，总 180 s；连接池 4 s 空闲回收                                                     |
+| 重定向          | 不跟随（`redirect::Policy::none()`）                                                         |
+| 状态映射        | 401/403 → `permissionError`；429 → `rateLimited`；507 → `quotaError`；其余 → `httpError`     |
+| 重试            | **无**（429/5xx 直接失败，运行安全停下）                                                     |
+| ETag / If-Match | **不用**；不依赖弱 ETag                                                                      |
+| 锁              | 不用 WebDAV `LOCK`；用协议自己的 `v1/lock.json`（create）                                    |
+| 列表            | **不用**（不 `PROPFIND` 列目录，除 MKCOL 复核）                                              |
+| 大文件          | 整文件在内存中 PUT；无分片/断点续传                                                          |
 
 ### 2.2 S3
 
-| 项 | 实现 |
-| --- | --- |
-| 签名 | SigV4；path-style 或 virtual-hosted |
-| 原子创建 | `Standard`：`If-None-Match: *`，412（或 409 且对象存在）视为已存在 |
-|  | `Oss`：`x-oss-forbid-overwrite: true`，409 视为已存在，400 报 `conditionalWriteUnsupported` |
-|  | `Kodo`：原生表单上传 + 上传凭证（policy `bucket:key` + `insertOnly=1`），614 视为已存在；读/改/删仍走 S3 endpoint |
-| 读写 | `GET` / `HEAD` / `PUT` / `DELETE` |
-| Region | 用户填写；Kodo 额外按 8 个 S3 区域映射 `up-*.qiniup.com` |
-| 超时/重定向 | 与 WebDAV 相同（20 s / 180 s、不跟随） |
-| 重试 | **无** |
-| Multipart / List / 预签名 / STS / 服务端加密 | **均不做**（协议按 2 MiB 块逐块 PUT；不需要 List） |
-| 状态映射 | 401/403 → permission；429 → rateLimited；507 → quota；409 → locked（条件创建）；其余 → httpError |
+| 项                                           | 实现                                                                                                              |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 签名                                         | SigV4；path-style 或 virtual-hosted                                                                               |
+| 原子创建                                     | `Standard`：`If-None-Match: *`，412（或 409 且对象存在）视为已存在                                                |
+|                                              | `Oss`：`x-oss-forbid-overwrite: true`，409 视为已存在，400 报 `conditionalWriteUnsupported`                       |
+|                                              | `Kodo`：原生表单上传 + 上传凭证（policy `bucket:key` + `insertOnly=1`），614 视为已存在；读/改/删仍走 S3 endpoint |
+| 读写                                         | `GET` / `HEAD` / `PUT` / `DELETE`                                                                                 |
+| Region                                       | 用户填写；Kodo 额外按 8 个 S3 区域映射 `up-*.qiniup.com`                                                          |
+| 超时/重定向                                  | 与 WebDAV 相同（20 s / 180 s、不跟随）                                                                            |
+| 重试                                         | **无**                                                                                                            |
+| Multipart / List / 预签名 / STS / 服务端加密 | **均不做**（协议按 2 MiB 块逐块 PUT；不需要 List）                                                                |
+| 状态映射                                     | 401/403 → permission；429 → rateLimited；507 → quota；409 → locked（条件创建）；其余 → httpError                  |
 
 ## 3. Provider 支持矩阵
 
 状态口径：**验收通过** = 有真服务/真桌面证据；**实现未实测** = 代码路径应可用但没证据；**不兼容** = 已知协议差异会导致失败；**未实现** = 没有对应功能。
 
-| Provider | 类型 | 状态 | 证据 / 原因 |
-| --- | --- | --- | --- |
-| 本机 Node WebDAV | WebDAV | **验收通过** | S1 spike + S2 built app；S3t5 又跑了文字/移动，本地 DAV 服务作为夹具 |
-| 缤纷云 Bitiful | S3 Standard | **验收通过** | 真桶：首次/增量/16/32 MiB/冲突/杀进程/锁恢复；桌面插件互认（S1b/S2） |
-| 七牛 Kodo | S3 + 原生 create | **验收通过** | 真桶：probe 第二次 614、首次/改/删/冲突；桌面双实例（S3q，2026-11-24） |
-| 七牛标准 S3 条件写 | S3 Standard | **不兼容** | 第二次 `If-None-Match` 未被拒（`unsafeServer`）；必须选 Kodo 模式 |
-| 阿里云 OSS | S3 Oss | 实现未实测 | 用户 2026-11-21 决定不做真桶；版本控制开启后 `x-oss-forbid-overwrite` 会失效 |
-| AWS S3 / Cloudflare R2 / MinIO / Backblaze B2 | S3 Standard | 实现未实测 | 标准路径应可用；S1 曾计划 MinIO，最终用 Bitiful；无证据不写成通过 |
-| Nextcloud（自建/托管） | WebDAV | 实现未实测 | 标准 DAV，最可能可用；需要账号/实例 |
-| 群晖 / 威联通 NAS WebDAV | WebDAV | 实现未实测 | 标准 DAV，适合局域网；S4 LAN Hub 落地后更顺 |
-| 坚果云 Nutstore | WebDAV | **不推荐** | 限流之外有文件丢失等反馈；用户 2026-11-24 裁定不作为主推/验收目标；只在大库外做兼容性抽测 |
-| InfiniCLOUD / Koofr / pCloud / Yandex Disk | WebDAV | 实现未实测 | 境外服务；MOVE/限流/连通性均未知；需外部测试者 |
-| LAN Hub | 内置 | 未实现 | S4 |
-| 后台/自动同步 | — | 未实现 | v1 只做前台手动同步 |
+| Provider                                      | 类型             | 状态         | 证据 / 原因                                                                               |
+| --------------------------------------------- | ---------------- | ------------ | ----------------------------------------------------------------------------------------- |
+| 本机 Node WebDAV                              | WebDAV           | **验收通过** | S1 spike + S2 built app；S3t5 又跑了文字/移动，本地 DAV 服务作为夹具                      |
+| 缤纷云 Bitiful                                | S3 Standard      | **验收通过** | 真桶：首次/增量/16/32 MiB/冲突/杀进程/锁恢复；桌面插件互认（S1b/S2）                      |
+| 七牛 Kodo                                     | S3 + 原生 create | **验收通过** | 真桶：probe 第二次 614、首次/改/删/冲突；桌面双实例（S3q，2026-11-24）                    |
+| 七牛标准 S3 条件写                            | S3 Standard      | **不兼容**   | 第二次 `If-None-Match` 未被拒（`unsafeServer`）；必须选 Kodo 模式                         |
+| 阿里云 OSS                                    | S3 Oss           | 实现未实测   | 用户 2026-11-21 决定不做真桶；版本控制开启后 `x-oss-forbid-overwrite` 会失效              |
+| AWS S3 / Cloudflare R2 / MinIO / Backblaze B2 | S3 Standard      | 实现未实测   | 标准路径应可用；S1 曾计划 MinIO，最终用 Bitiful；无证据不写成通过                         |
+| Nextcloud（自建/托管）                        | WebDAV           | 实现未实测   | 标准 DAV，最可能可用；需要账号/实例                                                       |
+| 群晖 / 威联通 NAS WebDAV                      | WebDAV           | 实现未实测   | 标准 DAV，适合局域网；S4 LAN Hub 落地后更顺                                               |
+| 坚果云 Nutstore                               | WebDAV           | **不推荐**   | 限流之外有文件丢失等反馈；用户 2026-11-24 裁定不作为主推/验收目标；只在大库外做兼容性抽测 |
+| InfiniCLOUD / Koofr / pCloud / Yandex Disk    | WebDAV           | 实现未实测   | 境外服务；MOVE/限流/连通性均未知；需外部测试者                                            |
+| LAN Hub                                       | 内置             | 未实现       | S4                                                                                        |
+| 后台/自动同步                                 | —                | 未实现       | v1 只做前台手动同步                                                                       |
 
 ## 4. 未适配 / 已知缺口清单
 
@@ -112,26 +112,26 @@ updated: 2026-11-24
 
 ## 5. 测试覆盖与证据
 
-| 层 | 覆盖 | 不覆盖 |
-| --- | --- | --- |
-| crate 单测 / 引擎 | planner、锁、历史、分块、加密、错误映射 | 真实服务差异 |
-| `*_live`（ignored） | Bitiful/Kodo/WebDAV 单 transport、probe、首次/改/删/冲突 | UI、双实例、多库、媒体 |
-| S1/S2/S3 验收 | 插件↔内置互通、built app 本机 WebDAV、真机插件、规模/失败 | 第三方 WebDAV |
-| S3q 桌面双实例 | 真实 Settings › Sync 填写、Kodo 首次/双向编辑/冲突/删除 | 媒体、多库、境外 |
-| S3t（计划） | 媒体/大文件/多库/边界/清理，一条命令 | 境外账号 |
+| 层                  | 覆盖                                                      | 不覆盖                 |
+| ------------------- | --------------------------------------------------------- | ---------------------- |
+| crate 单测 / 引擎   | planner、锁、历史、分块、加密、错误映射                   | 真实服务差异           |
+| `*_live`（ignored） | Bitiful/Kodo/WebDAV 单 transport、probe、首次/改/删/冲突  | UI、双实例、多库、媒体 |
+| S1/S2/S3 验收       | 插件↔内置互通、built app 本机 WebDAV、真机插件、规模/失败 | 第三方 WebDAV          |
+| S3q 桌面双实例      | 真实 Settings › Sync 填写、Kodo 首次/双向编辑/冲突/删除   | 媒体、多库、境外       |
+| S3t（计划）         | 媒体/大文件/多库/边界/清理，一条命令                      | 境外账号               |
 
 ### 5.1 已跑过的实测明细
 
-| 日期 | 环境 | 场景与读数 | 没覆盖 |
-| --- | --- | --- | --- |
-| 2026-11-19（S1 WebDAV 轨） | 本机 Node WebDAV 服务，Basic auth | 上传/下载/删除/冲突；16 MiB；杀进程留锁、清锁重跑；0.6.1 旧插件读同一远端 | 商业 WebDAV、限流、2FA |
-| 2026-11-19（S1b Bitiful） | 真实桶，子账号 | 两次 create 第二次 412；首轮 5 文件（含 16 MiB PDF）；32 MiB PDF 16 块逐块 SHA-256；冲突、删除、杀进程留锁后恢复 | 第三方 WebDAV |
-| 2026-11-20（S2 built app） | portable debug，本机 WebDAV | 上传/下载/冲突/删除 + 改名/锁占用/解锁/历史恢复/打开中文件延后；设置页脏表单禁用 provider 切换 | 第三方 WebDAV（外部阻塞） |
-| 2026-11-20（S2 真实 S3） | portable debug + 缤纷云 | 导入插件生成的连接/base 首轮 0 变更；编辑后“上传 1”，远端 head 指向新哈希，块逐字节一致 | 七牛/阿里云 |
-| 2026-11-20（S2 真机插件） | 华为 OXF-AN10 + 缤纷云 | 手机插件↔桌面内置：上传/下载/冲突副本/锁互认；测试 prefix 12 个对象已清 | 第三方 WebDAV、手机内置第三方 |
-| 2026-11-20（scale） | `tests/scale.rs` | 20k 文件首轮 20,000、改 1 只传 1；128 MiB 单文件；块上传中被杀留锁；瞬时 5xx 后重试成功 | 32 MiB 预算、真实超时 |
-| 2026-11-24（S3q crate） | 真实七牛桶 | probe 首建成功/二次 614；首次/改/删/两设备冲突 2/2 通过 | UI、媒体 |
-| 2026-11-24（S3q 桌面双实例） | 两个 portable debug，真实七牛桶，同 connection/prefix/加密密码 | A 首传 1；B 1 上 1 下；双向编辑各 1 上 1 下；同改一文件 B 产生 1 冲突副本；B 删后 A 收敛 removed 1 | 图片/视频/大文件、多库、境外 |
+| 日期                         | 环境                                                           | 场景与读数                                                                                                       | 没覆盖                        |
+| ---------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| 2026-11-19（S1 WebDAV 轨）   | 本机 Node WebDAV 服务，Basic auth                              | 上传/下载/删除/冲突；16 MiB；杀进程留锁、清锁重跑；0.6.1 旧插件读同一远端                                        | 商业 WebDAV、限流、2FA        |
+| 2026-11-19（S1b Bitiful）    | 真实桶，子账号                                                 | 两次 create 第二次 412；首轮 5 文件（含 16 MiB PDF）；32 MiB PDF 16 块逐块 SHA-256；冲突、删除、杀进程留锁后恢复 | 第三方 WebDAV                 |
+| 2026-11-20（S2 built app）   | portable debug，本机 WebDAV                                    | 上传/下载/冲突/删除 + 改名/锁占用/解锁/历史恢复/打开中文件延后；设置页脏表单禁用 provider 切换                   | 第三方 WebDAV（外部阻塞）     |
+| 2026-11-20（S2 真实 S3）     | portable debug + 缤纷云                                        | 导入插件生成的连接/base 首轮 0 变更；编辑后“上传 1”，远端 head 指向新哈希，块逐字节一致                          | 七牛/阿里云                   |
+| 2026-11-20（S2 真机插件）    | 华为 OXF-AN10 + 缤纷云                                         | 手机插件↔桌面内置：上传/下载/冲突副本/锁互认；测试 prefix 12 个对象已清                                          | 第三方 WebDAV、手机内置第三方 |
+| 2026-11-20（scale）          | `tests/scale.rs`                                               | 20k 文件首轮 20,000、改 1 只传 1；128 MiB 单文件；块上传中被杀留锁；瞬时 5xx 后重试成功                          | 32 MiB 预算、真实超时         |
+| 2026-11-24（S3q crate）      | 真实七牛桶                                                     | probe 首建成功/二次 614；首次/改/删/两设备冲突 2/2 通过                                                          | UI、媒体                      |
+| 2026-11-24（S3q 桌面双实例） | 两个 portable debug，真实七牛桶，同 connection/prefix/加密密码 | A 首传 1；B 1 上 1 下；双向编辑各 1 上 1 下；同改一文件 B 产生 1 冲突副本；B 删后 A 收敛 removed 1               | 图片/视频/大文件、多库、境外  |
 
 ## 6. 第三方 / 境外服务商怎么测
 

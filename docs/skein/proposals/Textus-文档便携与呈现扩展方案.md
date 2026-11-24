@@ -3,13 +3,14 @@ type: spec
 status: draft
 summary: 单文件 Markdown、图片内嵌、代码栅栏标注
 updated: 2026-11-23
+tasks: [ED2a, ED2b, ED3]
 ---
 
 # Textus 文档便携与呈现扩展方案
 
 > **状态：方案初稿（2026-11-22），待用户拍板；本文只定取舍、实现路径与任务，不开工。**
 > 对象：桌面 + 手机（按现有 `capabilities.ts` 分端；插件先桌面）。
-> 关联：[STATUS](../STATUS.md) ED2/ED3/A12/U19/U20 · [《改造方案》§7.9](Textus-改造方案.md)（三条红线 / 两条承载台阶）· [《插件 API 要点》](../research/插件API要点.md) · AutumnMark v0.24.44 对照。
+> 关联：[STATUS](../STATUS.md) ED2/ED3/A12/U19/U20 · [《改造方案》§7.9](../specs/Textus-改造方案.md)（三条红线 / 两条承载台阶）· [《插件 API 要点》](../research/插件API要点.md) · AutumnMark v0.24.44 对照。
 > 存放：`docs/skein/specs/`
 
 ## 0. 一句话

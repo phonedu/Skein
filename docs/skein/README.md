@@ -20,6 +20,11 @@
 | 我要…             | 命令                                                                 |
 | ----------------- | -------------------------------------------------------------------- |
 | 开始任务 / 看上下文 | `npm run docs:task -- start D1e`；`npm run docs:context -- D1e`     |
+| 记一句承诺         | `npm run docs:capture -- "以后要…"`                                  |
+| 收工               | `npm run docs:wrap`（inbox 清零 + audit + docs:check）               |
+| 归档 / 草案        | `npm run docs:archive -- <spec>` / `docs:propose -- <spec>`          |
+| 外部评审           | `npm run docs:review -- <id> --base <ref>`                           |
+| 每周审计           | `npm run docs:audit`                                                 |
 | 补任务六行         | `npm run docs:task -- brief D1e --problem … --expected … --standard … --not … --scope … --evidence …` |
 | 完成并归档         | `npm run docs:task -- done D1e --evidence "命令 / 输出 / commit"`   |
 | 新裁决 / 方案 / 调研 | `npm run docs:new -- decision "标题"`（spec / research 同理）       |

@@ -4,6 +4,7 @@ status: active
 summary: Skein 皮肤与文档主题的分层契约
 updated: 2026-11-23
 verified: v1.4.6
+tasks: [T1, T2]
 ---
 
 # Textus 主题策略（Skein）

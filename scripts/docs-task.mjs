@@ -51,8 +51,22 @@ function taskOf(data, id) {
 }
 
 function missingBrief(task) {
+  if ((task.kind ?? "task") === "chore") return [];
   const brief = task.brief ?? {};
   return briefFields.filter((field) => !String(brief[field] ?? "").trim());
+}
+
+function findItem(data, id) {
+  const task = data.tasks?.find((item) => item.id === id);
+  if (task) return { item: task, list: data.tasks };
+  const later = data.later?.find((item) => item.id === id);
+  if (later) return { item: later, list: data.later };
+  console.error(`No task or later item ${id} in docs/skein/status.yaml`);
+  process.exit(1);
+}
+
+function isPlaceholder(text) {
+  return /^(x|todo|tbd|待补|待定|未填|测试|test)$/i.test(String(text).trim());
 }
 
 function usage() {
@@ -62,7 +76,7 @@ function usage() {
   npm run docs:task -- start <id>
   npm run docs:task -- done <id> --evidence "..."
   npm run docs:task -- add --id <id> --title "..." --workstream <id> --spec <path>
-                            [--now] [--acceptance "..."] [--estimate "..."]
+                            [--kind task|chore] [--now] [--acceptance "..."] [--estimate "..."]
                             [--problem ...] [--expected ...] [--standard ...]
                             [--not ...] [--scope ...] [--evidence ...]`);
   process.exit(1);
@@ -94,7 +108,7 @@ const options = flags(command === "add" ? argv.slice(1) : argv.slice(2));
 
 if (command === "brief") {
   if (!id) usage();
-  const task = taskOf(data, id);
+  const { item: task } = findItem(data, id);
   task.brief ??= {};
   for (const field of briefFields)
     if (typeof options[field] === "string") task.brief[field] = options[field];
@@ -112,7 +126,12 @@ if (command === "brief") {
   );
 } else if (command === "start") {
   if (!id) usage();
-  const task = taskOf(data, id);
+  const { item: task, list } = findItem(data, id);
+  if (list === data.later) {
+    task.acceptance ??= task.brief?.standard ?? "（见 brief）";
+    data.later = data.later.filter((item) => item.id !== id);
+    data.tasks.push(task);
+  }
   const missing = missingBrief(task);
   if (missing.length) {
     console.error(
@@ -129,10 +148,27 @@ if (command === "brief") {
 } else if (command === "done") {
   if (!id) usage();
   const task = taskOf(data, id);
-  const evidence = options.evidence;
-  if (typeof evidence !== "string" || !evidence.trim()) {
+  if (task.state !== "doing") {
     console.error(
-      `Refusing to close ${id}: pass --evidence "command / output / commit".`,
+      `Refusing to close ${id}: state is "${task.state ?? "todo"}"; run \`npm run docs:task -- start ${id}\` first.`,
+    );
+    process.exit(1);
+  }
+  const missing = missingBrief(task);
+  if (missing.length) {
+    console.error(
+      `Refusing to close ${id}: task six lines missing ${missing.join(", ")}.`,
+    );
+    process.exit(1);
+  }
+  const evidence = options.evidence;
+  if (
+    typeof evidence !== "string" ||
+    !evidence.trim() ||
+    isPlaceholder(evidence)
+  ) {
+    console.error(
+      `Refusing to close ${id}: pass real --evidence "command / output / commit".`,
     );
     process.exit(1);
   }
@@ -172,18 +208,36 @@ if (command === "brief") {
   const title = options.title;
   const workstream = options.workstream;
   const spec = options.spec;
+  const kind = options.kind ?? "task";
   if (!newId || !title || !workstream || !spec) usage();
-  if (data.tasks.some((item) => item.id === newId)) {
-    console.error(`Task ${newId} already exists.`);
+  if (!["task", "chore"].includes(kind)) {
+    console.error(`--kind must be task or chore, not "${kind}"`);
+    process.exit(1);
+  }
+  if (
+    data.tasks.some((item) => item.id === newId) ||
+    data.later?.some((item) => item.id === newId)
+  ) {
+    console.error(`Task or later item ${newId} already exists.`);
     process.exit(1);
   }
   const brief = {};
   for (const field of briefFields)
     if (typeof options[field] === "string") brief[field] = options[field];
+  const missing = briefFields.filter(
+    (field) => !String(brief[field] ?? "").trim(),
+  );
+  if (kind === "task" && options.now && missing.length) {
+    console.error(
+      `Refusing to add ${newId} as doing: six lines missing ${missing.join(", ")}.`,
+    );
+    process.exit(1);
+  }
   const task = {
     id: newId,
     title,
     workstream,
+    kind,
     state: options.now ? "doing" : "todo",
     acceptance: options.acceptance ?? "（未填）",
     spec,
@@ -193,7 +247,9 @@ if (command === "brief") {
   data.tasks.push(task);
   save(data);
   console.log(
-    `Added ${newId}. Fill the brief before starting:\n  npm run docs:task -- brief ${newId} ...`,
+    missing.length && kind === "task"
+      ? `Added ${newId}. Fill the brief before starting:\n  npm run docs:task -- brief ${newId} ...`
+      : `Added ${newId} (${kind})${options.now ? " and started" : ""}.`,
   );
 } else {
   usage();

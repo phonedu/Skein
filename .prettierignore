@@ -39,6 +39,7 @@ docs/skein/decisions/README.md
 docs/skein/STATUS.md
 # Edited by scripts/docs-task.mjs; YAML shape is the tool's, not Prettier's.
 docs/skein/status.yaml
+docs/skein/inbox.yaml
 # The fork's archives are frozen too: what was decided, and how it looked
 # when it was decided, is the record.
 docs/skein/archive/**

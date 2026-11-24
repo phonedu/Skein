@@ -1,0 +1,31 @@
+#!/bin/sh
+# A code commit must name the ledger item it belongs to. Merge commits and
+# docs-only commits are exempt; chores still need an id (kind: chore).
+msg="$1"
+if git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1; then
+  exit 0
+fi
+code=0
+for file in $(git diff --cached --name-only); do
+  case "$file" in
+    src/*|src-tauri/*|e2e/*|scripts/*) code=1 ;;
+  esac
+done
+[ "$code" -eq 0 ] && exit 0
+task=$(sed -n 's/^Task:[[:space:]]*\([^[:space:]]*\).*/\1/p' "$msg" | head -1)
+if [ -z "$task" ]; then
+  cat <<'EOF'
+Commit blocked: code changed without a task.
+
+  1. Start or add a task:
+       npm run docs:task -- start <id>
+       npm run docs:task -- add --id C1 --kind chore --title "..." --workstream DOC --spec ...
+  2. Add a trailer to the message:
+       Task: <id>
+  3. Retry the commit.
+
+Merge and docs-only commits are exempt. The same rule is checked in CI.
+EOF
+  exit 1
+fi
+node scripts/check-task-id.mjs "$task"

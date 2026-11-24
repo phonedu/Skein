@@ -3,6 +3,7 @@ type: spec
 status: active
 summary: Agent 七工具的输入输出、权限与确认门槛
 updated: 2026-11-23
+tasks: []
 ---
 
 # Textus Agent 工具契约

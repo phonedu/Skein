@@ -8,7 +8,7 @@
 
 ## 0. H0 整壳（桌面 + 手机 + 折叠 + 平板）
 
-来源：[《笔记理论的传统界面落点》§2.2/§2.3](../specs/Textus-笔记理论的传统界面落点.md)、批准的 opencode 参考图（`C:\Project\skein-plan-scratch\opencode-h0-2026-11-21\`，2026-11-21 用户定稿）。
+来源：[《笔记理论的传统界面落点》§2.2/§2.3](../proposals/Textus-笔记理论的传统界面落点.md)、批准的 opencode 参考图（`C:\Project\skein-plan-scratch\opencode-h0-2026-11-21\`，2026-11-21 用户定稿）。
 目标：一次改完；D1a 手机入口、D1b 手机 sheet、D3 手机项并入本 pass，之后不再为同一壳重复改。
 
 已落的形态（用户逐条裁决后的最终版）：
