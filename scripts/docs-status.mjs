@@ -104,11 +104,11 @@ function waiting() {
 function questions() {
   if (!data.questions?.length) return "暂无。";
   return [
-    "| # | 事项 | 默认 / 建议 | 触发 / 状态 | 出处 |",
-    "| --- | --- | --- | --- | --- |",
+    "| # | 事项 | 计划 | 默认 / 建议 | 触发 / 状态 | 出处 |",
+    "| --- | --- | --- | --- | --- | --- |",
     ...data.questions.map(
       (item) =>
-        `| ${cell(item.id)} | ${cell(item.text)} | ${cell(item.default)} | ${cell(item.trigger)} | ${link("出处", item.spec)} |`,
+        `| ${cell(item.id)} | ${cell(item.text)} | ${cell(item.when ?? "—")} | ${cell(item.default)} | ${cell(item.trigger)} | ${link("出处", item.spec)} |`,
     ),
   ].join("\n");
 }
