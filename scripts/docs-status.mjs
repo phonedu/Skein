@@ -104,7 +104,7 @@ function waiting() {
 function questions() {
   if (!data.questions?.length) return "暂无。";
   return [
-    "| # | 事项 | 计划 | 默认 / 建议 | 触发 / 状态 | 出处 |",
+    "| # | 事项 | 进度时点 | 默认 / 建议 | 触发 / 状态 | 出处 |",
     "| --- | --- | --- | --- | --- | --- |",
     ...data.questions.map(
       (item) =>

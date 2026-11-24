@@ -128,47 +128,47 @@ questions:
     text: 默认连接 / 远端子仓库改名 / 同库双连接 / 多用户共享 / 库只读
     default: 资产库关系已定（子目录）；其余按 06 §6
     trigger: S2a 已落连接 / 绑定 / 身份；其余待后续
-    when: 2027-02（S4 启动时一并定）
+    when: S4 启动时一并定
     spec: research/同步评审/06-多库同步设计.md
   - id: U15
     text: DSH 两用法 / 向量 RAG / 子代理编排 / WorkBuddy 自动化 / textus.git
     default: 默认不做；DSH 触发 = 稳定版 + 插件 API 冻结；RAG = 关键词不够；textus.git = 需要 Git 提交而非 _history/
     trigger: 待审
-    when: 2026-12-19（D0.5 收尾复盘裁决；无证据即关闭）
+    when: D0.5 收尾复盘裁决；无证据即关闭
     spec: research/Agent基座与竞品调研.md
   - id: U17
     text: S4 发现 / 配对方式
     default: S0d 已定方向；二维码 / 短码是连接迁移建议，不是 LAN 发现方案
     trigger: S4 前细化
-    when: 2027-02（S4 前）
+    when: S4 启动前细化
     spec: research/同步评审/06-多库同步设计.md
   - id: U19
     text: 内容选项卡（注释标记 + 标题前缀）
     default: 暂缓；v1 只做点击切换 + 导出全展开；不做标题编辑 / 加 tab
     trigger: 真实教程 / 多平台对比需求
-    when: 2026-12-19（复盘时定；无真实需求即关闭）
+    when: D0.5 收尾复盘时定；无真实需求即关闭
     spec: specs/Textus-文档便携与呈现扩展方案.md
   - id: U20
     text: 每文档 Base64 图片存储
     default: 不做默认存储；先走 ED3；若做则默认关、可提取、AI / 搜索跳过
     trigger: ED3 后仍反复要求单文件
-    when: 2027-01（ED3 落地后复核）
+    when: ED3 落地后复核
     spec: specs/Textus-文档便携与呈现扩展方案.md
   - id: U21
     text: Tau 可吸收功能（11 项；P0 = 设置页同步状态卡 / 右页边宽度阶梯 / 表格行列手柄）
-    default: 按「计划」分项就近吸收；右页边改可拖需先改裁决 36 的固定 340
+    default: 按「进度时点」分项吸收；右页边改可拖需先改裁决 36 的固定 340
     trigger: 下次改同步设置页 / 右页边断点 / 编辑器表格时
-    when: 2026-12-01 周 P0-1 状态卡；2027-01 P0-2 右页边（先裁 340）；2027-02 P0-3 表格（随 ED1）；P1 编辑历史/引用 2027-Q1；其余随 ED1/PH
+    when: P0-1 状态卡：T1 同期（动设置页时）；P0-2 右页边：D3 启动前（先裁 340）；P0-3 表格：ED1 首片同批；P1 编辑历史/引用：UI-p3 之后第一个编辑器任务；其余随 ED1/PH
     spec: research/Tau-可吸收功能清单.md
   - id: U22
     text: outl 8 项可吸收（能力/拒绝矩阵、Vault Doctor、今天/收集交互规则、有界列表+真实总数、启动不持锁核查、插件 API 版本+lockfile、只读 MCP server、稳定身份）
-    default: 按「计划」分项评估；文档身份已由 S2c/U18 落地；outl 的 CRDT/P2P/TUI 明确不借
+    default: 按「进度时点」分项评估；文档身份已由 S2c/U18 落地；outl 的 CRDT/P2P/TUI 明确不借
     trigger: 改能力门控、诊断/修复入口、列表分页、插件版本或 MCP 时
-    when: 2026-12-08 周出映射审计；2027-01 矩阵+今天规则+有界列表；2027-03 Vault Doctor/启动清单；插件版本 2027-01；MCP/块身份 2027-Q2
+    when: D0.5 收尾出映射审计；能力矩阵/今天规则/有界列表：D3 启动前；插件 API 版本：下一次插件 API 变更；Vault Doctor/启动清单：S5 期间；MCP/块身份：插件 API 冻结后
     spec: research/outl-对照与吸收.md
   - id: U23
     text: 墨契吸收清单（§3；拼音物化检索、导入三门、Android 真机坑、md-corpus 扩用例）
     default: 机制类，随资产导入 / Android 真机 / Markdown 保真测试就近评估；块树、oplog 同步、向量检索明确不借
     trigger: 做资产批量导入、Android 真机验收或保真测试扩容时
-    when: 2026-12-15 周导入三门 + Android 清单；2027-01 拼音检索/corpus
+    when: 导入三门/Android 清单：D3 期间（手机收集与导入）；拼音检索/corpus：资产搜索或保真测试下一次改动
     spec: research/代码核对-2026-11-15.md
