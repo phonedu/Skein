@@ -154,3 +154,13 @@ questions:
     default: 未排期；随设置页、右页边断点、Milkdown 表格任务就近评估；右页边改可拖需先改裁决 36 的固定 340
     trigger: 下次改同步设置页 / 右页边断点 / 编辑器表格时
     spec: research/Tau-可吸收功能清单.md
+  - id: U22
+    text: outl 8 项可吸收（能力/拒绝矩阵、Vault Doctor、今天/收集交互规则、有界列表+真实总数、启动不持锁核查、插件 API 版本+lockfile、只读 MCP server、稳定身份）
+    default: 未排期；文档身份已由 S2c/U18 落地，其余随 D2/D3/S5 与插件线就近评估；outl 的 CRDT/P2P/TUI 明确不借
+    trigger: 改能力门控、诊断/修复入口、列表分页、插件版本或 MCP 时
+    spec: research/outl-对照与吸收.md
+  - id: U23
+    text: 墨契吸收清单（§3；拼音物化检索、导入三门、Android 真机坑、md-corpus 扩用例）
+    default: 机制类，随资产导入 / Android 真机 / Markdown 保真测试就近评估；块树、oplog 同步、向量检索明确不借
+    trigger: 做资产批量导入、Android 真机验收或保真测试扩容时
+    spec: research/代码核对-2026-11-15.md
