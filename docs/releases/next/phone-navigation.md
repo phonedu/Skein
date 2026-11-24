@@ -6,7 +6,7 @@
 
 ### Improved
 
-- A phone's command palette is the page itself — the field under the status bar, the list filling the rest, a finger's rows — instead of a floating card the keyboard cut in half.
+- On a phone the command palette and the plugin launcher are on the document's ⋯ as well as Today's: its commands act on the document in front, and a palette only on Today left them with nothing to act on.
 - The command palette marks what is on: the mode in force, a shown format bar, the sidebar. Choosing a mode used to leave the palette still ticking "Default", with nothing saying what was chosen.
 - Today's changes are kept from the last walk: switching to Files and back shows the list at once while the folder is read again, rather than waiting for a slow phone walk each time.
 - On a phone with no collect plugin, 记一句 opens a note to type in at once — no naming row, no trip through the library. Until it has a file it says "Draft · not saved", and it saves itself once there is something to write.

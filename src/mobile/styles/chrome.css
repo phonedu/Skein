@@ -112,42 +112,6 @@
     border-color: var(--ui-accent);
   }
 
-  /* The command palette on a phone is the page itself: the field under the
-     status bar, the list filling the rest, a finger's rows. It used to be
-     a floating card at 12vh whose list the keyboard cut in half. */
-  :root[data-window-chrome="mobile"] .quick-pick-overlay {
-    align-items: stretch;
-    padding: 0;
-  }
-
-  :root[data-window-chrome="mobile"] .quick-pick {
-    width: 100%;
-    height: 100%;
-    max-height: none;
-    padding-top: var(--safe-top, 0px);
-    padding-bottom: var(--safe-bottom, 0px);
-    border-radius: 0;
-    animation: none;
-  }
-
-  :root[data-window-chrome="mobile"] .tx-input.quick-pick-input {
-    min-height: 44px;
-    margin: var(--space-3) var(--space-4);
-  }
-
-  :root[data-window-chrome="mobile"] .quick-pick-list {
-    flex: 1;
-    min-height: 0;
-    max-height: none;
-    padding: 0 var(--space-2) var(--space-4);
-  }
-
-  :root[data-window-chrome="mobile"] .quick-pick-item {
-    align-items: center;
-    min-height: 48px;
-    padding: var(--space-2) var(--space-3);
-  }
-
   /* Answers are rows of text divided by hairlines: two side by side,
      more stacked. */
   :root[data-window-chrome="mobile"] .app-dialog .close-prompt-buttons {

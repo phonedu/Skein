@@ -11,7 +11,11 @@ import {
 } from "../engine/controls/ActionSheet";
 import { Presence } from "../engine/motion/usePresence";
 import { showNotice } from "../engine/controls/notices";
-import { BackChevronIcon } from "../engine/controls/icons";
+import {
+  BackChevronIcon,
+  PluginsTabIcon,
+  SearchIcon,
+} from "../engine/controls/icons";
 import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
 import {
   OutlineActionIcon,
@@ -99,6 +103,29 @@ export function PhoneEditorBar({
       label: t.menuToggleSourceMode,
       Icon: SourceActionIcon,
       onSelect: () => emitToThisWindow("menu-toggle-source-mode"),
+    },
+    // App-wide actions, with this document in front: the palette's
+    // document commands (export, modes) and a plugin that works on the
+    // document had no way in from this page before.
+    {
+      label: t.menuCommandPalette,
+      Icon: SearchIcon,
+      onSelect: () => {
+        setSheetOpen(false);
+        void import("../app/command-palette-entry").then((m) =>
+          m.openCommandPalette(),
+        );
+      },
+    },
+    {
+      label: t.pluginsTitle,
+      Icon: PluginsTabIcon,
+      onSelect: () => {
+        setSheetOpen(false);
+        void import("../plugins/views/plugin-launcher").then((m) =>
+          m.openPluginLauncher(),
+        );
+      },
     },
     {
       label: t.phoneDocActionShare,

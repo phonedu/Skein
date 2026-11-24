@@ -368,16 +368,17 @@ test.describe("the phone shell", () => {
     await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
   });
 
-  test("gives the phone's command palette the page, and marks the chosen mode", async ({
+  test("opens the palette from the document page, and marks the chosen mode", async ({
     page,
   }) => {
     await openApp(page, {
       settings: { language: "zh" },
       ready: ".phone-today",
     });
-    // A document in front, so View › Mode's entries are live.
+    // The palette's document commands need a document in front, so the
+    // document page's ⋯ has it too - the palette used to be only on Today,
+    // where those entries did nothing.
     await page.getByRole("button", { name: "记一句…", exact: true }).tap();
-    await page.getByRole("button", { name: "回到文件库" }).tap();
     const open = async () => {
       await page.getByRole("button", { name: "更多" }).tap();
       await page.getByRole("menuitem", { name: "命令面板…" }).tap();
@@ -389,15 +390,6 @@ test.describe("the phone shell", () => {
         .allInnerTexts();
 
     await open();
-    // The page itself, not a floating card at 12vh: full width, the page's
-    // height, a finger's rows.
-    const box = (await page.locator(".quick-pick").boundingBox())!;
-    expectBetween(box.width, 389, 391);
-    expectBetween(box.height, 700, 845);
-    // 48 written, drawn at the phone's 10/11.
-    for (const row of await sizes(page, ".quick-pick-item")) {
-      expectBetween(row.h, 43, 45);
-    }
     // The mode in force carries a check; choosing another moves it there,
     // so the palette read again says what is on instead of leaving it to
     // the page behind.
@@ -410,6 +402,12 @@ test.describe("the phone shell", () => {
     const after = await checked();
     expect(after).toContain("源码模式");
     expect(after).not.toContain("默认");
+
+    // A plugin that works on the document starts from the same sheet.
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".quick-pick")).toHaveCount(0);
+    await page.getByRole("button", { name: "更多" }).tap();
+    await expect(page.getByRole("menuitem", { name: "插件" })).toBeVisible();
   });
 
   test("Back walks the AI page home: the document, then Today", async ({
