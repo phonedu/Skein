@@ -138,8 +138,6 @@ export function PhoneToday({
       <PhoneSyncStatus folder={root || null} t={t} />
 
       <div className="pbody">
-        <h1 className="pheading">{t.treeDayToday}</h1>
-
         {!activeTitle && !pending.length && !changes.length ? (
           <div className="pempty">
             <span className="pempty-mark" aria-hidden>

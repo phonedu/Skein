@@ -109,13 +109,6 @@
     calc(var(--space-6) + var(--safe-bottom, 0px));
 }
 
-.pheading {
-  margin: var(--space-1) var(--space-1) var(--space-3);
-  font-size: var(--text-title-lg);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
 .plabel {
   margin: var(--space-4) var(--space-1) var(--space-1);
 }

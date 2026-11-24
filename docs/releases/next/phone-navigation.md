@@ -8,6 +8,7 @@
 
 ### Improved
 
+- Today no longer repeats "今天" above its list: the capsule already says which surface is in front.
 - On a phone the command palette and the plugin launcher are on the document's ⋯ as well as Today's: its commands act on the document in front, and a palette only on Today left them with nothing to act on.
 - The command palette marks what is on: the mode in force, a shown format bar, the sidebar. Choosing a mode used to leave the palette still ticking "Default", with nothing saying what was chosen.
 - Today's changes are kept from the last walk: switching to Files and back shows the list at once while the folder is read again, rather than waiting for a slow phone walk each time.
