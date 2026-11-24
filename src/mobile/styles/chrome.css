@@ -81,6 +81,37 @@
     text-align: left;
   }
 
+  /* A plugin's form is a dialog of fields, not an alert: each field keeps
+     the card's side inset (the field used to run edge to edge, touching
+     the card), sits on the card's own surface rather than the page's, and
+     takes the interface's accent for its focus and caret - never a webview
+     default ring. */
+  :root[data-window-chrome="mobile"]
+    .app-dialog.plugin-form
+    .plugin-form-field {
+    margin: 0 16px 16px;
+  }
+
+  :root[data-window-chrome="mobile"]
+    .app-dialog.plugin-form
+    .plugin-form-field
+    > label {
+    text-align: left;
+  }
+
+  :root[data-window-chrome="mobile"] .app-dialog.plugin-form .tx-input {
+    background: var(--ui-surface);
+    caret-color: var(--ui-accent);
+    accent-color: var(--ui-accent);
+  }
+
+  :root[data-window-chrome="mobile"]
+    .app-dialog.plugin-form
+    .tx-input:is(:focus, :focus-visible) {
+    outline: none;
+    border-color: var(--ui-accent);
+  }
+
   /* Answers are rows of text divided by hairlines: two side by side,
      more stacked. */
   :root[data-window-chrome="mobile"] .app-dialog .close-prompt-buttons {

@@ -6,7 +6,8 @@
 
 ### Improved
 
-- On a phone with no collect plugin, 记一句 opens the library's new-document row — a file in the vault from the first moment — instead of a blank page that had nowhere to go.
+- On a phone with no collect plugin, 记一句 opens a note to type in at once — no naming row, no trip through the library. Until it has a file it says "Draft · not saved", and it saves itself once there is something to write.
+- A plugin's form on a phone keeps each field inset in the dialog's card, on the card's own surface, with the interface's accent for focus and caret instead of a webview's default ring.
 - A phone's file tree steps one width a level: the first step is as wide as the rest, a file's icon stands level with its sibling folders' icons, and the folder guide lines run through the folders' chevrons instead of a step to their right.
 - A phone draws no scrollbars: the finger does the scrolling, and the one down the home list's edge left a seam on the paper.
 - A settings search result stays one row in any language: its icon sits beside the name (a longer English label no longer pushes the words to a second line), and a folded row is named by its name alone, not its name and its value run together.

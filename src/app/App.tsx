@@ -3,7 +3,7 @@ import { isPlainDraft, tabTitle } from "../document/doc-tabs";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -124,9 +124,6 @@ function App() {
   // surface falls back to its own ordinary new document. True while the
   // plugin took the action (its form shows where it is).
   const captureNote = (): boolean => runCommand("skein.collect.capture");
-  // The phone's 记一句 without the plugin: the library's new-document row,
-  // a real file in the vault, rather than a blank page with nowhere to go.
-  const [newDocumentAsk, setNewDocumentAsk] = useState(false);
   const { panelOpen, setPanelOpen, toggleSidebar, sidebarWidth } = shell.panels;
   const { agentPanel, toggleAgentPanel, rightPanel, rightOverlay } =
     shell.panels;
@@ -355,13 +352,10 @@ function App() {
               onOpenLibrary={() => setPhoneView("library")}
               onOpenCurrent={() => setPhoneView("doc")}
               onCapture={() => {
-                if (captureNote()) return;
-                // No collect plugin: a new document in the library, where a
-                // note has a file and a name from the first moment.
-                if (openFolder.treeRoot) {
-                  setNewDocumentAsk(true);
-                  setPhoneView("library");
-                } else {
+                // No collect plugin: a note to type in straight away. It has
+                // no file yet, and Today says so ("Draft - not saved"); it
+                // saves itself once there is something to write.
+                if (!captureNote()) {
                   addBlankTab();
                   setPhoneView("doc");
                 }
@@ -381,8 +375,6 @@ function App() {
                 addBlankTab();
                 setPhoneView("doc");
               }}
-              newDocument={newDocumentAsk}
-              onNewDocument={() => setNewDocumentAsk(false)}
               onEntryMoved={entryMoved}
             />
           ) : (

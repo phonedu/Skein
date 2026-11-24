@@ -368,27 +368,20 @@ test.describe("the phone shell", () => {
     await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
   });
 
-  test("starts an ordinary new document when no collect plugin is there", async ({
+  test("starts a blank note to type in when no collect plugin is there", async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      const w = window as unknown as Record<string, unknown>;
-      const files = { "/proj/work/note.md": "# note\n" };
-      w.__devFs = files;
-      w.__devFiles = files;
-    });
     await openApp(page, {
       settings: { language: "zh" },
       ready: ".phone-today",
     });
-    // A document in front opens a library (the vault is its folder).
-    await openPath(page, "/proj/work/note.md");
-    await page.getByRole("button", { name: "回到文件库" }).tap();
-    // No plugin here: 记一句 asks the library for a new document, whose
-    // naming row makes a real file - not a blank page with no path.
+    // No plugin here: 记一句 opens a note at once - no naming row, no trip
+    // through the library. It has no file yet, and says so.
     await page.getByRole("button", { name: "记一句…", exact: true }).tap();
-    await expect(page.locator(".phone-home")).toBeVisible();
-    await expect(page.locator(".tree-draft-input")).toBeVisible();
+    await expect(page.locator(".phone-editor-bar")).toBeVisible();
+    await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
+    await page.getByRole("button", { name: "回到文件库" }).tap();
+    await expect(page.locator(".pcard-draft")).toHaveText("草稿 · 未保存");
   });
 
   test("keeps the editor bar's actions at one 22px size", async ({ page }) => {

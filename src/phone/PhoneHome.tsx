@@ -1,7 +1,7 @@
 // The phone's home: the open vault's file tree as the first surface —
 // the tree, the vault name and settings in the top bar. The vault name
 // opens the library-switcher sheet; recents will flow in later.
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
@@ -40,8 +40,6 @@ export function PhoneHome({
   onBack,
   onOpenFile,
   onNewFile,
-  newDocument,
-  onNewDocument,
   onEntryMoved,
 }: {
   t: Strings;
@@ -52,10 +50,6 @@ export function PhoneHome({
   onOpenFile: (path: string, how?: FileOpenHow, line?: number) => void;
   /** A blank document, and the page turns to it. */
   onNewFile: () => void;
-  /** The shell asked for an ordinary new document (Today's capture with no
-   *  collect plugin): the library's naming row opens, once. */
-  newDocument?: boolean;
-  onNewDocument?: () => void;
   onEntryMoved: (from: string, to: string) => void;
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
@@ -79,15 +73,6 @@ export function PhoneHome({
     if (kind === "document" && !openFolder.treeRoot) return onNewFile();
     setDraftRequest((ask) => ({ kind, seq: (ask?.seq ?? 0) + 1 }));
   };
-  // Today's capture had no collect plugin to run: the naming row opens as
-  // the library's own + does, so the note is a file from the first moment.
-  useEffect(() => {
-    if (!newDocument) return;
-    onNewDocument?.();
-    startNew("document");
-    // The ask is consumed at once; startNew is this render's own.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newDocument]);
 
   // The sheet's rows: the current library (ticked), a separator, and the
   // folder picker. Recents are added here once they reach the phone.
