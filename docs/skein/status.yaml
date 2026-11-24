@@ -107,36 +107,6 @@ tasks:
       not: 不做多活动连接并行同步；不做云端合并；不改协议 v1；不做 S5 的签名/重试硬化。
       scope: specs 的规则与矩阵、src-tauri/src/sync 的绑定/切换逻辑、同步页切换入口、store 单测与桌面/手机 e2e。
       evidence: 3×3 场景矩阵结果、切换/回切/复制库 e2e、store 单测与规则评审记录。
-  - id: PH6
-    title: 手机今天与文件左右滑动切换
-    workstream: UI
-    kind: task
-    state: doing
-    acceptance: 手机今天/库页中部横滑跟手，按距离/速度落页；纵向手势、行拖拽与点击不误触；胶囊点按不变；无横向溢出；pager 单测与 Android UA e2e 通过。
-    spec: specs/Textus-手机端元素一致性方案.md#11-动效
-    estimate: —
-    brief:
-      problem: 手机今天页与文件库页各自渲染，只能点 Today|Files 胶囊切换；手指在页面中部左右滑没有任何反应，与成熟移动端两页横滑的习惯不符。
-      expected: 在手机今天/库页中部左右滑，页面跟手横移，松手落在今天或文件页；胶囊点按、记一句、⋯、搜索、纵向滚动、行拖拽与点击的行为都不变，滑动后不误开文件。
-      standard: 横滑跟手无跳变；距离或速度决定落页；纵向手势不切页；滑动后不触发被滑过控件的点击；今天/文件胶囊选中态与所落页一致；无横向溢出；动效只用 --dur-*/--ease-*，reduced motion 收敛；pager 单测与 e2e（Android UA + CDP 触摸）通过。
-      not: 不重排今天/库页顶栏与内容；不改桌面与平板导航；不加文档页与库页之间的横滑；不改 Android 系统返回键与左缘手势；视觉未认可前不提交（纪律 §11）。
-      scope: 手机布局（<600）今天/文件两页；src/phone、src/app/App.tsx、e2e；桌面与平板不受影响。
-      evidence: npx vitest run src/phone/pager-model.test.ts src/phone/PhonePager.test.tsx；npx playwright test e2e/phone-pager.spec.ts；npm run check:quick -- <改动文件>；截图/录屏。
-  - id: PH7
-    title: 库切换面板（桌面下拉 / 手机底部）
-    workstream: UI
-    kind: task
-    state: doing
-    acceptance: 点库名出面板：当前库带勾、最近库可切换、添加库进选择器、每行垃圾桶只移除列表条目；桌面下拉、手机底部；打开库写入最近列表（含 SAF URL）；文件/项目设置/同步绑定/草稿/页签不变；桌面与手机 e2e、Rust 单测通过。
-    spec: specs/Textus-手机端元素一致性方案.md#10-浮层
-    estimate: —
-    brief:
-      problem: 手机端只能打开一个库，已用过的库无法回切；手机打开库不写最近列表。桌面库名按钮带 chevron 却直接弹文件夹选择器，没有最近库与移除入口（File > Open Recent 里才有一份只读列表）。
-      expected: 点库名出面板：当前库带勾，已用过的库点一下即切换；底部“添加库…”进文件夹选择器；每行垃圾桶只从列表移除该库，不删文件。桌面用按钮下方下拉面板，手机用底部面板；桌面 File > Open Recent 与面板同步。
-      standard: 手机打开库写入 recentFolders（含 content:// SAF 地址，重启后可再次打开）；移除只删列表条目，文件、项目设置、同步绑定、草稿、页签都不变；当前打开的库不显示垃圾桶；十语言字符串；只用 token；桌面/手机 e2e 与 Rust recents 单测通过，bindings 无漂移。
-      not: 不删文件/文件夹/项目设置/同步绑定；不做多库同时挂载或多窗口库栏；不改 File > Open Recent 的原生形态；不加命令面板“切换库”入口。
-      scope: src-tauri recents 命令与注册、bindings、src/platform 最近库 IPC、Sidebar、PhoneToday/PhoneHome、i18n、e2e；桌面 + Android/iOS 手机布局。
-      evidence: cargo test recents + npm run bindings；vitest vault-model；playwright 桌面与手机用例（切换/移除/不删文件）；桌面 1280 与手机 390 截图。
 later:
   - id: S5
     title: 同步硬化
