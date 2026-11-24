@@ -350,6 +350,29 @@ test.describe("the phone shell", () => {
     );
   });
 
+  test("starts an ordinary new document when no collect plugin is there", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as Record<string, unknown>;
+      const files = { "/proj/work/note.md": "# note\n" };
+      w.__devFs = files;
+      w.__devFiles = files;
+    });
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    // A document in front opens a library (the vault is its folder).
+    await openPath(page, "/proj/work/note.md");
+    await page.getByRole("button", { name: "回到文件库" }).tap();
+    // No plugin here: 记一句 asks the library for a new document, whose
+    // naming row makes a real file - not a blank page with no path.
+    await page.getByRole("button", { name: "记一句…", exact: true }).tap();
+    await expect(page.locator(".phone-home")).toBeVisible();
+    await expect(page.locator(".tree-draft-input")).toBeVisible();
+  });
+
   test("keeps the editor bar's actions at one 22px size", async ({ page }) => {
     await openApp(page, {
       settings: { language: "zh" },

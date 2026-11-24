@@ -3,7 +3,7 @@ import { tabTitle } from "../document/doc-tabs";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -120,13 +120,13 @@ function App() {
     [liveTabs, setActiveTabId],
   );
   // The one action every surface keeps in reach: a note to write now. The
-  // asset plugin's collect form when it is there, a blank note otherwise.
-  // True while the plugin took the action (its form shows where it is).
-  const captureNote = (): boolean => {
-    if (runCommand("skein.collect.capture")) return true;
-    addBlankTab();
-    return false;
-  };
+  // asset plugin's collect form when it is there; where it is not, each
+  // surface falls back to its own ordinary new document. True while the
+  // plugin took the action (its form shows where it is).
+  const captureNote = (): boolean => runCommand("skein.collect.capture");
+  // The phone's 记一句 without the plugin: the library's new-document row,
+  // a real file in the vault, rather than a blank page with nowhere to go.
+  const [newDocumentAsk, setNewDocumentAsk] = useState(false);
   const { panelOpen, setPanelOpen, toggleSidebar, sidebarWidth } = shell.panels;
   const { agentPanel, toggleAgentPanel, rightPanel, rightOverlay } =
     shell.panels;
@@ -297,7 +297,9 @@ function App() {
               closing={sidebarClosing}
               view={sidebarView}
               onViewChange={setSidebarView}
-              onCapture={captureNote}
+              onCapture={() => {
+                if (!captureNote()) addBlankTab();
+              }}
               mode={panelMode}
               onModeChange={(id) =>
                 id === "search" ? searchFiles() : setPanelMode(id)
@@ -350,7 +352,16 @@ function App() {
               onOpenLibrary={() => setPhoneView("library")}
               onOpenCurrent={() => setPhoneView("doc")}
               onCapture={() => {
-                if (!captureNote()) setPhoneView("doc");
+                if (captureNote()) return;
+                // No collect plugin: a new document in the library, where a
+                // note has a file and a name from the first moment.
+                if (openFolder.treeRoot) {
+                  setNewDocumentAsk(true);
+                  setPhoneView("library");
+                } else {
+                  addBlankTab();
+                  setPhoneView("doc");
+                }
               }}
             />
           ) : phoneLibrary ? (
@@ -367,6 +378,8 @@ function App() {
                 addBlankTab();
                 setPhoneView("doc");
               }}
+              newDocument={newDocumentAsk}
+              onNewDocument={() => setNewDocumentAsk(false)}
               onEntryMoved={entryMoved}
             />
           ) : (
