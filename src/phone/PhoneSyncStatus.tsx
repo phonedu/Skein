@@ -1,13 +1,17 @@
-// The built-in sync's state on the phone's home, above the tree: the same
-// last-run summary the desktop's Sync settings shows, on one quiet row that
-// opens those settings. A phone has no window bar for a status item.
-import { useEffect, useState } from "react";
+// The built-in sync's state on a phone: no permanent box under Today /
+// Files. A run that finishes while this screen is open (or just before it
+// opened) says so in a notice that goes by itself.
+import { useEffect } from "react";
 import { fill } from "../i18n/fill";
 import type { Strings } from "../i18n/strings";
-import { syncStatus, type SyncStatus } from "../platform/ipc-sync";
-import { openSettingsPage } from "../settings/settings-nav";
+import { showNotice } from "../engine/controls/notices";
+import { syncStatus } from "../platform/ipc-sync";
 
 const REFRESH_MS = 15_000;
+/** A result this fresh when the screen opens is worth saying once. */
+const FRESH_MS = 15_000;
+/** One announcement per folder and run, across both phone home screens. */
+const announced = new Map<string, string>();
 
 export function PhoneSyncStatus({
   folder,
@@ -16,17 +20,26 @@ export function PhoneSyncStatus({
   folder: string | null;
   t: Strings;
 }) {
-  const [status, setStatus] = useState<SyncStatus | null>(null);
-
   useEffect(() => {
-    if (!folder) {
-      setStatus(null);
-      return;
-    }
+    if (!folder) return;
     let alive = true;
     const load = () => {
       void syncStatus(folder)
-        .then((next) => alive && setStatus(next))
+        .then((next) => {
+          if (!alive || !next.configured) return;
+          const last = next.last;
+          if (!last?.at) return;
+          if (announced.get(folder) === last.at) return;
+          announced.set(folder, last.at);
+          const at = Date.parse(last.at);
+          if (!Number.isFinite(at) || Date.now() - at > FRESH_MS) return;
+          showNotice(
+            `${t.navSync} · ${last.error
+              ? fill(t.syncErrorOther, { reason: last.error })
+              : t.syncDone}`,
+            { tone: last.error ? "error" : "info" },
+          );
+        })
         .catch(() => {});
     };
     load();
@@ -35,38 +48,7 @@ export function PhoneSyncStatus({
       alive = false;
       clearInterval(timer);
     };
-  }, [folder]);
+  }, [folder, t]);
 
-  if (!status?.configured) return null;
-  const last = status.last;
-  const text = last?.error
-    ? fill(t.syncErrorOther, { reason: last.error })
-    : last?.result
-      ? t.syncDone
-      : t.syncNever;
-  return (
-    <button
-      type="button"
-      className="ph-sync"
-      aria-label={`${t.navSync}: ${text}`}
-      onClick={() => openSettingsPage("sync")}
-    >
-      <span className="ph-sync-dot" aria-hidden />
-      <span className="ph-sync-text">
-        {t.navSync} · {text}
-      </span>
-      <svg
-        className="ph-sync-chev"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <path d="m9 6 6 6-6 6" />
-      </svg>
-    </button>
-  );
+  return null;
 }

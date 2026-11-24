@@ -1,52 +1,63 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import en from "../i18n/locales/en";
 import type { Strings } from "../i18n/strings";
-import { openSettingsPage } from "../settings/settings-nav";
 import { syncStatus } from "../platform/ipc-sync";
+import { showNotice } from "../engine/controls/notices";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
 
 vi.mock("../platform/ipc-sync", () => ({ syncStatus: vi.fn() }));
-vi.mock("../settings/settings-nav", () => ({ openSettingsPage: vi.fn() }));
+vi.mock("../engine/controls/notices", () => ({ showNotice: vi.fn() }));
 
 afterEach(() => {
   cleanup();
   vi.mocked(syncStatus).mockReset();
-  vi.mocked(openSettingsPage).mockClear();
+  vi.mocked(showNotice).mockReset();
 });
 
-it("shows the last built-in sync and opens the sync settings", async () => {
+const result = {
+  revision: "r",
+  uploaded: 1,
+  downloaded: 0,
+  removed: 0,
+  moved: 0,
+  conflicts: [],
+  deferred: [],
+  unchanged: 0,
+};
+
+it("says a fresh sync finished, then leaves no box on the page", async () => {
   vi.mocked(syncStatus).mockResolvedValue({
     configured: true,
-    last: {
-      at: "2026-11-20T13:10:09.000Z",
-      result: {
-        revision: "r",
-        uploaded: 1,
-        downloaded: 0,
-        removed: 0,
-        moved: 0,
-        conflicts: [],
-        deferred: [],
-        unchanged: 0,
-      },
-    },
+    last: { at: new Date().toISOString(), result },
   });
-  render(<PhoneSyncStatus folder="/vault" t={en as Strings} />);
-
-  const row = await screen.findByRole("button", {
-    name: `${en.navSync}: ${en.syncDone}`,
-  });
-  fireEvent.click(row);
-  expect(openSettingsPage).toHaveBeenCalledWith("sync");
+  const { container } = render(
+    <PhoneSyncStatus folder={`/vault-fresh-${Date.now()}`} t={en as Strings} />,
+  );
+  await waitFor(() =>
+    expect(showNotice).toHaveBeenCalledWith(
+      `${en.navSync} · ${en.syncDone}`,
+      { tone: "info" },
+    ),
+  );
+  expect(container.firstChild).toBeNull();
 });
 
-it("says nothing while this folder has no built-in sync", async () => {
-  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  const { container } = render(
-    <PhoneSyncStatus folder="/vault" t={en as Strings} />,
+it("stays quiet for an old result or a folder with no sync", async () => {
+  vi.mocked(syncStatus).mockResolvedValueOnce({
+    configured: true,
+    last: { at: "2026-11-20T13:10:09.000Z", result },
+  });
+  const old = render(
+    <PhoneSyncStatus folder={`/vault-old-${Date.now()}`} t={en as Strings} />,
+  );
+  vi.mocked(syncStatus).mockResolvedValueOnce({ configured: false, last: null });
+  const none = render(
+    <PhoneSyncStatus folder={`/vault-none-${Date.now()}`} t={en as Strings} />,
   );
   await Promise.resolve();
-  expect(container.firstChild).toBeNull();
+  expect(showNotice).not.toHaveBeenCalled();
+  expect(old.container.firstChild).toBeNull();
+  expect(none.container.firstChild).toBeNull();
 });
