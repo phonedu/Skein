@@ -137,6 +137,36 @@ tasks:
       not: 不做公网中继、P2P、TLS、后台自动暴露；不改 /1 协议与同步引擎；不做手机展示二维码；iOS 无真机只做构建检查。
       scope: textus-discovery crate、textus-hub 广播、app 发现/二维码命令与 SyncHub UI、barcode scanner 插件、i18n、单测与真机验收。
       evidence: 发现/二维码 payload 单测；桌面+华为同 Wi-Fi 无输入配对与首次同步；mDNS 关闭/被挡时 UDP 兜底；撤销与只读回归。
+  - id: UI-p6
+    title: 手机库页同步提示改为瞬时提示
+    workstream: UI
+    kind: task
+    state: doing
+    acceptance: 库页/今天不再有常驻同步框；新同步完成或失败时出现会自动消失的提示；不遮挡今天/文件与列表；同步设置仍可进入；手机截图验收。
+    spec: specs/界面契约.md#7-屏幕索引
+    estimate: 半天
+    brief:
+      problem: 手机库页在 Today/Files 下面常驻一个带边框的同步框，挤占列表并和分段控件重叠；其他应用用图标或完成即消失的提示。
+      expected: 删掉常驻框；检测到新的同步结果时用现有 notice 显示一次，成功后自动消失；历史结果不在每次打开时重复；失败用错误色提示。
+      standard: 复用 showNotice；只在 last.at 变新或最近完成时提示；不新增协议/状态；手机 360 宽截图。
+      not: 不新增常驻同步面板；不跳设置；不改同步状态数据结构；不做多端通知中心。
+      scope: PhoneSyncStatus、PhoneHome/PhoneToday 的挂载位置、PhoneHome.css 清理、相关 vitest。
+      evidence: 手机库页无同步框截图；同步后提示出现并消失；PhoneSyncStatus 单测。
+  - id: PH9
+    title: 手机交付卡长标题溢出与库页 ⋯ 去插件
+    workstream: UI
+    kind: chore
+    state: doing
+    acceptance: 长标题在交付卡内省略、Today 不横向滚动；库页 ⋯ 无插件、保留命令面板；Today 与文档页的插件入口不变；单测 + e2e 长标题回归；真机复验。
+    spec: specs/Textus-手机端元素一致性方案.md
+    estimate: 0.5 天
+    brief:
+      problem: 真实库的长标题让手机交付卡撑破：button 的 flex 默认 flex-start，两行取全长，Today 页内容 555px 宽（视口 360）并横向滚了 87px，当前交付标签被推出屏幕；同时库页 ⋯ 里放了插件入口，与文件动作混在一起。
+      expected: 交付卡两行在卡宽内省略，页面不横向滚动；库页 ⋯ 只留文件动作 + 命令面板，插件仍由 Today 与文档页的 ⋯ 进入。
+      standard: 只改手机壳层；复用 token；补 e2e 长标题与 ⋯ 行集；真机截图。
+      not: 不动桌面；不改插件启动器本身；不调整 ActionSheet 的玻璃/透明度。
+      scope: PhoneToday.css、PhoneHome.tsx 与其测试、e2e/ui-contracts、发布说明。
+      evidence: 华为真机长标题卡截图；e2e 长标题用例通过；vitest 26 项；tsc/eslint 干净。
 later:
   - id: S5
     title: 同步硬化

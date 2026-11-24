@@ -40,6 +40,13 @@ describe("Phone Today, the design board", () => {
     expect(capture.closest(".ph-views")).toBeTruthy();
   });
 
+  it("keeps a long delivery title inside its card", () => {
+    // A button's flex default is flex-start: the title took its full length,
+    // the page scrolled sideways and the card's label rode off the edge.
+    expect(css).toMatch(/\.pcard \{[^}]*align-items: stretch;/s);
+    expect(css).toMatch(/\.pbody \{[^}]*overflow-x: hidden;/s);
+  });
+
   it("puts the current delivery and today's changes in glass cards", () => {
     expect(css).toMatch(
       /\.pcard \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,

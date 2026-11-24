@@ -21,7 +21,6 @@ import {
   CloseIcon,
   FolderIcon,
   MoreIcon,
-  PluginsTabIcon,
   SearchIcon,
   SettingsIcon,
 } from "../engine/controls/icons";
@@ -106,7 +105,8 @@ export function PhoneHome({
   ];
 
   // The library's ⋯: the file page's actions (the tree's hidden toolbar),
-  // then the app-wide two Today keeps in its own sheet.
+  // then the palette, which acts on the library in front. Plugins stay on
+  // Today's own ⋯: the launcher is a home-wide entry, not a file action.
   const moreItems: ContextMenuEntry[] = [
     ...(openFolder.treeRoot
       ? ([
@@ -122,16 +122,6 @@ export function PhoneHome({
           "separator",
         ] as ContextMenuEntry[])
       : []),
-    {
-      label: t.pluginsTitle,
-      Icon: PluginsTabIcon,
-      onSelect: () => {
-        void import("../plugins/views/plugin-launcher").then((m) =>
-          m.openPluginLauncher(),
-        );
-      },
-    },
-    "separator",
     {
       label: t.menuCommandPalette,
       Icon: SearchIcon,

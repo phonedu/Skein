@@ -227,7 +227,9 @@ describe("the phone library home", () => {
       screen.getByRole("menuitem", { name: en.treeSortModified }),
     ).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: en.treeRefresh })).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: en.pluginsTitle })).toBeTruthy();
+    // Plugins stay on Today's sheet: the library's ⋯ is file actions and
+    // the palette, which acts on the library in front.
+    expect(screen.queryByRole("menuitem", { name: en.pluginsTitle })).toBeNull();
     expect(
       screen.getByRole("menuitem", { name: en.menuCommandPalette }),
     ).toBeTruthy();
@@ -254,7 +256,7 @@ describe("the phone library home", () => {
     expect(folder?.seq).toBeGreaterThan(file?.seq ?? 0);
   });
 
-  it("offers no file actions on an empty library, but keeps the app-wide two", () => {
+  it("offers no file actions on an empty library, and no plugins either", () => {
     const empty = {
       ...openFolder,
       folder: null,
@@ -263,12 +265,15 @@ describe("the phone library home", () => {
     } as unknown as Parameters<typeof PhoneHome>[0]["openFolder"];
     renderHome({ openFolder: empty });
 
-    // No tree: no file actions, but the app-wide two stay.
+    // No tree: no file actions; the palette stays, plugins do not.
     fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
     expect(
       screen.queryByRole("menuitem", { name: en.menuNewFile }),
     ).toBeNull();
-    expect(screen.getByRole("menuitem", { name: en.pluginsTitle })).toBeTruthy();
+    expect(screen.queryByRole("menuitem", { name: en.pluginsTitle })).toBeNull();
+    expect(
+      screen.getByRole("menuitem", { name: en.menuCommandPalette }),
+    ).toBeTruthy();
   });
 
   it("opens the app's own Documents from the empty state", () => {

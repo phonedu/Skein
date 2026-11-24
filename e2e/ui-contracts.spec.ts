@@ -312,8 +312,12 @@ test.describe("the phone shell", () => {
     await expect(
       page.getByRole("menuitemradio", { name: "按名称", exact: true }),
     ).toBeVisible();
+    // Plugins stay on Today's sheet; the library keeps the palette.
     await expect(
       page.getByRole("menuitem", { name: "插件", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("menuitem", { name: "命令面板…", exact: true }),
     ).toBeVisible();
 
     // Choosing a sort closes the sheet and leaves the tree in place.
@@ -415,6 +419,40 @@ test.describe("the phone shell", () => {
     await expect(page.locator(".phone-editor-bar")).toBeVisible();
     // The page says it too, where a saved page shows its folder.
     await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
+  });
+
+  test("keeps a long current-delivery title inside its card", async ({
+    page,
+  }) => {
+    const name = "“数字方舟”笔记系统完整方案：永不丢失的端到端加密同步架构.md";
+    await page.addInitScript((file) => {
+      const w = window as unknown as Record<string, unknown>;
+      const files = { [`/proj/${file}`]: "# note\n" };
+      w.__devFs = files;
+      w.__devFiles = files;
+    }, name);
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    await openPath(page, `/proj/${name}`);
+    // Back over the document: Today's card carries the long title.
+    await page.getByRole("button", { name: "回到文件库" }).tap();
+    const body = await page.locator(".pbody").evaluate((el) => ({
+      client: el.clientWidth,
+      scroll: el.scrollWidth,
+      left: el.scrollLeft,
+    }));
+    // A button's flex default let the title take its full length and scroll
+    // the page sideways; the label rode off the left edge with it.
+    expect(body.left).toBe(0);
+    expect(body.scroll).toBeLessThanOrEqual(body.client + 1);
+    const card = await page.locator(".pcard-title").evaluate((el) => {
+      const title = el.getBoundingClientRect();
+      const box = (el.closest(".pcard") as HTMLElement).getBoundingClientRect();
+      return { title: title.width, card: box.width };
+    });
+    expect(card.title).toBeLessThanOrEqual(card.card);
   });
 
   test("opens the palette from the document page, and marks the chosen mode", async ({

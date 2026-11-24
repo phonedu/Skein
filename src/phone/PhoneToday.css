@@ -103,6 +103,7 @@
 .pbody {
   flex: 1;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: var(--space-2) var(--space-4)
     calc(var(--space-6) + var(--safe-bottom, 0px));
@@ -122,6 +123,10 @@
 .pcard {
   display: flex;
   flex-direction: column;
+  /* A button's own flex default is flex-start: a long title would then take
+     its full length and push the card (and the page) sideways. Stretched,
+     each line is the card's width and ellipsises. */
+  align-items: stretch;
   gap: var(--space-1);
   width: 100%;
   padding: var(--space-4);
