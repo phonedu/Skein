@@ -9,7 +9,7 @@ import { createSubscribers } from "../../utils/store";
 export interface RightPanelView {
   plugin: string;
   view: string;
-  kind: "list" | "view" | "web";
+  kind: "list" | "view" | "web" | "catalog";
   title: string;
   resource?: string;
   state?: unknown;

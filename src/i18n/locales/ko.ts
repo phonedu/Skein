@@ -1765,6 +1765,7 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   mcpTried: { other: "{server}: 도구 {n}개 - {names}" },
   mcpFormSave: "저장",
   pluginsTitle: "플러그인",
+  pluginCatalogEmpty: "사용할 수 있는 플러그인 페이지가 없습니다.",
   pluginsCatalogLoading: "목록을 불러오는 중…",
   pluginsCatalogFailed: "목록을 불러오지 못했습니다: {reason}",
   pluginsReadFailed: "설치된 플러그인을 읽을 수 없습니다: {reason}",

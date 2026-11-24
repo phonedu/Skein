@@ -1892,6 +1892,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   },
   mcpFormSave: "Salvar",
   pluginsTitle: "Plugins",
+  pluginCatalogEmpty: "Nenhuma página de plugin disponível.",
   pluginsCatalogLoading: "Carregando a lista…",
   pluginsCatalogFailed: "Não foi possível carregar a lista: {reason}",
   pluginsReadFailed: "Não foi possível ler os plugins instalados: {reason}",

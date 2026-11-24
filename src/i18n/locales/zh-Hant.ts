@@ -1698,6 +1698,7 @@ export default {
   mcpTried: { other: "{server}：{n} 個工具 - {names}" },
   mcpFormSave: "儲存",
   pluginsTitle: "外掛程式",
+  pluginCatalogEmpty: "沒有可用的外掛頁面。",
   pluginsCatalogLoading: "正在讀取清單…",
   pluginsCatalogFailed: "無法讀取清單：{reason}",
   pluginsReadFailed: "讀不到已安裝的外掛：{reason}",

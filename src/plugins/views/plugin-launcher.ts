@@ -23,9 +23,13 @@ import { openRightPanelView } from "./right-panel-view";
  * It replaces the old activity rail's plugin icons: nothing is permanent
  * but the top bar's button.
  */
-interface Surface {
+export interface Surface {
   label: string;
   description?: string;
+  /** The plugin a page belongs to; none for a command. */
+  plugin?: string;
+  /** The page's id, for deduplicating the tab and manifest lists. */
+  view?: string;
   run: () => void;
 }
 
@@ -56,7 +60,9 @@ function openPage(
   });
 }
 
-function surfaces(): Surface[] {
+/** The pages the installed plugins declare, in the order the launcher and
+ *  the right column's catalog show them. */
+export function pluginPages(): Surface[] {
   const t = currentStrings();
   const snapshot = pluginsSnapshot();
   const language = windowInfo().language();
@@ -70,6 +76,8 @@ function surfaces(): Surface[] {
     out.push({
       label: tab.label(t),
       description: record ? pluginName(record) : plugin,
+      plugin,
+      view: tab.id,
       run: () => openPage(plugin, tab.id, kind, tab.label(t)),
     });
   }
@@ -82,10 +90,24 @@ function surfaces(): Surface[] {
       out.push({
         label: title,
         description: pluginName(record),
+        plugin: record.id,
+        view: view.id,
         run: () => openPage(record.id, view.id, kind, title),
       });
     }
   }
+  const seen = new Set<string>();
+  return out.filter((page) => {
+    const key = `${page.plugin}:${page.view}:${page.label}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function surfaces(): Surface[] {
+  const t = currentStrings();
+  const out = pluginPages();
 
   for (const command of commands()) {
     if (command.id.startsWith("textus.") || command.palette === false) continue;
@@ -106,8 +128,24 @@ function surfaces(): Surface[] {
   return out;
 }
 
-/** The top bar's plugin button: a QuickPick over the plugin's pages and
- *  commands, filtered as it is typed. */
+/** The top bar's plugin button: on a desktop or tablet, the right
+ *  column's catalog of every plugin page; elsewhere the QuickPick, where
+ *  there is no column. */
+export function openPluginCatalog(): void {
+  if (hasEdge()) {
+    openRightPanelView({
+      plugin: "textus",
+      view: "plugins",
+      kind: "catalog",
+      title: currentStrings().pluginsTitle,
+    });
+    return;
+  }
+  void openPluginLauncher();
+}
+
+/** The QuickPick over the plugin's pages and commands, filtered as it is
+ *  typed. */
 export async function openPluginLauncher(): Promise<void> {
   const items: QuickPickItem[] = surfaces().map((surface) => ({
     label: surface.label,

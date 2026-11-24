@@ -7,7 +7,11 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  padding-top: var(--window-bar-height);
+  /* The document's tab row is under the window bar: the column starts
+     below it, so its own header is not drawn under the tabs. */
+  padding-top: calc(
+    var(--window-bar-height) + 40px * var(--chrome-scale)
+  );
   border-left: 1px solid var(--ui-border);
   background: var(--ui-surface);
   color: var(--ui-text);
@@ -31,39 +35,6 @@
   min-height: calc(var(--header-height) - var(--window-bar-height));
   padding: 0 var(--space-1) 0 var(--space-2);
   border-bottom: 1px solid var(--ui-border);
-}
-
-.right-panel-seg {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border-radius: var(--shape-s);
-  background: var(--ui-subtle);
-}
-
-.right-panel-tab {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 24px;
-  border: 0;
-  border-radius: var(--shape-s);
-  background: none;
-  color: var(--ui-muted);
-}
-
-.right-panel-tab[aria-selected="true"] {
-  background: var(--ui-bg);
-  color: var(--ui-accent);
-}
-
-@media (any-hover: hover) {
-  .right-panel-tab:not(:disabled):hover {
-    background: var(--ui-hover);
-    transition: background-color var(--dur-instant) var(--ease-standard);
-  }
 }
 
 .right-panel-label {
@@ -162,4 +133,48 @@
 .right-panel-list .plugin-list-description {
   flex-basis: 100%;
   font-size: var(--text-caption);
+}
+
+/* The right column's plugin catalog: one group per plugin, one row per
+   page it declares. */
+.plugin-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  overflow: auto;
+}
+
+.plugin-catalog-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plugin-catalog-title {
+  margin: 0 0 var(--space-1);
+  padding: 0 var(--space-1);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.plugin-catalog-row {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-1);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-body);
+  text-align: left;
+}
+
+@media (any-hover: hover) {
+  .plugin-catalog-row:hover {
+    background: var(--ui-hover);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
 }

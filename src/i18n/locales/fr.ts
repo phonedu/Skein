@@ -1924,6 +1924,7 @@ utiliser une.
   },
   mcpFormSave: "Enregistrer",
   pluginsTitle: "Extensions",
+  pluginCatalogEmpty: "Aucune page de plugin disponible.",
   pluginsCatalogLoading: "Chargement de la liste…",
   pluginsCatalogFailed: "Impossible de charger la liste : {reason}",
   pluginsReadFailed: "Impossible de lire les plugins installés : {reason}",

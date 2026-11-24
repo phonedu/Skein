@@ -294,7 +294,7 @@ function App() {
               onToggleSidebar={toggleSidebar}
               onOpenPlugins={() => {
                 void import("../plugins/views/plugin-launcher").then((m) =>
-                  m.openPluginLauncher(),
+                  m.openPluginCatalog(),
                 );
               }}
               showAgentToggle={aiFeatures(settings, tutorial.active).chat}
@@ -349,7 +349,6 @@ function App() {
             <RightPanel
               presence={rightPanel.presence}
               mode={rightPanel.mode}
-              onMode={rightPanel.setMode}
               onClose={rightPanel.close}
               t={t}
             />

@@ -6,8 +6,6 @@ import { reopenConversation } from "../../ai/chat/reopen-conversation";
 import { useAgentPanel } from "../../ai/chat/panel/agent-panel";
 import {
   CloseIcon,
-  PluginsTabIcon,
-  AssistantIcon,
   PlusIcon,
   ProjectIcon,
 } from "../../engine/controls/icons";
@@ -19,6 +17,7 @@ import {
   PluginTabPane,
   ViewTitleActions,
 } from "../../plugins/views/plugin-views";
+import { PluginCatalogPane } from "../../plugins/views/PluginCatalogPane";
 import {
   rightPanelRequest,
   subscribeRightPanelView,
@@ -38,14 +37,12 @@ export type RightPanelMode = "agent" | "plugin";
 export function RightPanel({
   presence,
   mode,
-  onMode,
   onClose,
   t,
 }: {
   /** The column's exit: it stays mounted while it plays out. */
   presence: PresenceHandle;
   mode: RightPanelMode;
-  onMode: (mode: RightPanelMode) => void;
   onClose: () => void;
   t: Strings;
 }) {
@@ -69,31 +66,6 @@ export function RightPanel({
       inert={closing || undefined}
     >
       <div className="right-panel-head">
-        <div className="right-panel-seg" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={agent}
-            aria-label={t.agentPanelTitle}
-            title={t.agentPanelTitle}
-            className="right-panel-tab"
-            onClick={() => onMode("agent")}
-          >
-            <AssistantIcon off={!settings.textusAi} />
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!agent}
-            aria-label={t.pluginsTitle}
-            title={t.pluginsTitle}
-            className="right-panel-tab"
-            disabled={!view}
-            onClick={() => onMode("plugin")}
-          >
-            <PluginsTabIcon />
-          </button>
-        </div>
         <span className="right-panel-label tx-pane-title">
           {agent ? t.agentPanelTitle : (view?.title ?? t.pluginsTitle)}
         </span>
@@ -125,7 +97,9 @@ export function RightPanel({
           </div>
         ) : null}
         {/* A plugin's own buttons over its view ("view/title"). */}
-        {!agent && view ? <ViewTitleActions view={view.view} /> : null}
+        {!agent && view && view.kind !== "catalog" ? (
+          <ViewTitleActions view={view.view} />
+        ) : null}
         <button
           type="button"
           className="right-panel-close"
@@ -147,7 +121,9 @@ export function RightPanel({
         </div>
       ) : view ? (
         <div className="right-panel-body">
-          {view.kind === "list" ? (
+          {view.kind === "catalog" ? (
+            <PluginCatalogPane t={t} />
+          ) : view.kind === "list" ? (
             <PluginListPane
               plugin={view.plugin}
               view={view.view}

@@ -1921,6 +1921,7 @@ export default {
   },
   mcpFormSave: "Сохранить",
   pluginsTitle: "Плагины",
+  pluginCatalogEmpty: "Нет доступных страниц плагинов.",
   pluginsCatalogLoading: "Загрузка списка…",
   pluginsCatalogFailed: "Не удалось загрузить список: {reason}",
   pluginsReadFailed: "Не удалось прочитать установленные плагины: {reason}",

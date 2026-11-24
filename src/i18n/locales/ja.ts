@@ -1782,6 +1782,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   mcpTried: { other: "{server}：ツール {n} 個 - {names}" },
   mcpFormSave: "保存",
   pluginsTitle: "プラグイン",
+  pluginCatalogEmpty: "利用できるプラグインページがありません。",
   pluginsCatalogLoading: "一覧を読み込み中…",
   pluginsCatalogFailed: "一覧を読み込めませんでした: {reason}",
   pluginsReadFailed: "インストール済みのプラグインを読み込めません：{reason}",

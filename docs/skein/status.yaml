@@ -137,21 +137,6 @@ tasks:
       not: 不做公网中继、P2P、TLS、后台自动暴露；不改 /1 协议与同步引擎；不做手机展示二维码；iOS 无真机只做构建检查。
       scope: textus-discovery crate、textus-hub 广播、app 发现/二维码命令与 SyncHub UI、barcode scanner 插件、i18n、单测与真机验收。
       evidence: 发现/二维码 payload 单测；桌面+华为同 Wi-Fi 无输入配对与首次同步；mDNS 关闭/被挡时 UDP 兜底；撤销与只读回归。
-  - id: UI-p5
-    title: 右栏入口与顶栏顺序修正
-    workstream: UI
-    kind: task
-    state: doing
-    acceptance: 右栏去掉 AI/插件分段控件；顶栏 AI 仍开 AI；顶栏插件在桌面打开右栏插件目录并能进入插件页；侧边栏与命令面板图标顺序调换；桌面 800/1280 验收。
-    spec: specs/界面契约.md#7-屏幕索引
-    estimate: 1–2 天
-    brief:
-      problem: 右栏 AI/插件分段控件的插件 tab 在无 view 时禁用、有 view 时又难理解；顶栏插件按钮打开 QuickPick 而不是插件界面；顶栏命令面板与侧边栏图标顺序不符合直觉。
-      expected: 删掉右栏两个图标，AI 面板只留标题和自身工具；顶栏 AI 按钮保持；顶栏插件按钮在桌面/平板打开右栏插件目录，列出所有插件页并点击进入，手机上回退 QuickPick；侧边栏按钮放到命令面板前面。
-      standard: 复用现有 plugin-launcher 的页面数据；目录只显示可打开页，空态说明；不跳设置；沿用 token；桌面与手机同一入口语义。
-      not: 不改插件运行时/贡献模型；不做插件管理页；不把插件目录做成设置页；不改 AI 会话语义。
-      scope: RightPanel、WindowBar、bar-layout 及测试、plugin-launcher/目录组件、i18n 十语言、相关 e2e/单测。
-      evidence: 右栏与顶栏截图；插件目录点击进入两个插件页；侧边栏/命令面板顺序截图；bar-layout 单测。
 later:
   - id: S5
     title: 同步硬化

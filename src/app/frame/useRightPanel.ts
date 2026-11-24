@@ -59,7 +59,6 @@ export function useRightPanel(
       mounted: presence.mounted,
       presence,
       mode,
-      setMode,
       close: () => agentPanel.setOpen(false),
     },
   };

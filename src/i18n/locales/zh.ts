@@ -1693,6 +1693,7 @@ export default {
   mcpTried: { other: "{server}：{n} 个工具 - {names}" },
   mcpFormSave: "保存",
   pluginsTitle: "插件",
+  pluginCatalogEmpty: "没有可用的插件页面。",
   pluginsCatalogLoading: "正在读取列表…",
   pluginsCatalogFailed: "没能读取列表：{reason}",
   pluginsReadFailed: "读不到已安装的插件：{reason}",

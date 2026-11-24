@@ -1865,6 +1865,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   },
   mcpFormSave: "Speichern",
   pluginsTitle: "Plugins",
+  pluginCatalogEmpty: "Keine Plugin-Seiten verfügbar.",
   pluginsCatalogLoading: "Liste wird geladen …",
   pluginsCatalogFailed: "Die Liste konnte nicht geladen werden: {reason}",
   pluginsReadFailed:

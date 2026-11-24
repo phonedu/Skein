@@ -111,7 +111,7 @@ body {
   .app-shell[data-right-panel-overlay="on"]
   > .right-panel {
   position: absolute;
-  top: var(--window-bar-height);
+  top: calc(var(--window-bar-height) + 40px * var(--chrome-scale));
   right: 0;
   bottom: 0;
   z-index: 2;

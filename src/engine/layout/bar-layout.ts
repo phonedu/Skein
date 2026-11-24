@@ -11,8 +11,8 @@
 
 export type BarPlatform = "macos" | "windows" | "linux" | "ios" | "android";
 
-/** At the bar's start, in order: the traffic lights' room, the app menu,
- *  the sidebar's button, the menu bar's titles. */
+/** At the bar's start, in order: the traffic lights' room, the sidebar's
+ *  button, the app menu (the command palette), the menu bar's titles. */
 type BarItem = "lights" | "menu" | "sidebar-toggle" | "menu-bar";
 
 export interface BarLayout {
@@ -56,7 +56,8 @@ export function barLayout({
   phone?: boolean;
 }): BarLayout {
   const none = { menuInRail: false, sideToTop: false, railToTop: false };
-  if (phone) return { rows: 1, lead: ["menu", "sidebar-toggle"], ...none };
+  if (phone)
+    return { rows: 1, lead: ["sidebar-toggle", "menu"], ...none };
   const railShown = rail && !zen;
   const toggle: BarItem[] = railOff || zen ? ["sidebar-toggle"] : [];
   // The rail turned off but shown with the sidebar: the bar keeps its
@@ -75,10 +76,10 @@ export function barLayout({
       railToTop: !ownRow && fullscreen && toTop,
     };
   if (menuBar) return { rows: zen ? 1 : 2, lead: ["menu-bar"], ...none };
-  if (ownRow) return { rows: 2, lead: ["menu", ...toggle], ...none };
+  if (ownRow) return { rows: 2, lead: [...toggle, "menu"], ...none };
   return {
     rows: 1,
-    lead: ["menu", ...toggle],
+    lead: [...toggle, "menu"],
     ...none,
     menuInRail: toTop,
     sideToTop: toTop,

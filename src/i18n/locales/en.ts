@@ -1824,6 +1824,7 @@ type /name in a conversation to use one.
   },
   mcpFormSave: "Save",
   pluginsTitle: "Plugins",
+  pluginCatalogEmpty: "No plugin pages are available.",
   pluginsCatalogLoading: "Loading the list…",
   pluginsCatalogFailed: "Couldn’t load the list: {reason}",
   pluginsReadFailed: "Couldn’t read your plugins: {reason}",

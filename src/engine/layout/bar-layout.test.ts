@@ -32,7 +32,7 @@ describe("the window bar's start", () => {
       expect(at(platform)).toEqual(at("windows"));
       expect(at(platform, { phone: true })).toEqual({
         rows: 1,
-        lead: ["menu", "sidebar-toggle"],
+        lead: ["sidebar-toggle", "menu"],
         menuInRail: false,
         sideToTop: false,
         railToTop: false,
@@ -44,7 +44,7 @@ describe("the window bar's start", () => {
     // Turned off, the rail shows with the sidebar; the button folds both,
     // and the bar keeps it where it was clicked: nothing rises over it.
     expect(at("windows", { railOff: true })).toMatchObject({
-      lead: ["menu", "sidebar-toggle"],
+      lead: ["sidebar-toggle", "menu"],
       menuInRail: false,
       sideToTop: false,
     });
@@ -54,12 +54,12 @@ describe("the window bar's start", () => {
       sideToTop: false,
     });
     expect(at("windows", { rail: false, railOff: true }).lead).toEqual([
-      "menu",
       "sidebar-toggle",
+      "menu",
     ]);
     expect(at("linux", { zen: true })).toEqual({
       rows: 1,
-      lead: ["menu", "sidebar-toggle"],
+      lead: ["sidebar-toggle", "menu"],
       menuInRail: false,
       sideToTop: false,
       railToTop: false,
