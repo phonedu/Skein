@@ -72,6 +72,7 @@ const phoneParts = lazyModule(
 const DocumentList = lazyComponent(phoneParts, (m) => m.DocumentList);
 const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
 const PhoneToday = lazyComponent(phoneParts, (m) => m.PhoneToday);
+const PhonePager = lazyComponent(phoneParts, (m) => m.PhonePager);
 const PhoneEditorBar = lazyComponent(phoneParts, (m) => m.PhoneEditorBar);
 // The right column's pages: the AI at the edge and a plugin's list, shown
 // when the shell first opens the column.
@@ -96,8 +97,6 @@ function App() {
     phone,
     surface: phoneView,
     setSurface: setPhoneView,
-    today: phoneToday,
-    library: phoneLibrary,
   } = usePhoneSurfaces(activeTab.view, activeTab.path);
 
   const { tutorial, settingsOpening, pendingClose } = shell;
@@ -354,36 +353,45 @@ function App() {
             />
           )}
 
-          {phoneToday ? (
-            <PhoneToday
-              t={t}
-              activeTitle={currentTitle}
-              activePath={activeTab.path}
-              openFolder={openFolder}
-              onOpenFile={(path) => {
-                void openFile(path);
-                setPhoneView("doc");
-              }}
-              onOpenLibrary={() => setPhoneView("library")}
-              onOpenCurrent={() => setPhoneView("doc")}
-              onCapture={captureOrBlank}
-            />
-          ) : phoneLibrary ? (
-            <PhoneHome
-              t={t}
-              openFolder={openFolder}
-              activePath={activeTab.path}
-              onBack={() => setPhoneView("today")}
-              onOpenFile={(path) => {
-                void openFile(path);
-                setPhoneView("doc");
-              }}
-              onNewFile={() => {
-                addBlankTab();
-                setPhoneView("doc");
-              }}
-              onCapture={captureOrBlank}
-              onEntryMoved={entryMoved}
+          {phone && phoneView !== "doc" ? (
+            <PhonePager
+              page={phoneView === "library" ? "files" : "today"}
+              onChange={(view) =>
+                setPhoneView(view === "files" ? "library" : "today")
+              }
+              today={
+                <PhoneToday
+                  t={t}
+                  activeTitle={currentTitle}
+                  activePath={activeTab.path}
+                  openFolder={openFolder}
+                  onOpenFile={(path) => {
+                    void openFile(path);
+                    setPhoneView("doc");
+                  }}
+                  onOpenLibrary={() => setPhoneView("library")}
+                  onOpenCurrent={() => setPhoneView("doc")}
+                  onCapture={captureOrBlank}
+                />
+              }
+              files={
+                <PhoneHome
+                  t={t}
+                  openFolder={openFolder}
+                  activePath={activeTab.path}
+                  onBack={() => setPhoneView("today")}
+                  onOpenFile={(path) => {
+                    void openFile(path);
+                    setPhoneView("doc");
+                  }}
+                  onNewFile={() => {
+                    addBlankTab();
+                    setPhoneView("doc");
+                  }}
+                  onCapture={captureOrBlank}
+                  onEntryMoved={entryMoved}
+                />
+              }
             />
           ) : (
             <DocumentIslands

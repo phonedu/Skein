@@ -70,7 +70,7 @@ export function trackDrag(
     window.removeEventListener("contextmenu", noMenu, true);
     if (!dragging) return;
     handlers.end(x, y, dropped, e);
-    swallowClick();
+    swallowNextClick();
   };
   const up = once((e: PointerEvent) => finish(e.clientX, e.clientY, true, e));
   const cancel = once((e: PointerEvent) =>
@@ -105,7 +105,7 @@ export function trackDrag(
 }
 
 /** The click a release sends lands on what was dragged: it isn't one. */
-function swallowClick() {
+export function swallowNextClick() {
   const stop = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();

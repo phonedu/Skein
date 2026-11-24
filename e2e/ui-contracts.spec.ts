@@ -267,9 +267,10 @@ test.describe("the phone shell", () => {
     });
 
     // The desktop's capsule, full width under the bar: 44 written for a
-    // finger, drawn at the phone's 10/11 (about 40).
-    await expect(page.locator(".ph-views")).toBeVisible();
-    for (const button of await sizes(page, ".ph-views .tx-segment")) {
+    // finger, drawn at the phone's 10/11 (about 40). Both pages stand in the
+    // track; only the one on screen has a capsule to measure.
+    await expect(page.locator(".ph-views:visible")).toBeVisible();
+    for (const button of await sizes(page, ".ph-views:visible .tx-segment")) {
       expectBetween(button.h, 39, 41);
     }
 
