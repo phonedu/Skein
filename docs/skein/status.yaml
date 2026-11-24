@@ -137,36 +137,21 @@ tasks:
       not: 不做公网中继、P2P、TLS、后台自动暴露；不改 /1 协议与同步引擎；不做手机展示二维码；iOS 无真机只做构建检查。
       scope: textus-discovery crate、textus-hub 广播、app 发现/二维码命令与 SyncHub UI、barcode scanner 插件、i18n、单测与真机验收。
       evidence: 发现/二维码 payload 单测；桌面+华为同 Wi-Fi 无输入配对与首次同步；mDNS 关闭/被挡时 UDP 兜底；撤销与只读回归。
-  - id: PH7
-    title: 手机冷启动落在今天而非恢复的文档页
+  - id: UI-p5
+    title: 右栏入口与顶栏顺序修正
     workstream: UI
-    kind: chore
+    kind: task
     state: doing
-    acceptance: 冷启动落在今天；恢复的文档仍可从今天点开；启动完成后插件新开的文档仍自动显示；单测覆盖。
-    spec: specs/Textus-手机端元素一致性方案.md
-    estimate: 0.5 天
-    brief:
-      problem: 手机杀掉进程再打开时，启动恢复把上次前台的文档（例如记一句写下的那条）放回前台，usePhoneSurfaces 把它当成插件新开的文档，界面从今天直接落到文档页。
-      expected: 手机冷启动始终落在今天；恢复的文档留在标签里，点今天卡片或最近文件才进文档页；启动完成后由插件新开的文档仍直接显示。
-      standard: 不改桌面会话恢复；用 reload-tabs 的 afterStartupRestore 作为启动完成信号；补 usePhoneSurfaces 单测；真机杀进程复验。
-      not: 不关 restoreSessionOnStartup；不改启动恢复顺序与手机三表面模型；不动桌面窗口会话。
-      scope: src/app/usePhoneSurfaces.ts 与其单测；Huawei 真机验证。
-      evidence: vitest 用例通过（无修复时应失败）；真机杀进程重开落在今天，点卡片能进文档。
-  - id: PH8
-    title: 文件页动作入口：桌面/手机露出排序、刷新、新建文件夹与文件夹操作
-    workstream: UI
-    kind: chore
-    state: doing
-    acceptance: 桌面文件页签行有 ⋯ 菜单（新建文件、新建文件夹、打开/关闭文件夹、排序、刷新）；手机顶栏两页都有 ⋯（文件页含上述动作）；手机 + 移到今天/文件胶囊后且语义为记一句；Today 的记一句大行删除；单测与 ui-contracts 覆盖；桌面构建冒烟。
-    spec: specs/Textus-手机端元素一致性方案.md
+    acceptance: 右栏去掉 AI/插件分段控件；顶栏 AI 仍开 AI；顶栏插件在桌面打开右栏插件目录并能进入插件页；侧边栏与命令面板图标顺序调换；桌面 800/1280 验收。
+    spec: specs/界面契约.md#7-屏幕索引
     estimate: 1–2 天
     brief:
-      problem: H0 把 FileTree 的整行工具栏隐藏后，排序、刷新、新建文件夹、打开/关闭文件夹在桌面没有任何入口；手机切到文件页后顶栏的 ⋯ 也消失，插件/命令面板不可用，文件动作无处可放。
-      expected: 按用户 2026-11-24 批准：桌面文件页签行加 ⋯ 菜单；手机顶栏两页都恢复 ⋯，文件页的 ⋯ 含文件动作；+ 放进今天/文件胶囊行、语义统一为记一句；删除 Today 的记一句大行；新建文件/文件夹移到文件页 ⋯ 与空态。
-      standard: 动作表桌面菜单与手机表同源；复用现有字符串与 token；平台差异只走 capabilities；单测 + ui-contracts；真机验收手机。
-      not: 不露上级面包屑；不做隐藏文件开关的新入口；不改文件树本身；不新增字符串（复用 treeSort/treeRefresh/treeNewFolder 等）。
-      scope: Sidebar 文件页签行、PhoneViewSeg/PhoneToday/PhoneHome、文件树动作事件、i18n 复用、e2e/ui-contracts、发布说明。
-      evidence: 单测：菜单动作与手机表；ui-contracts：桌面 ⋯ 菜单项、手机两页 ⋯、+ 在胶囊行、Today 无记一句行；桌面构建冒烟；华为真机截图。
+      problem: 右栏 AI/插件分段控件的插件 tab 在无 view 时禁用、有 view 时又难理解；顶栏插件按钮打开 QuickPick 而不是插件界面；顶栏命令面板与侧边栏图标顺序不符合直觉。
+      expected: 删掉右栏两个图标，AI 面板只留标题和自身工具；顶栏 AI 按钮保持；顶栏插件按钮在桌面/平板打开右栏插件目录，列出所有插件页并点击进入，手机上回退 QuickPick；侧边栏按钮放到命令面板前面。
+      standard: 复用现有 plugin-launcher 的页面数据；目录只显示可打开页，空态说明；不跳设置；沿用 token；桌面与手机同一入口语义。
+      not: 不改插件运行时/贡献模型；不做插件管理页；不把插件目录做成设置页；不改 AI 会话语义。
+      scope: RightPanel、WindowBar、bar-layout 及测试、plugin-launcher/目录组件、i18n 十语言、相关 e2e/单测。
+      evidence: 右栏与顶栏截图；插件目录点击进入两个插件页；侧边栏/命令面板顺序截图；bar-layout 单测。
 later:
   - id: S5
     title: 同步硬化
