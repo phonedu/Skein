@@ -33,8 +33,8 @@ workstreams:
   - id: DOC
     name: 文档（DOC）
     state: doing
-    focus: 文档 v3 分层 / 台账 / 硬门禁实施中（DOC-v3）
-    spec: decisions/0052-文档体系重排.md
+    focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
+    spec: specs/文档体系-v3.md
 tasks:
   - id: D0.5
     title: 理论小样本验证
@@ -92,20 +92,6 @@ tasks:
       not: 不做 D 组（转场/内存/Mac/Linux/iOS 专属）；B1 文件图标主题、B2 插件代码语言、B4 多 AI 端点、C3 手机插件能力核对暂缓；不整体 rebase 到 1.4.7。
       scope: src/files、src/editor、src/plugins（商店/插件页/菜单）、src/settings、e2e；桌面为主，插件页触控涉手机。
       evidence: 先做批：单测 + e2e + 桌面构建冒烟；下一批：桌面拖放真机与手机插件页验收。
-  - id: DOC-v3
-    title: 文档 v3：分层、台账、硬门禁
-    workstream: DOC
-    state: doing
-    acceptance: docs:check/check:repo 全绿；T2 在 STATUS 第一屏；分层完成；代码提交无 Task 被拒
-    spec: specs/文档体系-v3.md
-    estimate: 1–2 天
-    brief:
-      problem: 文档仍会丢承诺：T2 虽记录但被 Now 暂无埋住；specs 混生命周期；代码提交无任务号；研究/裁决被当规格；归档索引缺 17 条
-      expected: 一个台账 + 四层目录 + 生成视图 + 双向链接 + 提交硬门禁；承诺有入口，完成件离开 specs
-      standard: "docs:check 查图/层/状态；docs:wrap 要求 inbox 清零；代码提交 Task: id 通过；T2 第一屏可见；specs 只留在用件"
-      not: 不重写 622 行改造方案/645 行 Agent 契约；不合并 63 条裁决；不改外部评审 AI；不碰未提交 WIP
-      scope: docs/skein/**、scripts/docs-*、.githooks、CI、package/commands
-      evidence: docs:check/check:repo；capture→wrap；无 Task/todo/doing 提交模拟；归档链接检查
 later:
   - id: S4
     title: 局域网 Hub
