@@ -1,0 +1,13 @@
+/* The desktop's Today | Files capsule on a row of its own under the phone's
+   bar. The phone's sidebar rules already give its segments a finger's 44px
+   row (mobile/styles/sidebar.css); the track is the same component, drawn
+   full width so either surface is one thumb away. */
+.ph-views {
+  flex: none;
+  display: flex;
+  padding: var(--space-2) var(--space-4) 0;
+}
+
+.ph-views .sidebar-view-seg {
+  width: 100%;
+}

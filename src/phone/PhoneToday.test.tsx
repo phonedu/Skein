@@ -1,6 +1,14 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import en from "../i18n/locales/en";
+import type { OpenFolder } from "../app/useOpenFolder";
+import { PhoneToday } from "./PhoneToday";
+
+vi.mock("../files/useTodayChanges", () => ({ useTodayChanges: () => [] }));
+
+afterEach(cleanup);
 
 /**
  * Today's phone surface, as the 2026-11-22 board settled it: a borderless
@@ -64,5 +72,67 @@ describe("Phone Today, the design board", () => {
     expect(css).toMatch(
       /\.pchanges \.prow-doc \{[^}]*align-items: center;[^}]*padding-block: var\(--space-2\);/s,
     );
+  });
+});
+
+const openFolder = {
+  folder: null,
+  treeRoot: null,
+  revealed: null,
+  openFolderDialog: vi.fn(),
+  setTreeRoot: vi.fn(),
+  openFolder: vi.fn(),
+  closeFolder: vi.fn(),
+} as unknown as OpenFolder;
+
+function renderToday(props: {
+  activeTitle: string;
+  activePath: string | null;
+  onOpenFile: (path: string) => void;
+  onOpenCurrent: () => void;
+}) {
+  return render(
+    <PhoneToday
+      t={en}
+      activeTitle={props.activeTitle}
+      activePath={props.activePath}
+      openFolder={openFolder}
+      onOpenFile={props.onOpenFile}
+      onOpenCurrent={props.onOpenCurrent}
+      onOpenLibrary={vi.fn()}
+      onCapture={vi.fn()}
+    />,
+  );
+}
+
+describe("Phone Today, the current document card", () => {
+  it("opens an unsaved document by its tab, not only a saved one by path", () => {
+    // The card opened only a path, so a capture's unsaved document - which
+    // has none - could not be tapped at all.
+    const onOpenFile = vi.fn();
+    const onOpenCurrent = vi.fn();
+    renderToday({
+      activeTitle: "未命名",
+      activePath: null,
+      onOpenFile,
+      onOpenCurrent,
+    });
+    fireEvent.click(screen.getByRole("button", { name: "未命名" }));
+    expect(onOpenCurrent).toHaveBeenCalledTimes(1);
+    expect(onOpenFile).not.toHaveBeenCalled();
+  });
+
+  it("opens a saved document by its path", () => {
+    const onOpenFile = vi.fn();
+    const onOpenCurrent = vi.fn();
+    renderToday({
+      activeTitle: "note.md",
+      activePath: "/proj/note.md",
+      onOpenFile,
+      onOpenCurrent,
+    });
+    fireEvent.click(screen.getByRole("button", { name: /note\.md/ }));
+    expect(onOpenFile).toHaveBeenCalledWith("/proj/note.md");
+    expect(onOpenCurrent).not.toHaveBeenCalled();
   });
 });

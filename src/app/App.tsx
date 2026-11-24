@@ -348,6 +348,7 @@ function App() {
                 setPhoneView("doc");
               }}
               onOpenLibrary={() => setPhoneView("library")}
+              onOpenCurrent={() => setPhoneView("doc")}
               onCapture={() => {
                 if (!captureNote()) setPhoneView("doc");
               }}

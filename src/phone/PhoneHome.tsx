@@ -1,8 +1,6 @@
 // The phone's home: the open vault's file tree as the first surface —
-// the tree, the vault name and settings in the top bar. New-document lives
-// in the floating action button so the bar stays quiet like the approved
-// phone board. The vault name opens the library-switcher sheet; recents
-// will flow in later.
+// the tree, the vault name and settings in the top bar. The vault name
+// opens the library-switcher sheet; recents will flow in later.
 import { useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
@@ -18,7 +16,6 @@ import {
 import {
   NewDocumentIcon,
   NewFolderIcon,
-  BackChevronIcon,
   ChevronDownIcon,
   CloseIcon,
   FolderIcon,
@@ -31,6 +28,7 @@ import { Presence } from "../engine/motion/usePresence";
 import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
 import { PhonePluginStatus } from "./PhonePluginStatus";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
+import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneHome.css";
 
 const baseName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p;
@@ -109,16 +107,6 @@ export function PhoneHome({
   return (
     <div className="phone-home">
       <div className="ph-top">
-        {onBack ? (
-          <button
-            type="button"
-            className="ph-back"
-            aria-label={t.phoneBack}
-            onClick={onBack}
-          >
-            <BackChevronIcon />
-          </button>
-        ) : null}
         <button
           type="button"
           className="ph-vault"
@@ -155,6 +143,13 @@ export function PhoneHome({
           </button>
         </div>
       </div>
+      {onBack ? (
+        <PhoneViewSeg
+          t={t}
+          value="files"
+          onChange={(view) => view === "today" && onBack()}
+        />
+      ) : null}
       <div className="ph-search" role="search">
         <SearchIcon aria-hidden="true" />
         <input

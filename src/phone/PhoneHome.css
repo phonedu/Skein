@@ -98,32 +98,6 @@
   color: var(--phone-muted);
 }
 
-/* The library is pushed under Today: the chevron is the way back, sized as a
-   touch target and quiet so the vault chip stays the anchor. */
-.ph-back {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 48px;
-  height: 48px;
-  margin-left: calc(var(--space-2) * -1);
-  border: 0;
-  border-radius: var(--shape-s);
-  background: none;
-  color: var(--ui-text);
-  /* A 22px design at 1.1 draws 22: the bar's own size, not a page's. */
-  --icon-scale: 1.1;
-}
-
-.ph-back svg {
-  width: 22px;
-  height: 22px;
-}
-
-.ph-back:active {
-  background: var(--ui-pressed);
-}
-
 .ph-acts {
   margin-left: auto;
   display: flex;
@@ -296,14 +270,26 @@
   --tree-chevron: 24.2px;
   /* The tree counts the root level as depth 1, so pane.css's indent
      would step even the root rows in; the board's root rows stand at the
-     pane's inset, and one level in is one step (34px drawn). */
-  --tree-indent: min(calc(max(var(--depth, 1) - 1, 0) * var(--tree-step)), 35%);
+     pane's inset, and every level in is the same step (34px drawn). The
+     inset is part of the measure: added after the steps, the first step
+     would come out shorter than the rest. */
+  --tree-indent: min(
+    calc(var(--space-2) + max(var(--depth, 1) - 1, 0) * var(--tree-step)),
+    35%
+  );
   gap: var(--space-2);
   padding-block: var(--space-1);
   padding-right: var(--space-2);
   /* The depth indent survives the phone row's own padding: a folder's
      children sit inside it, as the board draws. */
-  padding-left: max(var(--space-2), var(--tree-indent));
+  padding-left: var(--tree-indent);
+  /* FileTree draws each guide line at the end of its step tile, counting
+     from a one-step root (the desktop's). The phone's root stands at the
+     inset instead, so the tile starts a step earlier and its line lands on
+     the enclosing folder's chevron centre. */
+  background-position-x: calc(
+    var(--space-2) + var(--tree-chevron) / 2 - var(--tree-step) + 1px
+  );
   border-radius: var(--shape-m);
 }
 
@@ -317,11 +303,11 @@
 /* A file level with the folders' icons, as the desktop rows align. */
 .phone-home .tree-row-file {
   /* A file has no disclosure: its icon takes the box's seat (chevron
-     measure + margin + gap) plus the row's own padding, so it lands under
-     the folders' chips, as the board draws. */
-  padding-left: max(
-    var(--space-2),
-    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2) + 10px)
+     measure + gap) after the row's own indent, so its left edge is the
+     folders' icons' left edge at the same depth. */
+  padding-left: min(
+    calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2)),
+    35%
   );
 }
 

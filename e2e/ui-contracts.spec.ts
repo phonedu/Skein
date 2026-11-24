@@ -248,6 +248,108 @@ test.describe("the phone shell", () => {
     expectBetween((await size(page, ".pcapture-icon")).w, 35, 37);
   });
 
+  test("switches Today and Files in one tap, on the desktop's capsule", async ({
+    page,
+  }) => {
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+
+    // The desktop's capsule, full width under the bar: 44 written for a
+    // finger, drawn at the phone's 10/11 (about 40).
+    await expect(page.locator(".ph-views")).toBeVisible();
+    for (const button of await sizes(page, ".ph-views .tx-segment")) {
+      expectBetween(button.h, 39, 41);
+    }
+
+    await page.getByRole("tab", { name: "文件" }).tap();
+    await expect(page.locator(".phone-home")).toBeVisible();
+    await expect(page.getByRole("tab", { name: "文件" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await page.getByRole("tab", { name: "今天" }).tap();
+    await expect(page.locator(".phone-today")).toBeVisible();
+  });
+
+  test("keeps the file tree one step a level, files level with folders", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as Record<string, unknown>;
+      const files = {
+        "/proj/work/note.md": "# note\n",
+        "/proj/work/deep/deepnote.md": "# deep\n",
+        "/proj/work/deep/deeper/leaf.md": "# leaf\n",
+      };
+      // One for the tree's listing, one for opening a document's text.
+      w.__devFs = files;
+      w.__devFiles = files;
+    });
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    // A document in front roots the tree at its folder (the phone's folder
+    // picker is the system's, which a browser has not).
+    await openPath(page, "/proj/work/note.md");
+    await page.getByRole("button", { name: "回到文件库" }).tap();
+    await page.getByRole("tab", { name: "文件" }).tap();
+    const row = (label: string) =>
+      page.locator(".tree-row", {
+        has: page.locator(".tree-label", { hasText: new RegExp(`^${label}$`) }),
+      });
+    await expect(row("deep").first()).toBeVisible();
+    await row("deep").first().tap();
+    await row("deeper").first().tap();
+    await expect(row("leaf.md").first()).toBeVisible();
+
+    const left = (label: string, part: string) =>
+      row(label)
+        .first()
+        .locator(part)
+        .evaluate((el) => el.getBoundingClientRect().left);
+    // Icons of files at levels 1, 2, 3: the same step between each pair.
+    const noteIcon = await left("note.md", ".tree-icon");
+    const deepnoteIcon = await left("deepnote.md", ".tree-icon");
+    const leafIcon = await left("leaf.md", ".tree-icon");
+    expectBetween(deepnoteIcon - noteIcon, 32, 35);
+    expectBetween(leafIcon - deepnoteIcon, 32, 35);
+    // A level-2 file's icon stands where its sibling folder's does.
+    expectBetween(
+      Math.abs(deepnoteIcon - (await left("deeper", ".tree-icon"))),
+      0,
+      1.5,
+    );
+    // The guide line on a level-2 row falls on the enclosing folder's
+    // chevron centre (the tile's line is at its step's end).
+    const guide = await row("deepnote.md")
+      .first()
+      .evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          position: Number.parseFloat(style.backgroundPositionX),
+          width: Number.parseFloat(style.backgroundSize),
+        };
+      });
+    const chevron = await row("deep")
+      .first()
+      .locator(".chevron")
+      .evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return r.left + r.width / 2;
+      });
+    const rowLeft = await row("deepnote.md")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().left);
+    expectBetween(
+      Math.abs(guide.position + guide.width - 1 + rowLeft - chevron),
+      0,
+      1.5,
+    );
+  });
+
   test("keeps the editor bar's actions at one 22px size", async ({ page }) => {
     await openApp(page, {
       settings: { language: "zh" },
@@ -277,8 +379,7 @@ test.describe("the phone shell", () => {
 
     // No folder yet: the library's empty state - a 64 written chip (about
     // 58 drawn), a 20 drawn title at 650, and the reading-size hint.
-    await page.getByRole("button", { name: "更多" }).tap();
-    await page.getByRole("menuitem", { name: "文件" }).tap();
+    await page.getByRole("tab", { name: "文件" }).tap();
     await expect(page.locator(".ph-empty")).toBeVisible();
     expectBetween((await size(page, ".ph-empty-glyph")).w, 57, 59);
     const emptyTitle = await styleOf(page, ".ph-empty-title", [

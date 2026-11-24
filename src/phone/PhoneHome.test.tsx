@@ -396,17 +396,25 @@ describe("the phone library home", () => {
     );
   });
 
-  it("keeps the tree's depth indent under the phone row's padding", () => {
+  it("keeps the tree's levels one step apart, files level with folders", () => {
     // The row's shorthand once wiped pane.css's --tree-indent padding,
-    // and a folder's children drew flush with the root. The phone rule
-    // must re-state the indent - from the second level on, the board's
-    // root rows standing at the pane's inset - and files level with the
-    // folders' chips.
+    // and a folder's children drew flush with the root. 2026-11-24: the
+    // root's inset is part of the measure (else the first step came out
+    // shorter than the rest), and a file's icon takes the folders' icons'
+    // left edge at its own depth - the old extra +10px seat centred it
+    // under them and read a level off.
     expect(phoneHomeCss).toContain(
-      "padding-left: max(var(--space-2), var(--tree-indent));",
+      "var(--space-2) + max(var(--depth, 1) - 1, 0) * var(--tree-step)",
     );
+    expect(phoneHomeCss).toContain("padding-left: var(--tree-indent);");
     expect(phoneHomeCss).toContain(
-      "calc(var(--tree-indent) + var(--tree-chevron) + var(--space-2) + 10px)",
+      "var(--tree-indent) + var(--tree-chevron) + var(--space-2)",
+    );
+    expect(phoneHomeCss).not.toContain("+ 10px");
+    // The guide lines land on the enclosing folder's chevron centre.
+    expect(phoneHomeCss).toContain("background-position-x: calc(");
+    expect(phoneHomeCss).toContain(
+      "var(--space-2) + var(--tree-chevron) / 2 - var(--tree-step) + 1px",
     );
   });
 

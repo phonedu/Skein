@@ -26,6 +26,7 @@ import {
 import { emitToThisWindow } from "../platform/menu-events";
 import { openCommandPalette } from "../app/command-palette";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
+import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneToday.css";
 
 /**
@@ -40,6 +41,7 @@ export function PhoneToday({
   activePath,
   openFolder,
   onOpenFile,
+  onOpenCurrent,
   onOpenLibrary,
   onCapture,
 }: {
@@ -48,6 +50,8 @@ export function PhoneToday({
   activePath: string | null;
   openFolder: OpenFolder;
   onOpenFile: (path: string) => void;
+  /** The document in front, by its tab: an unsaved one has no path. */
+  onOpenCurrent: () => void;
   onOpenLibrary: () => void;
   onCapture: () => void;
 }) {
@@ -77,14 +81,6 @@ export function PhoneToday({
         void import("../plugins/views/plugin-launcher").then((m) =>
           m.openPluginLauncher(),
         );
-      },
-    },
-    {
-      label: t.treeTab,
-      Icon: FolderIcon,
-      onSelect: () => {
-        setMore(false);
-        onOpenLibrary();
       },
     },
     "separator",
@@ -132,6 +128,12 @@ export function PhoneToday({
         </button>
       </div>
 
+      <PhoneViewSeg
+        t={t}
+        value="today"
+        onChange={(view) => view === "files" && onOpenLibrary()}
+      />
+
       <PhoneSyncStatus folder={root || null} t={t} />
 
       <div className="pbody">
@@ -160,7 +162,9 @@ export function PhoneToday({
             <button
               type="button"
               className="pcard"
-              onClick={() => activePath && onOpenFile(activePath)}
+              onClick={() =>
+                activePath ? onOpenFile(activePath) : onOpenCurrent()
+              }
             >
               <span className="pcard-title">{activeTitle}</span>
               {activePath ? (
