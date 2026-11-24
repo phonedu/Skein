@@ -241,6 +241,8 @@ export interface HubDevice {
   name: string;
   readOnly: boolean;
   pairedAt: string;
+  online: boolean;
+  lastSeen?: string | null;
 }
 
 export interface HubPairing {
@@ -268,6 +270,13 @@ export interface HubStartReply extends HubStatus {
   localConnectionId: string;
 }
 
+export interface HubAnnouncement {
+  name: string;
+  address: string;
+  repoId: string;
+  source: "mdns" | "udp" | "mdns+udp";
+}
+
 export interface HubPairReply {
   repoId: string;
   username: string;
@@ -275,6 +284,11 @@ export interface HubPairReply {
   readOnly: boolean;
   device: HubDevice;
 }
+
+export const hubDiscover = (timeoutMs = 2500): Promise<HubAnnouncement[]> =>
+  commands
+    .hub_discover(timeoutMs)
+    .then((json) => parse<HubAnnouncement[]>(json));
 
 export const hubStart = (
   root: string,
@@ -296,6 +310,8 @@ export const hubCode = (readOnly: boolean): Promise<HubPairing> =>
   commands
     .hub_code(readOnly)
     .then((json) => parse<HubPairing>(json));
+
+export const hubPairingQr = (): Promise<string> => commands.hub_pairing_qr();
 
 export const hubRevoke = (deviceId: string): Promise<boolean> =>
   commands.hub_revoke(deviceId);

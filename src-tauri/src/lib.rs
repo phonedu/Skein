@@ -252,7 +252,9 @@ pub fn run() {
         .manage(PendingOpenPaths(Mutex::new(Vec::new())));
     // Document access outside the app's own folder.
     #[cfg(mobile)]
-    let builder = builder.plugin(tauri_plugin_textus_files::init());
+    let builder = builder
+        .plugin(tauri_plugin_textus_files::init())
+        .plugin(tauri_plugin_barcode_scanner::init());
     #[cfg(desktop)]
     let builder = desktop_builder(builder);
     builder

@@ -70,6 +70,18 @@ pub async fn hub_pair(address: String, code: String, device: String) -> Result<S
     Ok(body)
 }
 
+/// Hubs on this network, over mDNS and UDP. The list is JSON so the
+/// generated binding stays small.
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn hub_discover(timeout_ms: Option<u64>) -> Result<String, String> {
+    let timeout = std::time::Duration::from_millis(timeout_ms.unwrap_or(2500).clamp(300, 5000));
+    let list = tokio::task::spawn_blocking(move || textus_discovery::discover(timeout))
+        .await
+        .map_err(|error| error.to_string())?;
+    serde_json::to_string(&list).map_err(|error| error.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

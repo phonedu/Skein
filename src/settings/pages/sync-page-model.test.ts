@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { resolveStrings } from "../../i18n/strings";
 import { fill } from "../../i18n/fill";
-import { errorText, syncStatusText } from "./sync-page-model";
+import {
+  errorText,
+  parseHubPairPayload,
+  syncStatusText,
+} from "./sync-page-model";
 
 const t = resolveStrings("en");
 
@@ -31,5 +35,28 @@ describe("sync page text", () => {
     expect(syncStatusText(t, { configured: true }, last)).toContain(
       fill(t.syncReassigned, { count: 1 }),
     );
+  });
+});
+
+describe("Hub pairing QR payload", () => {
+  const payload = {
+    address: "http://192.168.1.5:7419",
+    code: "123456",
+    repoId: "a".repeat(32),
+  };
+  const text = `TEXTUS-HUB-PAIR/1
+${JSON.stringify(payload)}`;
+
+  it("reads the desktop's one-time payload", () => {
+    expect(parseHubPairPayload(text)).toEqual(payload);
+  });
+
+  it("refuses another QR code or an incomplete one", () => {
+    expect(parseHubPairPayload("https://example.com")).toBeNull();
+    expect(
+      parseHubPairPayload(
+        text.replace('"code":"123456"', '"code":"12345"'),
+      ),
+    ).toBeNull();
   });
 });

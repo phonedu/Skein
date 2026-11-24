@@ -1,23 +1,27 @@
 // Settings › Sync › Local network Hub: start the desktop's WebDAV repository,
 // show the one-time code and paired devices, or join another Hub from a phone.
 import { useEffect, useState } from "react";
+import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
 import {
   hubBind,
   hubClear,
   hubCode,
+  hubDiscover,
   hubPair,
+  hubPairingQr,
   hubRevoke,
   hubStart,
   hubStatus,
   hubStop,
   syncSettingsSave,
+  type HubAnnouncement,
   type HubReply,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 import { CopyIcon } from "../../engine/controls/icons";
 import { SettingsGroup } from "./SettingsGroup";
-import { errorText } from "./sync-page-model";
+import { errorText, parseHubPairPayload } from "./sync-page-model";
 
 export interface SyncHubProps {
   t: Strings;
@@ -41,6 +45,16 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
   const [joinAddress, setJoinAddress] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [joinDevice, setJoinDevice] = useState("");
+  const [qr, setQr] = useState<string | null>(null);
+  const [found, setFound] = useState<HubAnnouncement[]>([]);
+  const [discovering, setDiscovering] = useState(false);
+  const [scanning, setScanning] = useState(false);
+
+  const status = reply.running ? reply.status : null;
+  const pairingCode = status?.pairing?.code ?? null;
+  const addresses = reply.running
+    ? reply.status.lanAddresses
+    : reply.lanAddresses;
 
   const load = async () => {
     try {
@@ -63,6 +77,25 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
     const timer = window.setInterval(() => void load(), 5000);
     return () => window.clearInterval(timer);
   }, [reply.running]);
+
+  useEffect(() => {
+    if (!pairingCode) {
+      setQr(null);
+      return;
+    }
+    let cancelled = false;
+    void hubPairingQr().then(
+      (image) => {
+        if (!cancelled) setQr(image);
+      },
+      () => {
+        if (!cancelled) setQr(null);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [pairingCode]);
 
   const run = async (work: () => Promise<void>) => {
     setBusy(true);
@@ -157,16 +190,16 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
     );
   };
 
-  const join = () =>
+  const pairWith = (address: string, code: string) =>
     run(async () => {
       const device = joinDevice.trim() || t.syncHubThisDevice;
-      const paired = await hubPair(joinAddress.trim(), joinCode.trim(), device);
+      const paired = await hubPair(address.trim(), code.trim(), device);
       await syncSettingsSave(
         root,
         {
           connectionId: "new",
           provider: "webdav",
-          endpoint: `${joinAddress.trim().replace(/\/+$/, "")}/hub/${paired.repoId}`,
+          endpoint: `${address.trim().replace(/\/+$/, "")}/hub/${paired.repoId}`,
           bucket: "",
           prefix: "",
           region: "",
@@ -188,10 +221,58 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
       setNote({ error: false, text: t.syncHubPaired });
     });
 
-  const status = reply.running ? reply.status : null;
-  const addresses = reply.running
-    ? reply.status.lanAddresses
-    : reply.lanAddresses;
+  const join = () => pairWith(joinAddress, joinCode);
+
+  const discover = () =>
+    run(async () => {
+      setDiscovering(true);
+      try {
+        const list = await hubDiscover();
+        setFound(list);
+        if (list.length === 0) {
+          setNote({ error: true, text: t.syncHubNoFound });
+        }
+      } finally {
+        setDiscovering(false);
+      }
+    });
+
+  const scanQr = async () => {
+    setScanning(true);
+    setNote(null);
+    try {
+      const { checkPermissions, requestPermissions, scan, Format } =
+        await import("@tauri-apps/plugin-barcode-scanner");
+      let permission = await checkPermissions();
+      if (permission !== "granted") {
+        permission = await requestPermissions();
+      }
+      if (permission !== "granted") {
+        setNote({ error: true, text: t.syncHubScanPermission });
+        return;
+      }
+      const result = await scan({ windowed: false, formats: [Format.QRCode] });
+      const payload = parseHubPairPayload(result.content);
+      if (!payload) {
+        setNote({ error: true, text: t.syncHubScanInvalid });
+        return;
+      }
+      setJoinAddress(payload.address);
+      setJoinCode(payload.code);
+      await pairWith(payload.address, payload.code);
+    } catch (error) {
+      const reason = String(error).toLowerCase();
+      setNote({
+        error: true,
+        text:
+          reason.includes("permission") || reason.includes("denied")
+            ? t.syncHubScanPermission
+            : t.syncHubScanFailed,
+      });
+    } finally {
+      setScanning(false);
+    }
+  };
 
   return (
     <SettingsGroup
@@ -290,6 +371,12 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
             </button>
           </div>
           <p className="tx-list-note">{t.syncHubCodeNote}</p>
+          {qr && (
+            <div className="sync-hub-qr">
+              <img src={qr} alt={t.syncHubQrAlt} />
+              <span className="tx-list-note">{t.syncHubQrHint}</span>
+            </div>
+          )}
           <label className="sync-check">
             <input
               type="checkbox"
@@ -309,7 +396,18 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
                 <span className="sync-list-text">
                   {device.name}
                   <span className="sync-last">
-                    {device.readOnly ? t.syncHubReadOnlyDevice : ""}
+                    {[
+                      device.readOnly ? t.syncHubReadOnlyDevice : "",
+                      device.online
+                        ? t.syncHubOnline
+                        : device.lastSeen
+                          ? fill(t.syncHubLastSeen, {
+                              time: new Date(device.lastSeen).toLocaleString(),
+                            })
+                          : t.syncHubOffline,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </span>
                 </span>
                 {device.id !== "local" && (
@@ -359,6 +457,44 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
         <>
           <h3 className="sync-hub-subhead">{t.syncHubJoinTitle}</h3>
           <p className="tx-list-note">{t.syncHubJoinIntro}</p>
+          <div className="sync-actions">
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              disabled={busy || discovering}
+              onClick={() => void discover()}
+            >
+              {discovering ? t.syncHubDiscovering : t.syncHubDiscover}
+            </button>
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              disabled={busy || scanning}
+              onClick={() => void scanQr()}
+            >
+              {scanning ? t.syncHubScanning : t.syncHubScan}
+            </button>
+          </div>
+          {found.length > 0 && (
+            <div className="sync-hub-found">
+              {found.map((hub) => (
+                <button
+                  type="button"
+                  key={`${hub.address}-${hub.repoId}`}
+                  className="sync-hub-found-row"
+                  onClick={() => {
+                    setJoinAddress(hub.address);
+                    setJoinCode("");
+                  }}
+                >
+                  <span className="sync-list-text">{hub.name}</span>
+                  <span className="sync-last">
+                    {hub.address} · {hub.source}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           <label className="sync-field">
             <span className="settings-field-label">{t.syncHubAddress}</span>
             <input

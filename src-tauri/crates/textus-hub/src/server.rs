@@ -208,6 +208,24 @@ impl Hub {
         }
     }
 
+    /// A QR image for a one-time pairing payload, as a data URL. The caller
+    /// builds the payload; the Hub does not choose what a phone will read.
+    pub fn pairing_svg(&self, payload: &str) -> Result<String, HubError> {
+        let code = qrcode::QrCode::new(payload.as_bytes())
+            .map_err(|error| HubError::new("invalidConfig", error.to_string()))?;
+        let svg = code
+            .render::<qrcode::render::svg::Color>()
+            .dark_color(qrcode::render::svg::Color("#000000"))
+            .light_color(qrcode::render::svg::Color("#ffffff"))
+            .min_dimensions(220, 220)
+            .quiet_zone(true)
+            .build();
+        Ok(format!(
+            "data:image/svg+xml;base64,{}",
+            STANDARD.encode(svg)
+        ))
+    }
+
     pub fn new_code(&self, read_only: bool) -> Result<PairingInfo, HubError> {
         self.inner
             .auth

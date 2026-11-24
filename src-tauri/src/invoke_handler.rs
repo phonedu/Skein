@@ -29,7 +29,7 @@ use commands::fs::{
     save_file_dialog, save_pasted_image, save_settings_file_dialog, write_base64_file,
     write_text_file,
 };
-use commands::hub::hub_pair;
+use commands::hub::{hub_discover, hub_pair};
 use commands::image_host::{image_host_key_id, upload_image};
 #[cfg(desktop)]
 use commands::linked_file::open_linked_file;
@@ -228,12 +228,15 @@ pub(crate) fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Sen
         #[cfg(desktop)]
         sync::hub::hub_code,
         #[cfg(desktop)]
+        sync::hub::hub_pairing_qr,
+        #[cfg(desktop)]
         sync::hub::hub_revoke,
         #[cfg(desktop)]
         sync::hub::hub_bind,
         #[cfg(desktop)]
         sync::hub::hub_clear,
         hub_pair,
+        hub_discover,
         commands::sync::sync_run_saved,
         commands::sync::sync_settings_get,
         commands::sync::sync_vaults,

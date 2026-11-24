@@ -6,7 +6,7 @@ authors = ["CatVinci Studio"]
 edition = "2021"
 
 [workspace]
-members = ["crates/aicompat", "crates/textus-hub", "crates/textus-sync", "plugins/textus-files"]
+members = ["crates/aicompat", "crates/textus-discovery", "crates/textus-hub", "crates/textus-sync", "plugins/textus-files"]
 exclude = ["patches/wry"]
 resolver = "2"
 
@@ -90,6 +90,7 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "mul
 # the app does. Two reqwest versions in the tree, so this one has its own name.
 reqwest13 = { package = "reqwest", version = "0.13", default-features = false, features = ["socks"] }
 aicompat = { path = "crates/aicompat" }
+textus-discovery = { path = "crates/textus-discovery" }
 textus-sync = { path = "crates/textus-sync" }
 
 # Markdown extraction (src/extract/), for chat attachments (commands/
@@ -168,6 +169,9 @@ libc = "0.2"
 
 [target.'cfg(any(target_os = "ios", target_os = "android"))'.dependencies]
 tauri-plugin-textus-files = { path = "plugins/textus-files" }
+# In-app QR scanning for LAN Hub pairing; desktop uses the phone's camera
+# through the same page only on mobile.
+tauri-plugin-barcode-scanner = "2"
 
 [target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
 # The LAN Hub's WebDAV server; desktop only, so neither mobile build carries

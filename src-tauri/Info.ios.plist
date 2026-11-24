@@ -12,6 +12,9 @@
   <!-- Only standard encryption (HTTPS): exempt from export documentation. -->
   <key>ITSAppUsesNonExemptEncryption</key>
   <false/>
+  <!-- Scanning the LAN Hub pairing QR code. -->
+  <key>NSCameraUsageDescription</key>
+  <string>Scan a pairing QR code from a Textus Hub on your local network.</string>
   <!-- The UI languages (src/i18n/langs.ts), as iOS names them. The app picks
        its own language in Settings; this lets what the system draws - the
        share sheet, the Files picker, the Copy/Paste menu - follow the

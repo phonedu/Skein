@@ -134,3 +134,40 @@ export function syncStatusText(
             .join(" ")
         : t.syncNever;
 }
+
+/** The one-time payload a desktop Hub's QR code carries. The prefix keeps
+ *  an unrelated QR code from being read as a pairing request. */
+export const HUB_PAIR_PREFIX = "TEXTUS-HUB-PAIR/1";
+
+export interface HubPairPayload {
+  address: string;
+  code: string;
+  repoId: string;
+}
+
+export function parseHubPairPayload(text: string): HubPairPayload | null {
+  if (!text.startsWith(HUB_PAIR_PREFIX)) return null;
+  try {
+    const value = JSON.parse(text.slice(HUB_PAIR_PREFIX.length).trim()) as {
+      address?: unknown;
+      code?: unknown;
+      repoId?: unknown;
+    };
+    if (
+      typeof value.address !== "string" ||
+      typeof value.code !== "string" ||
+      typeof value.repoId !== "string" ||
+      value.code.length !== 6 ||
+      !value.address.startsWith("http://")
+    ) {
+      return null;
+    }
+    return {
+      address: value.address,
+      code: value.code,
+      repoId: value.repoId,
+    };
+  } catch {
+    return null;
+  }
+}

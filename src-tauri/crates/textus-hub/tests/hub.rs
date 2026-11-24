@@ -66,6 +66,8 @@ impl Fixture {
             name: name.to_string(),
             read_only: body["readOnly"].as_bool().unwrap(),
             paired_at: String::new(),
+            online: false,
+            last_seen: None,
         };
         (device, body["token"].as_str().unwrap().to_string())
     }

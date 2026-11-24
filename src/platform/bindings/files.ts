@@ -138,10 +138,20 @@ export const commands = {
 	 *  readOnly}` as JSON. The token is never logged.
 	 */
 	hub_pair: (address: string, code: string, device: string) => __TAURI_INVOKE<string>("hub_pair", { address, code, device }),
+	/**
+	 *  Hubs on this network, over mDNS and UDP. The list is JSON so the
+	 *  generated binding stays small.
+	 */
+	hub_discover: (timeoutMs: number | null) => __TAURI_INVOKE<string>("hub_discover", { timeoutMs }),
 	hub_start: (root: string, readOnly: boolean, port: number | null, bind: string | null) => __TAURI_INVOKE<string>("hub_start", { root, readOnly, port, bind }),
 	hub_stop: () => __TAURI_INVOKE<null>("hub_stop"),
 	hub_status: () => __TAURI_INVOKE<string>("hub_status"),
 	hub_code: (readOnly: boolean) => __TAURI_INVOKE<string>("hub_code", { readOnly }),
+	/**
+	 *  The QR a phone scans: address, one-time code and repository, encoded by
+	 *  the desktop. The code is the same one shown beside it.
+	 */
+	hub_pairing_qr: () => __TAURI_INVOKE<string>("hub_pairing_qr"),
 	hub_revoke: (deviceId: string) => __TAURI_INVOKE<boolean>("hub_revoke", { deviceId }),
 	/**
 	 *  Binds this vault to the running Hub at the repository root. Separate from

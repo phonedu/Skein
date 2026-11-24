@@ -15,6 +15,8 @@ use tokio::sync::Mutex;
 struct Running {
     hub: Hub,
     connection_id: String,
+    /// mDNS and UDP discovery, when the network allowed either.
+    _discovery: Option<textus_discovery::Advertiser>,
 }
 
 /// One Hub per app process. The Mutex is held across start so two clicks
@@ -43,6 +45,14 @@ fn connection_id_for(repo_id: &str, root: &Path) -> String {
         "hub-{repo_id}-{}",
         hash_hex(root.to_string_lossy().as_bytes())
     )
+}
+
+fn host_name() -> String {
+    std::env::var("COMPUTERNAME")
+        .or_else(|_| std::env::var("HOSTNAME"))
+        .ok()
+        .filter(|name| !name.trim().is_empty())
+        .unwrap_or_else(|| "Textus desktop".to_string())
 }
 
 fn base_config(connection_id: &str, endpoint: &str) -> Config {
@@ -146,6 +156,8 @@ pub async fn hub_start(
         started.hub.shutdown().await;
         return Err(error);
     }
+    let discovery =
+        textus_discovery::Advertiser::start(bind, status.port, &host_name(), &status.repo_id).ok();
     let reply = StartReply {
         status,
         local_connection_id: connection_id.clone(),
@@ -153,6 +165,7 @@ pub async fn hub_start(
     *running = Some(Running {
         hub: started.hub,
         connection_id,
+        _discovery: discovery,
     });
     serde_json::to_string(&reply).map_err(|error| error.to_string())
 }
@@ -202,6 +215,31 @@ pub async fn hub_code(app: AppHandle, read_only: bool) -> Result<String, String>
         .new_code(read_only)
         .map_err(|error| error.to_string())?;
     serde_json::to_string(&pairing).map_err(|error| error.to_string())
+}
+
+/// The QR a phone scans: address, one-time code and repository, encoded by
+/// the desktop. The code is the same one shown beside it.
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub async fn hub_pairing_qr(app: AppHandle) -> Result<String, String> {
+    let state = app.state::<HubState>();
+    let running = state.0.lock().await;
+    let Some(running) = running.as_ref() else {
+        return Err(crate::errors::error("notFound"));
+    };
+    let status = running.hub.status();
+    let pairing = status
+        .pairing
+        .ok_or_else(|| crate::errors::error("expired"))?;
+    let payload = textus_discovery::PairPayload {
+        address: status.address,
+        code: pairing.code,
+        repo_id: status.repo_id,
+    };
+    running
+        .hub
+        .pairing_svg(&payload.encode())
+        .map_err(|error| error.to_string())
 }
 
 #[tauri::command]

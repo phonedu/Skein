@@ -4,5 +4,5 @@
   "description": "iOS and Android: document access outside the app's own folder (plugins/textus-files).",
   "platforms": ["iOS", "android"],
   "windows": ["main"],
-  "permissions": ["textus-files:default"]
+  "permissions": ["textus-files:default", "barcode-scanner:default"]
 }

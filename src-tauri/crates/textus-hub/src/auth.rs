@@ -24,6 +24,9 @@ pub struct DeviceInfo {
     pub name: String,
     pub read_only: bool,
     pub paired_at: String,
+    /// A request from this device in the last two minutes.
+    pub online: bool,
+    pub last_seen: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -50,6 +53,10 @@ struct DeviceRecord {
     token_hash: String,
     read_only: bool,
     paired_at: String,
+    #[serde(skip)]
+    last_seen: Option<Instant>,
+    #[serde(skip)]
+    last_seen_text: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -118,6 +125,8 @@ impl Auth {
             token_hash: hash_hex(&token),
             read_only: false,
             paired_at: now(),
+            last_seen: Some(Instant::now()),
+            last_seen_text: Some(now_text()),
         };
         inner.devices.retain(|device| device.id != "local");
         inner.devices.push(record.clone());
@@ -196,6 +205,8 @@ impl Auth {
             token_hash: hash_hex(&token),
             read_only,
             paired_at: now_text(),
+            last_seen: None,
+            last_seen_text: None,
         };
         inner.devices.push(record.clone());
         self.save(&inner).map_err(|_| PairError::Store)?;
@@ -203,12 +214,17 @@ impl Auth {
     }
 
     pub(crate) fn authorize(&self, id: &str, token: &str) -> Option<DeviceInfo> {
-        let inner = self.lock();
+        let mut inner = self.lock();
+        let text = now_text();
         inner
             .devices
-            .iter()
+            .iter_mut()
             .find(|device| device.id == id && hash_matches(&device.token_hash, token))
-            .map(info)
+            .map(|device| {
+                device.last_seen = Some(Instant::now());
+                device.last_seen_text = Some(text);
+                info(device)
+            })
     }
 
     pub(crate) fn devices(&self) -> Vec<DeviceInfo> {
@@ -251,6 +267,10 @@ fn info(record: &DeviceRecord) -> DeviceInfo {
         name: record.name.clone(),
         read_only: record.read_only,
         paired_at: record.paired_at.clone(),
+        online: record
+            .last_seen
+            .is_some_and(|at| at.elapsed() < Duration::from_secs(120)),
+        last_seen: record.last_seen_text.clone(),
     }
 }
 

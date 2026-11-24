@@ -109,9 +109,9 @@ pub fn lan_addresses() -> Vec<String> {
 
 fn lan_rank(address: u32) -> u8 {
     match address >> 16 {
-        0xc0a8 => 0, // 192.168/16
+        0xc0a8 => 0,          // 192.168/16
         0xac10..=0xac1f => 1, // 172.16/12
-        0x0a00 => 2, // 10/8
+        0x0a00 => 2,          // 10/8
         _ => 3,
     }
 }
