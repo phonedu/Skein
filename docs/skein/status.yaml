@@ -18,7 +18,7 @@ workstreams:
   - id: S
     name: 同步（S 组）
     state: doing
-    focus: S3q 七牛原生专项；S3b 的 S3 条件写已判负
+    focus: S3q 完成（2026-11-24，七牛 Kodo 原生上传）；S 组剩 S4 LAN Hub / S5 硬化
     spec: specs/同步方案.md
   - id: B
     name: 上游跟随（B 组）
@@ -43,13 +43,6 @@ tasks:
     acceptance: 4 周 10 个真实交付物；封装 ≥3 条资产并真实调用；复用率 ≥30%；≥3 条反例。
     spec: specs/Textus-改造方案.md#8-实施计划
     estimate: 4 周日历
-  - id: S3q
-    title: 七牛 Kodo 原生传输专项
-    workstream: S
-    state: todo
-    acceptance: 上传凭证 + insertOnly transport；引擎 / 设置接线；真桶首次 / 改 / 删 / 冲突。
-    spec: research/同步评审/07-S3-Provider兼容性.md
-    estimate: 5–8 天
   - id: T1
     title: 主题分层与 Skein 皮肤阶段 1
     workstream: T1
@@ -130,7 +123,6 @@ waiting:
   - D1r 复核非阻断：详情页触控沿用 App 手机 40px、计数仍西文数字、历史上限 50 条无截断提示、取消对话框无专门提示；不影响验收，归 D3/UI 文案清理。
   - D1r 修复后真机：复验时华为 OXF_AN10 从 adb 断开，改用 Xiaoshidan_API35 模拟器完成列表 → 详情 → 版本对比/打开；下次真机连接补一次详情 / 版本冒烟。
   - H9 SAF：2026-11-21 关闭；content:// 不做，除非出现真实用户场景。
-  - S3b：七牛 S3 条件写返回 unsafeServer，东区域 IncorrectRegion；原生 insertOnly 走 S3q；阿里云不做。
 questions:
   - id: U11
     text: 默认连接 / 远端子仓库改名 / 同库双连接 / 多用户共享 / 库只读
@@ -157,3 +149,8 @@ questions:
     default: 不做默认存储；先走 ED3；若做则默认关、可提取、AI / 搜索跳过
     trigger: ED3 后仍反复要求单文件
     spec: specs/Textus-文档便携与呈现扩展方案.md
+  - id: U21
+    text: Tau 可吸收功能（11 项；P0 = 设置页同步状态卡 / 右页边宽度阶梯 / 表格行列手柄）
+    default: 未排期；随设置页、右页边断点、Milkdown 表格任务就近评估；右页边改可拖需先改裁决 36 的固定 340
+    trigger: 下次改同步设置页 / 右页边断点 / 编辑器表格时
+    spec: research/Tau-可吸收功能清单.md
