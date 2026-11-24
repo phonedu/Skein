@@ -17,6 +17,7 @@
 
 ### Fixed
 
+- A phone opens on Today however the last session ended: a document the launch restores (the note a capture left in front, say) stays behind it, and only a page opened after the launch comes to the front.
 - A document not saved yet opens from Today's current-delivery card — it used to do nothing — and its line says "Draft · not saved" instead of leaving the card looking broken.
 - A plugin whose manifest names Android installs and runs on an Android phone: the app refused `android` as an unknown platform, so an updated plugin was turned away with "No platform android".
 - Android's left-edge Back gesture reaches the app again: the phone layout no longer reserves a band of the left edge for a sidebar it does not show. Both edges step back now.

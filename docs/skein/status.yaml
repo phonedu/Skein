@@ -122,6 +122,36 @@ tasks:
       not: 不做多活动连接并行同步；不做云端合并；不改协议 v1；不做 S5 的签名/重试硬化。
       scope: specs 的规则与矩阵、src-tauri/src/sync 的绑定/切换逻辑、同步页切换入口、store 单测与桌面/手机 e2e。
       evidence: 3×3 场景矩阵结果、切换/回切/复制库 e2e、store 单测与规则评审记录。
+  - id: S8
+    title: 局域网 Hub 发现与扫码补齐
+    workstream: S
+    kind: task
+    state: doing
+    acceptance: 手机在同一 Wi-Fi 能发现桌面 Hub 或扫桌面二维码完成配对，不再手输地址和码；mDNS 与 UDP 广播混合、结果去重；发现/扫码失败可回退手输；不广播 token/code，不暴露公网；真机验收。
+    spec: specs/局域网Hub.md
+    estimate: 4–6 天
+    brief:
+      problem: S4 v1 只做了地址 + 6 位码手输；没有自动发现、二维码扫描和设备在线状态，和成熟局域网同步软件相比配对体验明显差。
+      expected: 桌面 Hub 同时用 mDNS 广播和 UDP 广播兜底；手机浏览/探测后列出附近 Hub 并预填地址；桌面显示一次性二维码，手机应用内扫码后直接配对；设备列表显示在线/离线与最后出现；手输保留。
+      standard: 混合发现 mDNS 优先、UDP 兜底，结果按地址+repo 去重；发现只暴露名称/地址/端口/repo；二维码一次性、仅私网；扫码与手输复用 hub_pair；字符串十语言；桌面与 Android 真机。
+      not: 不做公网中继、P2P、TLS、后台自动暴露；不改 /1 协议与同步引擎；不做手机展示二维码；iOS 无真机只做构建检查。
+      scope: textus-discovery crate、textus-hub 广播、app 发现/二维码命令与 SyncHub UI、barcode scanner 插件、i18n、单测与真机验收。
+      evidence: 发现/二维码 payload 单测；桌面+华为同 Wi-Fi 无输入配对与首次同步；mDNS 关闭/被挡时 UDP 兜底；撤销与只读回归。
+  - id: PH7
+    title: 手机冷启动落在今天而非恢复的文档页
+    workstream: UI
+    kind: chore
+    state: doing
+    acceptance: 冷启动落在今天；恢复的文档仍可从今天点开；启动完成后插件新开的文档仍自动显示；单测覆盖。
+    spec: specs/Textus-手机端元素一致性方案.md
+    estimate: 0.5 天
+    brief:
+      problem: 手机杀掉进程再打开时，启动恢复把上次前台的文档（例如记一句写下的那条）放回前台，usePhoneSurfaces 把它当成插件新开的文档，界面从今天直接落到文档页。
+      expected: 手机冷启动始终落在今天；恢复的文档留在标签里，点今天卡片或最近文件才进文档页；启动完成后由插件新开的文档仍直接显示。
+      standard: 不改桌面会话恢复；用 reload-tabs 的 afterStartupRestore 作为启动完成信号；补 usePhoneSurfaces 单测；真机杀进程复验。
+      not: 不关 restoreSessionOnStartup；不改启动恢复顺序与手机三表面模型；不动桌面窗口会话。
+      scope: src/app/usePhoneSurfaces.ts 与其单测；Huawei 真机验证。
+      evidence: vitest 用例通过（无修复时应失败）；真机杀进程重开落在今天，点卡片能进文档。
 later:
   - id: S5
     title: 同步硬化
@@ -240,3 +270,10 @@ questions:
     trigger: S3t 完成 / 决定联系上游 / 上游询问同步
     when: S3t5 与 S5 收尾后复核；联系上游需用户点明仓与形式
     spec: research/同步评审/09-上游同步提案与成熟度门.md
+  - id: U27
+    text: 文件页是否露出排序 / 刷新与文件夹操作（H0 把 FileTree 的整行工具栏隐藏了）
+    default: 露出排序与刷新（桌面文件页头部、手机文件页 ⋯ 表）；打开为文件夹 / 关闭文件夹 / 上级面包屑继续由库页顶部承担，不重复露出
+    trigger: 下次改桌面侧栏或手机文件页时
+    when: 下一次文件页改动（B7 或手机文件页修缮）时定
+    spec: research/上游1.4.7界面功能盘点.md
+

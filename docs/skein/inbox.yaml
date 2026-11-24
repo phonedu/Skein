@@ -10,3 +10,10 @@ items:
     kind: idea
     status: resolved
     resolved_at: 2026-11-24
+  - id: I-20261124-2
+    date: 2026-11-24
+    text: 文件树工具栏（上级面包屑、新建、打开为文件夹、排序、关闭文件夹、刷新）被 H0 整体隐藏，桌面与手机都无入口；决定是否把排序/刷新（及关闭文件夹）露到文件页头部与手机 ⋯
+    source: manual
+    kind: idea
+    status: resolved
+    resolved_at: 2026-11-24
