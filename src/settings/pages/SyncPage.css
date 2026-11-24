@@ -165,71 +165,12 @@
   white-space: nowrap;
 }
 
-/* The Hub's running rows: the label keeps its column, the value gets the
-   room, and the action never squeezes the address out of view. */
-.sync-hub-row {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-3);
-  padding: 10px calc(20px * var(--chrome-scale, 1));
-}
-
-.sync-hub-row > .settings-field-label {
-  min-width: 0;
-}
-
-.sync-hub-value {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--ui-text);
-  font-size: var(--text-body);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sync-hub-code {
-  font-size: var(--text-title);
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
 .sync-hub-subhead {
   margin: var(--space-3) 0 0;
-  padding: 8px calc(20px * var(--chrome-scale, 1))
-    var(--space-1);
+  padding: 8px calc(20px * var(--chrome-scale, 1)) var(--space-1);
   color: var(--ui-text);
   font-size: var(--text-body);
   font-weight: 600;
-}
-
-@media (max-width: 560px) {
-  .sync-hub-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .sync-hub-row > .settings-field-label {
-    grid-column: 1 / -1;
-  }
-}
-
-.sync-hub-qr {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: 4px calc(20px * var(--chrome-scale, 1))
-    calc(8px * var(--chrome-scale, 1));
-}
-
-.sync-hub-qr img {
-  width: 132px;
-  height: 132px;
-  flex: none;
-  border-radius: var(--shape-s);
-}
-
-.sync-hub-qr .tx-list-note {
-  padding: 0;
 }
 
 .sync-hub-found {
@@ -302,4 +243,468 @@
   display: flex;
   flex: none;
   gap: var(--space-2);
+}
+
+/* ---- The headline card (S6a): this vault, its state, one run action ---- */
+.sync-head-row {
+  min-height: calc(72px * var(--chrome-scale, 1)) !important;
+  align-items: center;
+}
+
+.sync-lib {
+  font-size: var(--text-title);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.sync-path {
+  margin-top: 2px;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  overflow-wrap: anywhere;
+}
+
+.sync-head-actions {
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sync-status-row {
+  min-height: calc(44px * var(--chrome-scale, 1)) !important;
+}
+
+.sync-status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: var(--text-body);
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--ui-muted);
+}
+
+.sync-status-line[data-kind="ok"] .sync-dot {
+  background: var(--ui-success);
+}
+
+.sync-status-line[data-kind="error"] .sync-dot {
+  background: var(--ui-danger);
+}
+
+.sync-status-line[data-kind="error"] .sync-status-text {
+  color: var(--ui-danger);
+}
+
+.sync-status-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sync-last-inline {
+  display: inline;
+  margin: 0;
+  font-size: var(--text-caption);
+}
+
+/* A notice belonging to the status (the plugin, a stale lock): a band in
+   the same card, its action at the end. */
+.sync-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 calc(20px * var(--chrome-scale, 1)) 8px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--shape-s);
+  background: var(--ui-subtle);
+}
+
+.sync-notice[data-tone="warn"] {
+  background: color-mix(in srgb, var(--ui-warning) 9%, var(--ui-subtle));
+}
+
+.sync-notice-hint {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  line-height: 1.4;
+}
+
+.sync-notice-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
+
+/* ---- The current connection's summary ---- */
+.sync-conn-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-body-large);
+}
+
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--shape-xs);
+  background: var(--ui-subtle);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.sync-conn-where {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sync-conn-hint {
+  margin-top: var(--space-1);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  overflow-wrap: anywhere;
+}
+
+.sync-conn-actions {
+  gap: var(--space-2);
+}
+
+/* ---- The type switch of a new connection: in place, not a step ---- */
+.sync-segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-3) calc(20px * var(--chrome-scale, 1)) var(--space-1);
+}
+
+.sync-segmented button {
+  min-height: 40px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-s);
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font: inherit;
+  font-size: var(--text-control);
+  cursor: pointer;
+}
+
+@media (any-hover: hover) {
+  .sync-segmented button:hover {
+    border-color: var(--ui-accent);
+  }
+}
+
+.sync-segmented button.is-on {
+  border-color: var(--ui-accent);
+  background: color-mix(in srgb, var(--ui-accent) 7%, var(--ui-bg));
+  font-weight: 600;
+}
+
+/* ---- Switching: the saved connections as pickable rows ---- */
+button.settings-row.sync-switch-row,
+button.settings-row.sync-switch-link {
+  width: 100%;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sync-switch-row {
+  gap: var(--space-3);
+}
+
+.sync-switch-row > .settings-row-text,
+.sync-switch-link > .settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sync-radio {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 1.5px solid var(--ui-border);
+  border-radius: 50%;
+}
+
+.sync-radio[data-on] {
+  border-color: var(--ui-accent);
+  background: radial-gradient(circle, var(--ui-accent) 0 40%, transparent 42%);
+}
+
+.sync-switch-name {
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
+
+.sync-switch-sub {
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  overflow-wrap: anywhere;
+}
+
+.sync-check-mark {
+  width: 16px;
+  flex: none;
+  color: var(--ui-accent);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ---- The switch's method groups ---- */
+.sync-switch-group + .sync-switch-group {
+  margin-top: var(--space-2);
+}
+
+.sync-switch-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) calc(20px * var(--chrome-scale, 1)) var(--space-1);
+}
+
+.sync-switch-group-name {
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.sync-switch-group-head .settings-inline-button {
+  font-size: var(--text-caption);
+}
+
+.sync-switch-confirm {
+  margin: var(--space-2) calc(20px * var(--chrome-scale, 1)) 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-accent) 7%, var(--ui-subtle));
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Forms and switch footers ---- */
+.sync-form-actions {
+  justify-content: space-between;
+}
+
+.sync-actions-end {
+  display: flex;
+  margin-left: auto;
+  gap: var(--space-2);
+}
+
+/* ---- Maintenance: one fold for conflicts, history, vaults, disconnect ---- */
+.sync-maintenance {
+  margin-top: 0;
+}
+
+.sync-maintenance > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.sync-maintenance > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sync-maintenance .settings-fold-chevron {
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.sync-maintenance[open] .settings-fold-chevron {
+  transform: rotate(90deg);
+}
+
+.sync-maintenance-counts[data-attention] {
+  color: var(--ui-danger);
+}
+
+.sync-maintenance-counts {
+  margin-left: auto;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .sync-head-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .sync-head-actions .tx-button {
+    flex: 1;
+  }
+
+  .sync-notice {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sync-switch-group-head {
+    padding-inline: var(--space-4);
+  }
+
+  .sync-switch-confirm {
+    margin-inline: var(--space-4);
+  }
+
+  /* A form field takes the width; its name sits above it. */
+  .sync-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+
+  .sync-field > .settings-field-label {
+    flex: none;
+  }
+
+  /* The card's own inset is the page's margin; the fields take the rest. */
+  .sync-field,
+  .sync-check,
+  .sync-actions,
+  .sync-segmented {
+    padding-inline: var(--space-4);
+  }
+
+  /* Three short labels on one line at 360: "Local network Hub" included. */
+  .sync-segmented button {
+    padding-inline: var(--space-1);
+    font-size: var(--text-caption);
+  }
+
+  .sync-page .sync-field .settings-text-input {
+    box-sizing: border-box;
+  }
+
+  .sync-join-submit {
+    width: 100%;
+  }
+}
+
+/* The page's own cards keep the page body's one gap: the legacy groups' own
+   28px step would double it. */
+.settings-dialog-content .settings-page-body > .settings-group.sync-page {
+  margin-top: 0;
+}
+
+/* A row's first child grows by the legacy rule; a radio stays its size. */
+.settings-row.sync-switch-row > .sync-radio,
+.settings-row.sync-switch-row > .sync-check-mark {
+  flex: none;
+}
+
+/* A switch row's text starts beside its radio; the row is not a label with
+   a control at the far end. */
+.settings-row.sync-switch-row {
+  justify-content: flex-start;
+}
+
+.settings-row.sync-switch-row > .settings-row-text {
+  flex: 1;
+}
+
+/* ---- The advanced fold: encryption only, closed by default ---- */
+.sync-advanced > summary {
+  min-height: calc(56px * var(--chrome-scale, 1));
+}
+
+.sync-advanced-tag {
+  flex: none;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+.sync-advanced .settings-fold-body {
+  padding-left: 0;
+}
+
+/* The preview's own label in the status card. */
+.sync-preview-label {
+  margin-right: var(--space-2);
+  font-weight: 600;
+}
+
+/* ---- The local service: the QR is the way in ---- */
+.sync-hub-pair {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-4) calc(20px * var(--chrome-scale, 1));
+}
+
+.sync-hub-qr-big {
+  width: 168px;
+  height: 168px;
+  flex: none;
+  border-radius: var(--shape-s);
+}
+
+.sync-hub-pair-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.sync-hub-pair-text .tx-list-note {
+  padding: 0;
+}
+
+.sync-hub-code-big {
+  margin: var(--space-1) 0;
+  font-size: 34px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.15;
+}
+
+.sync-hub-address-line {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .sync-hub-pair {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .sync-hub-pair-text {
+    align-items: center;
+    text-align: center;
+  }
+
+  .sync-hub-qr-big {
+    width: 148px;
+    height: 148px;
+  }
 }

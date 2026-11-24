@@ -2180,12 +2180,12 @@ export default {
     "Репозиторий Git в этой папке настроен так, что запускает программы на вашем компьютере ({what}). Для репозитория, который вы настроили сами, это обычно. Если папка получена от другого человека, разрешайте только если доверяете ему.",
   gitTrustAllow: "Доверять этому репозиторию",
   gitTrustRefused: "Git здесь не используется: репозиторию не доверяют.",
-  navSync: "Sync",
-  syncFolderLabel: "Folder",
-  syncNoFolder: "Open a folder first.",
+  navSync: "Синхронизация",
+  syncFolderLabel: "Папка",
+  syncNoFolder: "Сначала откройте папку.",
   syncMobileContentOnly:
     "Эта папка открыта по системному разрешению, которое встроенная синхронизация не может читать напрямую. Используйте для неё плагин Cloud Sync.",
-  syncProviderLabel: "Service",
+  syncProviderLabel: "Сервис",
   syncConnectionLabel: "Подключение",
   syncVaultsTitle: "Синхронизированные библиотеки",
   syncNoVaults: "Пока нет синхронизированных библиотек.",
@@ -2195,12 +2195,36 @@ export default {
   syncErrorVaultCopied:
     "Эта папка принадлежит другой синхронизированной библиотеке. Создайте для неё отдельную библиотеку.",
   syncConnectionNew: "Новое подключение",
-  syncConnectionShared:
-    "Это подключение используют библиотек: {count}; адрес и учётные данные здесь не меняются.",
+  syncConnectionShared: "Также в {count} библиотеках.",
+
   syncConnectionEdit: "Изменить подключение",
+  syncCurrentConnection: "Текущее подключение",
+  syncSwitch: "Переключить",
+  syncSwitchTitle: "Сменить способ синхронизации",
+
+  syncSwitchTo: "Переключить и просмотреть",
+
+  syncEdit: "Изменить",
+  syncMaintenance: "Обслуживание и записи",
+  syncLocalService: "Служба этого устройства",
+  syncTypeHint: "Выберите тип; на следующем шаге будут только его поля.",
+  syncSwitchNote:
+    "Только эта библиотека; старая база удаляется, удалённые файлы остаются.",
+
+  syncDiscardAsk: "Отменить несохранённые изменения?",
+  syncWebdavDesc: "Nextcloud, NAS и другие",
+  syncAdvanced: "Дополнительные параметры",
+  syncNewShort: "Создать",
+  syncJoinShort: "Войти",
+  syncSavePreview: "Сохранить и просмотреть",
+  syncPreviewing: "Предпросмотр…",
+  syncHubTypeDesc: "Напрямую в той же Wi-Fi, без облака",
+  syncS3Desc: "AWS S3, Bitiful, Qiniu Kodo",
+  syncEncrypted: "Зашифровано",
+  syncNotEncrypted: "Без шифрования",
   syncConnectionPrefixLabel: "Префикс по умолчанию для новых библиотек",
-  syncConnectionEditWarning:
-    "Изменения затронут библиотек: {count}. Если адрес изменится, локальные базы синхронизации будут пересозданы.",
+  syncConnectionEditWarning: "Изменения затронут {count} библиотек.",
+
   syncAutoPrefix:
     "Оставьте пустым, чтобы создать подрепозиторий для этой папки.",
   syncErrorRepository:
@@ -2217,11 +2241,11 @@ export default {
   syncErrorBusy: "Другая синхронизация уже идёт. Дождитесь её завершения.",
   syncWebdav: "WebDAV",
   syncS3: "S3",
-  syncEndpointLabel: "Server address",
-  syncBucketLabel: "Bucket",
-  syncRegionLabel: "Region",
-  syncPrefixLabel: "Remote folder",
-  syncPathStyleLabel: "Path-style addresses",
+  syncEndpointLabel: "Адрес сервера",
+  syncBucketLabel: "Контейнер",
+  syncRegionLabel: "Регион",
+  syncPrefixLabel: "Удалённая папка",
+  syncPathStyleLabel: "Адреса в стиле пути",
   syncS3FlavorLabel: "Совместимость S3",
   syncS3Standard: "Стандартный S3",
   syncS3Oss: "Alibaba Cloud OSS",
@@ -2229,29 +2253,39 @@ export default {
   syncErrorRegion:
     "Для этого региона неизвестен адрес загрузки Qiniu. Используйте регион Qiniu S3, например cn-south-1.",
   syncHubTitle: "Хаб локальной сети",
-  syncHubIntro: "Разрешить устройствам в той же Wi-Fi подключаться к хранилищу этого компьютера без облачного сервиса.",
-  syncHubHttpWarning: "Соединение не зашифровано. Используйте только в доверенной сети.",
+  syncHubIntro:
+    "Устройства в той же Wi-Fi могут подключаться к этому компьютеру.",
+
+  syncHubHttpWarning:
+    "Соединение не зашифровано. Используйте только в доверенной сети.",
   syncHubStart: "Запустить хаб",
   syncHubStop: "Остановить хаб",
   syncHubAddress: "Адрес",
-  syncHubAddressHint: "Если телефон не подключается, выберите адрес Wi-Fi, которым пользуются оба устройства.",
+  syncHubAddressHint:
+    "Если телефон не подключается, выберите общий адрес Wi-Fi.",
+
   syncHubPort: "Порт",
   syncHubReadOnly: "Новые устройства могут только читать",
   syncHubReadOnlyDevice: "Только чтение",
   syncHubNoAddress: "Сначала подключитесь к Wi-Fi или проводной сети.",
   syncHubCode: "Код сопряжения",
-  syncHubCodeNote: "Действует 10 минут и для одного устройства. Не давайте компьютеру уснуть и разрешите Textus в брандмауэре во время синхронизации телефона.",
+  syncHubCodeNote: "Действует 10 минут, одно устройство.",
+
   syncHubDiscover: "Найти хабы рядом",
   syncHubDiscovering: "Поиск хабов…",
-  syncHubNoFound: "Хабы не найдены. Проверьте, что оба устройства в одной Wi-Fi, или введите адрес.",
+  syncHubNoFound:
+    "Хабы не найдены. Проверьте, что оба устройства в одной Wi-Fi, или введите адрес.",
   syncHubScan: "Сканировать QR сопряжения",
   syncHubScanning: "Открываем камеру…",
   syncHubScanPoint: "Наведите камеру на QR-код.",
   syncHubScanSwitch: "Сменить камеру",
-  syncHubScanDark: "Камера показывает чёрное. Проверьте объектив или смените камеру.",
+  syncHubScanDark:
+    "Камера показывает чёрное. Проверьте объектив или смените камеру.",
   syncHubScanInvalid: "Этот QR-код не является кодом сопряжения Textus Hub.",
-  syncHubScanPermission: "Доступ к камере запрещён. Разрешите камеру в настройках или введите адрес и код.",
-  syncHubScanFailed: "Не удалось прочитать QR. Попробуйте снова или введите адрес и код.",
+  syncHubScanPermission:
+    "Доступ к камере запрещён. Разрешите камеру в настройках или введите адрес и код.",
+  syncHubScanFailed:
+    "Не удалось прочитать QR. Попробуйте снова или введите адрес и код.",
   syncHubQrAlt: "QR-код сопряжения",
   syncHubQrHint: "Отсканируйте этот код телефоном.",
   syncHubNewCode: "Новый код",
@@ -2263,9 +2297,11 @@ export default {
   syncHubBind: "Использовать этот хаб для хранилища",
   syncHubBound: "Хранилище теперь синхронизируется через хаб.",
   syncHubClear: "Удалить данные хаба",
-  syncHubClearConfirm: "Удалить репозиторий хаба и забыть все сопряжённые устройства? Само хранилище не затрагивается.",
+  syncHubClearConfirm:
+    "Удалить репозиторий хаба и забыть все сопряжённые устройства? Само хранилище не затрагивается.",
   syncHubJoinTitle: "Подключиться к хабу",
-  syncHubJoinIntro: "Введите адрес и шестизначный код, показанные на компьютере с хабом.",
+  syncHubJoinIntro: "Введите адрес и шестизначный код с компьютера.",
+
   syncHubDeviceName: "Имя этого устройства",
   syncHubThisDevice: "Это устройство",
   syncHubPair: "Сопрячь",
@@ -2276,26 +2312,28 @@ export default {
   syncHubErrorCode: "Неверный код сопряжения.",
   syncHubErrorExpired: "Код сопряжения истёк. Запросите новый.",
   syncHubErrorTooMany: "Слишком много попыток. Подождите минуту.",
-  syncHubErrorNetwork: "Не удалось связаться с хабом. Проверьте, что оба устройства в одной Wi-Fi и Textus разрешён в брандмауэре.",
+  syncHubErrorNetwork:
+    "Не удалось связаться с хабом. Проверьте, что оба устройства в одной Wi-Fi и Textus разрешён в брандмауэре.",
   syncHubPortBusy: "Этот порт уже используется. Выберите другой.",
   syncEncryptionLabel: "Шифровать этот репозиторий",
   syncEncryptionPasswordLabel: "Пароль шифрования",
   syncEncryptionPasswordNote:
     "Не менее 12 символов. При утере восстановить нельзя.",
-  syncEncryptionHint:
-    "Шифрование выбирается при создании репозитория. Включение для существующего открытого репозитория не преобразует его.",
+  syncEncryptionHint: "Существующие открытые репозитории не преобразуются.",
+
   syncErrorConditional:
     "Сервис не поддерживает условную запись, необходимую синхронизации. Попробуйте режим OSS или другой сервис.",
-  syncAccountLabel: "Username",
-  syncSecretLabel: "Password",
-  syncAccessKeyLabel: "Access key",
-  syncSecretKeyLabel: "Secret key",
-  syncSavedPlaceholder: "Saved — leave empty to keep",
-  syncSave: "Save connection",
-  syncNow: "Sync now",
+  syncAccountLabel: "Имя пользователя",
+  syncSecretLabel: "Пароль",
+  syncAccessKeyLabel: "Ключ доступа",
+  syncSecretKeyLabel: "Секретный ключ",
+  syncSavedPlaceholder: "Сохранено — оставьте пустым, чтобы не менять",
+  syncSave: "Сохранить подключение",
+  syncNow: "Синхронизировать",
   syncPreview: "Предпросмотр",
   syncPreviewSummary:
-    "Будет загружено {uploaded} ({uploadBytes} байт), скачано {downloaded} ({downloadBytes} байт), удалено удалённых {removedRemote} / локальных {removedLocal}, конфликтов {conflicts}, перемещений {moved}.",
+    "Загрузить {uploaded} · скачать {downloaded} · удалить {removedRemote}/{removedLocal} · конфликты {conflicts}",
+
   syncPreviewEmptyScan: "Папка выглядит пустой; запуск удалит удалённые файлы.",
   syncPreviewBulk: "Этот запуск удалит много файлов.",
   syncImportPlugin: "Импортировать из Cloud Sync",
@@ -2303,31 +2341,35 @@ export default {
     "Импортировать подключение и базу синхронизации этой папки из плагина Cloud Sync? Плагин останется нетронутым до проверки первой синхронизации.",
   syncImported: "Импортировано из Cloud Sync.",
   syncPluginStillRunning:
-    "Плагин Cloud Sync всё ещё синхронизирует эту папку. Отключите его синхронизацию для этой папки и убедитесь, что встроенная синхронизация работает, прежде чем удалять плагин: две синхронизации одновременно ведут отдельные записи и могут создавать повторные копии конфликтов. При удалении плагина стираются только его локальные записи синхронизации, а не файлы в облаке.",
+    "Cloud Sync всё ещё синхронизирует эту папку; два движка ведут отдельные базы.",
+
   syncPluginStopped:
     "Плагин Cloud Sync остановлен для этой папки. Удалите его, когда встроенная синхронизация отработает штатно; при удалении стираются только локальные записи синхронизации плагина, а не файлы в облаке.",
   syncPluginOpen: "Открыть плагины",
+  syncPluginStoppedShort: "Плагин Cloud Sync: отключён для этой папки",
   syncPluginRunAsk:
     "Плагин Cloud Sync всё ещё включён для этой папки. Синхронизация сейчас запустит второй движок со своей записью, что может создать повторные копии конфликтов. Всё равно синхронизировать?",
-  syncPluginRollback:
-    "Чтобы вернуться к плагину, отключите встроенную синхронизацию: подключение и запись встроенной синхронизации удаляются, а файлы в облаке и настройки плагина остаются как были.",
+  syncPluginRollback: "Чтобы вернуться, отключите встроенную синхронизацию.",
+
   syncImportNotFound: "Для этой папки не найдена настройка Cloud Sync.",
   syncImportAlready: "Эта папка уже настроена.",
-  syncDisconnect: "Disconnect",
+  syncDisconnect: "Отключить",
   syncDisconnectAsk:
-    "Disconnect “{folder}”? Files stay on this device and in the cloud; only this device's connection and base are removed.",
+    "Отключить «{folder}»? Файлы останутся на этом устройстве и в облаке; удалятся только подключение и база этого устройства.",
   syncSaved: "Connection saved.",
-  syncNotConfigured: "Connect this folder to sync it.",
-  syncRunning: "Syncing…",
-  syncDone: "Synced.",
-  syncNever: "Not synced yet.",
-  syncLast: "Last synced {time}",
-  syncErrorLocked: "Another device is syncing, or an old lock remains.",
-  syncErrorNetwork: "The request failed. Check the connection.",
-  syncErrorEmpty: "The folder looks empty; nothing was deleted.",
-  syncErrorBulk: "This sync would delete many files; nothing was deleted.",
-  syncErrorConfig: "Check the connection fields.",
-  syncErrorOther: "Sync failed: {reason}",
+  syncNotConfigured: "Подключите эту папку, чтобы синхронизировать её.",
+  syncRunning: "Синхронизация…",
+  syncDone: "Синхронизировано.",
+  syncNever: "Ещё не синхронизировано.",
+  syncLast: "Последняя синхронизация: {time}",
+  syncErrorLocked:
+    "Другое устройство синхронизируется или осталась старая блокировка.",
+  syncErrorNetwork: "Запрос не удался. Проверьте сеть или адрес сервера.",
+  syncErrorEmpty: "Папка выглядит пустой; ничего не удалено.",
+  syncErrorBulk:
+    "Эта синхронизация удалила бы много файлов; ничего не удалено.",
+  syncErrorConfig: "Проверьте поля подключения.",
+  syncErrorOther: "Синхронизация не удалась: {reason}",
   syncErrorIdentityFork:
     "Две удалённые копии используют один id документа. Синхронизация остановлена без изменений.",
   syncErrorIdentityConflict:

@@ -63,7 +63,9 @@ export function SyncScan({
           if (!width || !height) return;
           if (canvasElement.width !== width) canvasElement.width = width;
           if (canvasElement.height !== height) canvasElement.height = height;
-          const context = canvasElement.getContext("2d", { willReadFrequently: true });
+          const context = canvasElement.getContext("2d", {
+            willReadFrequently: true,
+          });
           if (!context) return;
           context.drawImage(target, 0, 0, width, height);
           const image = context.getImageData(0, 0, width, height);

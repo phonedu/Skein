@@ -44,8 +44,8 @@ export function useSyncConnectionState() {
 export function useSyncUiState() {
   const [status, setStatus] = useState<SyncStatus | null>(null);
   const [editShared, setEditShared] = useState(false);
-  const [connectionPrefix, setConnectionPrefix] = useState("");
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [note, setNote] = useState<{ error: boolean; text: string } | null>(
     null,
   );
@@ -55,10 +55,10 @@ export function useSyncUiState() {
     setStatus,
     editShared,
     setEditShared,
-    connectionPrefix,
-    setConnectionPrefix,
     busy,
     setBusy,
+    checking,
+    setChecking,
     note,
     setNote,
     preview,

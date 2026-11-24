@@ -1,15 +1,12 @@
-// The connection and encryption fields: what a saved connection shows and
-// what a new one asks for, apart from the run's status and actions.
+// A connection's required fields only: an address and the credentials that
+// service asks for. The remote folder, the provider and the S3 compatibility
+// are decided by the app; encryption is the one choice kept under Advanced.
 import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
-import type {
-  SyncConfig,
-  SyncConnection,
-  SyncCredentials,
-} from "../../platform/ipc-sync";
-import { Select } from "../../engine/controls/Select";
-import { MaskedKeyInput, SettingRow } from "../sections/controls";
-import { EMPTY_CREDENTIALS, connectionLabel } from "./sync-page-model";
+import type { SyncConfig, SyncCredentials } from "../../platform/ipc-sync";
+import { ChevronIcon } from "../../engine/controls/icons";
+import { MaskedKeyInput } from "../sections/controls";
+import { s3DefaultsFromEndpoint } from "./sync-page-model";
 
 export interface SyncConnectionFieldsProps {
   t: Strings;
@@ -17,19 +14,12 @@ export interface SyncConnectionFieldsProps {
   setConfig: (config: SyncConfig) => void;
   credentials: SyncCredentials;
   setCredentials: (credentials: SyncCredentials) => void;
-  connections: SyncConnection[];
-  currentConnection: SyncConnection | null;
-  shared: boolean;
-  editShared: boolean;
-  setEditShared: (editing: boolean) => void;
-  connectionPrefix: string;
-  setConnectionPrefix: (prefix: string) => void;
   savedConfig: SyncConfig | null;
   saved: boolean;
   savedPassword: boolean;
   locked: boolean;
-  isS3: boolean;
-  chooseConnection: (id: string) => void;
+  /** How many vaults share this connection (only meaningful when editing). */
+  sharedCount: number;
 }
 
 export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
@@ -39,109 +29,35 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
     setConfig,
     credentials,
     setCredentials,
-    connections,
-    currentConnection,
-    shared,
-    editShared,
-    setEditShared,
-    connectionPrefix,
-    setConnectionPrefix,
     savedConfig,
     saved,
     savedPassword,
     locked,
-    isS3,
-    chooseConnection,
+    sharedCount,
   } = props;
+  const isS3 = config.provider === "s3";
+
+  // The address is the one thing every provider must be told; what it says
+  // about the region and the S3 flavour is filled in, not asked.
+  const changeEndpoint = (endpoint: string) => {
+    const next = { ...config, endpoint };
+    if (isS3) {
+      const derived = s3DefaultsFromEndpoint(endpoint);
+      if (derived.region && !config.region.trim()) next.region = derived.region;
+      if (derived.s3Flavor && (config.s3Flavor ?? "standard") === "standard")
+        next.s3Flavor = derived.s3Flavor;
+      if (derived.pathStyle !== undefined) next.pathStyle = derived.pathStyle;
+    }
+    setConfig(next);
+  };
+
   return (
     <>
-      <SettingRow label={t.syncConnectionLabel}>
-        <Select
-          className="settings-select"
-          aria-label={t.syncConnectionLabel}
-          value={currentConnection ? currentConnection.id : ""}
-          onChange={(event) => chooseConnection(event.target.value)}
-        >
-          <option value="">{t.syncConnectionNew}</option>
-          {connections.map((connection) => (
-            <option value={connection.id} key={connection.id}>
-              {connectionLabel(connection)}
-            </option>
-          ))}
-        </Select>
-      </SettingRow>
-      {shared && !editShared && (
-        <>
-          <p className="tx-list-note">
-            {fill(t.syncConnectionShared, {
-              count: currentConnection!.usedBy,
-            })}
-          </p>
-          <button
-            type="button"
-            className="text-button settings-inline-button"
-            onClick={() => {
-              setConnectionPrefix(currentConnection!.prefix);
-              setEditShared(true);
-            }}
-          >
-            {t.syncConnectionEdit}
-          </button>
-        </>
+      {sharedCount > 1 && (
+        <p className="tx-list-note">
+          {fill(t.syncConnectionEditWarning, { count: sharedCount })}
+        </p>
       )}
-      {shared && editShared && (
-        <>
-          <p className="tx-list-note">
-            {fill(t.syncConnectionEditWarning, {
-              count: currentConnection!.usedBy,
-            })}
-          </p>
-          <button
-            type="button"
-            className="text-button settings-inline-button"
-            onClick={() => {
-              setEditShared(false);
-              setConnectionPrefix("");
-              if (savedConfig) setConfig(savedConfig);
-              setCredentials(EMPTY_CREDENTIALS);
-            }}
-          >
-            {t.cancel}
-          </button>
-        </>
-      )}
-      {shared && editShared && (
-        <label className="sync-field">
-          <span className="settings-field-label">
-            {t.syncConnectionPrefixLabel}
-          </span>
-          <input
-            className="settings-text-input"
-            spellCheck={false}
-            value={connectionPrefix}
-            onChange={(event) => setConnectionPrefix(event.target.value)}
-          />
-        </label>
-      )}
-      <SettingRow label={t.syncProviderLabel}>
-        <Select
-          className="settings-select"
-          aria-label={t.syncProviderLabel}
-          value={config.provider}
-          disabled={!!currentConnection && !editShared}
-          onChange={(event) => {
-            setConfig({
-              ...config,
-              provider: event.target.value as SyncConfig["provider"],
-            });
-            // The other provider's fields cannot be kept as this one's.
-            setCredentials(EMPTY_CREDENTIALS);
-          }}
-        >
-          <option value="webdav">{t.syncWebdav}</option>
-          <option value="s3">{t.syncS3}</option>
-        </Select>
-      </SettingRow>
       <div className="sync-form">
         <label className="sync-field">
           <span className="settings-field-label">{t.syncEndpointLabel}</span>
@@ -152,9 +68,7 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
             placeholder="https://"
             disabled={locked}
             value={config.endpoint}
-            onChange={(event) =>
-              setConfig({ ...config, endpoint: event.target.value })
-            }
+            onChange={(event) => changeEndpoint(event.target.value)}
           />
         </label>
         {isS3 && (
@@ -184,56 +98,6 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
               />
             </label>
           </>
-        )}
-        <label className="sync-field">
-          <span className="settings-field-label">{t.syncPrefixLabel}</span>
-          <input
-            className="settings-text-input"
-            spellCheck={false}
-            placeholder={currentConnection && !locked ? t.syncAutoPrefix : ""}
-            value={config.prefix}
-            onChange={(event) =>
-              setConfig({ ...config, prefix: event.target.value })
-            }
-          />
-        </label>
-        {currentConnection && !config.prefix && !locked && (
-          <p className="tx-list-note">{t.syncAutoPrefix}</p>
-        )}
-        <label className="sync-check">
-          <input
-            type="checkbox"
-            className="ui-check"
-            checked={!!config.encrypted}
-            disabled={!!savedConfig?.encrypted}
-            onChange={(event) =>
-              setConfig({ ...config, encrypted: event.target.checked })
-            }
-          />
-          {t.syncEncryptionLabel}
-        </label>
-        {config.encrypted && (
-          <label className="sync-field">
-            <span className="settings-field-label">
-              {t.syncEncryptionPasswordLabel}
-            </span>
-            <MaskedKeyInput
-              className="settings-text-input"
-              label={t.syncEncryptionPasswordLabel}
-              disabled={!!savedConfig?.encrypted && savedPassword}
-              placeholder={savedPassword ? t.syncSavedPlaceholder : ""}
-              value={credentials.syncPassword ?? ""}
-              onChange={(value) =>
-                setCredentials({ ...credentials, syncPassword: value })
-              }
-            />
-          </label>
-        )}
-        {config.encrypted && (
-          <p className="tx-list-note">{t.syncEncryptionPasswordNote}</p>
-        )}
-        {savedConfig && !savedConfig.encrypted && config.encrypted && (
-          <p className="tx-list-note">{t.syncEncryptionHint}</p>
         )}
         {!locked && (
           <>
@@ -276,41 +140,53 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
             </label>
           </>
         )}
-        {isS3 && (
-          <>
-            <SettingRow label={t.syncS3FlavorLabel}>
-              <Select
-                className="settings-select"
-                aria-label={t.syncS3FlavorLabel}
-                disabled={locked}
-                value={config.s3Flavor ?? "standard"}
-                onChange={(event) =>
-                  setConfig({
-                    ...config,
-                    s3Flavor: event.target.value as "standard" | "oss" | "kodo",
-                  })
-                }
-              >
-                <option value="standard">{t.syncS3Standard}</option>
-                <option value="oss">{t.syncS3Oss}</option>
-                <option value="kodo">{t.syncS3Kodo}</option>
-              </Select>
-            </SettingRow>
-            <label className="sync-check">
-              <input
-                type="checkbox"
-                className="ui-check"
-                disabled={locked}
-                checked={config.pathStyle}
-                onChange={(event) =>
-                  setConfig({ ...config, pathStyle: event.target.checked })
+      </div>
+      <details className="settings-fold sync-advanced">
+        <summary className="settings-row">
+          <span className="settings-row-label">{t.syncAdvanced}</span>
+          {config.encrypted && (
+            <span className="sync-advanced-tag">{t.syncEncrypted}</span>
+          )}
+          <ChevronIcon className="settings-fold-chevron" />
+        </summary>
+        <div className="settings-fold-body">
+          <label className="sync-check">
+            <input
+              type="checkbox"
+              className="ui-check"
+              checked={!!config.encrypted}
+              disabled={!!savedConfig?.encrypted}
+              onChange={(event) =>
+                setConfig({ ...config, encrypted: event.target.checked })
+              }
+            />
+            {t.syncEncryptionLabel}
+          </label>
+          {config.encrypted && (
+            <label className="sync-field">
+              <span className="settings-field-label">
+                {t.syncEncryptionPasswordLabel}
+              </span>
+              <MaskedKeyInput
+                className="settings-text-input"
+                label={t.syncEncryptionPasswordLabel}
+                disabled={!!savedConfig?.encrypted && savedPassword}
+                placeholder={savedPassword ? t.syncSavedPlaceholder : ""}
+                value={credentials.syncPassword ?? ""}
+                onChange={(value) =>
+                  setCredentials({ ...credentials, syncPassword: value })
                 }
               />
-              {t.syncPathStyleLabel}
             </label>
-          </>
-        )}
-      </div>
+          )}
+          {config.encrypted && (
+            <p className="tx-list-note">{t.syncEncryptionPasswordNote}</p>
+          )}
+          {savedConfig && !savedConfig.encrypted && config.encrypted && (
+            <p className="tx-list-note">{t.syncEncryptionHint}</p>
+          )}
+        </div>
+      </details>
     </>
   );
 }

@@ -2029,12 +2029,38 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncErrorVaultCopied:
     "이 폴더는 다른 동기화된 라이브러리에 속합니다. 별도 라이브러리로 만드세요.",
   syncConnectionNew: "새 연결",
-  syncConnectionShared:
-    "이 연결은 라이브러리 {count}개에서 사용 중입니다. 주소와 자격 증명은 여기서 변경되지 않습니다.",
+  syncConnectionShared: "이 연결은 다른 {count}개 라이브러리도 씁니다.",
+
   syncConnectionEdit: "연결 편집",
+  syncCurrentConnection: "현재 연결",
+  syncSwitch: "전환",
+  syncSwitchTitle: "동기화 방식 전환",
+
+  syncSwitchTo: "전환 후 미리보기",
+
+  syncEdit: "편집",
+  syncMaintenance: "유지 관리 및 기록",
+  syncLocalService: "이 기기의 서비스",
+  syncTypeHint:
+    "유형을 선택하면 다음 단계에는 해당 유형에 필요한 항목만 표시됩니다.",
+  syncSwitchNote:
+    "이 라이브러리에만 적용됩니다. 이전 기준은 지워지고 원격 파일은 남습니다.",
+
+  syncDiscardAsk: "저장하지 않은 변경 사항을 버릴까요?",
+  syncWebdavDesc: "Nextcloud, NAS 등",
+  syncAdvanced: "고급 옵션",
+  syncNewShort: "새로",
+  syncJoinShort: "참가",
+  syncSavePreview: "저장 후 미리보기",
+  syncPreviewing: "미리 보는 중…",
+  syncHubTypeDesc: "같은 Wi-Fi에서 직접 연결, 클라우드 경유 없음",
+  syncS3Desc: "AWS S3, Bitiful, Qiniu Kodo 등",
+  syncEncrypted: "암호화됨",
+  syncNotEncrypted: "암호화 안 됨",
   syncConnectionPrefixLabel: "새 라이브러리의 기본 접두사",
   syncConnectionEditWarning:
-    "변경 사항은 라이브러리 {count}개에 적용됩니다. 주소가 바뀌면 각 라이브러리의 로컬 동기화 기준이 다시 만들어집니다.",
+    "변경은 이 연결을 쓰는 {count}개 라이브러리에 영향을 줍니다.",
+
   syncAutoPrefix: "비워 두면 이 폴더의 하위 저장소를 만듭니다.",
   syncErrorRepository:
     "다른 라이브러리가 이미 이 원격 저장소를 사용 중입니다. 다른 연결이나 원격 폴더를 선택하세요.",
@@ -2061,29 +2087,38 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncErrorRegion:
     "이 리전에는 알려진 Qiniu 업로드 주소가 없습니다. cn-south-1 같은 Qiniu S3 리전을 사용하세요.",
   syncHubTitle: "로컬 네트워크 허브",
-  syncHubIntro: "같은 Wi-Fi에 있는 기기에서 클라우드 없이 이 컴퓨터의 보관소에 접속할 수 있습니다.",
-  syncHubHttpWarning: "연결이 암호화되지 않습니다. 신뢰하는 네트워크에서만 사용하세요.",
+  syncHubIntro: "같은 Wi-Fi의 기기가 이 컴퓨터에 직접 연결할 수 있습니다.",
+
+  syncHubHttpWarning:
+    "연결이 암호화되지 않습니다. 신뢰하는 네트워크에서만 사용하세요.",
   syncHubStart: "허브 시작",
   syncHubStop: "허브 중지",
   syncHubAddress: "주소",
-  syncHubAddressHint: "휴대폰이 연결되지 않으면 두 기기가 함께 쓰는 Wi-Fi의 주소를 선택하세요.",
+  syncHubAddressHint:
+    "휴대폰이 연결되지 않으면 두 기기가 함께 쓰는 Wi-Fi 주소를 고르세요.",
+
   syncHubPort: "포트",
   syncHubReadOnly: "새 기기는 읽기만 가능",
   syncHubReadOnlyDevice: "읽기 전용",
   syncHubNoAddress: "먼저 Wi-Fi나 유선 네트워크에 연결하세요.",
   syncHubCode: "페어링 코드",
-  syncHubCodeNote: "10분 동안 한 기기에만 유효합니다. 휴대폰 동기화 중에는 이 컴퓨터를 깨워 두고 방화벽에서 Textus를 허용하세요.",
+  syncHubCodeNote: "10분간 유효, 기기 1대만.",
+
   syncHubDiscover: "주변 허브 찾기",
   syncHubDiscovering: "허브를 찾는 중…",
-  syncHubNoFound: "허브를 찾지 못했습니다. 두 기기가 같은 Wi-Fi에 있는지 확인하거나 주소를 입력하세요.",
+  syncHubNoFound:
+    "허브를 찾지 못했습니다. 두 기기가 같은 Wi-Fi에 있는지 확인하거나 주소를 입력하세요.",
   syncHubScan: "페어링 QR 스캔",
   syncHubScanning: "카메라를 여는 중…",
   syncHubScanPoint: "카메라를 QR 코드에 맞추세요.",
   syncHubScanSwitch: "카메라 전환",
-  syncHubScanDark: "카메라가 검게 보입니다. 렌즈를 확인하거나 카메라를 전환하세요.",
+  syncHubScanDark:
+    "카메라가 검게 보입니다. 렌즈를 확인하거나 카메라를 전환하세요.",
   syncHubScanInvalid: "이 QR 코드는 Textus Hub 페어링 코드가 아닙니다.",
-  syncHubScanPermission: "카메라 접근이 거부되었습니다. 설정에서 카메라를 허용하거나 주소와 코드를 입력하세요.",
-  syncHubScanFailed: "QR 코드를 읽지 못했습니다. 다시 시도하거나 주소와 코드를 입력하세요.",
+  syncHubScanPermission:
+    "카메라 접근이 거부되었습니다. 설정에서 카메라를 허용하거나 주소와 코드를 입력하세요.",
+  syncHubScanFailed:
+    "QR 코드를 읽지 못했습니다. 다시 시도하거나 주소와 코드를 입력하세요.",
   syncHubQrAlt: "페어링 QR 코드",
   syncHubQrHint: "휴대폰으로 이 코드를 스캔하세요.",
   syncHubNewCode: "새 코드",
@@ -2095,9 +2130,11 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncHubBind: "이 보관소에 이 허브 사용",
   syncHubBound: "이 보관소는 이제 허브를 통해 동기화됩니다.",
   syncHubClear: "허브 데이터 삭제",
-  syncHubClearConfirm: "허브 저장소를 삭제하고 모든 페어링된 기기를 잊을까요? 보관소 자체는 건드리지 않습니다.",
+  syncHubClearConfirm:
+    "허브 저장소를 삭제하고 모든 페어링된 기기를 잊을까요? 보관소 자체는 건드리지 않습니다.",
   syncHubJoinTitle: "허브 참여",
-  syncHubJoinIntro: "허브를 실행하는 컴퓨터에 표시된 주소와 6자리 코드를 입력하세요.",
+  syncHubJoinIntro: "컴퓨터에 표시된 주소와 6자리 코드를 입력하세요.",
+
   syncHubDeviceName: "이 기기의 이름",
   syncHubThisDevice: "이 기기",
   syncHubPair: "페어링",
@@ -2108,13 +2145,14 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncHubErrorCode: "페어링 코드가 잘못되었습니다.",
   syncHubErrorExpired: "페어링 코드가 만료되었습니다. 새 코드를 요청하세요.",
   syncHubErrorTooMany: "시도가 너무 많습니다. 1분 후 다시 시도하세요.",
-  syncHubErrorNetwork: "허브에 연결할 수 없습니다. 두 기기가 같은 Wi-Fi에 있는지, 방화벽에서 Textus를 허용했는지 확인하세요.",
+  syncHubErrorNetwork:
+    "허브에 연결할 수 없습니다. 두 기기가 같은 Wi-Fi에 있는지, 방화벽에서 Textus를 허용했는지 확인하세요.",
   syncHubPortBusy: "이 포트는 이미 사용 중입니다. 다른 포트를 선택하세요.",
   syncEncryptionLabel: "이 저장소 암호화",
   syncEncryptionPasswordLabel: "암호화 비밀번호",
   syncEncryptionPasswordNote: "12자 이상. 잃어버리면 복구할 수 없습니다.",
-  syncEncryptionHint:
-    "암호화는 저장소를 만들 때 선택합니다. 기존 평문 저장소에서 켜도 변환되지 않습니다.",
+  syncEncryptionHint: "기존 평문 저장소는 변환되지 않습니다.",
+
   syncErrorConditional:
     "이 서비스는 동기화에 필요한 조건부 쓰기를 지원하지 않습니다. OSS 모드나 다른 서비스를 사용해 보세요.",
   syncAccountLabel: "사용자 이름",
@@ -2126,7 +2164,8 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncNow: "지금 동기화",
   syncPreview: "미리보기",
   syncPreviewSummary:
-    "업로드 {uploaded}({uploadBytes}바이트), 다운로드 {downloaded}({downloadBytes}바이트), 원격 삭제 {removedRemote} / 로컬 삭제 {removedLocal}, 충돌 {conflicts}, 이동 {moved} 예정입니다.",
+    "업로드 {uploaded} · 다운로드 {downloaded} · 삭제 {removedRemote}/{removedLocal} · 충돌 {conflicts}",
+
   syncPreviewEmptyScan:
     "폴더가 비어 있는 것 같습니다. 실행하면 원격 파일이 삭제됩니다.",
   syncPreviewBulk: "이번 실행에서 많은 파일이 삭제됩니다.",
@@ -2135,14 +2174,16 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
     "이 폴더의 연결과 동기화 기준을 Cloud Sync 플러그인에서 가져올까요? 첫 동기화를 확인할 때까지 플러그인은 그대로 둡니다.",
   syncImported: "Cloud Sync에서 가져왔습니다.",
   syncPluginStillRunning:
-    "Cloud Sync 플러그인이 아직 이 폴더를 동기화하고 있습니다. 이 폴더의 동기화를 끄고 내장 동기화가 정상인지 확인한 뒤 플러그인을 제거하세요. 두 동기화가 동시에 실행되면 기록이 따로 남아 중복된 충돌 사본이 생길 수 있습니다. 플러그인을 제거해도 플러그인의 로컬 동기화 기록만 삭제되고 클라우드 파일은 삭제되지 않습니다.",
+    "Cloud Sync가 이 폴더를 아직 동기화 중입니다. 두 엔진이 각각 기준을 씁니다.",
+
   syncPluginStopped:
     "Cloud Sync 플러그인이 이 폴더에서 중지되어 있습니다. 내장 동기화가 정상적으로 실행된 뒤 플러그인을 제거하세요. 제거해도 플러그인의 로컬 동기화 기록만 삭제되고 클라우드 파일은 삭제되지 않습니다.",
   syncPluginOpen: "플러그인 열기",
+  syncPluginStoppedShort: "Cloud Sync 플러그인: 이 폴더에서 사용 안 함",
   syncPluginRunAsk:
     "Cloud Sync 플러그인이 이 폴더에서 아직 켜져 있습니다. 지금 동기화하면 별도 기록을 쓰는 두 번째 엔진이 실행되어 중복된 충돌 사본이 생길 수 있습니다. 그래도 동기화할까요?",
-  syncPluginRollback:
-    "플러그인으로 돌아가려면 '연결 해제'를 누르세요. 내장 연결과 동기화 기록이 삭제되고 클라우드 파일과 플러그인 설정은 그대로 남습니다.",
+  syncPluginRollback: "돌아가려면 내장 동기화를 끊으세요.",
+
   syncImportNotFound: "이 폴더의 Cloud Sync 설정을 찾지 못했습니다.",
   syncImportAlready: "이 폴더는 이미 설정되어 있습니다.",
   syncDisconnect: "연결 해제",

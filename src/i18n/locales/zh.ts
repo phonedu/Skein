@@ -1944,11 +1944,35 @@ export default {
   syncVaultFork: "创建独立库",
   syncErrorVaultCopied: "这个文件夹属于另一个已同步库。请为它创建独立库。",
   syncConnectionNew: "新建连接",
-  syncConnectionShared: "此连接已被 {count} 个库使用；地址与凭据不在这里修改。",
+  syncConnectionShared: "此连接还被 {count} 个库使用。",
+
   syncConnectionEdit: "编辑连接",
+  syncCurrentConnection: "当前连接",
+  syncSwitch: "切换",
+  syncSwitchTitle: "切换同步方式",
+
+  syncSwitchTo: "切换并预览",
+
+  syncEdit: "编辑",
+  syncMaintenance: "维护与记录",
+  syncLocalService: "本机服务",
+  syncTypeHint: "先选类型；下一步只显示这种连接需要的字段。",
+  syncAdvanced: "高级选项",
+  syncNewShort: "新建",
+  syncJoinShort: "加入",
+  syncSavePreview: "保存并预览",
+  syncPreviewing: "正在预览…",
+  syncSwitchNote: "只影响此库；旧基准清除，远端文件保留。",
+
+  syncDiscardAsk: "放弃未保存的修改？",
+  syncWebdavDesc: "Nextcloud、NAS、坚果云等",
+  syncHubTypeDesc: "同一 Wi-Fi 直连，不经云端",
+  syncS3Desc: "AWS S3、缤纷云、七牛 Kodo",
+  syncEncrypted: "已加密",
+  syncNotEncrypted: "未加密",
   syncConnectionPrefixLabel: "新库的默认前缀",
-  syncConnectionEditWarning:
-    "更改将影响 {count} 个库。地址变化时，会重建这些库的本地同步基线。",
+  syncConnectionEditWarning: "改动会影响使用它的 {count} 个库。",
+
   syncAutoPrefix: "留空则为此文件夹创建子仓库。",
   syncErrorRepository: "另一个库已在使用该远端仓库。请选择其他连接或远端目录。",
   syncErrorEncryptionPassword: "请输入加密密码（至少 12 个字符）。",
@@ -1969,28 +1993,33 @@ export default {
   syncErrorRegion:
     "该区域没有已知的七牛上传地址。请使用七牛 S3 区域，例如 cn-south-1。",
   syncHubTitle: "局域网 Hub",
-  syncHubIntro: "让同一 Wi-Fi 下的设备不经过云服务，直接连接这台电脑的仓库。",
+  syncHubIntro: "同一 Wi-Fi 下的设备可直接连这台电脑。",
+
   syncHubHttpWarning: "连接未加密，请只在信任的网络上使用。",
   syncHubStart: "启动 Hub",
   syncHubStop: "停止 Hub",
   syncHubAddress: "地址",
-  syncHubAddressHint: "如果手机连不上，请选择两台设备共用的 Wi-Fi 地址。",
+  syncHubAddressHint: "手机连不上时，选两台设备共用的 Wi-Fi 地址。",
+
   syncHubPort: "端口",
   syncHubReadOnly: "新设备只能读取",
   syncHubReadOnlyDevice: "只读",
   syncHubNoAddress: "请先连接 Wi-Fi 或有线网络。",
   syncHubCode: "配对码",
-  syncHubCodeNote: "10 分钟内有效，仅限一台设备。手机同步时请保持电脑唤醒，并允许 Textus 通过防火墙。",
+  syncHubCodeNote: "10 分钟内有效，仅限一台设备。",
+
   syncHubDiscover: "查找附近的 Hub",
   syncHubDiscovering: "正在查找 Hub…",
-  syncHubNoFound: "没有找到 Hub。请确认两台设备在同一个 Wi-Fi，或直接输入地址。",
+  syncHubNoFound:
+    "没有找到 Hub。请确认两台设备在同一个 Wi-Fi，或直接输入地址。",
   syncHubScan: "扫描配对二维码",
   syncHubScanning: "正在打开相机…",
   syncHubScanPoint: "请将相机对准二维码。",
   syncHubScanSwitch: "切换相机",
   syncHubScanDark: "画面全黑。请检查镜头，或切换相机。",
   syncHubScanInvalid: "这个二维码不是 Textus Hub 的配对码。",
-  syncHubScanPermission: "相机权限被拒绝。请在设置中允许相机，或输入地址和配对码。",
+  syncHubScanPermission:
+    "相机权限被拒绝。请在设置中允许相机，或输入地址和配对码。",
   syncHubScanFailed: "无法读取二维码。请重试，或输入地址和配对码。",
   syncHubQrAlt: "配对二维码",
   syncHubQrHint: "用手机扫描这个码。",
@@ -2003,9 +2032,11 @@ export default {
   syncHubBind: "让此仓库使用这个 Hub",
   syncHubBound: "此仓库现在通过 Hub 同步。",
   syncHubClear: "删除 Hub 数据",
-  syncHubClearConfirm: "删除 Hub 的仓库并忘记所有已配对设备？仓库本身不会被改动。",
+  syncHubClearConfirm:
+    "删除 Hub 的仓库并忘记所有已配对设备？仓库本身不会被改动。",
   syncHubJoinTitle: "加入 Hub",
-  syncHubJoinIntro: "输入运行 Hub 的电脑上显示的地址和六位配对码。",
+  syncHubJoinIntro: "输入电脑上显示的地址和六位配对码。",
+
   syncHubDeviceName: "此设备名称",
   syncHubThisDevice: "此设备",
   syncHubPair: "配对",
@@ -2016,13 +2047,14 @@ export default {
   syncHubErrorCode: "配对码错误。",
   syncHubErrorExpired: "配对码已过期，请索取新的配对码。",
   syncHubErrorTooMany: "尝试次数过多，请等一分钟再试。",
-  syncHubErrorNetwork: "无法连接 Hub。请确认两台设备在同一个 Wi-Fi，并允许 Textus 通过防火墙。",
+  syncHubErrorNetwork:
+    "无法连接 Hub。请确认两台设备在同一个 Wi-Fi，并允许 Textus 通过防火墙。",
   syncHubPortBusy: "此端口已被占用，请换一个。",
   syncEncryptionLabel: "加密此仓库",
   syncEncryptionPasswordLabel: "加密密码",
   syncEncryptionPasswordNote: "至少 12 个字符。丢失后无法恢复。",
-  syncEncryptionHint:
-    "加密方式在创建仓库时确定；对已有明文仓库开启不会转换它。",
+  syncEncryptionHint: "已有明文仓库不会被转换。",
+
   syncErrorConditional:
     "该服务不支持同步所需的条件写入。请尝试 OSS 模式或其他服务。",
   syncAccountLabel: "用户名",
@@ -2034,22 +2066,24 @@ export default {
   syncNow: "立即同步",
   syncPreview: "预览",
   syncPreviewSummary:
-    "将上传 {uploaded}（{uploadBytes} 字节）、下载 {downloaded}（{downloadBytes} 字节）、删除远端 {removedRemote} / 本地 {removedLocal}、冲突 {conflicts}、移动 {moved}。",
+    "上传 {uploaded} · 下载 {downloaded} · 删除 {removedRemote}/{removedLocal} · 冲突 {conflicts}",
+
   syncPreviewEmptyScan: "文件夹看起来是空的；执行会删除远端文件。",
   syncPreviewBulk: "本次执行将删除大量文件。",
   syncImportPlugin: "从 Cloud Sync 导入",
   syncImportPluginAsk:
     "从 Cloud Sync 插件导入这个文件夹的连接和同步基线？在确认首次同步前，插件保持原样。",
   syncImported: "已从 Cloud Sync 导入。",
-  syncPluginStillRunning:
-    "Cloud Sync 插件仍在同步这个文件夹。请先关闭插件对这个文件夹的同步，确认内置同步正常后再卸载插件：两套同步同时运行会各留一份记录，可能产生重复的冲突副本。卸载插件只会删除它的本地同步记录，不会删除云端文件。",
+  syncPluginStillRunning: "Cloud Sync 仍在同步此文件夹，两个引擎各写一套基准。",
+
   syncPluginStopped:
     "Cloud Sync 插件已对这个文件夹停用。内置同步正常运行后即可卸载插件；卸载只会删除插件的本地同步记录，不会删除云端文件。",
   syncPluginOpen: "打开插件",
+  syncPluginStoppedShort: "Cloud Sync 插件：已对此文件夹停用",
   syncPluginRunAsk:
     "Cloud Sync 插件仍在为这个文件夹同步。现在同步会再运行一套引擎，它有自己的记录，可能产生重复的冲突副本。仍要同步？",
-  syncPluginRollback:
-    "要回退到插件，请点“断开”：内置连接与同步记录会被删除，云端文件和插件自己的设置保持原样。",
+  syncPluginRollback: "要回到插件，断开内置同步即可。",
+
   syncImportNotFound: "没有找到这个文件夹的 Cloud Sync 设置。",
   syncImportAlready: "这个文件夹已配置。",
   syncDisconnect: "断开",

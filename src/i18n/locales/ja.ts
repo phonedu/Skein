@@ -2048,12 +2048,38 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncErrorVaultCopied:
     "このフォルダーは別の同期済みライブラリに属しています。別のライブラリとして作成してください。",
   syncConnectionNew: "新しい接続",
-  syncConnectionShared:
-    "この接続は {count} 個のライブラリで使われています。アドレスと認証情報はここでは変更されません。",
+  syncConnectionShared: "この接続は他に {count} 個のライブラリが使っています。",
+
   syncConnectionEdit: "接続を編集",
+  syncCurrentConnection: "現在の接続",
+  syncSwitch: "切り替え",
+  syncSwitchTitle: "同期方法を切り替え",
+
+  syncSwitchTo: "切り替えてプレビュー",
+
+  syncEdit: "編集",
+  syncMaintenance: "メンテナンスと記録",
+  syncLocalService: "このデバイスのサービス",
+  syncTypeHint:
+    "種類を選ぶと、次の画面にはその種類に必要な項目だけが表示されます。",
+  syncSwitchNote:
+    "このライブラリのみ。古い基準は消え、リモートのファイルは残ります。",
+
+  syncDiscardAsk: "保存されていない変更を破棄しますか？",
+  syncWebdavDesc: "Nextcloud、NAS、堅果雲など",
+  syncAdvanced: "詳細設定",
+  syncNewShort: "新規",
+  syncJoinShort: "参加",
+  syncSavePreview: "保存してプレビュー",
+  syncPreviewing: "プレビュー中…",
+  syncHubTypeDesc: "同じ Wi-Fi で直接接続、クラウド経由なし",
+  syncS3Desc: "AWS S3、Bitiful、Qiniu Kodo",
+  syncEncrypted: "暗号化済み",
+  syncNotEncrypted: "未暗号化",
   syncConnectionPrefixLabel: "新しいライブラリの既定のプレフィックス",
   syncConnectionEditWarning:
-    "変更は {count} 個のライブラリに適用されます。アドレスが変わると、各ライブラリのローカル同期ベースが再構築されます。",
+    "変更はこれを使う {count} 個のライブラリに影響します。",
+
   syncAutoPrefix:
     "空欄にすると、このフォルダー用のサブリポジトリを作成します。",
   syncErrorRepository:
@@ -2082,29 +2108,39 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncErrorRegion:
     "このリージョンには既知の Qiniu アップロード先がありません。cn-south-1 などの Qiniu S3 リージョンを使用してください。",
   syncHubTitle: "ローカルネットワークHub",
-  syncHubIntro: "同じWi-Fi上の端末から、クラウドを使わずにこのコンピューターの保管庫へ接続できるようにします。",
-  syncHubHttpWarning: "接続は暗号化されていません。信頼できるネットワークでのみ使用してください。",
+  syncHubIntro: "同じ Wi-Fi のデバイスがこのコンピューターに直接接続できます。",
+
+  syncHubHttpWarning:
+    "接続は暗号化されていません。信頼できるネットワークでのみ使用してください。",
   syncHubStart: "Hubを開始",
   syncHubStop: "Hubを停止",
   syncHubAddress: "アドレス",
-  syncHubAddressHint: "スマートフォンが接続できない場合は、両方の端末が使うWi-Fiのアドレスを選んでください。",
+  syncHubAddressHint:
+    "スマートフォンが接続できないときは、共有の Wi-Fi アドレスを選びます。",
+
   syncHubPort: "ポート",
   syncHubReadOnly: "新しい端末は読み取りのみ",
   syncHubReadOnlyDevice: "読み取り専用",
   syncHubNoAddress: "先にWi-Fiまたは有線ネットワークに接続してください。",
   syncHubCode: "ペアリングコード",
-  syncHubCodeNote: "10分間、1台の端末にのみ有効です。スマートフォンの同期中はこのコンピューターをスリープさせず、ファイアウォールでTextusを許可してください。",
+  syncHubCodeNote: "10 分間有効、1 台のみ。",
+
   syncHubDiscover: "近くのHubを探す",
   syncHubDiscovering: "Hubを検索中…",
-  syncHubNoFound: "Hubが見つかりません。両方の端末が同じWi-Fiにあるか確認するか、アドレスを入力してください。",
+  syncHubNoFound:
+    "Hubが見つかりません。両方の端末が同じWi-Fiにあるか確認するか、アドレスを入力してください。",
   syncHubScan: "ペアリングQRをスキャン",
   syncHubScanning: "カメラを開いています…",
   syncHubScanPoint: "カメラをQRコードに向けてください。",
   syncHubScanSwitch: "カメラを切り替え",
-  syncHubScanDark: "カメラが真っ暗です。レンズを確認するか、カメラを切り替えてください。",
-  syncHubScanInvalid: "このQRコードはTextus Hubのペアリングコードではありません。",
-  syncHubScanPermission: "カメラへのアクセスが拒否されました。設定でカメラを許可するか、アドレスとコードを入力してください。",
-  syncHubScanFailed: "QRコードを読み取れませんでした。再試行するか、アドレスとコードを入力してください。",
+  syncHubScanDark:
+    "カメラが真っ暗です。レンズを確認するか、カメラを切り替えてください。",
+  syncHubScanInvalid:
+    "このQRコードはTextus Hubのペアリングコードではありません。",
+  syncHubScanPermission:
+    "カメラへのアクセスが拒否されました。設定でカメラを許可するか、アドレスとコードを入力してください。",
+  syncHubScanFailed:
+    "QRコードを読み取れませんでした。再試行するか、アドレスとコードを入力してください。",
   syncHubQrAlt: "ペアリングQRコード",
   syncHubQrHint: "スマートフォンでこのコードをスキャンしてください。",
   syncHubNewCode: "新しいコード",
@@ -2116,9 +2152,12 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncHubBind: "この保管庫でこのHubを使う",
   syncHubBound: "この保管庫はHub経由で同期するようになりました。",
   syncHubClear: "Hubデータを削除",
-  syncHubClearConfirm: "Hubのリポジトリを削除し、すべてのペアリング済み端末を忘れますか？保管庫自体は変更されません。",
+  syncHubClearConfirm:
+    "Hubのリポジトリを削除し、すべてのペアリング済み端末を忘れますか？保管庫自体は変更されません。",
   syncHubJoinTitle: "Hubに参加",
-  syncHubJoinIntro: "Hubを実行しているコンピューターに表示されたアドレスと6桁のコードを入力してください。",
+  syncHubJoinIntro:
+    "コンピューターに表示されたアドレスと 6 桁のコードを入力します。",
+
   syncHubDeviceName: "この端末の名前",
   syncHubThisDevice: "この端末",
   syncHubPair: "ペアリング",
@@ -2127,15 +2166,19 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncHubOffline: "オフライン",
   syncHubLastSeen: "最終確認: {time}",
   syncHubErrorCode: "ペアリングコードが違います。",
-  syncHubErrorExpired: "ペアリングコードの有効期限が切れました。新しいコードを取得してください。",
-  syncHubErrorTooMany: "試行回数が多すぎます。1分待ってから再試行してください。",
-  syncHubErrorNetwork: "Hubに接続できません。両方の端末が同じWi-Fiにあり、ファイアウォールでTextusが許可されているか確認してください。",
-  syncHubPortBusy: "このポートは既に使用されています。別のポートを選んでください。",
+  syncHubErrorExpired:
+    "ペアリングコードの有効期限が切れました。新しいコードを取得してください。",
+  syncHubErrorTooMany:
+    "試行回数が多すぎます。1分待ってから再試行してください。",
+  syncHubErrorNetwork:
+    "Hubに接続できません。両方の端末が同じWi-Fiにあり、ファイアウォールでTextusが許可されているか確認してください。",
+  syncHubPortBusy:
+    "このポートは既に使用されています。別のポートを選んでください。",
   syncEncryptionLabel: "このリポジトリを暗号化",
   syncEncryptionPasswordLabel: "暗号化パスワード",
   syncEncryptionPasswordNote: "12 文字以上。忘れると復元できません。",
-  syncEncryptionHint:
-    "暗号化はリポジトリ作成時に選びます。既存の平文リポジトリでオンにしても変換されません。",
+  syncEncryptionHint: "既存の平文リポジトリは変換されません。",
+
   syncErrorConditional:
     "このサービスは同期に必要な条件付き書き込みに対応していません。OSS モードか別のサービスをお試しください。",
   syncAccountLabel: "ユーザー名",
@@ -2147,7 +2190,8 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncNow: "今すぐ同期",
   syncPreview: "プレビュー",
   syncPreviewSummary:
-    "アップロード {uploaded}（{uploadBytes} バイト）、ダウンロード {downloaded}（{downloadBytes} バイト）、リモート削除 {removedRemote} / ローカル削除 {removedLocal}、競合 {conflicts}、移動 {moved} の見込みです。",
+    "アップロード {uploaded} · ダウンロード {downloaded} · 削除 {removedRemote}/{removedLocal} · 競合 {conflicts}",
+
   syncPreviewEmptyScan:
     "フォルダーが空のようです。実行するとリモートのファイルが削除されます。",
   syncPreviewBulk: "この実行では多くのファイルが削除されます。",
@@ -2156,14 +2200,16 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
     "このフォルダーの接続と同期ベースを Cloud Sync プラグインからインポートしますか？最初の同期を確認するまでプラグインはそのまま残ります。",
   syncImported: "Cloud Sync からインポートしました。",
   syncPluginStillRunning:
-    "Cloud Sync プラグインがこのフォルダーをまだ同期しています。このフォルダーの同期をオフにし、内蔵同期が正常に動くことを確認してからプラグインをアンインストールしてください。2 つの同期が同時に動くと記録が別々になり、重複した競合コピーができることがあります。アンインストールで消えるのはプラグインのローカル同期記録だけで、クラウドのファイルは消えません。",
+    "Cloud Sync はこのフォルダーをまだ同期中です。2 つのエンジンが別々の基準を持ちます。",
+
   syncPluginStopped:
     "Cloud Sync プラグインはこのフォルダーでは停止しています。内蔵同期が正常に動いたらアンインストールできます。アンインストールで消えるのはプラグインのローカル同期記録だけで、クラウドのファイルは消えません。",
   syncPluginOpen: "プラグインを開く",
+  syncPluginStoppedShort: "Cloud Sync プラグイン：このフォルダでは停止中",
   syncPluginRunAsk:
     "Cloud Sync プラグインがこのフォルダーでまだ有効です。今同期すると 2 つ目のエンジンが独自の記録で動き、重複した競合コピーができることがあります。同期しますか？",
-  syncPluginRollback:
-    "プラグインに戻すには「切断」を押します。内蔵の接続と同期記録が削除され、クラウドのファイルとプラグイン側の設定はそのまま残ります。",
+  syncPluginRollback: "戻すには、内蔵同期を切断してください。",
+
   syncImportNotFound: "このフォルダーの Cloud Sync 設定が見つかりません。",
   syncImportAlready: "このフォルダーはすでに設定されています。",
   syncDisconnect: "切断",

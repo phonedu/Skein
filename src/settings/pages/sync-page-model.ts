@@ -7,6 +7,7 @@ import type {
   SyncCredentials,
   SyncLast,
   SyncStatus,
+  SyncVault,
 } from "../../platform/ipc-sync";
 import type { SettingsPageProps } from "./types";
 
@@ -20,7 +21,8 @@ export const EMPTY_CONFIG: SyncConfig = {
   pathStyle: true,
   s3Flavor: "standard",
   keepDays: 90,
-  encrypted: true,
+  // Encryption is off in the basic form; the advanced fold offers it.
+  encrypted: false,
 };
 
 export const EMPTY_CREDENTIALS: SyncCredentials = {
@@ -99,6 +101,80 @@ export function connectionLabel(connection: ConnectionRef): string {
   }
   const base = connection.prefix ? ` · ${connection.prefix}` : "";
   return `${connection.provider === "s3" ? "S3" : "WebDAV"} · ${where || connection.endpoint}${base}`;
+}
+
+/** The three ways a vault connects; "hub" is WebDAV to a local Hub. */
+export type SyncConnectionType = "webdav" | "s3" | "hub";
+
+/** A connection to a local-network Hub: its endpoint is the desktop's
+ *  `/hub/<id>`, with no bucket. */
+export function isHubConnection(
+  connection: Pick<SyncConnection, "id" | "provider" | "endpoint">,
+): boolean {
+  return (
+    connection.id.startsWith("hub-") ||
+    (connection.provider === "webdav" &&
+      /\/hub\/[^/]+\/?$/.test(connection.endpoint.trim()))
+  );
+}
+
+/** What an S3 endpoint's host says about its provider and region: the
+ *  flavours Textus knows by name, and the region in them. Anything else is
+ *  left to the fields, so an unknown provider still works as standard S3. */
+export function s3DefaultsFromEndpoint(endpoint: string): {
+  region?: string;
+  s3Flavor?: "oss" | "kodo";
+  pathStyle?: boolean;
+} {
+  let host: string;
+  try {
+    host = new URL(endpoint.trim()).hostname.toLowerCase();
+  } catch {
+    return {};
+  }
+  let match = host.match(/^s3[.-]([a-z0-9-]+)\.qiniucs\.com$/);
+  if (match) return { region: match[1], s3Flavor: "kodo" };
+  match = host.match(/^oss-([a-z0-9-]+)\.aliyuncs\.com$/);
+  if (match) return { region: match[1], s3Flavor: "oss" };
+  match = host.match(/^s3[.-]([a-z0-9-]+)\.amazonaws\.com(\.cn)?$/);
+  // AWS prefers virtual-hosted buckets; the S3-compatible providers Textus
+  // knows by name address the bucket in the path.
+  if (match) return { region: match[1], pathStyle: false };
+  return {};
+}
+
+/** The type's word in a badge: S3, WebDAV or the Hub's own name. */
+export function connectionTypeLabel(
+  t: SettingsPageProps["t"],
+  connection: Pick<SyncConnection, "id" | "provider" | "endpoint">,
+): string {
+  if (isHubConnection(connection)) return t.syncHubTitle;
+  return connection.provider === "s3" ? "S3" : "WebDAV";
+}
+
+/** A synced vault's method in a badge: its binding's connection type. */
+export function vaultTypeLabel(
+  t: SettingsPageProps["t"],
+  vault: Pick<SyncVault, "connectionId" | "provider" | "endpoint">,
+): string {
+  const hub =
+    vault.connectionId.startsWith("hub-") ||
+    (vault.provider === "webdav" &&
+      /\/hub\/[^/]+\/?$/.test(vault.endpoint.trim()));
+  if (hub) return t.syncHubTitle;
+  return vault.provider === "s3" ? "S3" : "WebDAV";
+}
+
+/** Where a connection points, without the prefix: the host or the bucket. */
+export function connectionWhere(connection: ConnectionRef): string {
+  if (connection.provider === "s3") {
+    return connection.bucket || connection.endpoint;
+  }
+  try {
+    return new URL(connection.endpoint).host;
+  } catch {
+    return connection.endpoint;
+  }
 }
 
 export function syncStatusText(

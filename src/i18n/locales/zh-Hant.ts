@@ -1949,11 +1949,35 @@ export default {
   syncVaultFork: "建立獨立庫",
   syncErrorVaultCopied: "這個資料夾屬於另一個已同步庫。請為它建立獨立庫。",
   syncConnectionNew: "新增連線",
-  syncConnectionShared: "此連線已被 {count} 個庫使用；位址與憑證不在這裡修改。",
+  syncConnectionShared: "此連線還被 {count} 個庫使用。",
+
   syncConnectionEdit: "編輯連線",
+  syncCurrentConnection: "目前連線",
+  syncSwitch: "切換",
+  syncSwitchTitle: "切換同步方式",
+
+  syncSwitchTo: "切換並預覽",
+
+  syncEdit: "編輯",
+  syncMaintenance: "維護與記錄",
+  syncLocalService: "本機服務",
+  syncTypeHint: "先選類型；下一步只顯示這種連線需要的欄位。",
+  syncAdvanced: "進階選項",
+  syncNewShort: "新增",
+  syncJoinShort: "加入",
+  syncSavePreview: "儲存並預覽",
+  syncPreviewing: "正在預覽…",
+  syncSwitchNote: "只影響此庫；舊基準清除，遠端檔案保留。",
+
+  syncDiscardAsk: "放棄未儲存的修改？",
+  syncWebdavDesc: "Nextcloud、NAS、堅果雲等",
+  syncHubTypeDesc: "同一 Wi-Fi 直連，不經雲端",
+  syncS3Desc: "AWS S3、繽紛雲、七牛 Kodo",
+  syncEncrypted: "已加密",
+  syncNotEncrypted: "未加密",
   syncConnectionPrefixLabel: "新庫的預設前綴",
-  syncConnectionEditWarning:
-    "變更將影響 {count} 個庫。位址變更時，會重建這些庫的本機同步基準。",
+  syncConnectionEditWarning: "改動會影響使用它的 {count} 個庫。",
+
   syncAutoPrefix: "留空則為此資料夾建立子倉庫。",
   syncErrorRepository: "另一個庫已在使用該遠端倉庫。請選擇其他連線或遠端目錄。",
   syncErrorEncryptionPassword: "請輸入加密密碼（至少 12 個字元）。",
@@ -1974,18 +1998,21 @@ export default {
   syncErrorRegion:
     "此區域沒有已知的七牛上傳位址。請使用七牛 S3 區域，例如 cn-south-1。",
   syncHubTitle: "區域網路 Hub",
-  syncHubIntro: "讓同一 Wi-Fi 下的裝置不經雲端服務，直接連到這台電腦的儲存庫。",
+  syncHubIntro: "同一 Wi-Fi 下的裝置可直接連這台電腦。",
+
   syncHubHttpWarning: "連線未加密，請只在信任的網路上使用。",
   syncHubStart: "啟動 Hub",
   syncHubStop: "停止 Hub",
   syncHubAddress: "位址",
-  syncHubAddressHint: "如果手機連不上，請選擇兩台裝置共用的 Wi-Fi 位址。",
+  syncHubAddressHint: "手機連不上時，選兩台裝置共用的 Wi-Fi 位址。",
+
   syncHubPort: "連接埠",
   syncHubReadOnly: "新裝置只能讀取",
   syncHubReadOnlyDevice: "唯讀",
   syncHubNoAddress: "請先連接 Wi-Fi 或有線網路。",
   syncHubCode: "配對碼",
-  syncHubCodeNote: "10 分鐘內有效，僅供一台裝置使用。手機同步時請保持電腦喚醒，並允許 Textus 通過防火牆。",
+  syncHubCodeNote: "10 分鐘內有效，僅限一台裝置。",
+
   syncHubDiscover: "尋找附近的 Hub",
   syncHubDiscovering: "正在尋找 Hub…",
   syncHubNoFound: "找不到 Hub。請確認兩台裝置在同一個 Wi-Fi，或直接輸入位址。",
@@ -1995,7 +2022,8 @@ export default {
   syncHubScanSwitch: "切換相機",
   syncHubScanDark: "畫面全黑。請檢查鏡頭，或切換相機。",
   syncHubScanInvalid: "這個 QR 不是 Textus Hub 的配對碼。",
-  syncHubScanPermission: "相機權限被拒絕。請在設定中允許相機，或輸入位址與配對碼。",
+  syncHubScanPermission:
+    "相機權限被拒絕。請在設定中允許相機，或輸入位址與配對碼。",
   syncHubScanFailed: "無法讀取 QR。請重試，或輸入位址與配對碼。",
   syncHubQrAlt: "配對 QR 碼",
   syncHubQrHint: "用手機掃描這個碼。",
@@ -2008,9 +2036,11 @@ export default {
   syncHubBind: "讓此儲存庫使用這個 Hub",
   syncHubBound: "此儲存庫現在透過 Hub 同步。",
   syncHubClear: "刪除 Hub 資料",
-  syncHubClearConfirm: "刪除 Hub 的倉庫並忘記所有已配對裝置？儲存庫本身不會被更動。",
+  syncHubClearConfirm:
+    "刪除 Hub 的倉庫並忘記所有已配對裝置？儲存庫本身不會被更動。",
   syncHubJoinTitle: "加入 Hub",
-  syncHubJoinIntro: "輸入執行 Hub 的電腦上顯示的位址與六位數配對碼。",
+  syncHubJoinIntro: "輸入電腦上顯示的位址和六位配對碼。",
+
   syncHubDeviceName: "此裝置名稱",
   syncHubThisDevice: "此裝置",
   syncHubPair: "配對",
@@ -2021,13 +2051,14 @@ export default {
   syncHubErrorCode: "配對碼錯誤。",
   syncHubErrorExpired: "配對碼已過期，請索取新的配對碼。",
   syncHubErrorTooMany: "嘗試次數過多，請等一分鐘再試。",
-  syncHubErrorNetwork: "無法連線到 Hub。請確認兩台裝置在同一個 Wi-Fi，並允許 Textus 通過防火牆。",
+  syncHubErrorNetwork:
+    "無法連線到 Hub。請確認兩台裝置在同一個 Wi-Fi，並允許 Textus 通過防火牆。",
   syncHubPortBusy: "此連接埠已被占用，請換一個。",
   syncEncryptionLabel: "加密此倉庫",
   syncEncryptionPasswordLabel: "加密密碼",
   syncEncryptionPasswordNote: "至少 12 個字元。遺失後無法復原。",
-  syncEncryptionHint:
-    "加密方式在建立倉庫時確定；對已有明文倉庫開啟不會轉換它。",
+  syncEncryptionHint: "已有明文倉庫不會被轉換。",
+
   syncErrorConditional:
     "該服務不支援同步所需的條件寫入。請嘗試 OSS 模式或其他服務。",
   syncAccountLabel: "使用者名稱",
@@ -2039,22 +2070,24 @@ export default {
   syncNow: "立即同步",
   syncPreview: "預覽",
   syncPreviewSummary:
-    "將上傳 {uploaded}（{uploadBytes} 位元組）、下載 {downloaded}（{downloadBytes} 位元組）、刪除遠端 {removedRemote} / 本機 {removedLocal}、衝突 {conflicts}、移動 {moved}。",
+    "上傳 {uploaded} · 下載 {downloaded} · 刪除 {removedRemote}/{removedLocal} · 衝突 {conflicts}",
+
   syncPreviewEmptyScan: "資料夾看起來是空的；執行會刪除遠端檔案。",
   syncPreviewBulk: "本次執行將刪除大量檔案。",
   syncImportPlugin: "從 Cloud Sync 匯入",
   syncImportPluginAsk:
     "從 Cloud Sync 外掛匯入這個資料夾的連線與同步基準？在確認首次同步前，外掛維持原樣。",
   syncImported: "已從 Cloud Sync 匯入。",
-  syncPluginStillRunning:
-    "Cloud Sync 外掛仍在同步這個資料夾。請先關閉外掛對這個資料夾的同步，確認內建同步正常後再解除安裝外掛：兩套同步同時執行會各留一份記錄，可能產生重複的衝突副本。解除安裝外掛只會刪除它的本機同步記錄，不會刪除雲端檔案。",
+  syncPluginStillRunning: "Cloud Sync 仍在同步此資料夾，兩個引擎各寫一套基準。",
+
   syncPluginStopped:
     "Cloud Sync 外掛已對這個資料夾停用。內建同步正常執行後即可解除安裝外掛；解除安裝只會刪除外掛的本機同步記錄，不會刪除雲端檔案。",
   syncPluginOpen: "開啟外掛",
+  syncPluginStoppedShort: "Cloud Sync 外掛：已對此資料夾停用",
   syncPluginRunAsk:
     "Cloud Sync 外掛仍在為這個資料夾同步。現在同步會再執行一套引擎，它有自己的記錄，可能產生重複的衝突副本。仍要同步？",
-  syncPluginRollback:
-    "要回退到外掛，請點「中斷」：內建連線與同步記錄會被刪除，雲端檔案和外掛自己的設定保持原樣。",
+  syncPluginRollback: "要回到外掛，斷開內建同步即可。",
+
   syncImportNotFound: "沒有找到這個資料夾的 Cloud Sync 設定。",
   syncImportAlready: "這個資料夾已設定。",
   syncDisconnect: "中斷",

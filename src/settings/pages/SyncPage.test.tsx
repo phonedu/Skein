@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { SyncPage } from "./SyncPage";
@@ -53,6 +54,9 @@ import {
   syncForkVault,
   syncPreview,
   syncPluginImport,
+  syncLock,
+  syncConflicts,
+  syncHistory,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 import { useAppDocumentsFolder } from "../../platform/native-files";
@@ -63,6 +67,9 @@ vi.mocked(syncConnectionUpdate).mockResolvedValue({
   vaults: 2,
 });
 vi.mocked(syncForkVault).mockResolvedValue();
+vi.mocked(syncLock).mockResolvedValue({ locked: false });
+vi.mocked(syncConflicts).mockResolvedValue([]);
+vi.mocked(syncHistory).mockResolvedValue(null);
 
 const t = resolveStrings("en");
 
@@ -92,7 +99,21 @@ const shared: SyncConnection = {
   current: true,
 };
 
-afterEach(cleanup);
+const home: SyncConnection = {
+  id: "c2",
+  provider: "webdav",
+  endpoint: "https://home.example.com",
+  bucket: "",
+  region: "",
+  pathStyle: false,
+  s3Flavor: "standard",
+  prefix: "notes",
+  usedBy: 1,
+  hasCredentials: true,
+  current: false,
+};
+
+const sharedNote = () => t.syncConnectionShared.replace("{count}", "2");
 
 function page() {
   return (
@@ -107,67 +128,117 @@ function page() {
   );
 }
 
-it("binds a shared connection without offering its address or credentials", async () => {
+/** The heading names its card; a type card is a button with its label and
+ *  its one-line description. */
+const typeButton = (name: string) =>
+  screen.getByRole("button", { name: new RegExp(`^${name}`) });
+
+afterEach(cleanup);
+
+it("shows the binding in the overview and keeps the fields in Edit", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: true,
     config,
     hasCredentials: true,
     connections: [shared],
   });
-  vi.mocked(syncSettingsSave).mockResolvedValue();
-  vi.mocked(syncVaults).mockResolvedValue([]);
-  vi.mocked(syncConnectionUpdate).mockResolvedValue({
-    changed: false,
-    vaults: 2,
-  });
-  const { syncStatus } = await import("../../platform/ipc-sync");
+  vi.mocked(syncSettingsSave).mockClear();
+  vi.mocked(syncConnectionUpdate).mockClear();
   vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
-  const { syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
-  await screen.findByText(t.syncConnectionShared.replace("{count}", "2"));
-  const connection = screen.getByLabelText(t.syncConnectionLabel);
-  expect(connection.textContent).toContain("dav.example.com");
-  const endpoint = screen.getByLabelText(
+  await screen.findByText(sharedNote());
+  expect(screen.getByText(t.syncCurrentConnection)).toBeTruthy();
+  expect(screen.queryByLabelText(t.syncEndpointLabel)).toBeNull();
+
+  fireEvent.click(screen.getByRole("button", { name: t.syncEdit }));
+  const endpoint = (await screen.findByLabelText(
     t.syncEndpointLabel,
-  ) as HTMLInputElement;
-  expect(endpoint.disabled).toBe(true);
-  expect(screen.queryByLabelText(t.syncAccountLabel)).toBeNull();
-
-  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
-  await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
-  const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
-  expect(saved.connectionId).toBe("c1");
-});
-
-it("switching to a new connection brings the fields back", async () => {
-  vi.mocked(syncSettingsGet).mockResolvedValue({
-    configured: true,
-    config,
-    hasCredentials: true,
-    connections: [shared],
-  });
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
-  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
-
-  render(page());
-  await screen.findByText(t.syncConnectionShared.replace("{count}", "2"));
-  const connection = screen.getByLabelText(t.syncConnectionLabel);
-  fireEvent.click(connection);
-  fireEvent.click(screen.getByText(t.syncConnectionNew));
-  const endpoint = screen.getByLabelText(
-    t.syncEndpointLabel,
-  ) as HTMLInputElement;
+  )) as HTMLInputElement;
   expect(endpoint.disabled).toBe(false);
   expect(screen.getByLabelText(t.syncAccountLabel)).toBeTruthy();
+  expect(screen.queryByLabelText(t.syncPrefixLabel)).toBeNull();
+  fireEvent.change(endpoint, { target: { value: "https://new.example.com" } });
+  fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
+  await waitFor(() => expect(syncConnectionUpdate).toHaveBeenCalledOnce());
+  const [id, updated, , defaultPrefix] =
+    vi.mocked(syncConnectionUpdate).mock.calls[0];
+  expect(id).toBe("c1");
+  expect(updated.endpoint).toBe("https://new.example.com");
+  expect(defaultPrefix).toBeNull();
+});
+
+it("switches the vault to another saved connection", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared, home],
+  });
+  vi.mocked(syncSettingsSave).mockClear();
+  vi.mocked(syncSettingsSave).mockResolvedValue();
+  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
+
+  render(page());
+  await screen.findByText(sharedNote());
+  fireEvent.click(screen.getByRole("button", { name: t.syncSwitch }));
+  expect(await screen.findByText(t.syncSwitchTitle)).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /home\.example\.com/ }));
+  fireEvent.click(screen.getByRole("button", { name: t.syncSwitchTo }));
+  await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
+  const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
+  expect(saved.connectionId).toBe("c2");
+});
+
+it("opens a new connection in place, with WebDAV's fields already there", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
+
+  render(page());
+  await screen.findByText(sharedNote());
+  fireEvent.click(screen.getByRole("button", { name: t.syncSwitch }));
+  fireEvent.click(
+    within(screen.getByRole("group", { name: "WebDAV" })).getByRole("button", {
+      name: new RegExp(t.syncNewShort),
+    }),
+  );
+  // The page did not change: the current connection is still above the form.
+  expect(screen.getByText(t.syncCurrentConnection)).toBeTruthy();
+  const endpoint = (await screen.findByLabelText(
+    t.syncEndpointLabel,
+  )) as HTMLInputElement;
+  expect(endpoint.disabled).toBe(false);
+  expect(screen.getByLabelText(t.syncAccountLabel)).toBeTruthy();
+  fireEvent.click(typeButton("S3"));
+  expect(await screen.findByLabelText(t.syncBucketLabel)).toBeTruthy();
+  expect(screen.getByText(t.syncCurrentConnection)).toBeTruthy();
+});
+
+it("switches the fields under one type control, and a Hub joins in place", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+
+  render(page());
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
+  expect(typeButton("WebDAV")).toBeTruthy();
+  expect(typeButton("S3")).toBeTruthy();
+  expect(typeButton(t.syncHubTitle)).toBeTruthy();
+  expect(await screen.findByLabelText(t.syncEndpointLabel)).toBeTruthy();
+
+  fireEvent.click(typeButton(t.syncHubTitle));
+  expect(await screen.findByLabelText(t.syncHubCode)).toBeTruthy();
+  expect(screen.queryByLabelText(t.syncHubDeviceName)).toBeNull();
+  expect(screen.queryByRole("button", { name: t.syncSavePreview })).toBeNull();
 });
 
 it("names the remote folder of every synced vault", async () => {
@@ -186,54 +257,12 @@ it("names the remote folder of every synced vault", async () => {
       prefix: "notes/work-1a2b3c4d",
     },
   ]);
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
   expect(await screen.findByText("Work")).toBeTruthy();
   expect(screen.getByText(/notes\/work-1a2b3c4d/)).toBeTruthy();
-  expect(screen.getByText(/dav\.example\.com/)).toBeTruthy();
-});
-
-it("lets a shared connection be edited on purpose", async () => {
-  vi.mocked(syncSettingsGet).mockResolvedValue({
-    configured: true,
-    config,
-    hasCredentials: true,
-    connections: [shared],
-  });
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
-  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
-
-  render(page());
-  await screen.findByText(t.syncConnectionShared.replace("{count}", "2"));
-  fireEvent.click(screen.getByRole("button", { name: t.syncConnectionEdit }));
-  const endpoint = screen.getByLabelText(
-    t.syncEndpointLabel,
-  ) as HTMLInputElement;
-  expect(endpoint.disabled).toBe(false);
-  expect(screen.getByLabelText(t.syncAccountLabel)).toBeTruthy();
-  const prefix = screen.getByLabelText(
-    t.syncConnectionPrefixLabel,
-  ) as HTMLInputElement;
-  expect(prefix.value).toBe("work");
-  fireEvent.change(endpoint, { target: { value: "https://new.example.com" } });
-  fireEvent.change(prefix, { target: { value: "team" } });
-  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
-  await waitFor(() => expect(syncConnectionUpdate).toHaveBeenCalledOnce());
-  const [id, updated, , defaultPrefix] =
-    vi.mocked(syncConnectionUpdate).mock.calls[0];
-  expect(id).toBe("c1");
-  expect(updated.endpoint).toBe("https://new.example.com");
-  expect(defaultPrefix).toBe("team");
+  expect(screen.getAllByText(/dav\.example\.com/).length).toBeGreaterThan(0);
 });
 
 it("offers to fork a copied vault and saves it again", async () => {
@@ -247,45 +276,51 @@ it("offers to fork a copied vault and saves it again", async () => {
     .mockRejectedValueOnce(new Error("vaultCopied"))
     .mockResolvedValueOnce();
   vi.mocked(showConfirm).mockResolvedValue(true);
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
-  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
+  fireEvent.click(typeButton("WebDAV"));
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncSavePreview }),
+  );
   await waitFor(() => expect(syncForkVault).toHaveBeenCalledOnce());
   expect(syncSettingsSave).toHaveBeenCalledTimes(2);
 });
 
-it("defaults a new repository to encryption and saves its password", async () => {
+it("starts a new repository unencrypted and offers it under Advanced", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: false,
     connections: [],
   });
   vi.mocked(syncSettingsSave).mockClear();
   vi.mocked(syncSettingsSave).mockResolvedValue();
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
-  const encrypt = screen.getByLabelText(
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
+  fireEvent.click(typeButton("WebDAV"));
+  expect(
+    document.querySelector("details.sync-advanced")?.hasAttribute("open"),
+  ).toBe(false);
+  fireEvent.click(screen.getByText(t.syncAdvanced));
+  const encrypt = (await screen.findByLabelText(
     t.syncEncryptionLabel,
-  ) as HTMLInputElement;
-  expect(encrypt.checked).toBe(true);
+  )) as HTMLInputElement;
+  expect(encrypt.checked).toBe(false);
+  fireEvent.click(encrypt);
   fireEvent.change(screen.getByLabelText(t.syncEncryptionPasswordLabel), {
     target: { value: "correct horse battery" },
   });
-  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
   await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
   const [, config, credentials] = vi.mocked(syncSettingsSave).mock.calls[0];
   expect(config.encrypted).toBe(true);
+  expect(config.connectionId).toBe("new");
   expect(credentials.syncPassword).toBe("correct horse battery");
 });
 
@@ -309,28 +344,26 @@ it("shows what a first sync would do", async () => {
     emptyScan: false,
     bulkDelete: false,
   });
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
-  const button = screen.getByRole("button", { name: t.syncPreview });
+  await screen.findByText(sharedNote());
+  fireEvent.click(screen.getByText(t.syncMaintenance));
+  const button = await screen.findByRole("button", { name: t.syncPreview });
   await waitFor(() =>
     expect((button as HTMLButtonElement).disabled).toBe(false),
   );
   fireEvent.click(button);
-  const summary = await screen.findByText(/Would upload 3/);
+  const summary = await screen.findByText(/Upload 3/);
   expect(summary.textContent).not.toContain("{");
 });
 
-it("imports a Cloud Sync connection after confirmation", async () => {
+it("imports a Cloud Sync connection from the type step after confirmation", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: false,
     connections: [],
   });
+  vi.mocked(syncPluginImport).mockClear();
   vi.mocked(syncPluginImport).mockResolvedValue({
     provider: "webdav",
     prefix: "notes/work",
@@ -338,16 +371,42 @@ it("imports a Cloud Sync connection after confirmation", async () => {
     files: 4,
   });
   vi.mocked(showConfirm).mockResolvedValue(true);
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
   fireEvent.click(screen.getByRole("button", { name: t.syncImportPlugin }));
   await waitFor(() => expect(syncPluginImport).toHaveBeenCalledOnce());
+});
+
+it("folds maintenance away, and opens it when conflicts appear", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  vi.mocked(syncConflicts).mockResolvedValueOnce([]);
+  vi.mocked(syncStatus).mockResolvedValue({ configured: true, last: null });
+
+  const { unmount } = render(page());
+  await screen.findByText(sharedNote());
+  const fold = document.querySelector("details.sync-maintenance");
+  expect(fold?.hasAttribute("open")).toBe(false);
+  unmount();
+
+  vi.mocked(syncConflicts).mockResolvedValueOnce([
+    { path: "notes/a (conflict).md", name: "a (conflict).md", size: 12 },
+  ]);
+  render(page());
+  await screen.findByText("notes/a (conflict).md");
+  await waitFor(() =>
+    expect(
+      document.querySelector("details.sync-maintenance")?.hasAttribute("open"),
+    ).toBe(true),
+  );
 });
 
 it("falls back to the phone's own Documents when no folder is passed", async () => {
@@ -357,12 +416,7 @@ it("falls back to the phone's own Documents when no folder is passed", async () 
     configured: false,
     connections: [],
   });
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(
     <SyncPage
@@ -387,12 +441,7 @@ it("refuses a folder the app only reads through a content grant", async () => {
     configured: false,
     connections: [],
   });
-  const { syncStatus, syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(
     <SyncPage
@@ -408,7 +457,7 @@ it("refuses a folder the app only reads through a content grant", async () => {
   expect(
     (
       screen.getByRole("button", {
-        name: t.syncSave,
+        name: t.syncConnectionNew,
       }) as HTMLButtonElement
     ).disabled,
   ).toBe(true);
@@ -420,17 +469,12 @@ it("does not warn before built-in sync is configured", async () => {
     configured: false,
     connections: [],
   });
-  const { syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({
     configured: false,
     last: null,
     pluginConfigured: true,
     pluginRunning: true,
   });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
   await screen.findByText(t.syncNotConfigured);
@@ -444,17 +488,12 @@ it("warns while the Cloud Sync plugin still runs for the folder", async () => {
     hasCredentials: true,
     connections: [shared],
   });
-  const { syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({
     configured: true,
     last: null,
     pluginConfigured: true,
     pluginRunning: true,
   });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   const onClose = vi.fn();
   render(
@@ -481,21 +520,16 @@ it("asks before syncing while the plugin is still on", async () => {
     hasCredentials: true,
     connections: [shared],
   });
-  const { syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
   vi.mocked(syncStatus).mockResolvedValue({
     configured: true,
     last: null,
     pluginConfigured: true,
     pluginRunning: true,
   });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
   vi.mocked(showConfirm).mockResolvedValue(false);
 
   render(page());
-  const button = screen.getByRole("button", { name: t.syncNow });
+  const button = await screen.findByRole("button", { name: t.syncNow });
   await waitFor(() =>
     expect((button as HTMLButtonElement).disabled).toBe(false),
   );
@@ -509,37 +543,33 @@ it("asks before syncing while the plugin is still on", async () => {
   expect(syncRunSaved).not.toHaveBeenCalled();
 });
 
-it("offers Qiniu's native create mode and saves it", async () => {
-  const s3Config: SyncConfig = {
-    provider: "s3",
-    endpoint: "https://s3.cn-south-1.qiniucs.com",
-    bucket: "bucket",
-    prefix: "work",
-    region: "cn-south-1",
-    pathStyle: true,
-    s3Flavor: "standard",
-    keepDays: 90,
-  };
+it("reads Qiniu's native mode and region from the address", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: false,
-    config: s3Config,
-    hasCredentials: false,
     connections: [],
   });
   vi.mocked(syncSettingsSave).mockClear();
-  const { syncLock, syncConflicts, syncHistory } =
-    await import("../../platform/ipc-sync");
+  vi.mocked(syncSettingsSave).mockResolvedValue();
   vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
-  vi.mocked(syncLock).mockResolvedValue({ locked: false });
-  vi.mocked(syncConflicts).mockResolvedValue([]);
-  vi.mocked(syncHistory).mockResolvedValue(null);
 
   render(page());
-  const flavor = await screen.findByLabelText(t.syncS3FlavorLabel);
-  fireEvent.click(flavor);
-  fireEvent.click(screen.getByText(t.syncS3Kodo));
-  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
+  fireEvent.click(typeButton("S3"));
+  const endpoint = await screen.findByLabelText(t.syncEndpointLabel);
+  fireEvent.change(endpoint, {
+    target: { value: "https://s3.cn-south-1.qiniucs.com" },
+  });
+  const region = (await screen.findByLabelText(
+    t.syncRegionLabel,
+  )) as HTMLInputElement;
+  expect(region.value).toBe("cn-south-1");
+  expect(screen.queryByLabelText(t.syncS3FlavorLabel)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
   await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
   const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
+  expect(saved.provider).toBe("s3");
   expect(saved.s3Flavor).toBe("kodo");
+  expect(saved.region).toBe("cn-south-1");
 });

@@ -1,52 +1,44 @@
 // Settings › Sync: one folder's connection, its saved status, and the
 // actions that save, run or disconnect it. Secrets are written once and
 // never read back into the page; an empty field keeps the saved one.
+//
+// One page, no second level (S6a v5): switching, a new or edited connection
+// and this device's service open in place, under the current connection. A
+// Cancel closes the panel; Esc and the system Back do the same. Any saved
+// change ends in a preview.
 
-import { useCallback, useEffect } from "react";
-import { fill } from "../../i18n/fill";
-import {
-  syncConflicts,
-  syncHistory,
-  syncLock,
-  syncRestore,
-  syncRunSaved,
-  syncPreview,
-  syncSettingsForget,
-  syncSettingsGet,
-  syncSettingsSave,
-  syncConnectionUpdate,
-  syncForkVault,
-  syncPluginImport,
-  syncStatus,
-  syncUnlock,
-  syncVaults,
-} from "../../platform/ipc-sync";
-import { showConfirm } from "../../engine/controls/app-dialog";
+import { useCallback, useEffect, useState } from "react";
 import { isMobileApp } from "../../platform/capabilities";
+import { onBack } from "../../mobile/back";
 import { resolvedDocumentPath } from "../../platform/documents-path";
 import { useAppDocumentsFolder } from "../../platform/native-files";
 import { getUiState } from "../../storage/ui-state";
 import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../../utils/events";
 import { SettingsGroup } from "./SettingsGroup";
-import { SyncConnectionFields } from "./SyncConnectionFields";
-import { SyncActions } from "./SyncActions";
+import { SyncConnectionSummary } from "./SyncConnectionSummary";
+import { SyncConnectView } from "./SyncConnectView";
+import { SyncHeadline } from "./SyncHeadline";
 import { SyncHub } from "./SyncHub";
-import { SyncConflictsHistory, SyncVaults } from "./SyncSections";
-import { SyncStatusHeader } from "./SyncStatusHeader";
+import { SyncMaintenance, SyncVaults } from "./SyncMaintenance";
+import { SyncSwitchView } from "./SyncSwitchView";
 import type { SettingsPageProps } from "./types";
 import {
   EMPTY_CONFIG,
   EMPTY_CREDENTIALS,
-  errorText,
-  folderName,
   syncStatusText,
+  type SyncConnectionType,
 } from "./sync-page-model";
-import {
-  useSyncConnectionState,
-  useSyncHistoryState,
-  useSyncUiState,
-} from "./useSyncPageState";
+import { useSyncActions } from "./useSyncActions";
+import { useSyncPageData } from "./useSyncPageData";
 import "./SyncPage.css";
+
+/** What is open under the current connection: one panel at a time. */
+type SyncPanel =
+  | { kind: "none" }
+  | { kind: "switch"; selected: string | null }
+  | { kind: "new"; type: SyncConnectionType }
+  | { kind: "edit" }
+  | { kind: "service" };
 
 export function SyncPage({
   t,
@@ -75,92 +67,119 @@ export function SyncPage({
   // a folder the user gave the app access to) works.
   const unsupportedRoot =
     isMobileApp && !!folderRoot && folderRoot.startsWith("content://");
+  const data = useSyncPageData(folderRoot, !!indexing);
   const {
     config,
     setConfig,
     credentials,
     setCredentials,
     connections,
-    setConnections,
     vaults,
-    setVaults,
     savedConfig,
-    setSavedConfig,
     saved,
-    setSaved,
     savedPassword,
-    setSavedPassword,
-  } = useSyncConnectionState();
-  const {
     status,
     setStatus,
     editShared,
     setEditShared,
-    connectionPrefix,
-    setConnectionPrefix,
     busy,
     setBusy,
+    checking,
+    setChecking,
     note,
     setNote,
     preview,
     setPreview,
-  } = useSyncUiState();
-  const { lock, setLock, conflicts, setConflicts, history, setHistory } =
-    useSyncHistoryState();
+    lock,
+    conflicts,
+    history,
+    reload,
+  } = data;
+  const [panel, setPanel] = useState<SyncPanel>({ kind: "none" });
 
-  const reload = useCallback(async () => {
-    // The library list is global, so it loads even with no folder open.
-    void syncVaults()
-      // The library list is global; a host that answers nothing (a preview
-      // without the engine) leaves it empty rather than null.
-      .then((list) => setVaults(Array.isArray(list) ? list : []))
-      .catch(() => {});
-    if (!folderRoot || indexing) return;
-    try {
-      const [settings, current] = await Promise.all([
-        syncSettingsGet(folderRoot),
-        syncStatus(folderRoot),
-      ]);
-      setConfig(settings.config ?? EMPTY_CONFIG);
-      setCredentials(EMPTY_CREDENTIALS);
-      setConnections(settings.connections ?? []);
-      setSavedConfig(settings.config ?? null);
-      setSaved(settings.configured && !!settings.hasCredentials);
-      setSavedPassword(!!settings.hasEncryptionPassword);
-      setStatus(current);
-      const [foundLock, foundConflicts, foundHistory] = await Promise.all([
-        settings.configured
-          ? syncLock(folderRoot).catch(() => null)
-          : Promise.resolve(null),
-        syncConflicts(folderRoot).catch(() => []),
-        syncHistory(folderRoot).catch(() => null),
-      ]);
-      setLock(foundLock);
-      setConflicts(foundConflicts);
-      setHistory(foundHistory);
-    } catch (error) {
-      setNote({ error: true, text: String(error) });
-    }
-  }, [
-    folderRoot,
-    indexing,
+  // The draft decides what a save would do; the summary keeps showing the
+  // vault's actual binding while a new one is being written.
+  const currentConnection =
+    connections.find((connection) => connection.id === config.connectionId) ??
+    null;
+  const savedConnection =
+    connections.find(
+      (connection) => connection.id === savedConfig?.connectionId,
+    ) ?? null;
+  const shared = !!currentConnection && currentConnection.usedBy > 1;
+  const configured = !!status?.configured;
+
+  const actions = useSyncActions({
+    t,
+    folderRoot: folderRoot ?? "",
+    config,
+    credentials,
+    savedConfig,
+    currentConnection,
+    shared,
+    editShared,
+    status,
+    lock,
+    openPaths,
+    onOpenFile,
+    reload,
     setConfig,
     setCredentials,
-    setConnections,
-    setSavedConfig,
-    setSaved,
-    setSavedPassword,
     setStatus,
-    setLock,
-    setConflicts,
-    setHistory,
+    setSaved: data.setSaved,
+    setEditShared,
+    setBusy,
+    setChecking,
     setNote,
-    setVaults,
+    setPreview,
+  });
+
+  // Opening a panel drops what the page had noted; closing one puts the
+  // saved draft back, so a cancelled form leaves nothing behind.
+  const openPanel = (next: SyncPanel) => {
+    setNote(null);
+    setPreview(null);
+    setPanel(next);
+  };
+
+  const closePanel = useCallback(() => {
+    setConfig(savedConfig ?? EMPTY_CONFIG);
+    setCredentials(EMPTY_CREDENTIALS);
+    setEditShared(false);
+    setNote(null);
+    setPreview(null);
+    setPanel({ kind: "none" });
+  }, [
+    savedConfig,
+    setConfig,
+    setCredentials,
+    setEditShared,
+    setNote,
+    setPreview,
   ]);
 
+  // Android's Back closes the panel first; with none open it leaves Settings.
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    if (!isMobileApp || panel.kind === "none") return;
+    return onBack(() => {
+      closePanel();
+      return true;
+    });
+  }, [panel.kind, closePanel]);
+
+  // The desktop's Escape closes the panel too: the dialog's own would close
+  // Settings altogether.
+  useEffect(() => {
+    if (panel.kind === "none") return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.isComposing) return;
+      event.preventDefault();
+      event.stopPropagation();
+      closePanel();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [panel.kind, closePanel]);
 
   if (!folderRoot) {
     return (
@@ -173,14 +192,8 @@ export function SyncPage({
     );
   }
 
-  const currentConnection =
-    connections.find((connection) => connection.id === config.connectionId) ??
-    null;
-  const shared = !!currentConnection && currentConnection.usedBy > 1;
-
   const chooseConnection = (id: string) => {
     setEditShared(false);
-    setConnectionPrefix("");
     if (!id) {
       setConfig({
         ...EMPTY_CONFIG,
@@ -212,91 +225,56 @@ export function SyncPage({
     setCredentials(EMPTY_CREDENTIALS);
   };
 
-  const save = async () => {
-    setBusy(true);
-    setNote(null);
-    try {
-      if (shared && editShared && currentConnection) {
-        await syncConnectionUpdate(
-          currentConnection.id,
-          { ...config, prefix: currentConnection.prefix },
-          credentials,
-          connectionPrefix,
-        );
-        setEditShared(false);
-      }
-      await syncSettingsSave(
-        folderRoot,
-        {
-          ...config,
-          keepChosen:
-            config.keepChosen ||
-            (savedConfig ? savedConfig.keepDays !== config.keepDays : false),
-        },
-        shared
-          ? {
-              ...EMPTY_CREDENTIALS,
-              syncPassword: credentials.syncPassword ?? "",
-            }
-          : credentials,
-      );
-      setCredentials(EMPTY_CREDENTIALS);
-      setEditShared(false);
-      setSaved(true);
-      setNote({ error: false, text: t.syncSaved });
-      await reload();
-    } catch (error) {
-      const reason = String(error);
-      if (reason.includes("vaultCopied")) {
-        const ok = await showConfirm(t.syncVaultCopiedAsk, {
-          okLabel: t.syncVaultFork,
-          cancelLabel: t.cancel,
-        });
-        if (!ok) return;
-        try {
-          await syncForkVault(folderRoot);
-          await save();
-        } catch (forkError) {
-          setNote({ error: true, text: errorText(t, String(forkError)) });
-        }
-        return;
-      }
-      setNote({ error: true, text: errorText(t, reason) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const importPlugin = async () => {
-    const ok = await showConfirm(t.syncImportPluginAsk, {
-      okLabel: t.syncImportPlugin,
-      cancelLabel: t.cancel,
+  // A method's "new" starts the form on that type; the segmented control in
+  // the form calls the same, so the fields swap in place (Hub replaces them
+  // with the join; its scan is the phone's own camera).
+  const openNew = (type: SyncConnectionType = "webdav") => {
+    setEditShared(false);
+    setCredentials(EMPTY_CREDENTIALS);
+    setConfig({
+      ...EMPTY_CONFIG,
+      connectionId: "new",
+      ...(type === "hub" ? {} : { provider: type }),
+      keepDays: config.keepDays,
+      keepChosen: config.keepChosen,
     });
-    if (!ok) return;
-    setBusy(true);
-    setNote(null);
-    try {
-      await syncPluginImport(folderRoot);
-      await reload();
-      setNote({ error: false, text: t.syncImported });
-    } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
-    } finally {
-      setBusy(false);
-    }
+    openPanel({ kind: "new", type });
   };
 
-  const previewRun = async () => {
-    setBusy(true);
-    setNote(null);
-    setPreview(null);
-    try {
-      setPreview(await syncPreview(folderRoot));
-    } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
-    } finally {
-      setBusy(false);
-    }
+  const openEdit = () => {
+    // Editing a shared connection changes it for every vault using it: the
+    // warning shows, and save() updates the connection itself.
+    setEditShared(shared);
+    openPanel({ kind: "edit" });
+  };
+
+  const openSwitch = () => {
+    openPanel({ kind: "switch", selected: config.connectionId || null });
+  };
+
+  const saveAndPreview = async () => {
+    if (!(await actions.save())) return;
+    setPanel({ kind: "none" });
+    await actions.previewRun();
+  };
+
+  // A paired Hub saved its own binding: reload, then show the summary.
+  // Restoring the draft here would put the pre-pairing connection back.
+  const finishPairing = async () => {
+    await reload();
+    setEditShared(false);
+    setPanel({ kind: "none" });
+    await actions.previewRun();
+  };
+
+  const importAndPreview = async () => {
+    if (!(await actions.importPlugin())) return;
+    setPanel({ kind: "none" });
+    await actions.previewRun();
+  };
+
+  const disconnect = async () => {
+    if (await actions.forget()) setPanel({ kind: "none" });
   };
 
   const openPlugins = () => {
@@ -308,110 +286,8 @@ export function SyncPage({
     onClose?.();
   };
 
-  const run = async (allowEmpty = false, allowBulk = false) => {
-    // A manual run is allowed while the plugin is on (the remote lock still
-    // serializes it), but not silently: both engines keep their own base.
-    if (!allowEmpty && !allowBulk && status?.pluginRunning) {
-      const ok = await showConfirm(t.syncPluginRunAsk, {
-        okLabel: t.syncContinue,
-        cancelLabel: t.cancel,
-      });
-      if (!ok) return;
-    }
-    setBusy(true);
-    setPreview(null);
-    setNote({ error: false, text: t.syncRunning });
-    try {
-      await syncRunSaved(folderRoot, allowEmpty, allowBulk, openPaths);
-      await reload();
-      // The reloaded status carries the summary and the deferred count.
-      setNote(null);
-    } catch (error) {
-      const reason = String(error);
-      const retry = async (empty: boolean, bulk: boolean) => {
-        const ok = await showConfirm(errorText(t, reason), {
-          okLabel: t.syncContinue,
-          cancelLabel: t.cancel,
-        });
-        if (ok) await run(empty, bulk);
-      };
-      if (reason.includes("emptyScan")) {
-        await retry(true, allowBulk);
-      } else if (reason.includes("bulkDelete")) {
-        await retry(allowEmpty, true);
-      } else {
-        setNote({ error: true, text: errorText(t, reason) });
-      }
-      await reload();
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const forget = async () => {
-    const ok = await showConfirm(
-      fill(t.syncDisconnectAsk, { folder: folderName(folderRoot) }),
-      { danger: true, okLabel: t.syncDisconnect, cancelLabel: t.cancel },
-    );
-    if (!ok) return;
-    setBusy(true);
-    setNote(null);
-    try {
-      await syncSettingsForget(folderRoot);
-      setConfig(EMPTY_CONFIG);
-      setStatus(null);
-      setSaved(false);
-    } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const unlock = async () => {
-    if (!lock?.token) return;
-    const ok = await showConfirm(
-      fill(t.syncUnlockAsk, {
-        time: lock.startedAt
-          ? new Date(lock.startedAt).toLocaleString()
-          : t.syncUnlockUnknown,
-      }),
-      { danger: true, okLabel: t.syncUnlock, cancelLabel: t.cancel },
-    );
-    if (!ok) return;
-    setBusy(true);
-    setNote(null);
-    try {
-      await syncUnlock(folderRoot, lock.token);
-      setNote({ error: false, text: t.syncUnlocked });
-      await reload();
-    } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const fullPath = (relative: string) =>
     `${folderRoot.replace(/[\\/]$/, "")}/${relative}`;
-
-  const restore = async (path: string, hash: string) => {
-    setBusy(true);
-    setNote(null);
-    try {
-      const restored = await syncRestore(folderRoot, path, hash, openPaths);
-      await reload();
-      setNote({
-        error: false,
-        text: fill(t.syncRestored, { path: restored.path }),
-      });
-      onOpenFile?.(fullPath(restored.path));
-    } catch (error) {
-      setNote({ error: true, text: errorText(t, String(error)) });
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const last = status?.last;
   const dirty =
@@ -423,7 +299,6 @@ export function SyncPage({
       credentials.secretKey !== "" ||
       (credentials.syncPassword ?? "") !== "");
   const statusText = syncStatusText(t, status, last);
-  const isS3 = config.provider === "s3";
   const historyRows = history
     ? Object.entries(history.versions)
         .flatMap(([path, versions]) =>
@@ -434,66 +309,110 @@ export function SyncPage({
 
   return (
     <>
-      <SettingsGroup className="sync-page">
-        <SyncStatusHeader
-          t={t}
-          folderRoot={folderRoot}
-          unsupportedRoot={unsupportedRoot}
-          note={note}
-          dirty={dirty}
-          statusText={statusText}
-          last={last ?? null}
-          status={status}
-          lock={lock}
-          busy={busy}
-          unlock={() => void unlock()}
-          openPlugins={openPlugins}
-        />
-        <SyncConnectionFields
-          t={t}
-          config={config}
-          setConfig={setConfig}
-          credentials={credentials}
-          setCredentials={setCredentials}
-          connections={connections}
-          currentConnection={currentConnection}
-          shared={shared}
-          editShared={editShared}
-          setEditShared={setEditShared}
-          connectionPrefix={connectionPrefix}
-          setConnectionPrefix={setConnectionPrefix}
-          savedConfig={savedConfig}
-          saved={saved}
-          savedPassword={savedPassword}
-          locked={shared && !editShared}
-          isS3={isS3}
-          chooseConnection={chooseConnection}
-        />
-        <SyncActions
-          t={t}
-          status={status}
-          preview={preview}
-          busy={busy}
-          dirty={dirty}
-          unsupportedRoot={unsupportedRoot}
-          importPlugin={importPlugin}
-          save={save}
-          previewRun={previewRun}
-          run={run}
-          forget={forget}
-        />
-      </SettingsGroup>
-      <SyncHub t={t} root={folderRoot} mobile={isMobileApp} reload={reload} />
-      <SyncConflictsHistory
+      <SyncHeadline
         t={t}
+        folderRoot={folderRoot}
+        unsupportedRoot={unsupportedRoot}
+        note={note}
+        dirty={dirty}
+        statusText={statusText}
+        last={last ?? null}
         status={status}
+        lock={lock}
+        busy={busy}
+        checking={checking}
+        preview={preview}
+        configured={configured}
+        onNew={() => openNew()}
+        onRun={() => void actions.run()}
+        onUnlock={() => void actions.unlock()}
+        onOpenPlugins={openPlugins}
+      />
+      {configured && savedConnection && (
+        <SyncConnectionSummary
+          t={t}
+          connection={savedConnection}
+          prefix={savedConfig?.prefix ?? ""}
+          encrypted={!!savedConfig?.encrypted}
+          onSwitch={openSwitch}
+          onEdit={openEdit}
+        />
+      )}
+      {panel.kind === "switch" && (
+        <SyncSwitchView
+          t={t}
+          connections={connections}
+          currentId={savedConfig?.connectionId ?? null}
+          selectedId={panel.selected}
+          mobile={isMobileApp}
+          busy={busy}
+          onSelect={(id) => {
+            setPanel({ kind: "switch", selected: id });
+            chooseConnection(id);
+          }}
+          onNew={openNew}
+          onService={() => openPanel({ kind: "service" })}
+          onCancel={closePanel}
+          onConfirm={() => void saveAndPreview()}
+        />
+      )}
+      {(panel.kind === "new" || panel.kind === "edit") && (
+        <SyncConnectView
+          t={t}
+          mode={panel.kind}
+          type={panel.kind === "new" ? panel.type : config.provider}
+          mobile={isMobileApp}
+          root={folderRoot}
+          configured={configured}
+          busy={busy}
+          unsupportedRoot={unsupportedRoot}
+          onTypeChange={openNew}
+          onCancel={closePanel}
+          onSave={() => void saveAndPreview()}
+          onImport={() => void importAndPreview()}
+          onPaired={() => void finishPairing()}
+          fields={{
+            t,
+            config,
+            setConfig,
+            credentials,
+            setCredentials,
+            // A new connection starts clean: the vault's saved secrets and
+            // encryption lock belong to the connection being left behind.
+            savedConfig: panel.kind === "edit" ? savedConfig : null,
+            saved: panel.kind === "edit" ? saved : false,
+            savedPassword: panel.kind === "edit" ? savedPassword : false,
+            locked: false,
+            sharedCount:
+              panel.kind === "edit" ? (currentConnection?.usedBy ?? 0) : 0,
+          }}
+        />
+      )}
+      {panel.kind === "service" && (
+        <SyncHub
+          t={t}
+          root={folderRoot}
+          reload={reload}
+          onBound={() => setPanel({ kind: "none" })}
+          onBack={closePanel}
+        />
+      )}
+      {vaults.length > 0 && (
+        <SyncVaults t={t} vaults={vaults} currentRoot={folderRoot} />
+      )}
+      <SyncMaintenance
+        t={t}
+        configured={configured}
         conflicts={conflicts}
         historyRows={historyRows}
+        vaults={vaults}
         busy={busy}
+        checking={checking}
+        onPreview={() => void actions.previewRun()}
         onOpen={(path) => onOpenFile?.(fullPath(path))}
-        restore={(path, hash) => void restore(path, hash)}
+        restore={(path, hash) => void actions.restore(path, hash)}
+        onDisconnect={() => void disconnect()}
       />
-      <SyncVaults t={t} vaults={vaults} />
     </>
   );
 }

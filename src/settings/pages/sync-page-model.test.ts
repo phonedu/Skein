@@ -4,6 +4,7 @@ import { fill } from "../../i18n/fill";
 import {
   errorText,
   parseHubPairPayload,
+  s3DefaultsFromEndpoint,
   syncStatusText,
 } from "./sync-page-model";
 
@@ -38,6 +39,31 @@ describe("sync page text", () => {
   });
 });
 
+describe("S3 defaults from an address", () => {
+  it("reads Qiniu's native mode and region", () => {
+    expect(s3DefaultsFromEndpoint("https://s3.cn-south-1.qiniucs.com")).toEqual(
+      { region: "cn-south-1", s3Flavor: "kodo" },
+    );
+  });
+
+  it("reads Alibaba OSS's flavour and region", () => {
+    expect(
+      s3DefaultsFromEndpoint("https://oss-cn-hangzhou.aliyuncs.com"),
+    ).toEqual({ region: "cn-hangzhou", s3Flavor: "oss" });
+  });
+
+  it("reads an AWS region and leaves the flavour standard", () => {
+    expect(
+      s3DefaultsFromEndpoint("https://s3.eu-west-1.amazonaws.com"),
+    ).toEqual({ region: "eu-west-1", pathStyle: false });
+  });
+
+  it("leaves an unknown or unreadable address to the fields", () => {
+    expect(s3DefaultsFromEndpoint("https://s3.example.com")).toEqual({});
+    expect(s3DefaultsFromEndpoint("not a url")).toEqual({});
+  });
+});
+
 describe("Hub pairing QR payload", () => {
   const payload = {
     address: "http://192.168.1.5:7419",
@@ -54,9 +80,7 @@ ${JSON.stringify(payload)}`;
   it("refuses another QR code or an incomplete one", () => {
     expect(parseHubPairPayload("https://example.com")).toBeNull();
     expect(
-      parseHubPairPayload(
-        text.replace('"code":"123456"', '"code":"12345"'),
-      ),
+      parseHubPairPayload(text.replace('"code":"123456"', '"code":"12345"')),
     ).toBeNull();
   });
 });

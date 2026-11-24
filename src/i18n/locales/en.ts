@@ -2090,12 +2090,36 @@ type /name in a conversation to use one.
   syncErrorVaultCopied:
     "This folder belongs to another synced vault. Create a separate vault for it.",
   syncConnectionNew: "New connection",
-  syncConnectionShared:
-    "This connection is used by {count} vaults; its address and credentials are not changed here.",
+  syncConnectionShared: "Also used by {count} vaults.",
+
   syncConnectionEdit: "Edit connection",
+  syncCurrentConnection: "Current connection",
+  syncSwitch: "Switch",
+  syncSwitchTitle: "Change sync method",
+
+  syncSwitchTo: "Switch and preview",
+
+  syncEdit: "Edit",
+  syncMaintenance: "Maintenance & records",
+  syncLocalService: "This device's service",
+  syncTypeHint: "Pick a type; the next step shows only its fields.",
+  syncAdvanced: "Advanced",
+  syncNewShort: "New",
+  syncJoinShort: "Join",
+  syncSavePreview: "Save and preview",
+  syncPreviewing: "Previewing…",
+  syncSwitchNote:
+    "This vault only; the old base is cleared, remote files stay.",
+
+  syncDiscardAsk: "Discard the unsaved changes?",
+  syncWebdavDesc: "Nextcloud, NAS and more",
+  syncHubTypeDesc: "Direct on the same Wi-Fi, no cloud",
+  syncS3Desc: "AWS S3, Bitiful, Qiniu Kodo",
+  syncEncrypted: "Encrypted",
+  syncNotEncrypted: "Not encrypted",
   syncConnectionPrefixLabel: "Default prefix for new vaults",
-  syncConnectionEditWarning:
-    "Changes apply to {count} vaults. If the address changes, their local sync baselines are rebuilt.",
+  syncConnectionEditWarning: "Changes affect {count} vaults using it.",
+
   syncAutoPrefix: "Leave empty to create a sub-repository for this folder.",
   syncErrorRepository:
     "Another vault already uses this remote repository. Choose a different connection or remote folder.",
@@ -2124,31 +2148,37 @@ type /name in a conversation to use one.
   syncErrorRegion:
     "This region has no known Qiniu upload address. Use a Qiniu S3 region such as cn-south-1.",
   syncHubTitle: "Local network Hub",
-  syncHubIntro:
-    "Let this computer's vault be reached by devices on the same Wi-Fi, without a cloud service.",
+  syncHubIntro: "Devices on the same Wi-Fi can connect to this computer.",
+
   syncHubHttpWarning:
     "The connection is not encrypted. Use it only on a network you trust.",
   syncHubStart: "Start Hub",
   syncHubStop: "Stop Hub",
   syncHubAddress: "Address",
-  syncHubAddressHint: "If the phone can't connect, choose the address of the Wi-Fi network both devices use.",
+  syncHubAddressHint:
+    "If the phone cannot connect, pick the shared Wi-Fi address.",
+
   syncHubPort: "Port",
   syncHubReadOnly: "New devices can only read",
   syncHubReadOnlyDevice: "Read-only",
   syncHubNoAddress: "Connect to Wi-Fi or a wired network first.",
   syncHubCode: "Pairing code",
-  syncHubCodeNote: "Valid for 10 minutes and for one device. Keep this computer awake and allow Textus through its firewall while a phone syncs.",
+  syncHubCodeNote: "Valid for 10 minutes, one device.",
+
   syncHubDiscover: "Find nearby Hubs",
   syncHubDiscovering: "Looking for Hubs…",
-  syncHubNoFound: "No Hubs found. Check that both devices are on the same Wi-Fi, or type the address.",
+  syncHubNoFound:
+    "No Hubs found. Check that both devices are on the same Wi-Fi, or type the address.",
   syncHubScan: "Scan pairing QR",
   syncHubScanning: "Opening the camera…",
   syncHubScanPoint: "Point the camera at the QR code.",
   syncHubScanSwitch: "Switch camera",
   syncHubScanDark: "The camera is black. Check the lens or switch the camera.",
   syncHubScanInvalid: "That QR code isn't a Textus Hub pairing code.",
-  syncHubScanPermission: "Camera access was refused. Allow the camera in Settings, or type the address and code.",
-  syncHubScanFailed: "Could not read the QR code. Try again or type the address and code.",
+  syncHubScanPermission:
+    "Camera access was refused. Allow the camera in Settings, or type the address and code.",
+  syncHubScanFailed:
+    "Could not read the QR code. Try again or type the address and code.",
   syncHubQrAlt: "Pairing QR code",
   syncHubQrHint: "Scan this code from the phone.",
   syncHubNewCode: "New code",
@@ -2164,7 +2194,8 @@ type /name in a conversation to use one.
     "Delete the Hub's repository and forget every paired device? The vault itself is not touched.",
   syncHubJoinTitle: "Join a Hub",
   syncHubJoinIntro:
-    "Type the address and the six-digit code shown on the computer that runs the Hub.",
+    "Enter the address and six-digit code shown on the computer.",
+
   syncHubDeviceName: "This device's name",
   syncHubThisDevice: "This device",
   syncHubPair: "Pair",
@@ -2176,14 +2207,15 @@ type /name in a conversation to use one.
   syncHubErrorExpired: "The pairing code has expired. Ask for a new one.",
   syncHubErrorTooMany:
     "Too many pairing attempts. Wait a minute and try again.",
-  syncHubErrorNetwork: "Could not reach the Hub. Check that both devices are on the same Wi-Fi and allow Textus through the firewall.",
+  syncHubErrorNetwork:
+    "Could not reach the Hub. Check that both devices are on the same Wi-Fi and allow Textus through the firewall.",
   syncHubPortBusy: "This port is already in use. Choose another one.",
   syncEncryptionLabel: "Encrypt this repository",
   syncEncryptionPasswordLabel: "Encryption password",
   syncEncryptionPasswordNote:
     "At least 12 characters. It cannot be recovered if lost.",
-  syncEncryptionHint:
-    "Encryption is chosen when the repository is created. Turning it on for an existing plaintext repository will not convert it.",
+  syncEncryptionHint: "Existing plaintext repositories are not converted.",
+
   syncErrorConditional:
     "This service does not support the conditional write sync needs. Try the OSS mode, or another service.",
   syncAccountLabel: "Username",
@@ -2195,7 +2227,8 @@ type /name in a conversation to use one.
   syncNow: "Sync now",
   syncPreview: "Preview",
   syncPreviewSummary:
-    "Would upload {uploaded} ({uploadBytes} bytes), download {downloaded} ({downloadBytes} bytes), delete {removedRemote} remote / {removedLocal} local, {conflicts} conflicts, {moved} moves.",
+    "Upload {uploaded} · download {downloaded} · delete {removedRemote}/{removedLocal} · conflicts {conflicts}",
+
   syncPreviewEmptyScan:
     "The folder looks empty; the run would delete remote files.",
   syncPreviewBulk: "This run would delete many files.",
@@ -2204,14 +2237,16 @@ type /name in a conversation to use one.
     "Import this folder's connection and sync baseline from the Cloud Sync plugin? The plugin is left untouched until the first sync is checked.",
   syncImported: "Imported from Cloud Sync.",
   syncPluginStillRunning:
-    "The Cloud Sync plugin is still syncing this folder. Turn its sync off for this folder and check that built-in sync works before uninstalling it: two syncs at once keep separate records and can make duplicate conflict copies. Uninstalling the plugin deletes its local sync records, not the cloud files.",
+    "Cloud Sync is still syncing this folder; two engines keep separate baselines.",
+
   syncPluginStopped:
     "The Cloud Sync plugin is stopped for this folder. Uninstall it once built-in sync has run normally; uninstalling deletes its local sync records, not the cloud files.",
   syncPluginOpen: "Open plugins",
+  syncPluginStoppedShort: "Cloud Sync plugin: off for this folder",
   syncPluginRunAsk:
     "The Cloud Sync plugin is still on for this folder. Syncing now runs a second engine with its own record, which can create duplicate conflict copies. Sync anyway?",
-  syncPluginRollback:
-    "To go back to the plugin, disconnect: the built-in connection and sync record are removed, while the cloud files and the plugin's own settings stay as they are.",
+  syncPluginRollback: "To go back, disconnect the built-in sync.",
+
   syncImportNotFound: "No Cloud Sync setup was found for this folder.",
   syncImportAlready: "This folder is already configured.",
   syncDisconnect: "Disconnect",

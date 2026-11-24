@@ -187,6 +187,33 @@ use super::store_ops::*;
     }
 
     #[test]
+    fn a_new_connection_binds_under_its_own_sub_repository() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        save_at(&paths, &root, webdav_config(), webdav_credentials()).unwrap();
+
+        let (config, _) = load_at(&paths, &root).unwrap().unwrap();
+        assert!(config.prefix.starts_with("vault-"));
+        assert!(!config.prefix.is_empty());
+    }
+
+    #[test]
+    fn a_new_hub_connection_keeps_the_hub_repository_root() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        let mut config = webdav_config();
+        config.endpoint = "http://192.168.1.10:7419/hub/abc".to_string();
+        save_at(&paths, &root, config, webdav_credentials()).unwrap();
+
+        let (saved, _) = load_at(&paths, &root).unwrap().unwrap();
+        assert_eq!(saved.prefix, "");
+    }
+
+    #[test]
     fn a_second_vault_can_share_the_connection_and_gets_a_sub_repository() {
         let dir = tempfile::tempdir().unwrap();
         let first = dir.path().join("vault");

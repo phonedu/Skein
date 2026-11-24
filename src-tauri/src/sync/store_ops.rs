@@ -211,6 +211,13 @@ pub(super) fn save_at(
     let same_binding = existing
         .as_ref()
         .is_some_and(|binding| binding.connection_id == connection_id);
+    // A Hub connection is one repository shared by every paired device: its
+    // vaults bind at the Hub's root, never in a sub-repository of their own.
+    let hub_repository = connection.provider == "webdav"
+        && connection
+            .endpoint
+            .trim_end_matches('/')
+            .contains("/hub/");
     let mut prefix = config.prefix.trim_matches('/').to_string();
     if prefix.is_empty() {
         if same_binding {
@@ -218,7 +225,9 @@ pub(super) fn save_at(
                 .as_ref()
                 .map(|binding| binding.prefix.clone())
                 .unwrap_or_default();
-        } else if !is_new {
+        } else if !hub_repository {
+            // Every other new binding — a brand-new connection included —
+            // gets its own sub-repository, never the remote root.
             prefix = new_prefix(&connection, root, &vault_id);
         }
     }

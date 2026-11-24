@@ -2164,12 +2164,37 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncErrorVaultCopied:
     "Esta pasta pertence a outra biblioteca sincronizada. Crie uma biblioteca separada para ela.",
   syncConnectionNew: "Nova ligação",
-  syncConnectionShared:
-    "Esta ligação é usada por {count} bibliotecas; o endereço e as credenciais não são alterados aqui.",
+  syncConnectionShared: "Também usada por {count} bibliotecas.",
+
   syncConnectionEdit: "Editar ligação",
+  syncCurrentConnection: "Ligação atual",
+  syncSwitch: "Mudar",
+  syncSwitchTitle: "Mudar o método de sincronização",
+
+  syncSwitchTo: "Mudar e pré-visualizar",
+
+  syncEdit: "Editar",
+  syncMaintenance: "Manutenção e registos",
+  syncLocalService: "Serviço deste dispositivo",
+  syncTypeHint:
+    "Escolha um tipo; o passo seguinte mostra apenas os seus campos.",
+  syncSwitchNote:
+    "Só esta biblioteca; a base antiga é apagada, os ficheiros remotos ficam.",
+
+  syncDiscardAsk: "Descartar as alterações não guardadas?",
+  syncWebdavDesc: "Nextcloud, NAS e mais",
+  syncAdvanced: "Opções avançadas",
+  syncNewShort: "Novo",
+  syncJoinShort: "Entrar",
+  syncSavePreview: "Guardar e pré-visualizar",
+  syncPreviewing: "A pré-visualizar…",
+  syncHubTypeDesc: "Direto na mesma Wi-Fi, sem nuvem",
+  syncS3Desc: "AWS S3, Bitiful, Qiniu Kodo",
+  syncEncrypted: "Encriptado",
+  syncNotEncrypted: "Não encriptado",
   syncConnectionPrefixLabel: "Prefixo predefinido para novas bibliotecas",
-  syncConnectionEditWarning:
-    "As alterações aplicam-se a {count} bibliotecas. Se o endereço mudar, as bases de sincronização locais serão reconstruídas.",
+  syncConnectionEditWarning: "As alterações afetam {count} bibliotecas.",
+
   syncAutoPrefix: "Deixe vazio para criar um sub-repositório para esta pasta.",
   syncErrorRepository:
     "Outra biblioteca já usa este repositório remoto. Escolha outra ligação ou outra pasta remota.",
@@ -2197,29 +2222,40 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncErrorRegion:
     "Esta região não tem um endereço de envio da Qiniu conhecido. Use uma região S3 da Qiniu, como cn-south-1.",
   syncHubTitle: "Hub de rede local",
-  syncHubIntro: "Permite que dispositivos na mesma Wi-Fi acessem o cofre deste computador sem um serviço de nuvem.",
-  syncHubHttpWarning: "A conexão não é criptografada. Use apenas em uma rede confiável.",
+  syncHubIntro:
+    "Os dispositivos na mesma Wi-Fi podem ligar-se a este computador.",
+
+  syncHubHttpWarning:
+    "A conexão não é criptografada. Use apenas em uma rede confiável.",
   syncHubStart: "Iniciar Hub",
   syncHubStop: "Parar Hub",
   syncHubAddress: "Endereço",
-  syncHubAddressHint: "Se o telefone não conectar, escolha o endereço da Wi-Fi usada pelos dois dispositivos.",
+  syncHubAddressHint:
+    "Se o telemóvel não ligar, escolha o endereço Wi-Fi partilhado.",
+
   syncHubPort: "Porta",
   syncHubReadOnly: "Novos dispositivos só podem ler",
   syncHubReadOnlyDevice: "Somente leitura",
   syncHubNoAddress: "Conecte-se primeiro ao Wi-Fi ou a uma rede com cabo.",
   syncHubCode: "Código de emparelhamento",
-  syncHubCodeNote: "Válido por 10 minutos e para um dispositivo. Mantenha este computador acordado e permita o Textus no firewall enquanto o telefone sincroniza.",
+  syncHubCodeNote: "Válido por 10 minutos, um dispositivo.",
+
   syncHubDiscover: "Procurar Hubs próximos",
   syncHubDiscovering: "Procurando Hubs…",
-  syncHubNoFound: "Nenhum Hub encontrado. Verifique se os dois dispositivos estão na mesma Wi-Fi ou digite o endereço.",
+  syncHubNoFound:
+    "Nenhum Hub encontrado. Verifique se os dois dispositivos estão na mesma Wi-Fi ou digite o endereço.",
   syncHubScan: "Escanear QR de emparelhamento",
   syncHubScanning: "Abrindo a câmera…",
   syncHubScanPoint: "Aponte a câmera para o QR code.",
   syncHubScanSwitch: "Trocar câmera",
-  syncHubScanDark: "A câmera está preta. Verifique a lente ou troque de câmera.",
-  syncHubScanInvalid: "Esse QR não é um código de emparelhamento do Textus Hub.",
-  syncHubScanPermission: "Acesso à câmera negado. Permita a câmera nos Ajustes ou digite o endereço e o código.",
-  syncHubScanFailed: "Não foi possível ler o QR. Tente de novo ou digite o endereço e o código.",
+  syncHubScanDark:
+    "A câmera está preta. Verifique a lente ou troque de câmera.",
+  syncHubScanInvalid:
+    "Esse QR não é um código de emparelhamento do Textus Hub.",
+  syncHubScanPermission:
+    "Acesso à câmera negado. Permita a câmera nos Ajustes ou digite o endereço e o código.",
+  syncHubScanFailed:
+    "Não foi possível ler o QR. Tente de novo ou digite o endereço e o código.",
   syncHubQrAlt: "QR code de emparelhamento",
   syncHubQrHint: "Escaneie este código pelo telefone.",
   syncHubNewCode: "Novo código",
@@ -2231,9 +2267,12 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncHubBind: "Usar este Hub para este cofre",
   syncHubBound: "Este cofre agora sincroniza pelo Hub.",
   syncHubClear: "Excluir dados do Hub",
-  syncHubClearConfirm: "Excluir o repositório do Hub e esquecer todos os dispositivos emparelhados? O cofre não é alterado.",
+  syncHubClearConfirm:
+    "Excluir o repositório do Hub e esquecer todos os dispositivos emparelhados? O cofre não é alterado.",
   syncHubJoinTitle: "Entrar em um Hub",
-  syncHubJoinIntro: "Digite o endereço e o código de seis dígitos mostrados no computador que executa o Hub.",
+  syncHubJoinIntro:
+    "Introduza o endereço e o código de seis dígitos do computador.",
+
   syncHubDeviceName: "Nome deste dispositivo",
   syncHubThisDevice: "Este dispositivo",
   syncHubPair: "Emparelhar",
@@ -2244,14 +2283,16 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncHubErrorCode: "O código de emparelhamento está errado.",
   syncHubErrorExpired: "O código expirou. Peça um novo.",
   syncHubErrorTooMany: "Muitas tentativas. Aguarde um minuto.",
-  syncHubErrorNetwork: "Não foi possível alcançar o Hub. Verifique se os dois dispositivos estão na mesma Wi-Fi e permita o Textus no firewall.",
+  syncHubErrorNetwork:
+    "Não foi possível alcançar o Hub. Verifique se os dois dispositivos estão na mesma Wi-Fi e permita o Textus no firewall.",
   syncHubPortBusy: "Esta porta já está em uso. Escolha outra.",
   syncEncryptionLabel: "Cifrar este repositório",
   syncEncryptionPasswordLabel: "Palavra-passe de cifra",
   syncEncryptionPasswordNote:
     "Pelo menos 12 caracteres. Não pode ser recuperada se for perdida.",
   syncEncryptionHint:
-    "A cifra é escolhida ao criar o repositório. Ativá-la num repositório de texto simples existente não o converte.",
+    "Os repositórios em texto simples existentes não são convertidos.",
+
   syncErrorConditional:
     "Este serviço não suporta a escrita condicional necessária à sincronização. Experimente o modo OSS ou outro serviço.",
   syncAccountLabel: "Username",
@@ -2263,7 +2304,8 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncNow: "Sync now",
   syncPreview: "Pré-visualizar",
   syncPreviewSummary:
-    "Enviaria {uploaded} ({uploadBytes} bytes), receberia {downloaded} ({downloadBytes} bytes), eliminaria {removedRemote} remotos / {removedLocal} locais, {conflicts} conflitos, {moved} movimentos.",
+    "Enviar {uploaded} · receber {downloaded} · apagar {removedRemote}/{removedLocal} · conflitos {conflicts}",
+
   syncPreviewEmptyScan:
     "A pasta parece vazia; a execução eliminaria ficheiros remotos.",
   syncPreviewBulk: "Esta execução eliminaria muitos ficheiros.",
@@ -2272,14 +2314,16 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "Importar a ligação e a base de sincronização desta pasta do plugin Cloud Sync? O plugin fica intacto até a primeira sincronização ser verificada.",
   syncImported: "Importado do Cloud Sync.",
   syncPluginStillRunning:
-    "O plugin Cloud Sync ainda sincroniza esta pasta. Desative a sincronização dele para esta pasta e confirme que a sincronização integrada funciona antes de desinstalá-lo: duas sincronizações ao mesmo tempo mantêm registros separados e podem criar cópias de conflito duplicadas. Desinstalar o plugin apaga apenas os registros locais de sincronização dele, não os arquivos na nuvem.",
+    "O Cloud Sync ainda sincroniza esta pasta; dois motores mantêm bases separadas.",
+
   syncPluginStopped:
     "O plugin Cloud Sync está parado para esta pasta. Desinstale-o depois que a sincronização integrada tiver funcionado normalmente; desinstalar apaga apenas os registros locais de sincronização do plugin, não os arquivos na nuvem.",
   syncPluginOpen: "Abrir plugins",
+  syncPluginStoppedShort: "Plugin Cloud Sync: desativado para esta pasta",
   syncPluginRunAsk:
     "O plugin Cloud Sync ainda está ativo para esta pasta. Sincronizar agora executa um segundo motor com registro próprio, o que pode criar cópias de conflito duplicadas. Sincronizar mesmo assim?",
-  syncPluginRollback:
-    "Para voltar ao plugin, desconecte: a conexão e o registro integrados são removidos, enquanto os arquivos na nuvem e as configurações do plugin permanecem como estão.",
+  syncPluginRollback: "Para voltar, desligue a sincronização integrada.",
+
   syncImportNotFound:
     "Não foi encontrada nenhuma configuração do Cloud Sync para esta pasta.",
   syncImportAlready: "Esta pasta já está configurada.",

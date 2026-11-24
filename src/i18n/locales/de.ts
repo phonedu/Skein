@@ -2135,12 +2135,36 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncErrorVaultCopied:
     "Dieser Ordner gehört zu einer anderen synchronisierten Bibliothek. Lege eine eigene Bibliothek dafür an.",
   syncConnectionNew: "Neue Verbindung",
-  syncConnectionShared:
-    "Diese Verbindung wird von {count} Bibliotheken genutzt; Adresse und Zugangsdaten werden hier nicht geändert.",
+  syncConnectionShared: "Auch von {count} Bibliotheken genutzt.",
+
   syncConnectionEdit: "Verbindung bearbeiten",
+  syncCurrentConnection: "Aktuelle Verbindung",
+  syncSwitch: "Wechseln",
+  syncSwitchTitle: "Synchronisierungsart wechseln",
+
+  syncSwitchTo: "Wechseln und Vorschau",
+
+  syncEdit: "Bearbeiten",
+  syncMaintenance: "Wartung & Verlauf",
+  syncLocalService: "Dienst dieses Geräts",
+  syncTypeHint: "Wähle einen Typ; der nächste Schritt zeigt nur dessen Felder.",
+  syncSwitchNote:
+    "Nur diese Bibliothek; alte Basis wird gelöscht, entfernte Dateien bleiben.",
+
+  syncDiscardAsk: "Nicht gespeicherte Änderungen verwerfen?",
+  syncWebdavDesc: "Nextcloud, NAS und mehr",
+  syncAdvanced: "Erweiterte Optionen",
+  syncNewShort: "Neu",
+  syncJoinShort: "Beitreten",
+  syncSavePreview: "Speichern und Vorschau",
+  syncPreviewing: "Vorschau läuft…",
+  syncHubTypeDesc: "Direkt im selben WLAN, ohne Cloud",
+  syncS3Desc: "AWS S3, Bitiful, Qiniu Kodo",
+  syncEncrypted: "Verschlüsselt",
+  syncNotEncrypted: "Nicht verschlüsselt",
   syncConnectionPrefixLabel: "Standard-Präfix für neue Bibliotheken",
-  syncConnectionEditWarning:
-    "Änderungen gelten für {count} Bibliotheken. Ändert sich die Adresse, werden ihre lokalen Synchronisierungsbasen neu aufgebaut.",
+  syncConnectionEditWarning: "Änderungen betreffen {count} Bibliotheken.",
+
   syncAutoPrefix:
     "Leer lassen, um für diesen Ordner ein Unter-Repository anzulegen.",
   syncErrorRepository:
@@ -2171,29 +2195,39 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncErrorRegion:
     "Für diese Region ist keine Qiniu-Upload-Adresse bekannt. Verwende eine Qiniu-S3-Region wie cn-south-1.",
   syncHubTitle: "Lokaler Netzwerk-Hub",
-  syncHubIntro: "Verbinde den Tresor dieses Computers mit Geräten im selben WLAN, ohne Cloud-Dienst.",
-  syncHubHttpWarning: "Die Verbindung ist nicht verschlüsselt. Nur in einem vertrauenswürdigen Netz verwenden.",
+  syncHubIntro:
+    "Geräte im selben WLAN können sich mit diesem Computer verbinden.",
+
+  syncHubHttpWarning:
+    "Die Verbindung ist nicht verschlüsselt. Nur in einem vertrauenswürdigen Netz verwenden.",
   syncHubStart: "Hub starten",
   syncHubStop: "Hub stoppen",
   syncHubAddress: "Adresse",
-  syncHubAddressHint: "Wenn das Telefon keine Verbindung bekommt, wähle die Adresse des WLANs, das beide Geräte nutzen.",
+  syncHubAddressHint:
+    "Wenn das Telefon nicht verbindet, die gemeinsame WLAN-Adresse wählen.",
+
   syncHubPort: "Port",
   syncHubReadOnly: "Neue Geräte dürfen nur lesen",
   syncHubReadOnlyDevice: "Schreibgeschützt",
   syncHubNoAddress: "Zuerst mit WLAN oder Kabel verbinden.",
   syncHubCode: "Kopplungscode",
-  syncHubCodeNote: "10 Minuten gültig, für ein Gerät. Halte den Computer wach und erlaube Textus die Firewall, während ein Telefon synchronisiert.",
+  syncHubCodeNote: "10 Minuten gültig, ein Gerät.",
+
   syncHubDiscover: "Nahe Hubs suchen",
   syncHubDiscovering: "Suche nach Hubs…",
-  syncHubNoFound: "Keine Hubs gefunden. Prüfe, ob beide Geräte im selben WLAN sind, oder gib die Adresse ein.",
+  syncHubNoFound:
+    "Keine Hubs gefunden. Prüfe, ob beide Geräte im selben WLAN sind, oder gib die Adresse ein.",
   syncHubScan: "Kopplungs-QR scannen",
   syncHubScanning: "Kamera wird geöffnet…",
   syncHubScanPoint: "Richte die Kamera auf den QR-Code.",
   syncHubScanSwitch: "Kamera wechseln",
-  syncHubScanDark: "Die Kamera ist schwarz. Prüfe die Linse oder wechsle die Kamera.",
+  syncHubScanDark:
+    "Die Kamera ist schwarz. Prüfe die Linse oder wechsle die Kamera.",
   syncHubScanInvalid: "Dieser QR-Code ist kein Textus-Hub-Kopplungscode.",
-  syncHubScanPermission: "Kamerazugriff verweigert. Erlaube die Kamera in den Einstellungen oder gib Adresse und Code ein.",
-  syncHubScanFailed: "QR-Code konnte nicht gelesen werden. Versuche es erneut oder gib Adresse und Code ein.",
+  syncHubScanPermission:
+    "Kamerazugriff verweigert. Erlaube die Kamera in den Einstellungen oder gib Adresse und Code ein.",
+  syncHubScanFailed:
+    "QR-Code konnte nicht gelesen werden. Versuche es erneut oder gib Adresse und Code ein.",
   syncHubQrAlt: "Kopplungs-QR-Code",
   syncHubQrHint: "Scanne diesen Code am Telefon.",
   syncHubNewCode: "Neuer Code",
@@ -2205,9 +2239,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncHubBind: "Diesen Hub für diesen Tresor verwenden",
   syncHubBound: "Dieser Tresor synchronisiert jetzt über den Hub.",
   syncHubClear: "Hub-Daten löschen",
-  syncHubClearConfirm: "Repository des Hubs löschen und alle gekoppelten Geräte vergessen? Der Tresor bleibt unberührt.",
+  syncHubClearConfirm:
+    "Repository des Hubs löschen und alle gekoppelten Geräte vergessen? Der Tresor bleibt unberührt.",
   syncHubJoinTitle: "Einem Hub beitreten",
-  syncHubJoinIntro: "Adresse und sechsstelligen Code von dem Computer eingeben, der den Hub ausführt.",
+  syncHubJoinIntro: "Adresse und sechsstelligen Code vom Computer eingeben.",
+
   syncHubDeviceName: "Name dieses Geräts",
   syncHubThisDevice: "Dieses Gerät",
   syncHubPair: "Koppeln",
@@ -2216,16 +2252,19 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncHubOffline: "Offline",
   syncHubLastSeen: "Zuletzt gesehen: {time}",
   syncHubErrorCode: "Der Kopplungscode ist falsch.",
-  syncHubErrorExpired: "Der Kopplungscode ist abgelaufen. Fordere einen neuen an.",
+  syncHubErrorExpired:
+    "Der Kopplungscode ist abgelaufen. Fordere einen neuen an.",
   syncHubErrorTooMany: "Zu viele Kopplungsversuche. Warte eine Minute.",
-  syncHubErrorNetwork: "Der Hub ist nicht erreichbar. Prüfe, ob beide Geräte im selben WLAN sind, und erlaube Textus die Firewall.",
+  syncHubErrorNetwork:
+    "Der Hub ist nicht erreichbar. Prüfe, ob beide Geräte im selben WLAN sind, und erlaube Textus die Firewall.",
   syncHubPortBusy: "Dieser Port wird bereits verwendet. Wähle einen anderen.",
   syncEncryptionLabel: "Dieses Repository verschlüsseln",
   syncEncryptionPasswordLabel: "Verschlüsselungspasswort",
   syncEncryptionPasswordNote:
     "Mindestens 12 Zeichen. Es kann bei Verlust nicht wiederhergestellt werden.",
   syncEncryptionHint:
-    "Die Verschlüsselung wird beim Anlegen des Repositorys gewählt. Nachträgliches Einschalten für ein bestehendes Klartext-Repository konvertiert es nicht.",
+    "Bestehende Klartext-Repositories werden nicht umgewandelt.",
+
   syncErrorConditional:
     "Dieser Dienst unterstützt das für die Sperre nötige bedingte Schreiben nicht. Versuche den OSS-Modus oder einen anderen Dienst.",
   syncAccountLabel: "Username",
@@ -2237,7 +2276,8 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncNow: "Sync now",
   syncPreview: "Vorschau",
   syncPreviewSummary:
-    "Würde {uploaded} hochladen ({uploadBytes} Bytes), {downloaded} herunterladen ({downloadBytes} Bytes), {removedRemote} remote / {removedLocal} lokal löschen, {conflicts} Konflikte, {moved} Verschiebungen.",
+    "Hochladen {uploaded} · Herunterladen {downloaded} · Löschen {removedRemote}/{removedLocal} · Konflikte {conflicts}",
+
   syncPreviewEmptyScan:
     "Der Ordner wirkt leer; der Lauf würde entfernte Dateien löschen.",
   syncPreviewBulk: "Dieser Lauf würde viele Dateien löschen.",
@@ -2246,14 +2286,17 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Verbindung und Synchronisierungsbasis dieses Ordners aus dem Cloud-Sync-Plugin importieren? Das Plugin bleibt unverändert, bis die erste Synchronisierung geprüft ist.",
   syncImported: "Von Cloud Sync importiert.",
   syncPluginStillRunning:
-    "Das Cloud-Sync-Plugin synchronisiert diesen Ordner noch. Schalte seine Synchronisierung für diesen Ordner aus und prüfe die interne Synchronisierung, bevor du es deinstallierst: Zwei Synchronisierungen gleichzeitig führen getrennte Aufzeichnungen und können doppelte Konfliktkopien erzeugen. Beim Deinstallieren werden nur die lokalen Synchronisierungsdaten des Plugins gelöscht, nicht die Dateien in der Cloud.",
+    "Cloud Sync synchronisiert diesen Ordner noch; zwei Engines führen getrennte Baselines.",
+
   syncPluginStopped:
     "Das Cloud-Sync-Plugin ist für diesen Ordner gestoppt. Deinstalliere es, sobald die interne Synchronisierung normal gelaufen ist; beim Deinstallieren werden nur die lokalen Synchronisierungsdaten des Plugins gelöscht, nicht die Dateien in der Cloud.",
   syncPluginOpen: "Plugins öffnen",
+  syncPluginStoppedShort: "Cloud Sync-Plugin: für diesen Ordner aus",
   syncPluginRunAsk:
     "Das Cloud-Sync-Plugin ist für diesen Ordner noch aktiv. Eine Synchronisierung startet jetzt eine zweite Engine mit eigener Aufzeichnung, die doppelte Konfliktkopien erzeugen kann. Trotzdem synchronisieren?",
   syncPluginRollback:
-    "Um zum Plugin zurückzukehren, trenne die Verbindung: Die interne Verbindung und Aufzeichnung werden entfernt, die Dateien in der Cloud und die Einstellungen des Plugins bleiben unverändert.",
+    "Zum Zurückgehen die eingebaute Synchronisierung trennen.",
+
   syncImportNotFound:
     "Für diesen Ordner wurde keine Cloud-Sync-Einrichtung gefunden.",
   syncImportAlready: "Dieser Ordner ist bereits eingerichtet.",
