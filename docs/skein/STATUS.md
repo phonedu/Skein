@@ -17,14 +17,14 @@ updated: 2026-11-24
 | --- | --- | --- | --- |
 | 资产闭环 | ◐ | D1f 月度复盘与淘汰周期完成（插件 0.7.0）；D1 线剩 D0.5 真实使用 | [规格](specs/Textus-改造方案.md) |
 | 手机端 UI | ◐ | PH3+PH4 完成（2026-11-23）：A/B/G/I 逐项证据见规格 §13；手机空态/按钮/三色统一；下一次手机任务归 D3 | [规格](specs/Textus-手机端元素一致性方案.md) |
-| 同步（S 组） | ◐ | S3t 完成（2026-11-24，专用测试工程）；用户偏好局域网 + S3；S 组剩 S4 LAN Hub / S5 硬化 | [规格](specs/同步方案.md) |
+| 同步（S 组） | ◐ | S3t/S3u 完成（2026-11-24）；S 组剩 S4 LAN Hub / S5 硬化 | [规格](specs/同步方案.md) |
 | 上游跟随（B 组） | ◐ | v1.4.6 已并线（457f6693）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 完成：全量 167 过 / 53 明确跳 / 7 红（5 项等插件样例仓出 1.4.3-rc.5 之后版本，2 项真实缺陷转 B6）；等下一个稳定 tag | [规格](specs/界面契约.md) |
 | 主题（T1） | ◐ | 阶段 0 文档完成；阶段 1 锁皮肤代码按需插队；阶段 2 内置皮肤主题已排 T2 | [规格](specs/Textus-主题策略.md) |
 | 文档（DOC） | ◐ | 文档 / 上游 / 发布命令自动化已落地；等下一次实战 | [规格](decisions/0052-文档体系重排.md) |
 
 ## 2. Now（按顺序）
 
-1. **S3u** — Cloud Sync 插件 Kodo/重试回馈（经批准提交）。验收：插件本地原型：Kodo 原生 create + 429/5xx 退避；真桶与插件测试通过；PR 只在用户点明仓/形式后提交。规格：[规格](research/同步评审/09-上游同步提案与成熟度门.md)；估算 3–5 天。
+暂无。
 
 ## 3. Next
 
@@ -57,7 +57,7 @@ updated: 2026-11-24
 - 传输预算：协议写 32 MiB，内置引擎单文件峰值可达 128 MiB；归 S5。
 - 瞬时网络错误：S3t3 multi 的一次 E 同步出现 networkError，重跑通过；transport 级重试/退避归 S5。
 - Docker/Nextcloud/MinIO：本机无 Docker/WSL；WebDAV 由本地 Node 测试服务覆盖，Nextcloud/NAS/MinIO 真服务留外部。
-- 插件 Kodo PR：本地原型/测试完成（0.9.0；197 tests；真桶）；patch 在 `.scratch/s3u/kodo.patch`；待用户明确“可以给 textus-plugins 提 PR”后，用干净 clone 提交，不直接推本 worktree。
+- 插件 Kodo PR：[#85](https://github.com/CatVinci-Studio/textus-plugins/pull/85) 已开；本地 197 tests、真桶、四 provider e2e 通过；`test` workflow 为 action_required，等上游批准运行。
 - 服务器时间：协议要求 Date 优先，内置引擎只用本地 Utc；归 S5。
 - 同步页俄语存量标签：Folder / Synced. / Last synced / Service / Server address / Remote folder / Save connection 仍英文；归文案清理。
 - D1b 观察期锚点：卡片没有 activated_at，按 created_at 计；D1f 若需要真激活时间再补字段。
