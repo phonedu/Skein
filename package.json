@@ -57,7 +57,7 @@
     "build:debug": "npm run tauri build -- --debug",
     "build:release": "npm run tauri build",
     "android:dev": "npm run tauri android dev",
-    "android:build": "npm run tauri android build -- --apk",
+    "android:build": "node scripts/android-accent.mjs && npm run tauri android build -- --apk",
     "upstream:status": "node scripts/upstream.mjs status",
     "upstream:plan": "node scripts/upstream.mjs plan",
     "upstream:start": "node scripts/upstream.mjs start",
