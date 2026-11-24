@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { usePhoneLayout } from "../engine/controls/usePhoneLayout";
+import { afterStartupRestore } from "../document/reload-tabs";
 
 /** The phone's three surfaces: Today, the library, and the document (or a
  *  plugin page) in front. A desktop has none of them - its surfaces are
@@ -13,21 +14,32 @@ export function usePhoneSurfaces(
 ) {
   const phone = usePhoneLayout();
   const [surface, setSurface] = useState<PhoneSurface>("today");
-  // The document in front, as last seen: a new one is a new page, while the
-  // same one stays behind when the user goes back to Today.
+  // The launch brings its last documents back in front. On a phone that is
+  // not a page the user opened: the app still starts on Today, with them
+  // behind it. Only what comes to the front once the launch's restore has
+  // finished (a plugin's capture, say) shows itself.
+  const [launched, setLaunched] = useState(false);
+  useEffect(() => {
+    if (launched) return;
+    return afterStartupRestore(() => setLaunched(true));
+  }, [launched]);
+  // The document and page in front, as last seen: a new one is a new page,
+  // while the same one stays behind when the user goes back to Today.
   const lastPath = useRef<string | null>(activePath ?? null);
-  // A plugin page (or any page tab) opened from Today's More or the plugin
-  // launcher becomes the surface in front. So does a document a plugin
-  // opens for the user (a capture's new note) while Today is showing.
+  const lastView = useRef<unknown>(activeView);
   useEffect(() => {
     if (!phone) {
       lastPath.current = activePath ?? null;
+      lastView.current = activeView;
       return;
     }
-    if (activeView) setSurface("doc");
-    else if (activePath && activePath !== lastPath.current) setSurface("doc");
+    const pageChanged = !!activeView && activeView !== lastView.current;
+    const docChanged =
+      !activeView && !!activePath && activePath !== lastPath.current;
+    if (launched && (pageChanged || docChanged)) setSurface("doc");
     lastPath.current = activePath ?? null;
-  }, [phone, activeView, activePath]);
+    lastView.current = activeView;
+  }, [phone, activeView, activePath, launched]);
   return {
     phone,
     surface,

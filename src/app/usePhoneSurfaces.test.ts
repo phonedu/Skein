@@ -6,6 +6,7 @@ vi.mock("../engine/controls/usePhoneLayout", () => ({
   usePhoneLayout: () => true,
 }));
 
+import { keptTabsRestored } from "../document/reload-tabs";
 import { usePhoneSurfaces } from "./usePhoneSurfaces";
 
 afterEach(cleanup);
@@ -20,6 +21,14 @@ it("a document opened from a plugin becomes the phone's page", () => {
       usePhoneSurfaces(view, path),
     { initialProps: initial },
   );
+  expect(result.current.surface).toBe("today");
+
+  // The launch restores the note it had in front: the phone still opens on
+  // Today, and the note stays behind it.
+  rerender({ view: undefined, path: "inbox/restored.md" });
+  expect(result.current.surface).toBe("today");
+  act(() => keptTabsRestored());
+  rerender({ view: undefined, path: "inbox/restored.md" });
   expect(result.current.surface).toBe("today");
 
   // Capture opens the note it just wrote: the new path comes to the front.
