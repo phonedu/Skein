@@ -15,6 +15,7 @@ import {
   type HubReply,
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
+import { CopyIcon } from "../../engine/controls/icons";
 import { SettingsGroup } from "./SettingsGroup";
 import { errorText } from "./sync-page-model";
 
@@ -259,20 +260,24 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
 
       {!mobile && status && (
         <>
-          <div className="sync-field">
+          <div className="sync-hub-row">
             <span className="settings-field-label">{t.syncHubAddress}</span>
-            <span className="sync-list-text">{status.address}</span>
+            <span className="sync-hub-value" title={status.address}>
+              {status.address}
+            </span>
             <button
               type="button"
-              className="text-button settings-inline-button"
+              className="tx-icon-button"
+              aria-label={t.syncHubCopy}
+              title={t.syncHubCopy}
               onClick={() => copy(status.address)}
             >
-              {t.syncHubCopy}
+              <CopyIcon />
             </button>
           </div>
-          <div className="sync-field">
+          <div className="sync-hub-row">
             <span className="settings-field-label">{t.syncHubCode}</span>
-            <span className="sync-list-text">
+            <span className="sync-hub-value sync-hub-code">
               {status.pairing ? status.pairing.code : "—"}
             </span>
             <button
@@ -295,7 +300,7 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
             {t.syncHubReadOnly}
           </label>
 
-          <h3 className="settings-group-title">{t.syncHubDevices}</h3>
+          <h3 className="sync-hub-subhead">{t.syncHubDevices}</h3>
           {status.devices.length === 0 ? (
             <p className="tx-list-note">{t.syncHubNoDevices}</p>
           ) : (
@@ -352,7 +357,7 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
 
       {mobile && (
         <>
-          <h3 className="settings-group-title">{t.syncHubJoinTitle}</h3>
+          <h3 className="sync-hub-subhead">{t.syncHubJoinTitle}</h3>
           <p className="tx-list-note">{t.syncHubJoinIntro}</p>
           <label className="sync-field">
             <span className="settings-field-label">{t.syncHubAddress}</span>

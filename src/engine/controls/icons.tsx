@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Clock,
   Code,
+  Command,
   Columns2,
   Copy,
   Download,
@@ -204,6 +205,8 @@ export const ClockIcon = lucide(Clock, 15);
 export const CalendarIcon = lucide(Calendar, 15);
 export const PlusIcon = lucide(Plus, 13);
 export const SearchIcon = lucide(Search, 13);
+/** The command palette's own key: ⌘, not the search or plugin glyph. */
+export const CommandPaletteIcon = lucide(Command, 13);
 /** The composer's Deep thinking toggle. */
 export const LightbulbIcon = lucide(Lightbulb, 13);
 export const PaperclipIcon = lucide(Paperclip, 13);

@@ -16,9 +16,9 @@ import { TextusAiButton } from "../../ai/TextusAiSwitch";
 import { AgentButtons } from "../../ai/agents/AgentButtons";
 import { canUseWindows } from "../../platform/capabilities";
 import {
+  CommandPaletteIcon,
   LockIcon,
   PluginsTabIcon,
-  SearchIcon,
   SidebarToggleIcon,
 } from "../../engine/controls/icons";
 import { useBarLayout } from "../../engine/layout/useBarLayout";
@@ -200,7 +200,7 @@ function PaletteButton() {
           void import("../command-palette").then((m) => m.openCommandPalette())
         }
       >
-        <SearchIcon />
+        <CommandPaletteIcon />
       </button>
     </Tooltip>
   );

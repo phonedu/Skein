@@ -75,6 +75,7 @@ export function RightPanel({
             role="tab"
             aria-selected={agent}
             aria-label={t.agentPanelTitle}
+            title={t.agentPanelTitle}
             className="right-panel-tab"
             onClick={() => onMode("agent")}
           >
@@ -85,6 +86,7 @@ export function RightPanel({
             role="tab"
             aria-selected={!agent}
             aria-label={t.pluginsTitle}
+            title={t.pluginsTitle}
             className="right-panel-tab"
             disabled={!view}
             onClick={() => onMode("plugin")}

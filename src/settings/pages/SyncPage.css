@@ -164,3 +164,51 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* The Hub's running rows: the label keeps its column, the value gets the
+   room, and the action never squeezes the address out of view. */
+.sync-hub-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px calc(20px * var(--chrome-scale, 1));
+}
+
+.sync-hub-row > .settings-field-label {
+  min-width: 0;
+}
+
+.sync-hub-value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ui-text);
+  font-size: var(--text-body);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sync-hub-code {
+  font-size: var(--text-title);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.sync-hub-subhead {
+  margin: var(--space-3) 0 0;
+  padding: 8px calc(20px * var(--chrome-scale, 1))
+    var(--space-1);
+  color: var(--ui-text);
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .sync-hub-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sync-hub-row > .settings-field-label {
+    grid-column: 1 / -1;
+  }
+}
