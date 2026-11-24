@@ -1,6 +1,7 @@
 // Settings › Sync › Local network Hub: start the desktop's WebDAV repository,
 // show the one-time code and paired devices, or join another Hub from a phone.
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
 import {
@@ -20,6 +21,7 @@ import {
 } from "../../platform/ipc-sync";
 import { showConfirm } from "../../engine/controls/app-dialog";
 import { CopyIcon } from "../../engine/controls/icons";
+import { SyncScan } from "./SyncScan";
 import { SettingsGroup } from "./SettingsGroup";
 import { errorText, parseHubPairPayload } from "./sync-page-model";
 
@@ -77,6 +79,13 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
     const timer = window.setInterval(() => void load(), 5000);
     return () => window.clearInterval(timer);
   }, [reply.running]);
+
+  useEffect(() => {
+    if (!scanning) return;
+    const root = document.documentElement;
+    root.classList.add("sync-scanning");
+    return () => root.classList.remove("sync-scanning");
+  }, [scanning]);
 
   useEffect(() => {
     if (!pairingCode) {
@@ -237,42 +246,35 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
       }
     });
 
-  const scanQr = async () => {
-    setScanning(true);
+  const scanQr = () => {
     setNote(null);
-    try {
-      const { checkPermissions, requestPermissions, scan, Format } =
-        await import("@tauri-apps/plugin-barcode-scanner");
-      let permission = await checkPermissions();
-      if (permission !== "granted") {
-        permission = await requestPermissions();
-      }
-      if (permission !== "granted") {
-        setNote({ error: true, text: t.syncHubScanPermission });
-        return;
-      }
-      const result = await scan({ windowed: false, formats: [Format.QRCode] });
-      const payload = parseHubPairPayload(result.content);
-      if (!payload) {
-        setNote({ error: true, text: t.syncHubScanInvalid });
-        return;
-      }
-      setJoinAddress(payload.address);
-      setJoinCode(payload.code);
-      await pairWith(payload.address, payload.code);
-    } catch (error) {
-      const reason = String(error).toLowerCase();
-      setNote({
-        error: true,
-        text:
-          reason.includes("permission") || reason.includes("denied")
-            ? t.syncHubScanPermission
-            : t.syncHubScanFailed,
-      });
-    } finally {
-      setScanning(false);
-    }
+    setScanning(true);
   };
+
+  const scanned = (content: string) => {
+    setScanning(false);
+    const payload = parseHubPairPayload(content);
+    if (!payload) {
+      setNote({ error: true, text: t.syncHubScanInvalid });
+      return;
+    }
+    setJoinAddress(payload.address);
+    setJoinCode(payload.code);
+    void pairWith(payload.address, payload.code);
+  };
+
+  const scanFailed = (error: unknown) => {
+    setScanning(false);
+    const reason = String(error).toLowerCase();
+    setNote({
+      error: true,
+      text:
+        reason.includes("permission") || reason.includes("denied")
+          ? t.syncHubScanPermission
+          : t.syncHubScanFailed,
+    });
+  };
+
 
   return (
     <SettingsGroup
@@ -539,6 +541,16 @@ export function SyncHub({ t, root, mobile, reload }: SyncHubProps) {
           </div>
         </>
       )}
+      {scanning &&
+        createPortal(
+          <SyncScan
+            t={t}
+            onCode={scanned}
+            onCancel={() => setScanning(false)}
+            onError={scanFailed}
+          />,
+          document.body,
+        )}
     </SettingsGroup>
   );
 }
