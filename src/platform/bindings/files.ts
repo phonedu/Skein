@@ -134,6 +134,27 @@ export const commands = {
 	sync_history: (root: string) => __TAURI_INVOKE<string>("sync_history", { root }),
 	sync_restore: (root: string, path: string, hash: string, openPaths: string[]) => __TAURI_INVOKE<string>("sync_restore", { root, path, hash, openPaths }),
 	/**
+	 *  Pairs this device with a Hub and returns `{repoId, username, token,
+	 *  readOnly}` as JSON. The token is never logged.
+	 */
+	hub_pair: (address: string, code: string, device: string) => __TAURI_INVOKE<string>("hub_pair", { address, code, device }),
+	hub_start: (root: string, readOnly: boolean, port: number | null, bind: string | null) => __TAURI_INVOKE<string>("hub_start", { root, readOnly, port, bind }),
+	hub_stop: () => __TAURI_INVOKE<null>("hub_stop"),
+	hub_status: () => __TAURI_INVOKE<string>("hub_status"),
+	hub_code: (readOnly: boolean) => __TAURI_INVOKE<string>("hub_code", { readOnly }),
+	hub_revoke: (deviceId: string) => __TAURI_INVOKE<boolean>("hub_revoke", { deviceId }),
+	/**
+	 *  Binds this vault to the running Hub at the repository root. Separate from
+	 *  starting, so starting a Hub never silently replaces an existing cloud
+	 *  connection.
+	 */
+	hub_bind: (root: string) => __TAURI_INVOKE<string>("hub_bind", { root }),
+	/**
+	 *  Stops the Hub and removes its repository and paired devices. This is the
+	 *  settings page's explicit danger action; the vault itself is untouched.
+	 */
+	hub_clear: () => __TAURI_INVOKE<null>("hub_clear"),
+	/**
 	 *  Where an Obsidian image embed's file is, as an absolute path for the asset
 	 *  protocol; None when it isn't an image or isn't in the vault.
 	 */

@@ -342,3 +342,126 @@ pub(super) fn save_at(
     write_state(paths, &store, &secrets)
 }
 
+
+/// The credentials saved for a connection, if it exists. The LAN Hub uses
+/// it to find the desktop's own token before starting the server.
+pub fn connection_credentials(
+    app: &tauri::AppHandle,
+    connection_id: &str,
+) -> Result<Option<Credentials>, String> {
+    let (_, secrets) = read_state(&store_paths(app)?)?;
+    Ok(secrets.connections.get(connection_id).cloned())
+}
+
+/// Creates or updates one connection without binding a vault to it. The Hub
+/// section uses this for the desktop's own WebDAV connection; binding stays
+/// a separate, explicit action.
+pub fn save_connection(
+    app: &tauri::AppHandle,
+    connection_id: &str,
+    config: &Config,
+    credentials: &Credentials,
+) -> Result<(), String> {
+    let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    let paths = store_paths(app)?;
+    let (mut store, mut secrets) = read_state(&paths)?;
+    let existing = store.connections.get(connection_id).cloned();
+    let mut connection = existing.clone().unwrap_or_else(|| Connection {
+        id: connection_id.to_string(),
+        provider: config.provider.clone(),
+        endpoint: config.endpoint.clone(),
+        bucket: String::new(),
+        prefix: String::new(),
+        region: String::new(),
+        path_style: false,
+        s3_flavor: s3_flavor(),
+    });
+    connection.provider = config.provider.clone();
+    connection.endpoint = config.endpoint.clone();
+    connection.bucket = config.bucket.clone();
+    connection.region = config.region.clone();
+    connection.path_style = config.path_style;
+    connection.s3_flavor = config.s3_flavor.clone();
+    connection.prefix = config.prefix.trim_matches('/').to_string();
+    validate_connection(&connection)?;
+    if connection.provider == "s3"
+        && (connection.bucket.trim().is_empty() || connection.region.trim().is_empty())
+    {
+        return Err(SyncError::new("invalidConfig").to_string());
+    }
+    let old = secrets
+        .connections
+        .get(connection_id)
+        .cloned()
+        .unwrap_or_default();
+    let mut merged = credentials.clone();
+    merged.sync_password.clear();
+    let credentials = merged.merge(&old);
+    validate_credentials(&connection.provider, &credentials)?;
+    let remote_changed = existing.as_ref().is_some_and(|old| old != &connection);
+    store
+        .connections
+        .insert(connection_id.to_string(), connection);
+    secrets
+        .connections
+        .insert(connection_id.to_string(), credentials);
+    if remote_changed {
+        for binding in store
+            .vaults
+            .values()
+            .filter(|binding| binding.connection_id == connection_id)
+        {
+            let root = Path::new(&binding.root);
+            let _ = std::fs::remove_file(paths.base_for(root, Some(binding)));
+            let _ = std::fs::remove_file(paths.last(root));
+        }
+    }
+    write_state(&paths, &store, &secrets)
+}
+
+/// Binds a vault to a connection at the connection's root, with no prefix:
+/// the desktop and a paired phone must write the same repository. This is
+/// the Hub section's explicit "connect this vault" action; it is not part
+/// of starting the server.
+pub fn bind_connection(
+    app: &tauri::AppHandle,
+    root: &Path,
+    connection_id: &str,
+) -> Result<(), String> {
+    let _guard = WRITING.lock().unwrap_or_else(|e| e.into_inner());
+    let paths = store_paths(app)?;
+    let (mut store, secrets) = read_state(&paths)?;
+    let connection = store
+        .connections
+        .get(connection_id)
+        .cloned()
+        .ok_or_else(|| SyncError::new("notFound").to_string())?;
+    let key = root_key(root);
+    let existing = store.vaults.get(&key).cloned();
+    let vault_id = existing
+        .as_ref()
+        .map(|binding| binding.vault_id.clone())
+        .filter(|id| !id.is_empty())
+        .unwrap_or_else(|| vault_id(root));
+    if let Some(old) = &existing {
+        let _ = std::fs::remove_file(paths.base_for(root, Some(old)));
+    }
+    let _ = std::fs::remove_file(paths.base(root));
+    let _ = std::fs::remove_file(paths.last(root));
+    store.vaults.insert(
+        key,
+        Binding {
+            root: root.to_string_lossy().to_string(),
+            connection_id: connection.id,
+            prefix: String::new(),
+            vault_id,
+            repository_id: String::new(),
+            keep_days: existing.as_ref().map(|binding| binding.keep_days).unwrap_or(90),
+            keep_chosen: existing
+                .as_ref()
+                .is_some_and(|binding| binding.keep_chosen),
+            encrypted: false,
+        },
+    );
+    write_state(&paths, &store, &secrets)
+}

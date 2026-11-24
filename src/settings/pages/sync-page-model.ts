@@ -59,6 +59,11 @@ export function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("conditionalWriteUnsupported"))
     return t.syncErrorConditional;
   if (reason.includes("unsupportedRegion")) return t.syncErrorRegion;
+  if (reason.includes("noLanAddress")) return t.syncHubNoAddress;
+  if (reason.includes("portInUse")) return t.syncHubPortBusy;
+  if (reason.includes("invalidCode")) return t.syncHubErrorCode;
+  if (reason.includes("expired")) return t.syncHubErrorExpired;
+  if (reason.includes("tooManyAttempts")) return t.syncHubErrorTooMany;
   if (reason.includes("repositoryInUse")) return t.syncErrorRepository;
   if (reason.includes("fileOpen")) return t.syncErrorFileOpen;
   if (reason.includes("notFound")) return t.syncErrorVersionGone;

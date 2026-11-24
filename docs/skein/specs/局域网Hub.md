@@ -3,7 +3,7 @@ type: spec
 status: active
 summary: 局域网 Hub：桌面内嵌 WebDAV 服务、配对与手机直连
 updated: 2026-11-24
-tasks: [S4]
+tasks: []
 ---
 
 # 局域网 Hub（S4）
@@ -128,6 +128,16 @@ tasks: [S4]
 - DHCP 地址变化、睡眠唤醒、防火墙弹窗是主要现场问题；错误提示必须先写好。
 - 手机与桌面同时同步同一仓库：Hub 的 `v1/lock.json` 仍是唯一并发保护；不增加 Hub 侧锁。
 
-## 12. 一句话
+## 12. 实现（S4a–S4c，2026-11-24）
+
+- `src-tauri/crates/textus-hub/`：WebDAV 服务、配对/设备 token、仓库路径校验与私网地址枚举；`WebDavStore` 可直接作为客户端。单元与集成测试覆盖配对一次性/限速、只读 403、撤销、路径穿越、MOVE 条件创建、重启保留 token，以及引擎首次/双向同步。
+- `WebDavStore` 现在允许 `http://` 仅限 loopback 或私网 IPv4（原先只允许 loopback），公网 HTTP 仍拒绝。
+- 桌面：设置 › 同步 ›「局域网 Hub」启动/停止、地址选择、端口、配对码、设备列表、撤销、绑定当前库、清除数据；`hub_start` 成功后只创建本机 WebDAV 连接，绑定要用户点「让此仓库使用这个 Hub」。
+- 手机：「局域网 Hub › 加入 Hub」填地址、6 位码、设备名；配对成功后保存为普通 WebDAV 连接并绑定当前库。
+- 桌面 harness：`node scripts/sync-smoke/hub.mjs [--keep]`。实测桌面 A 启动 Hub、绑定并上传，实例 B 用与手机相同的配对命令加入，双向首次同步与编辑收敛通过。
+- 真机：华为 OXF-AN10（192.168.0.107）对桌面 192.168.0.106:7419 配对；桌面已上传 `Notes/from-desktop.md`，手机下载 1；手机改文件后上传 1，桌面下载 1。全程同一 Wi-Fi、无公网、无 TLS。
+- 未做/未手动验证：手机界面上的只读配对与撤销（HTTP/单元已验证）、防火墙弹窗与 DHCP 地址变化的真实提示、iOS、后台常驻。
+
+## 13. 一句话
 
 **桌面 Hub 只做一件事：把 `/1` 仓库用 WebDAV 暴露给已配对设备；桌面和手机都只是它的 WebDAV 客户端，同步算法不复制。**

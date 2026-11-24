@@ -29,6 +29,7 @@ use commands::fs::{
     save_file_dialog, save_pasted_image, save_settings_file_dialog, write_base64_file,
     write_text_file,
 };
+use commands::hub::hub_pair;
 use commands::image_host::{image_host_key_id, upload_image};
 #[cfg(desktop)]
 use commands::linked_file::open_linked_file;
@@ -218,6 +219,21 @@ pub(crate) fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Sen
         commands::tree_ops::tree_move_entry,
         commands::tree_ops::tree_rename_entry,
         commands::tree_ops::tree_trash_entry,
+        #[cfg(desktop)]
+        sync::hub::hub_start,
+        #[cfg(desktop)]
+        sync::hub::hub_stop,
+        #[cfg(desktop)]
+        sync::hub::hub_status,
+        #[cfg(desktop)]
+        sync::hub::hub_code,
+        #[cfg(desktop)]
+        sync::hub::hub_revoke,
+        #[cfg(desktop)]
+        sync::hub::hub_bind,
+        #[cfg(desktop)]
+        sync::hub::hub_clear,
+        hub_pair,
         commands::sync::sync_run_saved,
         commands::sync::sync_settings_get,
         commands::sync::sync_vaults,

@@ -30,6 +30,7 @@ import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../../utils/events";
 import { SettingsGroup } from "./SettingsGroup";
 import { SyncConnectionFields } from "./SyncConnectionFields";
 import { SyncActions } from "./SyncActions";
+import { SyncHub } from "./SyncHub";
 import { SyncConflictsHistory, SyncVaults } from "./SyncSections";
 import { SyncStatusHeader } from "./SyncStatusHeader";
 import type { SettingsPageProps } from "./types";
@@ -482,6 +483,7 @@ export function SyncPage({
           forget={forget}
         />
       </SettingsGroup>
+      <SyncHub t={t} root={folderRoot} mobile={isMobileApp} reload={reload} />
       <SyncConflictsHistory
         t={t}
         status={status}

@@ -2,6 +2,8 @@
 //! protocol crate reads, and the command that runs it. Protocol, transport
 //! and planning live in `crates/textus-sync`.
 
+#[cfg(desktop)]
+pub mod hub;
 pub mod local;
 pub mod plugin;
 pub mod runners;

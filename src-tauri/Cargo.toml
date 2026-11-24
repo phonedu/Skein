@@ -6,7 +6,7 @@ authors = ["CatVinci Studio"]
 edition = "2021"
 
 [workspace]
-members = ["crates/aicompat", "crates/textus-sync", "plugins/textus-files"]
+members = ["crates/aicompat", "crates/textus-hub", "crates/textus-sync", "plugins/textus-files"]
 exclude = ["patches/wry"]
 resolver = "2"
 
@@ -170,6 +170,9 @@ libc = "0.2"
 tauri-plugin-textus-files = { path = "plugins/textus-files" }
 
 [target.'cfg(not(any(target_os = "ios", target_os = "android")))'.dependencies]
+# The LAN Hub's WebDAV server; desktop only, so neither mobile build carries
+# hyper's server half.
+textus-hub = { path = "crates/textus-hub" }
 # In step with @tauri-apps/plugin-updater and @tauri-apps/plugin-process.
 tauri-plugin-updater = "2.14"
 tauri-plugin-process = "2.4"

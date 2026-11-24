@@ -36,20 +36,6 @@ workstreams:
     focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
     spec: specs/文档体系-v3.md
 tasks:
-  - id: S4
-    title: 局域网 Hub
-    workstream: S
-    state: doing
-    acceptance: 桌面启动 Hub，手机同一 Wi-Fi 用地址+6 位码配对后通过 WebDAV 同步；每设备 token/只读可撤销；不暴露公网；真机验收。
-    spec: specs/局域网Hub.md
-    estimate: 2–4 周
-    brief:
-      problem: 同步只有云端/外部 WebDAV；同一 Wi-Fi 下的桌面↔手机没有直接可用的 transport。
-      expected: 桌面内嵌 Hub，手机配对后像普通 WebDAV 一样同步；数据层仍是 /1。
-      standard: Hub 提供 /1 的 WebDAV 语义；配对码一次性、每设备 token、只读/撤销；桌面与手机双向同步；真机同 Wi-Fi 通过。
-      not: 不做真 P2P、不做 mDNS、不做 TLS v1、不暴露公网、不改协议。
-      scope: 同步线 S4：Rust Hub 服务 + 设置/手机入口 + 测试；桌面与 Android。
-      evidence: cargo 单测 + WebDavStore/引擎集成 + built app + 手机同 Wi-Fi。
   - id: D0.5
     title: 理论小样本验证
     workstream: D1

@@ -23,6 +23,11 @@ sharing one connection in one app.
 - Credentials are filled into the page from that file; they are never printed
   or written to the report.
 
+The LAN Hub has its own command, since it needs no provider account:
+`node scripts/sync-smoke/hub.mjs` starts a Hub in instance A through
+**Settings › Sync**, binds vault A, pairs B with the same command the phone
+uses, and checks first sync, both-way edits and Stop.
+
 ## Run
 
 ```bash
@@ -33,6 +38,7 @@ node scripts/sync-smoke/run.mjs --provider kodo --scenario guard --no-build
 node scripts/sync-smoke/run.mjs --provider kodo --scenario large --large --keep
 node scripts/sync-smoke/run.mjs --provider webdav --scenario text --no-build
 node scripts/sync-smoke/run.mjs --provider webdav --scenario move --no-build
+node scripts/sync-smoke/hub.mjs --no-build
 ```
 
 - `--provider kodo|bitiful|webdav` — the service. WebDAV starts a local
@@ -109,6 +115,16 @@ to A's connection with its own sub-repository (same connection id).
 - 32 MiB (16 blocks) by default; `--large` adds 128 MiB (64 blocks).
 - A uploads, B downloads byte for byte; the remote head has the expected block
   count; the tree and cleanup checks are the same as media.
+
+### LAN Hub
+
+- A starts the embedded Hub on a free port and binds the vault; the local
+  connection is created without replacing any other connection.
+- B pairs with the one-time code (the same `hub_pair` command the phone
+  uses) and saves the returned WebDAV connection.
+- A uploads, B downloads and uploads, A downloads; an edit on B reaches A.
+- Stop Hub: the status reports not running and the port is released.
+- No token is printed or written to the report.
 
 ### move
 

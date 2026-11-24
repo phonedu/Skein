@@ -21,6 +21,7 @@ pub mod floating_window;
 pub mod folder;
 pub mod fonts;
 pub mod fs;
+pub mod hub;
 pub mod image_host;
 pub mod input_source;
 pub mod link_root;

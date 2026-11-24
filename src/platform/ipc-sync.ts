@@ -235,3 +235,86 @@ export const syncRestore = (
   commands
     .sync_restore(root, path, hash, openPaths)
     .then((json) => parse<{ path: string }>(json));
+
+export interface HubDevice {
+  id: string;
+  name: string;
+  readOnly: boolean;
+  pairedAt: string;
+}
+
+export interface HubPairing {
+  code: string;
+  readOnly: boolean;
+  expiresAt: string;
+}
+
+export interface HubStatus {
+  repoId: string;
+  bind: string;
+  port: number;
+  address: string;
+  baseUrl: string;
+  lanAddresses: string[];
+  pairing?: HubPairing | null;
+  devices: HubDevice[];
+}
+
+export type HubReply =
+  | { running: false; lanAddresses: string[] }
+  | { running: true; localConnectionId: string; status: HubStatus };
+
+export interface HubStartReply extends HubStatus {
+  localConnectionId: string;
+}
+
+export interface HubPairReply {
+  repoId: string;
+  username: string;
+  token: string;
+  readOnly: boolean;
+  device: HubDevice;
+}
+
+export const hubStart = (
+  root: string,
+  readOnly: boolean,
+  port: number | null = null,
+  bind: string | null = null,
+): Promise<HubStartReply> =>
+  commands
+    .hub_start(root, readOnly, port, bind)
+    .then((json) => parse<HubStartReply>(json));
+
+export const hubStop = (): Promise<void> =>
+  commands.hub_stop().then(() => undefined);
+
+export const hubStatus = (): Promise<HubReply> =>
+  commands.hub_status().then((json) => parse<HubReply>(json));
+
+export const hubCode = (readOnly: boolean): Promise<HubPairing> =>
+  commands
+    .hub_code(readOnly)
+    .then((json) => parse<HubPairing>(json));
+
+export const hubRevoke = (deviceId: string): Promise<boolean> =>
+  commands.hub_revoke(deviceId);
+
+export const hubBind = (
+  root: string,
+): Promise<{ connectionId: string; baseUrl: string }> =>
+  commands
+    .hub_bind(root)
+    .then((json) => parse<{ connectionId: string; baseUrl: string }>(json));
+
+export const hubClear = (): Promise<void> =>
+  commands.hub_clear().then(() => undefined);
+
+export const hubPair = (
+  address: string,
+  code: string,
+  device: string,
+): Promise<HubPairReply> =>
+  commands
+    .hub_pair(address, code, device)
+    .then((json) => parse<HubPairReply>(json));

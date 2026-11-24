@@ -34,13 +34,11 @@ impl WebDavStore {
         {
             return Err(SyncError::new("invalidConfig"));
         }
-        if endpoint.scheme() == "http"
-            && !matches!(
-                endpoint.host_str().unwrap_or_default(),
-                "localhost" | "127.0.0.1" | "::1"
-            )
+        if endpoint.scheme() == "http" && !plain_http_host(endpoint.host_str().unwrap_or_default())
         {
-            // Basic auth and sync payloads do not travel in clear text.
+            // Basic auth and sync payloads do not travel in clear text. The
+            // LAN Hub is the one exception: a private address is reachable
+            // only from the same network, and pairing makes the choice explicit.
             return Err(SyncError::new("invalidConfig"));
         }
         endpoint.set_query(None);
@@ -295,6 +293,16 @@ impl ObjectStore for WebDavStore {
     }
 }
 
+/// Clear-text HTTP is allowed on loopback and private IPv4 only: the LAN
+/// Hub's reach, and nowhere a public network can see the token.
+fn plain_http_host(host: &str) -> bool {
+    if matches!(host, "localhost" | "127.0.0.1" | "::1" | "[::1]") {
+        return true;
+    }
+    host.parse::<std::net::Ipv4Addr>()
+        .is_ok_and(|address| address.is_loopback() || address.is_private())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -312,6 +320,17 @@ mod tests {
             store.url_for("v1/head.json").unwrap().as_str(),
             "https://dav.example.com/remote.php/dav/notes/a%20b/v1/head.json"
         );
+    }
+
+    #[test]
+    fn a_private_lan_address_may_use_plain_http() {
+        assert!(WebDavStore::new("http://192.168.1.10:7419/hub/abc", "", "u", "p").is_ok());
+        assert!(WebDavStore::new("http://10.0.0.5:7419/hub/abc", "", "u", "p").is_ok());
+        assert!(WebDavStore::new("http://127.0.0.1:7419/hub/abc", "", "u", "p").is_ok());
+        assert!(matches!(
+            WebDavStore::new("http://dav.example.com/hub/abc", "", "u", "p"),
+            Err(error) if error.code == "invalidConfig"
+        ));
     }
 
     #[test]

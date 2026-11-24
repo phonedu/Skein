@@ -92,6 +92,7 @@ fn desktop_builder(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri:
         .manage(mcp::McpHub::default())
         .manage(agents::Agents::default())
         .manage(cli::app::CliBridge::default())
+        .manage(sync::hub::HubState::new())
         .plugin(tauri_plugin_deep_link::init())
         .on_window_event(|window, event| {
             let app = window.app_handle();
