@@ -6,6 +6,10 @@ vi.mock("../engine/controls/usePhoneLayout", () => ({
   usePhoneLayout: () => true,
 }));
 
+vi.mock("../document/launch-window", () => ({
+  takeWindowSession: vi.fn(async () => null),
+}));
+
 import { keptTabsRestored } from "../document/reload-tabs";
 import { usePhoneSurfaces } from "./usePhoneSurfaces";
 
