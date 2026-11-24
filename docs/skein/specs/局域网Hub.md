@@ -3,7 +3,7 @@ type: spec
 status: active
 summary: 局域网 Hub：桌面内嵌 WebDAV 服务、配对与手机直连
 updated: 2026-11-24
-tasks: [S8]
+tasks: []
 ---
 
 # 局域网 Hub（S4）
@@ -184,10 +184,10 @@ S4 的配对要手输地址和 6 位码，和成熟局域网同步软件相比�
 
 - 新增 `src-tauri/crates/textus-discovery`：mDNS 广播/浏览 + UDP `7418` 探测/应答，按 `address + repo` 合并并标记 `mdns+udp`；只接受私网 HTTP 地址，不广播 token/code。
 - 桌面 Hub 启动时同时开 mDNS 与 UDP；`hub_discover` 命令供手机调用；`hub_pairing_qr` 生成带白底的 SVG data URL，二维码内容是 `TEXTUS-HUB-PAIR/1` JSON。
-- 手机 Hub 区新增“查找附近的 Hub”“扫描配对二维码”；相机权限先 `requestPermissions`，扫码结果走与手输相同的 `hub_pair` + 保存连接路径；手输保留。
+- 手机 Hub 区新增“查找附近的 Hub”“扫描配对二维码”；二维码用应用内 `<video>` + jsQR 解码，带取消和切换相机，扫码结果走与手输相同的 `hub_pair` + 保存连接路径；手输保留。原生扫码插件只保留相机权限。
 - 设备列表显示在线/离线与最后出现时间，在线由最近两分钟的已认证请求判断。
-- 已验证：桌面单测/集成（含撤销、只读、停止释放端口）；手机同一 Wi-Fi 发现结果 `mdns+udp`；桌面生成的二维码被 OpenCV 解码回正确 payload；华为 OXF-AN10 弹出相机权限并打开独立相机取景，扫码结果未完成物理对准。
-- 未完成：真机上把手机摄像头对准桌面二维码完成一次实际扫码配对；需要现场对准或用可注入的虚拟相机。
+- 已验证：桌面单测/集成（含撤销、只读、停止释放端口）；手机同一 Wi-Fi 发现结果 `mdns+udp`；桌面生成的二维码被 OpenCV 解码回正确 payload；华为 OXF-AN10 完成实际配对，桌面设备列表显示在线。
+- 真机补充：该华为此前原生相机页没有退出入口，且后置相机在 WebView 里返回全黑帧；改成应用内相机后增加“切换相机/取消”和黑帧提示，用前置相机完成配对。
 
 ## 14. 一句话
 
