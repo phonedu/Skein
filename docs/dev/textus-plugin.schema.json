@@ -51,9 +51,9 @@
       }
     },
     "platforms": {
-      "description": "Where it runs: desktop (macOS, Windows, Linux) and ios (iPhone, iPad). Left out, everywhere - unless it works in the background (background code, or requiring runInBackground), which only the desktop does. Textus elsewhere doesn't list or load it.",
+      "description": "Where it runs: desktop (macOS, Windows, Linux), ios (iPhone, iPad) and android (phones and tablets). Left out, everywhere - unless it works in the background (background code, or requiring runInBackground), which only the desktop does. Textus elsewhere doesn't list or load it. A plugin naming ios also runs on Android: the same page, the same host tokens.",
       "type": "array",
-      "items": { "enum": ["desktop", "ios"] },
+      "items": { "enum": ["desktop", "ios", "android"] },
       "uniqueItems": true
     },
     "main": {

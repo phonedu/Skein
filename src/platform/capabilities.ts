@@ -15,7 +15,7 @@ import {
 /** macOS, Windows or Linux - Rust's `cfg(desktop)`. */
 export const isDesktopApp = isDesktop();
 export const isIOSApp = isIOSPlatform();
-const isAndroidApp = isAndroidPlatform();
+export const isAndroidApp = isAndroidPlatform();
 /** iOS or Android: one webview, touch first; its layout is the desktop's
  *  on a tablet and the phone's on a narrow screen (usePhoneLayout). */
 export const isMobileApp = isIOSApp || isAndroidApp;

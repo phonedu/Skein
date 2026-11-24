@@ -33,7 +33,7 @@ type PlainPermission =
   | "git.commit"
   | "git.sync"
   | "ssh";
-export type PluginPlatform = "desktop" | "ios";
+export type PluginPlatform = "desktop" | "ios" | "android";
 
 /** A permission, as the manifest names it. `network:<host>` names one
  *  host (`*.domain` for its subdomains, `host:port`, or `*` for any);
@@ -114,17 +114,19 @@ export function parseManifest(raw: string | unknown): PluginManifest {
       : list(m.platforms, "platforms").map((p) => {
           if (!(PLUGIN_PLATFORMS as readonly unknown[]).includes(p))
             throw new ManifestError(
-              `No platform "${String(p)}": desktop or ios.`,
+              `No platform "${String(p)}": desktop, ios or android.`,
             );
           return p as PluginPlatform;
         });
-  if (inBackground && platforms.includes("ios"))
+  // Background code and agents are the desktop's: no phone may name them.
+  const onPhone = platforms.some((p) => p !== "desktop");
+  if (inBackground && onPhone)
     throw new ManifestError(
-      "The background is the desktop's only: platforms can't name ios.",
+      "The background is the desktop's only: platforms can't name ios or android.",
     );
-  if (agents && platforms.includes("ios"))
+  if (agents && onPhone)
     throw new ManifestError(
-      "Agents are the desktop's only: platforms can't name ios.",
+      "Agents are the desktop's only: platforms can't name ios or android.",
     );
   const l10n: PluginManifest["l10n"] = {};
   if (m.l10n !== undefined)

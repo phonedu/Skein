@@ -166,12 +166,13 @@ pub fn check(manifest: &str) -> Result<(), String> {
                 .as_str()
                 .is_some_and(|p| LISTS.platforms.iter().any(|q| q == p))
             {
-                return Err(format!("No platform {p}: desktop or ios."));
+                return Err(format!("No platform {p}: desktop, ios or android."));
             }
         }
-        if in_background && platforms.iter().any(|p| p == "ios") {
+        if in_background && platforms.iter().any(|p| p != "desktop") {
             return Err(
-                "The background is the desktop's only: platforms can't name ios.".to_string(),
+                "The background is the desktop's only: platforms can't name ios or android."
+                    .to_string(),
             );
         }
     }
@@ -364,11 +365,15 @@ mod tests {
     #[test]
     fn background_work_stays_on_the_desktop() {
         assert!(check(&with("platforms", Some(r#"["desktop","ios"]"#))).is_ok());
-        assert!(check(&with("platforms", Some(r#"["android"]"#))).is_err());
+        assert!(check(&with("platforms", Some(r#"["android"]"#))).is_ok());
+        assert!(check(&with("platforms", Some(r#"["web"]"#))).is_err());
         let background = with("background", Some(r#""jobs.js""#));
         assert!(check(&background).is_ok());
         let mut m: Value = serde_json::from_str(&background).unwrap();
         m["platforms"] = serde_json::json!(["ios"]);
+        assert!(check(&m.to_string()).is_err());
+        let mut m: Value = serde_json::from_str(&background).unwrap();
+        m["platforms"] = serde_json::json!(["android"]);
         assert!(check(&m.to_string()).is_err());
         let mut m: Value = serde_json::from_str(GOOD).unwrap();
         m["requires"] = serde_json::json!([{ "setting": "runInBackground" }]);

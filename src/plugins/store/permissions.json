@@ -19,7 +19,7 @@
     "git.sync",
     "ssh"
   ],
-  "platforms": ["desktop", "ios"],
+  "platforms": ["desktop", "ios", "android"],
   "hosts": {
     "valid": [
       "network:*",
