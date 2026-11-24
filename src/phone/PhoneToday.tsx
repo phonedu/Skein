@@ -4,9 +4,7 @@ import {
   type ActionSheetItem,
 } from "../engine/controls/ActionSheet";
 import {
-  ChevronDownIcon,
   ChevronIcon,
-  FolderIcon,
   MarkdownFileIcon,
   MoreIcon,
   PluginsTabIcon,
@@ -25,6 +23,7 @@ import {
 } from "../plugins/contributions/status-items";
 import { emitToThisWindow } from "../platform/menu-events";
 import { openCommandPalette } from "../app/command-palette";
+import { VaultButton } from "../vaults/VaultButton";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
 import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneToday.css";
@@ -97,18 +96,13 @@ export function PhoneToday({
   return (
     <div className="phone-today">
       <div className="ptop">
-        <button
-          type="button"
-          className="ptop-vault"
-          onClick={() => void openFolder.openFolderDialog()}
-          title={t.menuOpenFolder}
-        >
-          <span className="ptop-vault-icon">
-            <FolderIcon />
-          </span>
-          <span className="ptop-vault-name">{vault ?? t.menuOpenFolder}</span>
-          <ChevronDownIcon className="ptop-vault-chev" />
-        </button>
+        <VaultButton
+          t={t}
+          openFolder={openFolder}
+          variant="today"
+          current={root}
+          name={vault ?? t.menuOpenFolder}
+        />
         <span className="ptop-spacer" />
         <button
           type="button"

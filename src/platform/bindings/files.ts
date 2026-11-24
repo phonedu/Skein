@@ -212,8 +212,16 @@ export const commands = {
 	cancel_session_quit: () => __TAURI_INVOKE<void>("cancel_session_quit"),
 	add_recent_file: (path: string) => __TAURI_INVOKE<void>("add_recent_file", { path }),
 	add_recent_folder: (path: string) => __TAURI_INVOKE<void>("add_recent_folder", { path }),
-	/**  One entry taken off both lists: the start page's × beside it. */
+	/**
+	 *  One entry taken off both lists: a recent file's ×, and a library taken
+	 *  off the switcher. Only the lists: the folder and its files stay.
+	 */
 	remove_recent: (path: string) => __TAURI_INVOKE<void>("remove_recent", { path }),
+	/**
+	 *  The folders to offer for switching: the open one is not here, the caller
+	 *  shows it itself; this is what the user chose before.
+	 */
+	list_recent_folders: () => __TAURI_INVOKE<string[]>("list_recent_folders"),
 	save_draft_snapshot: (tabId: string, path: string | null, content: string, diskMtime: number | null) => __TAURI_INVOKE<null>("save_draft_snapshot", { tabId, path, content, diskMtime }),
 	/**
 	 *  Takes every pending draft, so at most one window claims each: each is

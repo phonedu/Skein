@@ -760,6 +760,9 @@ para usar una.
   phoneVaultCurrent: "Actual",
   phoneVaultOpenOther: "Abrir otra carpeta…",
   phoneVaultNone: "Aún no hay carpeta abierta.",
+  vaultAdd: "Añadir biblioteca…",
+  vaultRemove: "Quitar de la lista",
+  vaultRemoveHint: "Solo la quita de esta lista. Los archivos permanecen.",
   phoneHomeEmptyTitle: "Elige una carpeta para empezar",
   phoneHomeEmptyHint:
     "Textus guarda tus notas como archivos Markdown en la carpeta que elijas.",

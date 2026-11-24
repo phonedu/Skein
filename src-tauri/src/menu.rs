@@ -205,13 +205,6 @@ pub fn list_recent_files(app: tauri::AppHandle) -> Vec<String> {
     commands::recents::still_there(commands::recents::read_recent_files(&app))
 }
 
-/// The recent folders, listed above the files there.
-#[tauri::command]
-#[cfg_attr(test, specta::specta)]
-pub fn list_recent_folders(app: tauri::AppHandle) -> Vec<String> {
-    commands::recents::still_there(commands::recents::read_recent_folders(&app))
-}
-
 /// Quit: every window is asked to close, so each unsaved document gets its
 /// prompt, and the app exits once the last one is gone.
 pub(crate) fn quit(app_handle: &tauri::AppHandle) {

@@ -58,6 +58,9 @@ pub(crate) fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Sen
         settings::chat_history_search,
         settings::chat_history_move_document,
         commands::recents::add_recent_file,
+        commands::recents::add_recent_folder,
+        commands::recents::remove_recent,
+        commands::recents::list_recent_folders,
         open_file_dialog,
         open_css_file_dialog,
         open_settings_file_dialog,
@@ -252,12 +255,6 @@ pub(crate) fn handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Sen
         commands::sync::sync_conflicts,
         commands::sync::sync_history,
         commands::sync::sync_restore,
-        #[cfg(desktop)]
-        commands::recents::add_recent_folder,
-        #[cfg(desktop)]
-        commands::recents::remove_recent,
-        #[cfg(desktop)]
-        menu::list_recent_folders,
         #[cfg(desktop)]
         open_paths,
         #[cfg(desktop)]

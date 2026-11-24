@@ -688,6 +688,9 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   phoneVaultCurrent: "현재",
   phoneVaultOpenOther: "다른 폴더 열기…",
   phoneVaultNone: "열린 폴더가 없습니다.",
+  vaultAdd: "라이브러리 추가…",
+  vaultRemove: "목록에서 제거",
+  vaultRemoveHint: "목록에서만 제거되며 파일은 삭제되지 않습니다.",
   phoneHomeEmptyTitle: "폴더를 골라 시작하세요",
   phoneHomeEmptyHint:
     "Textus는 당신이 고른 폴더에 메모를 Markdown 파일로 보관합니다.",

@@ -761,6 +761,9 @@ utiliser une.
   phoneVaultCurrent: "Actuelle",
   phoneVaultOpenOther: "Ouvrir un autre dossier…",
   phoneVaultNone: "Aucun dossier ouvert pour l’instant.",
+  vaultAdd: "Ajouter une bibliothèque…",
+  vaultRemove: "Retirer de la liste",
+  vaultRemoveHint: "La retire seulement de cette liste. Les fichiers restent.",
   phoneHomeEmptyTitle: "Choisissez un dossier pour commencer",
   phoneHomeEmptyHint:
     "Textus conserve vos notes sous forme de fichiers Markdown dans le dossier de votre choix.",

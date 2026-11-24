@@ -12,19 +12,14 @@ import type { SidebarTabId, SidebarView } from "./useSidePanels";
 import type { useSidebarWidth } from "./sidebar-width";
 import type { OpenFolder } from "../useOpenFolder";
 import { FILE_TABS, fileTab } from "./sidebar-tabs";
-import {
-  ChevronDownIcon,
-  FolderIcon,
-  MoreIcon,
-  PlusIcon,
-  SettingsIcon,
-} from "../../engine/controls/icons";
+import { MoreIcon, PlusIcon, SettingsIcon } from "../../engine/controls/icons";
 import { emitToThisWindow } from "../../platform/menu-events";
 import { TodayPanel } from "./TodayPanel";
 import type { FileOpenHow } from "../../files/tree-shared";
 import { fileActionEntries } from "../../files/file-actions";
 import { currentTreeSort } from "../../files/tree-view-events";
 import { canOpenFolder } from "../../platform/capabilities";
+import { VaultButton } from "../../vaults/VaultButton";
 
 /**
  * The left view column: the folder's name, Today and Files, and the Files
@@ -142,20 +137,13 @@ export function Sidebar({
             inert={closing || undefined}
             data-tauri-drag-region={titleShown || undefined}
           >
-            <button
-              type="button"
-              className="sidebar-vault"
-              onClick={() => void openFolder.openFolderDialog()}
-              title={t.menuOpenFolder}
-            >
-              <span className="sidebar-vault-icon">
-                <FolderIcon />
-              </span>
-              <span className="sidebar-vault-name">
-                {vaultName ?? t.menuOpenFolder}
-              </span>
-              <ChevronDownIcon className="sidebar-vault-chev" />
-            </button>
+            <VaultButton
+              t={t}
+              openFolder={openFolder}
+              variant="sidebar"
+              current={root}
+              name={vaultName ?? t.menuOpenFolder}
+            />
             <div className="sidebar-views">
               <Segmented
                 className="sidebar-view-seg"

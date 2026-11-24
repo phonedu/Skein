@@ -759,6 +759,9 @@ export default {
   phoneVaultCurrent: "Текущая",
   phoneVaultOpenOther: "Открыть другую папку…",
   phoneVaultNone: "Папка ещё не открыта.",
+  vaultAdd: "Добавить библиотеку…",
+  vaultRemove: "Убрать из списка",
+  vaultRemoveHint: "Убирает только из списка. Файлы остаются.",
   phoneHomeEmptyTitle: "Выберите папку, чтобы начать",
   phoneHomeEmptyHint:
     "Textus хранит ваши заметки в виде файлов Markdown в выбранной вами папке.",

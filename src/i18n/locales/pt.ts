@@ -746,6 +746,9 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   phoneVaultCurrent: "Atual",
   phoneVaultOpenOther: "Abrir outra pasta…",
   phoneVaultNone: "Nenhuma pasta aberta ainda.",
+  vaultAdd: "Adicionar biblioteca…",
+  vaultRemove: "Remover da lista",
+  vaultRemoveHint: "Remove apenas desta lista. Os arquivos permanecem.",
   phoneHomeEmptyTitle: "Escolha uma pasta para começar",
   phoneHomeEmptyHint:
     "O Textus guarda suas notas como arquivos Markdown na pasta que você escolher.",

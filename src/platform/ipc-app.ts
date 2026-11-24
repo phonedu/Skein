@@ -148,11 +148,6 @@ export const menuIpc = {
     desktopQueryCommand("trigger_menu_item", undefined, id),
   /** Backs File > Open Recent, whose native submenu the drawn menu can't read. */
   listRecentFiles: () => desktopQueryCommand("list_recent_files", []),
-  /** The folders listed above the files there. */
-  listRecentFolders: () => desktopQueryCommand("list_recent_folders", []),
-  /** Takes one entry off the recent folders and files. */
-  removeRecent: (path: string) =>
-    desktopQueryCommand("remove_recent", undefined, path),
   /** Rebuilds the native (macOS) menu bar with these labels. */
   setMenuLabels: (labels: Record<string, string>) =>
     desktopQueryCommand("set_menu_labels", undefined, labels),

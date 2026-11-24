@@ -21,6 +21,7 @@ export type { UpdateChannel } from "./update-channel";
 export {
   fs,
   session,
+  recents,
   type HistoryKind,
   storage,
   drafts,

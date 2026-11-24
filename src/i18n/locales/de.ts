@@ -733,6 +733,9 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   phoneVaultCurrent: "Aktuell",
   phoneVaultOpenOther: "Anderen Ordner öffnen…",
   phoneVaultNone: "Noch kein Ordner geöffnet.",
+  vaultAdd: "Bibliothek hinzufügen…",
+  vaultRemove: "Aus Liste entfernen",
+  vaultRemoveHint: "Entfernt sie nur aus dieser Liste. Die Dateien bleiben.",
   phoneHomeEmptyTitle: "Wähle einen Ordner, um zu beginnen",
   phoneHomeEmptyHint:
     "Textus bewahrt deine Notizen als Markdown-Dateien in einem Ordner deiner Wahl auf.",

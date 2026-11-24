@@ -1,6 +1,7 @@
 // The phone's home: the open vault's file tree as the first surface —
 // the tree, the vault name and settings in the top bar. The vault name
-// opens the library-switcher sheet; recents will flow in later.
+// raises the library switcher: the open library, the ones chosen before,
+// and the way to add one.
 import { useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
@@ -12,12 +13,10 @@ import { canOpenFolder } from "../platform/capabilities";
 import { useAppDocumentsFolder } from "../platform/native-files";
 import { emitToThisWindow } from "../platform/menu-events";
 import {
-  ActionSheet,
-  type ActionSheetItem,
-} from "../engine/controls/ActionSheet";
-import { ContextMenu, type ContextMenuEntry } from "../engine/controls/ContextMenu";
+  ContextMenu,
+  type ContextMenuEntry,
+} from "../engine/controls/ContextMenu";
 import {
-  ChevronDownIcon,
   CloseIcon,
   FolderIcon,
   MoreIcon,
@@ -25,7 +24,7 @@ import {
   SettingsIcon,
 } from "../engine/controls/icons";
 import { Presence } from "../engine/motion/usePresence";
-import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
+import { VaultButton } from "../vaults/VaultButton";
 import { PhonePluginStatus } from "./PhonePluginStatus";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
 import { PhoneViewSeg } from "./PhoneViewSeg";
@@ -59,7 +58,6 @@ export function PhoneHome({
   // The app's own Documents folder: a plain path (no SAF), which is what the
   // built-in sync can read and write on a phone.
   const appDocuments = useAppDocumentsFolder();
-  const [switcherOpen, setSwitcherOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [draftRequest, setDraftRequest] = useState<{
@@ -73,36 +71,6 @@ export function PhoneHome({
     if (kind === "document" && !openFolder.treeRoot) return onNewFile();
     setDraftRequest((ask) => ({ kind, seq: (ask?.seq ?? 0) + 1 }));
   };
-
-  // The sheet's rows: the current library (ticked), a separator, and the
-  // folder picker. Recents are added here once they reach the phone.
-  const vaultItems: (ActionSheetItem | "separator")[] = [
-    place
-      ? {
-          label: baseName(place),
-          sub: place,
-          Icon: VaultActionIcon,
-          checked: true,
-          onSelect: () => {},
-        }
-      : {
-          label: t.phoneVaultNone,
-          Icon: VaultActionIcon,
-          onSelect: () => {},
-        },
-    ...(canOpenFolder
-      ? ([
-          "separator",
-          {
-            label: t.phoneVaultOpenOther,
-            Icon: OpenFolderActionIcon,
-            onSelect: () => {
-              void openFolder.openFolderDialog();
-            },
-          },
-        ] as (ActionSheetItem | "separator")[])
-      : []),
-  ];
 
   // The library's ⋯: the file page's actions (the tree's hidden toolbar),
   // then the palette, which acts on the library in front. Plugins stay on
@@ -136,19 +104,13 @@ export function PhoneHome({
   return (
     <div className="phone-home">
       <div className="ph-top">
-        <button
-          type="button"
-          className="ph-vault"
-          aria-haspopup="menu"
-          aria-expanded={switcherOpen}
-          onClick={() => setSwitcherOpen(true)}
-        >
-          <span className="vic">
-            <FolderIcon />
-          </span>
-          <span className="vname">{place ? baseName(place) : t.treeTab}</span>
-          <ChevronDownIcon className="vchev" />
-        </button>
+        <VaultButton
+          t={t}
+          openFolder={openFolder}
+          variant="files"
+          current={place || null}
+          name={place ? baseName(place) : t.treeTab}
+        />
         <div className="ph-acts">
           <button
             type="button"
@@ -253,15 +215,6 @@ export function PhoneHome({
             title={t.phoneMoreActions}
             items={moreItems}
             onClose={() => setMoreOpen(false)}
-          />
-        )}
-      </Presence>
-      <Presence show={switcherOpen}>
-        {switcherOpen && (
-          <ActionSheet
-            title={t.phoneVaultSwitcherTitle}
-            items={vaultItems}
-            onClose={() => setSwitcherOpen(false)}
           />
         )}
       </Presence>

@@ -1,11 +1,10 @@
-import { windowIpc } from "../platform/ipc";
+import { recents as recentsIpc, windowIpc } from "../platform/ipc";
 import { fill } from "../i18n/fill";
 import { PathText } from "../engine/controls/PathText";
 import { useEffect, useState, type ReactNode } from "react";
 import { emitToThisWindow } from "../platform/menu-events";
 import { NO_RECENTS, type RecentLists } from "../registry/menu/app-menu-model";
 import { readRecents } from "./menu/recents";
-import { menuIpc } from "../platform/ipc-app";
 import { basename, dirname, folderName } from "../utils/path";
 import {
   CloseIcon,
@@ -42,7 +41,7 @@ function useRecents(): [RecentLists, (path: string) => void] {
       files: now.files.filter((p) => p !== path),
       folders: now.folders.filter((p) => p !== path),
     }));
-    void menuIpc.removeRecent(path).catch(() => {});
+    void recentsIpc.remove(path).catch(() => {});
   };
   return [recents, remove];
 }

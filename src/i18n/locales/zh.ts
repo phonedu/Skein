@@ -651,6 +651,9 @@ export default {
   phoneVaultCurrent: "当前",
   phoneVaultOpenOther: "打开其他文件夹…",
   phoneVaultNone: "还没有打开文件夹。",
+  vaultAdd: "添加库…",
+  vaultRemove: "从列表移除",
+  vaultRemoveHint: "只从列表移除，不会删除文件。",
   phoneHomeEmptyTitle: "选一个文件夹开始",
   phoneHomeEmptyHint:
     "Textus 把你的笔记作为 Markdown 文件保存在你选的文件夹里。",

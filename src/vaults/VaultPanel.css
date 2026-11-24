@@ -1,0 +1,215 @@
+/* The library switcher: one list, two dresses. A desktop hangs it under
+   the library's name (a floating popover, .vault-panel); a phone raises it
+   from the bottom (.vault-sheet, the sheet's own card). The rows keep their
+   name and path, the open one a check, and every other one its trash. */
+.vault-panel {
+  position: fixed;
+  z-index: var(--z-menu);
+  width: 300px;
+  max-width: calc(100vw - 16px);
+  max-height: min(70vh, 480px);
+  overflow-y: auto;
+  padding: var(--space-1);
+  animation: motion-pop-in var(--dur-base) var(--ease-out);
+}
+
+.vault-panel[data-state="closing"] {
+  animation: motion-pop-out var(--dur-fast) var(--ease-in) forwards;
+}
+
+.vault-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2)
+    calc(var(--space-2) + var(--safe-bottom));
+}
+
+.vault-head {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+}
+
+.vault-sheet .vault-head {
+  padding: var(--space-2) var(--space-6) 0;
+}
+
+/* The card the rows sit in: the panel already is one; a phone's sheet draws
+   its group as the sheet's other cards are drawn. */
+.vault-panel .vault-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.vault-sheet .vault-group {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--shape-sheet);
+  background: var(--ui-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.vault-row {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border-radius: var(--shape-s);
+}
+
+.vault-row-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-text);
+  font: inherit;
+  text-align: left;
+}
+
+.vault-sheet .vault-row-main {
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: 0 var(--space-6);
+  border-radius: 0;
+  font-size: var(--text-body);
+}
+
+/* The open library: marked, not a switch and not a removal. */
+.vault-row[data-current] .vault-row-main {
+  cursor: default;
+}
+
+.vault-row-ic {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--icon-tile);
+  height: var(--icon-tile);
+  border-radius: var(--shape-s);
+  background: color-mix(in srgb, var(--ui-text) 6%, transparent);
+  color: var(--ui-muted);
+  --icon-scale: 1.1;
+}
+
+.vault-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.vault-row-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vault-row[data-current] .vault-row-name {
+  font-weight: 600;
+}
+
+.vault-row-path {
+  overflow: hidden;
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.vault-row-check {
+  flex: none;
+  color: var(--ui-accent-text);
+}
+
+.vault-row-remove {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  min-height: 32px;
+  margin: var(--space-1) var(--space-1) var(--space-1) 0;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+}
+
+.vault-sheet .vault-row-remove {
+  width: 48px;
+  min-height: 56px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.vault-add {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-accent-text);
+  font: inherit;
+  text-align: left;
+}
+
+.vault-sheet .vault-add {
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: 0 var(--space-6);
+  border-radius: 0;
+  font-size: var(--text-body);
+}
+
+.vault-add-label {
+  min-width: 0;
+}
+
+.vault-empty {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--ui-muted);
+  font-size: var(--text-body);
+}
+
+.vault-sheet .vault-empty {
+  padding: var(--space-3) var(--space-6);
+}
+
+.vault-hint {
+  margin: 0;
+  padding: 0 var(--space-3);
+  color: var(--ui-muted);
+  font-size: var(--text-footnote);
+}
+
+.vault-sheet .vault-hint {
+  padding: 0 var(--space-6);
+}
+
+@media (any-hover: hover) {
+  .vault-panel .vault-row-main:not([aria-current]):hover,
+  .vault-panel .vault-add:hover,
+  .vault-panel .vault-row-remove:hover {
+    background: var(--ui-hover);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+
+  .vault-panel .vault-row-remove:hover {
+    color: var(--ui-danger);
+  }
+}
+
+.vault-sheet .vault-row-main:active,
+.vault-sheet .vault-row-remove:active {
+  background: var(--ui-pressed-row);
+}

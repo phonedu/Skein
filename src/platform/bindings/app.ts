@@ -148,8 +148,6 @@ export const commands = {
 	trigger_menu_item: (id: string) => __TAURI_INVOKE<void>("trigger_menu_item", { id }),
 	/**  The recent-file list behind File > Open Recent, for the app-drawn menu. */
 	list_recent_files: () => __TAURI_INVOKE<string[]>("list_recent_files"),
-	/**  The recent folders, listed above the files there. */
-	list_recent_folders: () => __TAURI_INVOKE<string[]>("list_recent_folders"),
 	/**
 	 *  The macOS menu bar in the UI's language, rebuilt only when the labels
 	 *  change. Elsewhere it does nothing. Async with a main-thread hop, as menus

@@ -6,6 +6,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -24,6 +25,12 @@ const phoneHomeCss = readFileSync("src/phone/PhoneHome.css", "utf8");
 
 const fileTreeProps = vi.hoisted(() => ({
   last: null as Record<string, unknown> | null,
+}));
+
+/** The libraries the panel reads and takes off its list. */
+const vaultIpc = vi.hoisted(() => ({
+  listFolders: vi.fn(async () => [] as string[]),
+  remove: vi.fn(async () => {}),
 }));
 
 vi.mock("../files/FileTree", () => ({
@@ -49,6 +56,11 @@ vi.mock("../platform/native-files", () => ({
 vi.mock("../platform/ipc-sync", () => ({
   syncStatus: vi.fn().mockResolvedValue({ configured: false, last: null }),
 }));
+
+vi.mock("../platform/ipc-files", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../platform/ipc-files")>();
+  return { ...actual, recents: vaultIpc };
+});
 
 vi.mock("../platform/menu-events", () => ({
   emitToThisWindow: vi.fn(),
@@ -114,6 +126,7 @@ vi.mock("../engine/controls/ActionSheet", async () => {
 vi.mock("../engine/motion/usePresence", () => ({
   Presence: ({ show, children }: { show: boolean; children: unknown }) =>
     show ? children : null,
+  usePresenceProps: () => ({ ref: () => {}, "data-state": "open" }),
 }));
 
 const openFolder = {
@@ -302,18 +315,31 @@ describe("the phone library home", () => {
     expect(typeof empty.start).toBe("function");
   });
 
-  it("keeps the vault switcher sheet and its folder picker", () => {
+  it("opens the library switcher: the open one ticked, a recent one removable, the picker", async () => {
+    vaultIpc.listFolders.mockResolvedValueOnce(["/other"]);
     renderHome();
 
-    // The chip opens the sheet.
+    // The chip raises the sheet.
     fireEvent.click(screen.getByRole("button", { name: /notes/ }));
-    // The current library is ticked and the folder picker row is present.
-    const current = screen.getByRole("menuitem", { name: "notes" });
-    expect(current.getAttribute("aria-checked")).toBe("true");
-    const openOther = screen.getByRole("menuitem", {
-      name: en.phoneVaultOpenOther,
+    const sheet = await screen.findByRole("dialog", {
+      name: en.phoneVaultSwitcherTitle,
     });
-    fireEvent.click(openOther);
+    // The open library is marked and keeps no trash: it is not a list entry.
+    const current = sheet.querySelector(".vault-row[data-current]")!;
+    expect(current.textContent).toContain("notes");
+    expect(current.querySelector(".vault-row-check")).toBeTruthy();
+    expect(current.querySelector(".vault-row-remove")).toBeNull();
+    // A library chosen before can be switched to, or taken off the list.
+    expect(await within(sheet).findByText("other")).toBeTruthy();
+    fireEvent.click(
+      within(sheet).getByRole("button", {
+        name: `${en.vaultRemove}: other`,
+      }),
+    );
+    expect(vaultIpc.remove).toHaveBeenCalledWith("/other");
+    expect(within(sheet).queryByText("other")).toBeNull();
+    // Adding one is the folder picker.
+    fireEvent.click(within(sheet).getByRole("button", { name: en.vaultAdd }));
     expect(openFolder.openFolderDialog).toHaveBeenCalledOnce();
   });
 

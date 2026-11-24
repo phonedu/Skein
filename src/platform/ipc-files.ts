@@ -273,9 +273,20 @@ export const session = {
     desktopQueryCommand("update_window_session", undefined, window),
   cancelQuit: () => desktopQueryCommand("cancel_session_quit", undefined),
   addRecentFile: (path: string) => command("add_recent_file", path),
-  /** A folder opened in the sidebar, for File > Open Recent. */
-  addRecentFolder: (path: string) =>
-    desktopQueryCommand("add_recent_folder", undefined, path),
+  /** A folder opened in the sidebar, for the library switcher: Rust's list
+   *  is the one both shells read, and the desktop menu mirrors it. */
+  addRecentFolder: (path: string) => command("add_recent_folder", path),
+};
+
+/** The folders the user opened before, shared by the desktop's File > Open
+ *  Recent and a phone's library panel. */
+export const recents = {
+  /** Most recent first; a folder that is gone is left out, a phone's SAF
+   *  URL stays (its grant is what opens it). */
+  listFolders: () => command("list_recent_folders"),
+  /** One entry off the folder and file lists. Nothing on disk is touched:
+   *  the folder and its documents stay. */
+  remove: (path: string) => command("remove_recent", path),
 };
 
 // Storage: settings, UI state and histories, held by Rust as JSON files.

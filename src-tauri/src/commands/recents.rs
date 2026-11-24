@@ -49,9 +49,11 @@ pub fn read_recent_folders(app: &tauri::AppHandle) -> Vec<String> {
 
 /// The entries of a recent list that are still there, for showing. The list
 /// keeps the rest: a folder on a drive that isn't plugged in comes back.
+/// A URL is kept whatever the filesystem says: a phone's folder is a SAF
+/// URL the backend never stats, and its persisted grant is what opens it.
 pub fn still_there(list: Vec<String>) -> Vec<String> {
     list.into_iter()
-        .filter(|path| std::path::Path::new(path).exists())
+        .filter(|path| path.contains("://") || std::path::Path::new(path).exists())
         .collect()
 }
 
@@ -66,17 +68,25 @@ pub fn add_recent_file(app: tauri::AppHandle, path: String) {
     crate::menu::rebuild_recent_menu(&app);
 }
 
-#[cfg(desktop)]
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
 pub fn add_recent_folder(app: tauri::AppHandle, path: String) {
     let list = push_front(read_recent_folders(&app), path, MAX_RECENT_FOLDERS);
     write_list(&app, FOLDERS_LIST, &list);
+    #[cfg(desktop)]
     crate::menu::rebuild_recent_menu(&app);
 }
 
-/// One entry taken off both lists: the start page's × beside it.
-#[cfg(desktop)]
+/// The folders to offer for switching: the open one is not here, the caller
+/// shows it itself; this is what the user chose before.
+#[tauri::command]
+#[cfg_attr(test, specta::specta)]
+pub fn list_recent_folders(app: tauri::AppHandle) -> Vec<String> {
+    still_there(read_recent_folders(&app))
+}
+
+/// One entry taken off both lists: a recent file's ×, and a library taken
+/// off the switcher. Only the lists: the folder and its files stay.
 #[tauri::command]
 #[cfg_attr(test, specta::specta)]
 pub fn remove_recent(app: tauri::AppHandle, path: String) {
@@ -85,6 +95,7 @@ pub fn remove_recent(app: tauri::AppHandle, path: String) {
         list.retain(|p| p != &path);
         write_list(&app, name, &list);
     }
+    #[cfg(desktop)]
     crate::menu::rebuild_recent_menu(&app);
 }
 
@@ -112,6 +123,13 @@ mod tests {
         let gone = dir.join("gone").to_string_lossy().to_string();
         assert_eq!(still_there(vec![gone, here.clone()]), vec![here]);
         let _ = std::fs::remove_dir(&dir);
+    }
+
+    #[test]
+    fn a_phone_folder_is_kept_as_its_url() {
+        // The backend can't stat a SAF pick: its grant is what opens it.
+        let saf = "content://com.android.externalstorage.documents/tree/primary%3ANotes";
+        assert_eq!(still_there(vec![saf.into()]), vec![saf]);
     }
 
     #[test]
