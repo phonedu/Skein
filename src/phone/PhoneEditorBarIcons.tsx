@@ -39,6 +39,20 @@ export function FindActionIcon({ className }: { className?: string }) {
   );
 }
 
+/** A prompt mark, "›_": the command line's, for the command palette. */
+export function CommandPaletteActionIcon({
+  className,
+}: {
+  className?: string;
+}) {
+  return (
+    <svg {...baseProps(className)} aria-hidden>
+      <path d="M5 7l5 5-5 5" />
+      <path d="M13 17h6" />
+    </svg>
+  );
+}
+
 /** A node branching outward: share. */
 export function ShareActionIcon({ className }: { className?: string }) {
   return (

@@ -11,13 +11,10 @@ import {
 } from "../engine/controls/ActionSheet";
 import { Presence } from "../engine/motion/usePresence";
 import { showNotice } from "../engine/controls/notices";
-import {
-  BackChevronIcon,
-  PluginsTabIcon,
-  SearchIcon,
-} from "../engine/controls/icons";
+import { BackChevronIcon, PluginsTabIcon } from "../engine/controls/icons";
 import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
 import {
+  CommandPaletteActionIcon,
   OutlineActionIcon,
   FindActionIcon,
   SourceActionIcon,
@@ -109,7 +106,7 @@ export function PhoneEditorBar({
     // document had no way in from this page before.
     {
       label: t.menuCommandPalette,
-      Icon: SearchIcon,
+      Icon: CommandPaletteActionIcon,
       onSelect: () => {
         setSheetOpen(false);
         void import("../app/command-palette-entry").then((m) =>
