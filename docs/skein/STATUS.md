@@ -2,7 +2,7 @@
 type: status
 status: active
 summary: 当前工作线、Now/Next、阻塞与触发点
-updated: 2026-11-23
+updated: 2026-11-24
 ---
 
 # 状态

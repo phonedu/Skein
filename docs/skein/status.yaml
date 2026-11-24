@@ -3,7 +3,7 @@
 baseline: v1.4.6
 commit: 457f6693
 branch: base-ui-settings
-updated: 2026-11-23
+updated: 2026-11-24
 workstreams:
   - id: D1
     name: 资产闭环
