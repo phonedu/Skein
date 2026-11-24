@@ -13,6 +13,9 @@ export interface QuickPickItem {
   value?: unknown;
   /** With `multiple`: ticked to start with. */
   picked?: boolean;
+  /** An on/off choice now on (the command palette's View menu): the row
+   *  carries a check mark, so choosing it and coming back shows the state. */
+  checked?: boolean;
   /** A shortcut that does the same, shown at the row's end ("mod+s"). */
   keys?: string;
 }

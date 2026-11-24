@@ -8,6 +8,7 @@ import {
 } from "../engine/controls/quick-pick-queue";
 import { commands, commandShortcut, runCommand } from "../registry/commands";
 import { runMenuAction } from "./menu/app-menu-actions";
+import { paletteChecks } from "./command-palette-checks";
 import {
   buildAppMenu,
   NO_RECENTS,
@@ -24,6 +25,8 @@ export interface PaletteEntry {
   /** Where else it is: "File", "Format › Heading". */
   where?: string;
   keys?: string;
+  /** An on/off item now on (View › Source Mode): its row shows a check. */
+  checked?: boolean;
   run: { menu: MenuAction } | { command: string };
 }
 
@@ -43,6 +46,7 @@ export function paletteEntries(
           label: node.label,
           where: path.join(" › ") || undefined,
           keys: node.accel,
+          checked: node.checked,
           run: { menu: node.action },
         });
     }
@@ -76,7 +80,7 @@ function currentEntries(
   { shortcuts, commandShortcuts }: Settings,
 ): PaletteEntry[] {
   return paletteEntries(
-    buildAppMenu(t, shortcuts, NO_RECENTS),
+    buildAppMenu(t, shortcuts, NO_RECENTS, paletteChecks()),
     commands()
       .filter((c) => c.palette !== false && c.enabled?.() !== false)
       .map((c) => ({
@@ -116,6 +120,7 @@ export async function pickWithCommands(
       label: entry.label,
       description: entry.where,
       keys: entry.keys,
+      checked: entry.checked,
       value: { entry: i },
     })),
   ];

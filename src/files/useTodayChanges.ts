@@ -30,6 +30,11 @@ const MAX_DEPTH = 8;
 const SHOWN = 6;
 /** A save, a focus: the walk waits this long, then runs once. */
 const SETTLE_MS = 1000;
+/** A phone's folder is slow to walk (each listing crosses the bridge), and
+ *  Today remounts on every switch to it: the last walk's answer shows at
+ *  once, then the walk refreshes it. The newest few roots are kept. */
+const LAST = new Map<string, TodayChange[]>();
+const KEEP_ROOTS = 6;
 /** Coming back to the window re-reads at most this often. */
 const FOCUS_MS = 30_000;
 
@@ -57,7 +62,9 @@ function noteIdentity(
  * Saves settle before walking; a focus re-reads at most every 30 seconds.
  */
 export function useTodayChanges(root: string | null): TodayChange[] {
-  const [changes, setChanges] = useState<TodayChange[]>([]);
+  const [changes, setChanges] = useState<TodayChange[]>(() =>
+    root ? (LAST.get(root) ?? []) : [],
+  );
   const [generation, setGeneration] = useState(0);
 
   useEffect(() => {
@@ -66,6 +73,9 @@ export function useTodayChanges(root: string | null): TodayChange[] {
       return;
     }
     let cancelled = false;
+    // A root already walked shows its answer while this walk runs; one
+    // never walked clears a list left by another folder.
+    setChanges(LAST.get(root) ?? []);
     const since = DAY_START();
     const found: Omit<TodayChange, "title" | "id">[] = [];
     let seen = 0;
@@ -103,7 +113,10 @@ export function useTodayChanges(root: string | null): TodayChange[] {
           return { ...change, ...noteIdentity(text, change.name) };
         }),
       );
-      if (!cancelled) setChanges(shown);
+      if (cancelled) return;
+      LAST.set(root, shown);
+      if (LAST.size > KEEP_ROOTS) LAST.delete(LAST.keys().next().value!);
+      setChanges(shown);
     });
     return () => {
       cancelled = true;

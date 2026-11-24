@@ -24,6 +24,11 @@ const MENU: MenuNode[] = [
     submenu: [
       { label: "Command Palette…", action: { native: "command-palette" } },
       { label: "Full Screen", action: { local: "fullscreen" } },
+      {
+        label: "Source Mode",
+        action: { native: "toggle-source-mode" },
+        checked: true,
+      },
     ],
   },
   {
@@ -40,8 +45,15 @@ describe("paletteEntries", () => {
     expect(entries.map((e) => [e.label, e.where, e.keys])).toEqual([
       ["Save", "File", "mod+s"],
       ["Full Screen", "View", undefined],
+      ["Source Mode", "View", undefined],
       ["Count", "Plugins", undefined],
     ]);
+  });
+
+  it("carries an on/off item's check, so a chosen mode shows as chosen", () => {
+    const entries = paletteEntries(MENU, []);
+    expect(entries.find((e) => e.label === "Source Mode")?.checked).toBe(true);
+    expect(entries.find((e) => e.label === "Save")?.checked).toBeUndefined();
   });
 
   it("adds the commands no menu item runs", () => {

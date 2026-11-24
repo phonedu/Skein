@@ -149,6 +149,11 @@ function QuickPick({
                 />
               )}
               <span className="quick-pick-label">{item.label}</span>
+              {item.checked && (
+                <span className="quick-pick-check" aria-hidden="true">
+                  ✓
+                </span>
+              )}
               {item.description && (
                 <span className="tx-truncate quick-pick-description">
                   {item.description}

@@ -43,6 +43,14 @@
 .quick-pick-item > .ui-check {
   pointer-events: none;
 }
+/* An on/off choice that is on: the check follows the label, in the
+   interface's accent, so the palette read again shows the state. */
+.quick-pick-check {
+  flex: none;
+  color: var(--ui-accent);
+  font-weight: 600;
+}
+
 .quick-pick-detail {
   flex-basis: 100%;
   color: var(--ui-muted);

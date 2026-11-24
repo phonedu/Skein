@@ -368,6 +368,50 @@ test.describe("the phone shell", () => {
     await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
   });
 
+  test("gives the phone's command palette the page, and marks the chosen mode", async ({
+    page,
+  }) => {
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    // A document in front, so View › Mode's entries are live.
+    await page.getByRole("button", { name: "记一句…", exact: true }).tap();
+    await page.getByRole("button", { name: "回到文件库" }).tap();
+    const open = async () => {
+      await page.getByRole("button", { name: "更多" }).tap();
+      await page.getByRole("menuitem", { name: "命令面板…" }).tap();
+      await expect(page.locator(".quick-pick")).toBeVisible();
+    };
+    const checked = () =>
+      page
+        .locator(".quick-pick-item:has(.quick-pick-check) .quick-pick-label")
+        .allInnerTexts();
+
+    await open();
+    // The page itself, not a floating card at 12vh: full width, the page's
+    // height, a finger's rows.
+    const box = (await page.locator(".quick-pick").boundingBox())!;
+    expectBetween(box.width, 389, 391);
+    expectBetween(box.height, 700, 845);
+    // 48 written, drawn at the phone's 10/11.
+    for (const row of await sizes(page, ".quick-pick-item")) {
+      expectBetween(row.h, 43, 45);
+    }
+    // The mode in force carries a check; choosing another moves it there,
+    // so the palette read again says what is on instead of leaving it to
+    // the page behind.
+    expect(await checked()).toContain("默认");
+    await page
+      .locator(".quick-pick-item", { hasText: "源码模式" })
+      .first()
+      .tap();
+    await open();
+    const after = await checked();
+    expect(after).toContain("源码模式");
+    expect(after).not.toContain("默认");
+  });
+
   test("Back walks the AI page home: the document, then Today", async ({
     page,
   }) => {

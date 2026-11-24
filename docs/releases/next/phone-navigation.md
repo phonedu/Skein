@@ -6,6 +6,9 @@
 
 ### Improved
 
+- A phone's command palette is the page itself — the field under the status bar, the list filling the rest, a finger's rows — instead of a floating card the keyboard cut in half.
+- The command palette marks what is on: the mode in force, a shown format bar, the sidebar. Choosing a mode used to leave the palette still ticking "Default", with nothing saying what was chosen.
+- Today's changes are kept from the last walk: switching to Files and back shows the list at once while the folder is read again, rather than waiting for a slow phone walk each time.
 - On a phone with no collect plugin, 记一句 opens a note to type in at once — no naming row, no trip through the library. Until it has a file it says "Draft · not saved", and it saves itself once there is something to write.
 - A plugin's form on a phone keeps each field inset in the dialog's card, on the card's own surface, with the interface's accent for focus and caret instead of a webview's default ring.
 - A phone's file tree steps one width a level: the first step is as wide as the rest, a file's icon stands level with its sibling folders' icons, and the folder guide lines run through the folders' chevrons instead of a step to their right.

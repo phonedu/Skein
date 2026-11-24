@@ -1,9 +1,10 @@
 import { provideAiFileMarks } from "../ai/revision/file-marks";
+import { setPaletteChecks } from "./command-palette-checks";
 import { isPlainDraft, tabTitle } from "../document/doc-tabs";
 import { conversationIn } from "./islands/ai-tabs";
 import { ConventionsCard } from "./ConventionsCard";
 import { CornerStacks } from "../engine/controls/CornerToast";
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useEffect } from "react";
 import { AppDialogHost } from "../engine/controls/app-dialog";
 import { WindowBar } from "./frame/WindowBar";
 import { hasDocumentsList } from "../platform/capabilities";
@@ -168,6 +169,9 @@ function App() {
   // Zen puts the sidebar away as a close does, on the window's clock.
   const sidebarShown = panelOpen && !zenMode;
   const { menuChecks, entryMoved, skillFilesDeleted } = wiring;
+  // The command palette's check marks follow the window's states: the mode
+  // it just set, the sidebar, the format bar.
+  useEffect(() => setPaletteChecks(menuChecks), [menuChecks]);
   const { documentsOpen, setDocumentsOpen, openFromDocuments } = wiring;
   const { documentRenamed, documentDeleted } = wiring;
   const { closeSaving, closeDiscarding, cancelClose, closePrompt } =
