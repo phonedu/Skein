@@ -58,6 +58,11 @@ vi.mock("../settings/settings-nav", () => ({
   openSettingsPage: vi.fn(),
 }));
 
+// The library's ⋯ is a sheet on a phone.
+vi.mock("../engine/controls/usePhoneLayout", () => ({
+  usePhoneLayout: () => true,
+}));
+
 // Pick a stub Sheet so the test doesn't need the SettingsProvider or the
 // Presence transitions; the sheet's own file has its contract covered.
 vi.mock("../engine/controls/ActionSheet", async () => {
@@ -124,6 +129,23 @@ const openFolderProp = openFolder as unknown as Parameters<
   typeof PhoneHome
 >[0]["openFolder"];
 
+function renderHome(
+  props: Partial<Parameters<typeof PhoneHome>[0]> = {},
+): ReturnType<typeof render> {
+  return render(
+    <PhoneHome
+      t={en as Strings}
+      openFolder={openFolderProp}
+      activePath={null}
+      onOpenFile={vi.fn()}
+      onNewFile={vi.fn()}
+      onCapture={vi.fn()}
+      onEntryMoved={vi.fn()}
+      {...props}
+    />,
+  );
+}
+
 describe("the phone library home", () => {
   afterEach(() => {
     cleanup();
@@ -132,16 +154,7 @@ describe("the phone library home", () => {
   });
 
   it("shows the paper library search affordance above the tree", () => {
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+    renderHome();
 
     expect(
       screen.getByRole("searchbox", { name: en.phoneSearchPlaceholder }),
@@ -149,21 +162,14 @@ describe("the phone library home", () => {
     expect(screen.getByTestId("phone-file-tree")).toBeTruthy();
   });
 
-  it("keeps Plugins out of the library's top row", () => {
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+  it("keeps the top row to the vault, ⋯ and settings", () => {
+    renderHome();
 
-    // The library is a pushed page under Today; plugins stay in Today's
-    // ⋯ sheet and the top bar's launcher, so the row keeps its room.
+    // Plugins and the palette are in the ⋯ sheet now, as on Today.
     expect(screen.queryByRole("button", { name: en.pluginsTitle })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: en.phoneMoreActions }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: en.settingsTitle }));
     expect(emitToThisWindow).toHaveBeenCalledWith("menu-settings");
   });
@@ -172,16 +178,7 @@ describe("the phone library home", () => {
     act(() =>
       setStatusItem("test.plugin", "status", { text: "Synced 2m ago" }),
     );
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+    renderHome();
 
     fireEvent.click(screen.getByRole("button", { name: "Synced 2m ago" }));
     expect(openSettingsPage).toHaveBeenCalledWith("extensions");
@@ -189,16 +186,7 @@ describe("the phone library home", () => {
   });
 
   it("lets the phone search field receive text, and clear itself", () => {
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+    renderHome();
 
     const input = screen.getByRole("searchbox", {
       name: en.phoneSearchPlaceholder,
@@ -214,6 +202,75 @@ describe("the phone library home", () => {
     expect((input as HTMLInputElement).value).toBe("");
   });
 
+  it("puts the capture beside the Today | Files capsule", () => {
+    const onCapture = vi.fn();
+    renderHome({ onCapture });
+
+    const capture = screen.getByRole("button", { name: en.todayCapture });
+    expect(capture.closest(".ph-views")).toBeTruthy();
+    fireEvent.click(capture);
+    expect(onCapture).toHaveBeenCalledOnce();
+  });
+
+  it("opens the library's file actions from its ⋯ sheet", () => {
+    renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    // The tree's hidden toolbar, in the sheet: create, sort, Refresh, then
+    // the app's two.
+    expect(screen.getByRole("menuitem", { name: en.menuNewFile })).toBeTruthy();
+    expect(
+      screen.getByRole("menuitem", { name: en.treeNewFolder }),
+    ).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: en.treeSortName })).toBeTruthy();
+    expect(
+      screen.getByRole("menuitem", { name: en.treeSortModified }),
+    ).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: en.treeRefresh })).toBeTruthy();
+    expect(screen.getByRole("menuitem", { name: en.pluginsTitle })).toBeTruthy();
+    expect(
+      screen.getByRole("menuitem", { name: en.menuCommandPalette }),
+    ).toBeTruthy();
+  });
+
+  it("names a new file or folder in the tree from the sheet", () => {
+    renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent.click(screen.getByRole("menuitem", { name: en.menuNewFile }));
+    const file = fileTreeProps.last?.["draftRequest"] as {
+      kind: string;
+      seq: number;
+    } | null;
+    expect(file?.kind).toBe("document");
+
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent.click(screen.getByRole("menuitem", { name: en.treeNewFolder }));
+    const folder = fileTreeProps.last?.["draftRequest"] as {
+      kind: string;
+      seq: number;
+    } | null;
+    expect(folder?.kind).toBe("folder");
+    expect(folder?.seq).toBeGreaterThan(file?.seq ?? 0);
+  });
+
+  it("offers no file actions on an empty library, but keeps the app-wide two", () => {
+    const empty = {
+      ...openFolder,
+      folder: null,
+      treeRoot: null,
+      openFolder: vi.fn(),
+    } as unknown as Parameters<typeof PhoneHome>[0]["openFolder"];
+    renderHome({ openFolder: empty });
+
+    // No tree: no file actions, but the app-wide two stay.
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    expect(
+      screen.queryByRole("menuitem", { name: en.menuNewFile }),
+    ).toBeNull();
+    expect(screen.getByRole("menuitem", { name: en.pluginsTitle })).toBeTruthy();
+  });
+
   it("opens the app's own Documents from the empty state", () => {
     const empty = {
       ...openFolder,
@@ -221,16 +278,7 @@ describe("the phone library home", () => {
       treeRoot: null,
       openFolder: vi.fn(),
     } as unknown as Parameters<typeof PhoneHome>[0]["openFolder"];
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={empty}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+    renderHome({ openFolder: empty });
 
     fireEvent.click(
       screen.getByRole("button", { name: en.phoneUseAppDocuments }),
@@ -238,74 +286,8 @@ describe("the phone library home", () => {
     expect(empty.openFolder).toHaveBeenCalledWith("/app/Documents");
   });
 
-  it("keeps the new note in the top row, over an empty library too", () => {
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
-
-    // No floating button: the top row's + is there whether the tree is
-    // empty or full.
-    expect(screen.getByRole("button", { name: en.menuNewFile })).toBeTruthy();
-    expect(document.querySelector(".ph-fab")).toBeNull();
-  });
-
-  it("asks which new thing on a held +, and names a folder in place", () => {
-    vi.useFakeTimers();
-    try {
-      render(
-        <PhoneHome
-          t={en as Strings}
-          openFolder={openFolderProp}
-          activePath={null}
-          onOpenFile={vi.fn()}
-          onNewFile={vi.fn()}
-          onEntryMoved={vi.fn()}
-        />,
-      );
-
-      const fab = screen.getByRole("button", { name: en.menuNewFile });
-      fireEvent.touchStart(fab, {
-        touches: [{ clientX: 12, clientY: 12 }],
-      });
-      act(() => vi.advanceTimersByTime(500));
-      // The sheet's rows, and only then.
-      const folder = screen.getByRole("menuitem", {
-        name: en.treeNewFolder,
-      });
-      expect(
-        screen.getByRole("menuitem", { name: en.menuNewFile }),
-      ).toBeTruthy();
-      fireEvent.click(folder);
-      // Choosing a folder asks the tree for one named in place at the root.
-      const ask = fileTreeProps.last?.["draftRequest"] as {
-        kind: string;
-        seq: number;
-      } | null;
-      expect(ask?.kind).toBe("folder");
-      expect(ask?.seq).toBeGreaterThan(0);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
   it("hands the tree the empty vault's state and the search's no-results", () => {
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+    renderHome();
 
     expect(fileTreeProps.last?.["noResults"]).toBe(en.phoneSearchNoResults);
     const empty = fileTreeProps.last?.["emptyState"] as Record<string, unknown>;
@@ -315,34 +297,9 @@ describe("the phone library home", () => {
     expect(typeof empty.start).toBe("function");
   });
 
-  it("keeps the new-document control connected to the existing callback", () => {
-    const onNewFile = vi.fn();
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={onNewFile}
-        onEntryMoved={vi.fn()}
-      />,
-    );
+  it("keeps the vault switcher sheet and its folder picker", () => {
+    renderHome();
 
-    fireEvent.click(screen.getByRole("button", { name: en.menuNewFile }));
-    expect(onNewFile).toHaveBeenCalledOnce();
-  });
-
-  it("opens the library switcher sheet and can call the folder picker", () => {
-    render(
-      <PhoneHome
-        t={en as Strings}
-        openFolder={openFolderProp}
-        activePath={null}
-        onOpenFile={vi.fn()}
-        onNewFile={vi.fn()}
-        onEntryMoved={vi.fn()}
-      />,
-    );
     // The chip opens the sheet.
     fireEvent.click(screen.getByRole("button", { name: /notes/ }));
     // The current library is ticked and the folder picker row is present.

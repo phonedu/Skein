@@ -30,10 +30,10 @@ import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneToday.css";
 
 /**
- * The phone's home: Today. The one high-frequency capture action stays at
- * the top of the page and sticks there as the list scrolls; everything
+ * The phone's home: Today. The day's capture sits in the view capsule's row
+ * as it does on the desktop, so it is in sight on both surfaces; everything
  * lower-frequency is behind the ⋯ sheet. No floating button, no bottom
- * action bar: the page itself carries the action.
+ * action bar: the page itself carries the actions.
  */
 export function PhoneToday({
   t,
@@ -132,19 +132,13 @@ export function PhoneToday({
         t={t}
         value="today"
         onChange={(view) => view === "files" && onOpenLibrary()}
+        onCapture={onCapture}
       />
 
       <PhoneSyncStatus folder={root || null} t={t} />
 
       <div className="pbody">
         <h1 className="pheading">{t.treeDayToday}</h1>
-
-        <button type="button" className="pcapture" onClick={onCapture}>
-          <span className="pcapture-icon">
-            <PlusIcon />
-          </span>
-          <span className="pcapture-text">{t.todayCapture}</span>
-        </button>
 
         {!activeTitle && !pending.length && !changes.length ? (
           <div className="pempty">

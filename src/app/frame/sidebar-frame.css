@@ -117,6 +117,42 @@
   gap: var(--space-2);
 }
 
+/* The file page's row: its tabs, and the ⋯ for the tree actions the H0
+   shell's header no longer shows (sort, Refresh, new folder, the folder's
+   own mode). */
+.sidebar-file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.sidebar-file-row .sidebar-file-tabs {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+
+.sidebar-file-more {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--ui-muted);
+}
+
+@media (any-hover: hover) {
+  .sidebar-file-more:hover {
+    background: var(--ui-hover);
+    color: var(--ui-text);
+    transition: background-color var(--dur-instant) var(--ease-standard);
+  }
+}
+
 /* The views as an equal segmented control (the mockup's 今天 / 文件), the
    quick add at the row's end: one thumb slides between the two. */
 .sidebar-views {

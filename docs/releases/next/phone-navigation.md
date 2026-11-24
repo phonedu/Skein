@@ -1,7 +1,9 @@
 ### New
 
 - On a phone, Today and Files switch with the desktop's tab capsule under the bar, in one tap, instead of going through the ⋯ sheet.
-- On a phone, the document's ⋯ sheet opens its outline: every heading, indented by level, with the section you are reading ticked. Tap one to go there.
+- The file page's actions are reachable again on both kinds of screen: the desktop's Files header and the phone library's ⋯ open a menu with New File, New Folder, Open as Folder / Close Folder, sort (by name or date modified) and Refresh. The tree's own toolbar stays hidden.
+- On a phone the capture's + sits beside Today | Files, as the desktop's quick add does, on both surfaces; Today's separate 记一句 card is gone. New File and New Folder moved into the library's ⋯ (and its empty state).
+- On a phone the document's ⋯ sheet opens its outline: every heading, indented by level, with the section you are reading ticked. Tap one to go there.
 - Share hands the document to the system's own share sheet. A document that has not been saved has nothing to share, so the row rests until it does.
 
 ### Improved

@@ -1,13 +1,39 @@
 /* The desktop's Today | Files capsule on a row of its own under the phone's
-   bar. The phone's sidebar rules already give its segments a finger's 44px
-   row (mobile/styles/sidebar.css); the track is the same component, drawn
-   full width so either surface is one thumb away. */
+   bar, the capture beside it as the desktop's quick add is. The phone's
+   sidebar rules already give its segments a finger's 44px row
+   (mobile/styles/sidebar.css); the track is the same component, drawn full
+   width so either surface is one thumb away. */
 .ph-views {
   flex: none;
   display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-4) 0;
 }
 
 .ph-views .sidebar-view-seg {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+/* The day's capture: a bare plus at the row's end, the row's full 44
+   drawn (48 written at the phone's 10/11). */
+.ph-view-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: var(--shape-s);
+  background: none;
+  color: var(--phone-muted);
+  /* The plus is drawn at 13; at 1.9 it reads about 22, the bar's size: the
+     day's capture is the row's strong action. */
+  --icon-scale: 1.9;
+}
+
+.ph-view-add:active {
+  background: var(--ui-pressed);
 }

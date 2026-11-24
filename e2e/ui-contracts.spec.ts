@@ -94,7 +94,7 @@ test.describe("the desktop shell", () => {
       w.__devFs = { "/proj/a.md": "# A\n", "/proj/notes/n.md": "# N\n" };
       w.__devPickFolder = "/proj";
     });
-    await openApp(page, { settings: { language: "zh" } });
+    await openApp(page, { settings: { language: "zh" }, document: true });
     await emit(page, "menu-open-folder");
     await page.locator(".sidebar-view-seg button", { hasText: "文件" }).click();
     await expect(page.locator(".tree-row").first()).toBeVisible();
@@ -108,6 +108,22 @@ test.describe("the desktop shell", () => {
       expectBetween(icon.w, 18, 20);
     }
     expectBetween((await size(page, ".tree-row .chevron")).w, 12, 13.5);
+
+    // The tree's toolbar is hidden in the H0 shell; its actions are in the
+    // file page's ⋯: create, the opened folder's way out, sort, Refresh.
+    await page.locator(".sidebar-file-more").click();
+    await expect(
+      page.getByRole("menuitem", { name: "新建文件夹" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("menuitem", { name: "关闭文件夹" }),
+    ).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "刷新" })).toBeVisible();
+    await page.getByRole("menuitem", { name: "排序" }).hover();
+    await expect(
+      page.getByRole("menuitemradio", { name: "按名称" }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
   });
 
   test("keeps a note's front matter as one property line until opened", async ({
@@ -211,7 +227,7 @@ test.describe("the phone shell", () => {
     isMobile: true,
   });
 
-  test("keeps Today's bar and capture card in the 56/48 pattern", async ({
+  test("keeps Today's bar and the capture in the 56/48 pattern", async ({
     page,
   }) => {
     await openApp(page, {
@@ -234,18 +250,12 @@ test.describe("the phone shell", () => {
     }
     expectBetween((await size(page, ".ptop-vault-icon svg")).w, 21, 23);
 
-    // The capture card is the one sticky action: 50 written (about 45), a
-    // 40 written accent plus (about 36), a glass card on the page's own
-    // surface. At the top it lies flat; the shadow rides its own layer.
-    const capture = await styleOf(page, ".pcapture", [
-      "min-height",
-      "background-color",
-      "border-radius",
-    ]);
-    expectBetween(Number.parseFloat(capture["min-height"]), 45, 46);
-    expect(capture["background-color"]).not.toBe("rgba(0, 0, 0, 0)");
-    expectBetween(Number.parseFloat(capture["border-radius"]), 16, 17);
-    expectBetween((await size(page, ".pcapture-icon")).w, 35, 37);
+    // The capture is in the capsule's row now, beside Today | Files as the
+    // desktop's quick add is: a 48 written (about 44) plus, not a card on
+    // the page.
+    expectBetween((await size(page, ".ph-view-add")).h, 43, 45);
+    expectBetween((await size(page, ".ph-view-add svg")).w, 21, 24);
+    await expect(page.locator(".pcapture")).toHaveCount(0);
   });
 
   test("switches Today and Files in one tap, on the desktop's capsule", async ({
@@ -271,6 +281,45 @@ test.describe("the phone shell", () => {
     );
     await page.getByRole("tab", { name: "今天" }).tap();
     await expect(page.locator(".phone-today")).toBeVisible();
+  });
+
+  test("opens the file page's actions from the phone's ⋯", async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as Record<string, unknown>;
+      const files = { "/proj/work/note.md": "# note\n" };
+      w.__devFs = files;
+      w.__devFiles = files;
+    });
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    // A document roots the library at its folder; the library page then
+    // carries the tree's hidden toolbar in its ⋯, as Today does.
+    await openPath(page, "/proj/work/note.md");
+    await page.getByRole("button", { name: "回到文件库" }).tap();
+    await page.getByRole("tab", { name: "文件" }).tap();
+    await page.getByRole("button", { name: "更多", exact: true }).tap();
+    await expect(
+      page.getByRole("menuitem", { name: "新建文件", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("menuitem", { name: "新建文件夹", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("menuitem", { name: "刷新", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("menuitemradio", { name: "按名称", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("menuitem", { name: "插件", exact: true }),
+    ).toBeVisible();
+
+    // Choosing a sort closes the sheet and leaves the tree in place.
+    await page.getByRole("menuitemradio", { name: "按修改时间" }).tap();
+    await expect(page.locator(".action-sheet")).toHaveCount(0);
+    await expect(page.locator(".tree-row").first()).toBeVisible();
   });
 
   test("keeps the file tree one step a level, files level with folders", async ({

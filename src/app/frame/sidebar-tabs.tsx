@@ -51,6 +51,9 @@ interface SidebarTabProps {
   onSearchFocusHandled: () => void;
   /** The library's note count, for the view column's foot. */
   onNoteCount?: (label: string | null) => void;
+  /** The header's ⋯ asked for a new file or folder: the tree names it in
+   *  place (the tab that does not draw a tree ignores it). */
+  draftRequest?: { kind: "document" | "folder"; seq: number } | null;
 }
 
 /**
@@ -73,6 +76,7 @@ function FilesPanel({
   onOpenFile,
   onEntryMoved,
   onNoteCount,
+  draftRequest,
 }: SidebarTabProps) {
   // The notes board's recents: read when the panel mounts, refreshed on the
   // window's next mount - a foot-level fact, not a live meter.
@@ -108,6 +112,7 @@ function FilesPanel({
       onEntryMoved={onEntryMoved}
       recentFiles={recentFiles}
       onNoteCount={onNoteCount}
+      draftRequest={draftRequest ?? null}
       foot={false}
     />
   );

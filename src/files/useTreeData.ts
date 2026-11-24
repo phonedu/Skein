@@ -5,6 +5,7 @@ import { FILE_CREATED_EVENT, FILE_WRITTEN_EVENT } from "../utils/events";
 import { type SearchScope } from "./file-search";
 import { getUiState } from "../storage/ui-state";
 import { type TreeSort } from "./tree-shared";
+import { TREE_REFRESH_EVENT, TREE_SORT_EVENT } from "./tree-view-events";
 
 /** What the file tree shows - its order, its filter, the folders' contents -
  *  and keeping it fresh as files change on disk, from plugins or elsewhere. */
@@ -41,6 +42,21 @@ export function useTreeView(base: string) {
   const [stale, refresh] = useFolderCounts();
   usePluginWrites(base, refresh);
   const refreshed = useRefreshOnFocus();
+  // The file page's header asks from outside the tree (the ⋯ menu); the
+  // choice is already kept in ui-state by the caller.
+  useEffect(() => {
+    const onSort = (event: Event) => {
+      const next = (event as CustomEvent<unknown>).detail;
+      if (next === "name" || next === "modified") setSort(next);
+    };
+    const onRefresh = () => setGeneration((n) => n + 1);
+    window.addEventListener(TREE_SORT_EVENT, onSort);
+    window.addEventListener(TREE_REFRESH_EVENT, onRefresh);
+    return () => {
+      window.removeEventListener(TREE_SORT_EVENT, onSort);
+      window.removeEventListener(TREE_REFRESH_EVENT, onRefresh);
+    };
+  }, []);
   return {
     generation,
     setGeneration,

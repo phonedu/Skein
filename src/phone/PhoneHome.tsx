@@ -6,6 +6,8 @@ import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
 import { FileTree } from "../files/FileTree";
+import { fileActionEntries } from "../files/file-actions";
+import { currentTreeSort } from "../files/tree-view-events";
 import { canOpenFolder } from "../platform/capabilities";
 import { useAppDocumentsFolder } from "../platform/native-files";
 import { emitToThisWindow } from "../platform/menu-events";
@@ -13,17 +15,16 @@ import {
   ActionSheet,
   type ActionSheetItem,
 } from "../engine/controls/ActionSheet";
+import { ContextMenu, type ContextMenuEntry } from "../engine/controls/ContextMenu";
 import {
-  NewDocumentIcon,
-  NewFolderIcon,
   ChevronDownIcon,
   CloseIcon,
   FolderIcon,
-  PlusIcon,
+  MoreIcon,
+  PluginsTabIcon,
   SearchIcon,
   SettingsIcon,
 } from "../engine/controls/icons";
-import { useLongPress } from "../utils/hooks/useLongPress";
 import { Presence } from "../engine/motion/usePresence";
 import { VaultActionIcon, OpenFolderActionIcon } from "./PhoneHomeIcons";
 import { PhonePluginStatus } from "./PhonePluginStatus";
@@ -40,6 +41,7 @@ export function PhoneHome({
   onBack,
   onOpenFile,
   onNewFile,
+  onCapture,
   onEntryMoved,
 }: {
   t: Strings;
@@ -50,6 +52,8 @@ export function PhoneHome({
   onOpenFile: (path: string, how?: FileOpenHow, line?: number) => void;
   /** A blank document, and the page turns to it. */
   onNewFile: () => void;
+  /** 记一句: the plugin's form, or a note to type in at once. */
+  onCapture: () => void;
   onEntryMoved: (from: string, to: string) => void;
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
@@ -57,17 +61,14 @@ export function PhoneHome({
   // built-in sync can read and write on a phone.
   const appDocuments = useAppDocumentsFolder();
   const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [draftRequest, setDraftRequest] = useState<{
     kind: "document" | "folder";
     seq: number;
   } | null>(null);
-  const [newSheetOpen, setNewSheetOpen] = useState(false);
-  // A tap makes a note; a hold asks which (the user's rule). In the top bar,
-  // never a floating button.
-  const newPress = useLongPress(() => setNewSheetOpen(true));
   const startNew = (kind: "document" | "folder") => {
-    setNewSheetOpen(false);
+    setMoreOpen(false);
     // With a library root, a named file is created there; without one, a
     // draft is the only place a new note can live.
     if (kind === "document" && !openFolder.treeRoot) return onNewFile();
@@ -104,6 +105,44 @@ export function PhoneHome({
       : []),
   ];
 
+  // The library's ⋯: the file page's actions (the tree's hidden toolbar),
+  // then the app-wide two Today keeps in its own sheet.
+  const moreItems: ContextMenuEntry[] = [
+    ...(openFolder.treeRoot
+      ? ([
+          ...fileActionEntries({
+            t,
+            sort: currentTreeSort(),
+            folder: openFolder.folder,
+            canOpenAsFolder: canOpenFolder,
+            onNew: startNew,
+            onOpenAsFolder: () => openFolder.openFolder(openFolder.treeRoot!),
+            onCloseFolder: openFolder.closeFolder,
+          }),
+          "separator",
+        ] as ContextMenuEntry[])
+      : []),
+    {
+      label: t.pluginsTitle,
+      Icon: PluginsTabIcon,
+      onSelect: () => {
+        void import("../plugins/views/plugin-launcher").then((m) =>
+          m.openPluginLauncher(),
+        );
+      },
+    },
+    "separator",
+    {
+      label: t.menuCommandPalette,
+      Icon: SearchIcon,
+      onSelect: () => {
+        void import("../app/command-palette").then((m) =>
+          m.openCommandPalette(),
+        );
+      },
+    },
+  ];
+
   return (
     <div className="phone-home">
       <div className="ph-top">
@@ -124,14 +163,11 @@ export function PhoneHome({
           <button
             type="button"
             className="ph-ic"
-            aria-label={t.menuNewFile}
-            onClick={() => {
-              if (newPress.consumeClick()) return;
-              onNewFile();
-            }}
-            {...newPress.handlers}
+            aria-label={t.phoneMoreActions}
+            aria-haspopup="menu"
+            onClick={() => setMoreOpen(true)}
           >
-            <PlusIcon />
+            <MoreIcon />
           </button>
           <button
             type="button"
@@ -143,13 +179,12 @@ export function PhoneHome({
           </button>
         </div>
       </div>
-      {onBack ? (
-        <PhoneViewSeg
-          t={t}
-          value="files"
-          onChange={(view) => view === "today" && onBack()}
-        />
-      ) : null}
+      <PhoneViewSeg
+        t={t}
+        value="files"
+        onChange={(view) => view === "today" && onBack?.()}
+        onCapture={onCapture}
+      />
       <div className="ph-search" role="search">
         <SearchIcon aria-hidden="true" />
         <input
@@ -220,22 +255,14 @@ export function PhoneHome({
           </div>
         )}
       </div>
-      <Presence show={newSheetOpen}>
-        {newSheetOpen && (
-          <ActionSheet
-            items={[
-              {
-                label: t.menuNewFile,
-                Icon: NewDocumentIcon,
-                onSelect: () => startNew("document"),
-              },
-              {
-                label: t.treeNewFolder,
-                Icon: NewFolderIcon,
-                onSelect: () => startNew("folder"),
-              },
-            ]}
-            onClose={() => setNewSheetOpen(false)}
+      <Presence show={moreOpen}>
+        {moreOpen && (
+          <ContextMenu
+            x={0}
+            y={0}
+            title={t.phoneMoreActions}
+            items={moreItems}
+            onClose={() => setMoreOpen(false)}
           />
         )}
       </Presence>

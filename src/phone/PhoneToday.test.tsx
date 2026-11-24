@@ -12,9 +12,8 @@ afterEach(cleanup);
 
 /**
  * Today's phone surface, as the 2026-11-22 board settled it: a borderless
- * bar whose vault mark is a bare line icon, a glass capture card with a
- * round accent plus (not an accent frame), and the day's changes as one
- * glass card of two-line rows.
+ * bar whose vault mark is a bare line icon, the capture in the view
+ * capsule's row, and the day's changes as one glass card of two-line rows.
  */
 const css = readFileSync("src/phone/PhoneToday.css", "utf8");
 
@@ -27,15 +26,18 @@ describe("Phone Today, the design board", () => {
     );
   });
 
-  it("draws the capture as a glass card with a 40px accent plus", () => {
-    // The 1.5px accent frame is gone: the card is glass, the plus a circle.
-    expect(css).toMatch(
-      /\.pcapture \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,
-    );
-    expect(css).not.toMatch(/\.pcapture \{[^}]*1\.5px/s);
-    expect(css).toMatch(
-      /\.pcapture-icon \{[^}]*width: 40px;[^}]*height: 40px;[^}]*border-radius: var\(--shape-pill\);[^}]*background: var\(--ui-accent\);/s,
-    );
+  it("keeps the capture out of the page: it is in the capsule's row", () => {
+    // 2026-11-24: the sticky card is gone; the + sits beside Today | Files on
+    // both surfaces, as the desktop's quick add does.
+    expect(css).not.toContain(".pcapture");
+    renderToday({
+      activeTitle: "",
+      activePath: null,
+      onOpenFile: vi.fn(),
+      onOpenCurrent: vi.fn(),
+    });
+    const capture = screen.getByRole("button", { name: en.todayCapture });
+    expect(capture.closest(".ph-views")).toBeTruthy();
   });
 
   it("puts the current delivery and today's changes in glass cards", () => {

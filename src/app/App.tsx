@@ -126,6 +126,14 @@ function App() {
   // surface falls back to its own ordinary new document. True while the
   // plugin took the action (its form shows where it is).
   const captureNote = (): boolean => runCommand("skein.collect.capture");
+  // A phone's capture with no plugin: a note to type in straight away, and
+  // the page turns to it.
+  const captureOrBlank = () => {
+    if (!captureNote()) {
+      addBlankTab();
+      setPhoneView("doc");
+    }
+  };
   const { panelOpen, setPanelOpen, toggleSidebar, sidebarWidth } = shell.panels;
   const { agentPanel, toggleAgentPanel, rightPanel, rightOverlay } =
     shell.panels;
@@ -359,15 +367,7 @@ function App() {
               }}
               onOpenLibrary={() => setPhoneView("library")}
               onOpenCurrent={() => setPhoneView("doc")}
-              onCapture={() => {
-                // No collect plugin: a note to type in straight away. It has
-                // no file yet, and Today says so ("Draft - not saved"); it
-                // saves itself once there is something to write.
-                if (!captureNote()) {
-                  addBlankTab();
-                  setPhoneView("doc");
-                }
-              }}
+              onCapture={captureOrBlank}
             />
           ) : phoneLibrary ? (
             <PhoneHome
@@ -383,6 +383,7 @@ function App() {
                 addBlankTab();
                 setPhoneView("doc");
               }}
+              onCapture={captureOrBlank}
               onEntryMoved={entryMoved}
             />
           ) : (

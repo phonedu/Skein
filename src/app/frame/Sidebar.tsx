@@ -2,7 +2,8 @@ import { useCallback, useState } from "react";
 import { useSidebarFrame } from "./useSidebarFrame";
 import { useSideToTop } from "../../engine/layout/useBarLayout";
 import { Segmented } from "../../engine/controls/Segmented";
-import type { PresenceHandle } from "../../engine/motion/usePresence";
+import { ContextMenu } from "../../engine/controls/ContextMenu";
+import { Presence, type PresenceHandle } from "../../engine/motion/usePresence";
 import { usePhoneLayout } from "../../engine/controls/usePhoneLayout";
 import { ResizeHandle } from "../../engine/controls/ResizeHandle";
 import { fill } from "../../i18n/fill";
@@ -14,12 +15,16 @@ import { FILE_TABS, fileTab } from "./sidebar-tabs";
 import {
   ChevronDownIcon,
   FolderIcon,
+  MoreIcon,
   PlusIcon,
   SettingsIcon,
 } from "../../engine/controls/icons";
 import { emitToThisWindow } from "../../platform/menu-events";
 import { TodayPanel } from "./TodayPanel";
 import type { FileOpenHow } from "../../files/tree-shared";
+import { fileActionEntries } from "../../files/file-actions";
+import { currentTreeSort } from "../../files/tree-view-events";
+import { canOpenFolder } from "../../platform/capabilities";
 
 /**
  * The left view column: the folder's name, Today and Files, and the Files
@@ -100,6 +105,27 @@ export function Sidebar({
   // The library's note count (an index label, "12+" at the cap), drawn in
   // the column's own foot.
   const [noteCount, setNoteCount] = useState<string | null>(null);
+  // The file page's ⋯: its menu hangs from the button; a new file or folder
+  // is asked of the tree in place, as the hidden toolbar once did.
+  const [fileMenu, setFileMenu] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [draftRequest, setDraftRequest] = useState<{
+    kind: "document" | "folder";
+    seq: number;
+  } | null>(null);
+  const fileActions = root
+    ? fileActionEntries({
+        t,
+        sort: currentTreeSort(),
+        folder: openFolder.folder,
+        canOpenAsFolder: canOpenFolder,
+        onNew: (kind) =>
+          setDraftRequest((ask) => ({ kind, seq: (ask?.seq ?? 0) + 1 })),
+        onOpenAsFolder: () => openFolder.openFolder(root),
+        onCloseFolder: openFolder.closeFolder,
+      })
+    : [];
 
   return (
     <aside
@@ -153,25 +179,42 @@ export function Sidebar({
               </button>
             </div>
             {view === "files" ? (
-              <div className="sidebar-file-tabs" role="tablist">
-                {FILE_TABS.map((tab) => (
+              <div className="sidebar-file-row">
+                <div className="sidebar-file-tabs" role="tablist">
+                  {FILE_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={tab.id === shown.id}
+                      data-file-tab={tab.id}
+                      className={
+                        "sidebar-file-tab" + (tab.id === shown.id ? " on" : "")
+                      }
+                      onClick={() => onModeChange(tab.id)}
+                    >
+                      <span className="sidebar-file-ic">
+                        <tab.Icon />
+                      </span>
+                      <span>{tab.label(t)}</span>
+                    </button>
+                  ))}
+                </div>
+                {root ? (
                   <button
-                    key={tab.id}
                     type="button"
-                    role="tab"
-                    aria-selected={tab.id === shown.id}
-                    data-file-tab={tab.id}
-                    className={
-                      "sidebar-file-tab" + (tab.id === shown.id ? " on" : "")
-                    }
-                    onClick={() => onModeChange(tab.id)}
+                    className="sidebar-file-more"
+                    aria-label={t.phoneMoreActions}
+                    aria-haspopup="menu"
+                    title={t.phoneMoreActions}
+                    onClick={(e) => {
+                      const box = e.currentTarget.getBoundingClientRect();
+                      setFileMenu({ x: box.right, y: box.bottom + 2 });
+                    }}
                   >
-                    <span className="sidebar-file-ic">
-                      <tab.Icon />
-                    </span>
-                    <span>{tab.label(t)}</span>
+                    <MoreIcon />
                   </button>
-                ))}
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -198,6 +241,7 @@ export function Sidebar({
                 searchFocusRequest={searchFocusRequest}
                 onSearchFocusHandled={onSearchFocusHandled}
                 onNoteCount={setNoteCount}
+                draftRequest={draftRequest}
               />
             )}
           </div>
@@ -218,6 +262,19 @@ export function Sidebar({
               </span>
             ) : null}
           </div>
+          {/* The file page's actions: the tree's hidden toolbar, in its
+             header's ⋯. */}
+          <Presence show={fileMenu !== null}>
+            {fileMenu && (
+              <ContextMenu
+                x={fileMenu.x}
+                y={fileMenu.y}
+                alignEnd
+                items={fileActions}
+                onClose={() => setFileMenu(null)}
+              />
+            )}
+          </Presence>
           {/* A phone's sidebar keeps the width the layout gives it. */}
           {!phone && (
             <ResizeHandle
