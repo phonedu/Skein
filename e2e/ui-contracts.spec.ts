@@ -368,6 +368,31 @@ test.describe("the phone shell", () => {
     await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
   });
 
+  test("Back walks the AI page home: the document, then Today", async ({
+    page,
+  }) => {
+    await openApp(page, {
+      settings: { language: "zh" },
+      ready: ".phone-today",
+    });
+    await emit(page, "menu-new-file");
+    await page.locator(".pcard").tap();
+    await page.locator(".pe-ai").tap();
+    await expect(page.locator(".pe-name")).toContainText("AI");
+    // The AI tab's step back is the document it was opened over; the AI
+    // stays open behind it for the button. Back from the document is
+    // Today - it used to bring the AI page forward again, so the two
+    // pages bounced forever.
+    const back = () =>
+      page.evaluate(() =>
+        (window as unknown as { textusBack: () => boolean }).textusBack(),
+      );
+    await back();
+    await expect(page.locator(".pe-name")).toHaveText("未命名");
+    await back();
+    await expect(page.locator(".phone-today")).toBeVisible();
+  });
+
   test("starts a blank note to type in when no collect plugin is there", async ({
     page,
   }) => {

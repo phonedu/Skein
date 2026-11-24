@@ -16,6 +16,7 @@ import {
 } from "./SettingsLayer";
 import {
   PageTabProvider,
+  pageOf,
   type AppPage,
   type PageRequest,
 } from "./tabs/page-tabs";
@@ -149,9 +150,12 @@ function App() {
 
   useBackStep({
     phone,
-    agentOpen: agentPanel.open,
+    // The AI page in front, not merely open behind a document: its tab
+    // keeps the AI for the button (useAiTabs), and Back from it is that
+    // tab's step back to the document; after that the way out is Today.
+    agentOpen: agentPanel.open && pageOf(activeTab) === "ai",
     inDoc: phoneView !== "today",
-    closeAgent: toggleAgentPanel,
+    closeAgent: () => agentPanel.setOpen(false),
     toHome: () => setPhoneView("today"),
   });
 
