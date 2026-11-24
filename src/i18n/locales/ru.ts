@@ -2224,6 +2224,9 @@ export default {
   syncS3FlavorLabel: "Совместимость S3",
   syncS3Standard: "Стандартный S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo (собственная загрузка)",
+  syncErrorRegion:
+    "Для этого региона неизвестен адрес загрузки Qiniu. Используйте регион Qiniu S3, например cn-south-1.",
   syncEncryptionLabel: "Шифровать этот репозиторий",
   syncEncryptionPasswordLabel: "Пароль шифрования",
   syncEncryptionPasswordNote:

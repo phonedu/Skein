@@ -9,6 +9,7 @@ pub mod engine;
 pub mod error;
 pub mod history;
 pub mod identity;
+pub mod kodo;
 pub mod local;
 pub mod path;
 pub mod planner;

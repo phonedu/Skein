@@ -2215,6 +2215,9 @@ para usar una.
   syncS3FlavorLabel: "Compatibilidad S3",
   syncS3Standard: "S3 estándar",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo (carga nativa)",
+  syncErrorRegion:
+    "Esta región no tiene una dirección de carga de Qiniu conocida. Usa una región S3 de Qiniu como cn-south-1.",
   syncEncryptionLabel: "Cifrar este repositorio",
   syncEncryptionPasswordLabel: "Contraseña de cifrado",
   syncEncryptionPasswordNote:

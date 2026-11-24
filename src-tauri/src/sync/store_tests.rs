@@ -521,3 +521,51 @@ use super::store_ops::*;
         assert!(validate_credentials("webdav", &credentials).is_ok());
     }
 
+
+    #[test]
+    fn a_kodo_connection_needs_a_known_qiniu_region() {
+        let kodo = |region: &str| Connection {
+            id: "c-kodo".to_string(),
+            provider: "s3".to_string(),
+            endpoint: "https://s3.cn-south-1.qiniucs.com".to_string(),
+            bucket: "bucket".to_string(),
+            prefix: String::new(),
+            region: region.to_string(),
+            path_style: true,
+            s3_flavor: "kodo".to_string(),
+        };
+        assert!(validate_connection(&kodo("cn-south-1")).is_ok());
+        assert_eq!(
+            validate_connection(&kodo("eu-west-1")).unwrap_err(),
+            SyncError::new("unsupportedRegion").to_string()
+        );
+    }
+
+    #[test]
+    fn a_kodo_vault_saves_its_flavor_region_and_credentials() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("vault");
+        std::fs::create_dir_all(&root).unwrap();
+        let paths = test_paths(dir.path());
+        let mut config = webdav_config();
+        config.provider = "s3".to_string();
+        config.endpoint = "https://s3.cn-south-1.qiniucs.com".to_string();
+        config.bucket = "bucket".to_string();
+        config.region = "cn-south-1".to_string();
+        config.path_style = true;
+        config.s3_flavor = "kodo".to_string();
+        let credentials = Credentials {
+            access_key: "ak".to_string(),
+            secret_key: "sk".to_string(),
+            ..Credentials::default()
+        };
+        save_at(&paths, &root, config, credentials).unwrap();
+
+        let (saved, credentials) = load_at(&paths, &root).unwrap().unwrap();
+        assert_eq!(saved.s3_flavor, "kodo");
+        assert_eq!(saved.region, "cn-south-1");
+        assert_eq!(credentials.access_key, "ak");
+        let list = connection_list_at(&paths, &root).unwrap();
+        assert_eq!(list[0]["provider"], "s3");
+        assert_eq!(list[0]["s3Flavor"], "kodo");
+    }

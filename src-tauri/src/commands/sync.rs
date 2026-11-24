@@ -45,10 +45,10 @@ fn store_for(config: &Config, credentials: &Credentials) -> Result<Box<dyn Objec
                 &credentials.access_key,
                 &credentials.secret_key,
                 config.path_style,
-                if config.s3_flavor == "oss" {
-                    textus_sync::s3::S3Flavor::Oss
-                } else {
-                    textus_sync::s3::S3Flavor::Standard
+                match config.s3_flavor.as_str() {
+                    "oss" => textus_sync::s3::S3Flavor::Oss,
+                    "kodo" => textus_sync::s3::S3Flavor::Kodo,
+                    _ => textus_sync::s3::S3Flavor::Standard,
                 },
             )
             .map_err(|e| e.to_string())?,
@@ -274,3 +274,41 @@ pub fn sync_status(app: tauri::AppHandle, root: String) -> Result<String, String
 #[path = "sync_run.rs"]
 mod sync_run;
 pub use sync_run::*;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn s3_config(flavor: &str, region: &str) -> Config {
+        Config {
+            connection_id: "c-test".to_string(),
+            provider: "s3".to_string(),
+            endpoint: "https://s3.cn-south-1.qiniucs.com".to_string(),
+            bucket: "bucket".to_string(),
+            prefix: "notes".to_string(),
+            region: region.to_string(),
+            path_style: true,
+            s3_flavor: flavor.to_string(),
+            keep_days: 90,
+            keep_chosen: false,
+            encrypted: false,
+            vault_id: String::new(),
+        }
+    }
+
+    #[test]
+    fn a_kodo_setting_builds_the_native_store() {
+        let credentials = Credentials {
+            access_key: "ak".to_string(),
+            secret_key: "sk".to_string(),
+            ..Credentials::default()
+        };
+        assert!(store_for(&s3_config("kodo", "cn-south-1"), &credentials).is_ok());
+        assert_eq!(
+            store_for(&s3_config("kodo", "eu-west-1"), &credentials)
+                .err()
+                .unwrap(),
+            "unsupportedRegion"
+        );
+    }
+}

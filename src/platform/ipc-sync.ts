@@ -12,8 +12,8 @@ export interface SyncConfig {
   prefix: string;
   region: string;
   pathStyle: boolean;
-  /** `standard` uses If-None-Match; `oss` uses x-oss-forbid-overwrite. */
-  s3Flavor?: "standard" | "oss";
+  /** `standard` uses If-None-Match, `oss` its own header, `kodo` a native upload token. */
+  s3Flavor?: "standard" | "oss" | "kodo";
   keepDays: number;
   /** Whether this device chose keepDays; only then does it replace the folder's. */
   keepChosen?: boolean;
@@ -57,7 +57,7 @@ export interface SyncConnection {
   bucket: string;
   region: string;
   pathStyle: boolean;
-  s3Flavor?: "standard" | "oss";
+  s3Flavor?: "standard" | "oss" | "kodo";
   prefix: string;
   usedBy: number;
   hasCredentials: boolean;

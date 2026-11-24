@@ -1,15 +1,19 @@
 //! S3 transport, signed with SigV4. Path-style (the form Bitiful and
 //! Qiniu accept) and virtual-hosted style are both built here; conditional
 //! create is the standard `If-None-Match: *` PUT, so OSS needs its own
-//! `x-oss-forbid-overwrite` adapter later.
+//! `x-oss-forbid-overwrite` adapter later. Qiniu Kodo refuses neither
+//! header and needs its native upload token, so its create is a form
+//! upload with `insertOnly`; everything else still goes through this S3
+//! endpoint.
 
 use crate::chunk::hash_hex;
 use crate::error::{Result, SyncError};
+use crate::kodo;
 use crate::store::ObjectStore;
 use async_trait::async_trait;
 use chrono::Utc;
 use hmac::{Hmac, Mac};
-use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -17,11 +21,13 @@ use std::collections::BTreeMap;
 type HmacSha256 = Hmac<Sha256>;
 
 /// How a service spells a conditional create. OSS rejects
-/// `If-None-Match` on PutObject and uses its own header instead.
+/// `If-None-Match` on PutObject and uses its own header instead; Kodo has
+/// no conditional PutObject at all and creates through its upload service.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum S3Flavor {
     Standard,
     Oss,
+    Kodo,
 }
 
 pub struct S3Store {
@@ -34,6 +40,8 @@ pub struct S3Store {
     secret_key: String,
     path_style: bool,
     flavor: S3Flavor,
+    /// The native upload host, set for Kodo only.
+    upload_host: Option<String>,
 }
 
 impl S3Store {
@@ -76,6 +84,15 @@ impl S3Store {
         {
             return Err(SyncError::new("invalidPrefix"));
         }
+        let upload_host = if flavor == S3Flavor::Kodo {
+            Some(
+                kodo::upload_host(region)
+                    .ok_or_else(|| SyncError::new("unsupportedRegion"))?
+                    .to_string(),
+            )
+        } else {
+            None
+        };
         Ok(Self {
             client: Client::builder()
                 .redirect(reqwest::redirect::Policy::none())
@@ -94,6 +111,7 @@ impl S3Store {
             secret_key: secret_key.to_string(),
             path_style,
             flavor,
+            upload_host,
         })
     }
 
@@ -238,6 +256,60 @@ impl S3Store {
     pub async fn probe(&self) -> Result<()> {
         crate::store::probe(self).await
     }
+
+    /// Kodo's conditional create: a native form upload whose token allows
+    /// this one key and refuses to replace it. 614 is "file exists". Kodo
+    /// also accepts the same bytes again (it compares the etag), which is
+    /// harmless because the content is already what the caller wanted.
+    async fn kodo_create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
+        let host = self
+            .upload_host
+            .as_deref()
+            .ok_or_else(|| SyncError::new("invalidConfig"))?;
+        let full_key = if self.prefix.is_empty() {
+            key.to_string()
+        } else {
+            format!("{}/{}", self.prefix, key)
+        };
+        let policy = kodo::put_policy(&self.bucket, &full_key, true, Utc::now().timestamp() + 3600);
+        let token = kodo::upload_token(
+            &self.access_key,
+            &self.secret_key,
+            &kodo::encode_policy(&policy),
+        );
+        let boundary = format!("----textus{}", uuid::Uuid::new_v4().simple());
+        let body = kodo::multipart(&boundary, &token, &full_key, &bytes);
+        let url =
+            Url::parse(&format!("https://{host}/")).map_err(|_| SyncError::new("invalidConfig"))?;
+        let response = self
+            .client
+            .post(url)
+            .header(
+                CONTENT_TYPE,
+                format!("multipart/form-data; boundary={boundary}"),
+            )
+            .body(body)
+            .send()
+            .await
+            .map_err(|_| SyncError::new("networkError"))?;
+        match response.status().as_u16() {
+            200..=299 => Ok(true),
+            614 => Ok(false),
+            code => Err(upload_refused(code)),
+        }
+    }
+}
+
+fn upload_refused(code: u16) -> SyncError {
+    match code {
+        401 | 403 => SyncError::new("permissionError"),
+        429 => SyncError::new("rateLimited"),
+        507 => SyncError::new("quotaError"),
+        // A bad token, a bucket the key name does not match, or a host in
+        // another region: all fixable in the connection settings.
+        400 | 631 => SyncError::new("invalidConfig"),
+        code => SyncError::with_args("httpError", [code.to_string()]),
+    }
 }
 
 fn create_headers(flavor: S3Flavor) -> BTreeMap<String, String> {
@@ -249,6 +321,8 @@ fn create_headers(flavor: S3Flavor) -> BTreeMap<String, String> {
         S3Flavor::Oss => {
             extra.insert("x-oss-forbid-overwrite".to_string(), "true".to_string());
         }
+        // Kodo's create never reaches a signed PUT.
+        S3Flavor::Kodo => {}
     }
     extra
 }
@@ -307,23 +381,26 @@ impl ObjectStore for S3Store {
     }
 
     async fn create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
+        if self.flavor == S3Flavor::Kodo {
+            return self.kodo_create(key, bytes).await;
+        }
         let extra = create_headers(self.flavor);
         let response = self.send(Method::PUT, key, Some(bytes), extra).await?;
         let exists = || async { self.has(key).await.unwrap_or(false) };
         match self.flavor {
-            S3Flavor::Standard => {
-                if response.status() == StatusCode::PRECONDITION_FAILED
-                    || (response.status() == StatusCode::CONFLICT && exists().await)
-                {
-                    return Ok(false);
-                }
-            }
             S3Flavor::Oss => {
                 if response.status() == StatusCode::CONFLICT {
                     return Ok(false);
                 }
                 if response.status() == StatusCode::BAD_REQUEST {
                     return Err(SyncError::new("conditionalWriteUnsupported"));
+                }
+            }
+            S3Flavor::Standard | S3Flavor::Kodo => {
+                if response.status() == StatusCode::PRECONDITION_FAILED
+                    || (response.status() == StatusCode::CONFLICT && exists().await)
+                {
+                    return Ok(false);
                 }
             }
         }
@@ -362,6 +439,43 @@ mod tests {
         );
         assert!(!create_headers(S3Flavor::Standard).contains_key("x-oss-forbid-overwrite"));
         assert!(!create_headers(S3Flavor::Oss).contains_key("if-none-match"));
+        assert!(create_headers(S3Flavor::Kodo).is_empty());
+    }
+
+    #[test]
+    fn kodo_needs_a_region_with_an_upload_host() {
+        assert_eq!(
+            S3Store::new(
+                "https://s3.cn-south-1.qiniucs.com",
+                "bucket",
+                "",
+                "cn-south-1",
+                "ak",
+                "sk",
+                true,
+                S3Flavor::Kodo,
+            )
+            .unwrap()
+            .upload_host
+            .as_deref(),
+            Some("up-z2.qiniup.com")
+        );
+        assert_eq!(
+            S3Store::new(
+                "https://s3.example.com",
+                "bucket",
+                "",
+                "eu-west-1",
+                "ak",
+                "sk",
+                true,
+                S3Flavor::Kodo,
+            )
+            .err()
+            .unwrap()
+            .code,
+            "unsupportedRegion"
+        );
     }
 
     #[test]

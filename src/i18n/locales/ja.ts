@@ -2077,6 +2077,9 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncS3FlavorLabel: "S3 互換モード",
   syncS3Standard: "標準 S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo（ネイティブアップロード）",
+  syncErrorRegion:
+    "このリージョンには既知の Qiniu アップロード先がありません。cn-south-1 などの Qiniu S3 リージョンを使用してください。",
   syncEncryptionLabel: "このリポジトリを暗号化",
   syncEncryptionPasswordLabel: "暗号化パスワード",
   syncEncryptionPasswordNote: "12 文字以上。忘れると復元できません。",

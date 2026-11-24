@@ -2166,6 +2166,9 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncS3FlavorLabel: "S3-Kompatibilität",
   syncS3Standard: "Standard-S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo (nativer Upload)",
+  syncErrorRegion:
+    "Für diese Region ist keine Qiniu-Upload-Adresse bekannt. Verwende eine Qiniu-S3-Region wie cn-south-1.",
   syncEncryptionLabel: "Dieses Repository verschlüsseln",
   syncEncryptionPasswordLabel: "Verschlüsselungspasswort",
   syncEncryptionPasswordNote:

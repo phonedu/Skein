@@ -2,6 +2,7 @@
 //! conflict, lock, empty scan and deletion.
 
 use chrono::Utc;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use textus_sync::chunk::{describe, hash_hex};
 use textus_sync::protocol::{
     block_key, new_revision, Lock, Trashed, HEAD_KEY, HISTORY_KEY, LOCK_KEY,
@@ -497,6 +498,77 @@ async fn a_publish_that_dies_before_the_head_retries_without_duplicate_versions(
         .filter(|version| version.entry.hash == hash_hex(b"one"))
         .count();
     assert_eq!(ones, 1, "{:?}", history.versions["a.md"]);
+}
+
+/// A head read-back that fails, or sees the previous head, only after the
+/// publish wrote it. The rest of the store behaves normally.
+struct FlakyHead {
+    inner: MemoryStore,
+    remaining: AtomicUsize,
+    stale: AtomicBool,
+    armed: AtomicBool,
+}
+
+#[async_trait::async_trait]
+impl ObjectStore for FlakyHead {
+    async fn get(&self, key: &str) -> textus_sync::Result<Option<Vec<u8>>> {
+        if key == HEAD_KEY && self.armed.load(Ordering::SeqCst) {
+            if self.remaining.load(Ordering::SeqCst) > 0 {
+                self.remaining.fetch_sub(1, Ordering::SeqCst);
+                return Err(SyncError::new("networkError"));
+            }
+            if self.stale.load(Ordering::SeqCst) {
+                return Ok(Some(b"an older head".to_vec()));
+            }
+        }
+        self.inner.get(key).await
+    }
+    async fn has(&self, key: &str) -> textus_sync::Result<bool> {
+        self.inner.has(key).await
+    }
+    async fn put(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<()> {
+        self.inner.put(key, bytes).await?;
+        if key == HEAD_KEY {
+            self.armed.store(true, Ordering::SeqCst);
+        }
+        Ok(())
+    }
+    async fn create(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<bool> {
+        self.inner.create(key, bytes).await
+    }
+    async fn delete(&self, key: &str) -> textus_sync::Result<()> {
+        self.inner.delete(key).await
+    }
+}
+
+#[tokio::test]
+async fn a_transient_head_read_after_publish_is_retried() {
+    let store = FlakyHead {
+        inner: MemoryStore::new(),
+        remaining: AtomicUsize::new(2),
+        stale: AtomicBool::new(false),
+        armed: AtomicBool::new(false),
+    };
+    let outcome = sync(&store, &local(&[("a.md", "one")]), options())
+        .await
+        .unwrap();
+    assert_eq!(outcome.result.uploaded, 1);
+    assert!(store.inner.get(LOCK_KEY).await.unwrap().is_none());
+}
+
+#[tokio::test]
+async fn a_persistently_stale_head_still_fails_and_keeps_the_lock() {
+    let store = FlakyHead {
+        inner: MemoryStore::new(),
+        remaining: AtomicUsize::new(0),
+        stale: AtomicBool::new(true),
+        armed: AtomicBool::new(false),
+    };
+    let error = sync(&store, &local(&[("a.md", "one")]), options())
+        .await
+        .unwrap_err();
+    assert_eq!(error.code, "publishFailed");
+    assert!(store.inner.get(LOCK_KEY).await.unwrap().is_some());
 }
 
 #[tokio::test]

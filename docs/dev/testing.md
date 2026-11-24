@@ -113,6 +113,13 @@ npx playwright test e2e/code-block.spec.ts -g "copy button"   # one flow
 E2E_WEBKIT=1 npx playwright test --project=webkit             # the WebKit flows (npx playwright install webkit once)
 ```
 
+The desktop sync smoke is separate from these layers: `node
+scripts/sync-smoke/run.mjs --provider kodo --scenario text` builds a portable
+debug app, starts two instances, drives the real Settings › Sync page and
+checks a two-device text round trip against a throwaway bucket. It needs
+Windows/WebView2 and a local credential file; it is not part of CI. See
+[scripts/sync-smoke/README.md](../../scripts/sync-smoke/README.md).
+
 On macOS the e2e flows don't behave as on CI: Home and End scroll, the
 fonts differ, and some key handling is the platform's. Run them in
 Playwright's Linux image (`mcr.microsoft.com/playwright`, the version in

@@ -2229,6 +2229,9 @@ utiliser une.
   syncS3FlavorLabel: "Compatibilité S3",
   syncS3Standard: "S3 standard",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo (envoi natif)",
+  syncErrorRegion:
+    "Cette région n'a pas d'adresse d'envoi Qiniu connue. Utilisez une région S3 Qiniu telle que cn-south-1.",
   syncEncryptionLabel: "Chiffrer ce dépôt",
   syncEncryptionPasswordLabel: "Mot de passe de chiffrement",
   syncEncryptionPasswordNote:

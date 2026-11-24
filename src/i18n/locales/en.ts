@@ -2119,6 +2119,9 @@ type /name in a conversation to use one.
   syncS3FlavorLabel: "S3 compatibility",
   syncS3Standard: "Standard S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo (native upload)",
+  syncErrorRegion:
+    "This region has no known Qiniu upload address. Use a Qiniu S3 region such as cn-south-1.",
   syncEncryptionLabel: "Encrypt this repository",
   syncEncryptionPasswordLabel: "Encryption password",
   syncEncryptionPasswordNote:

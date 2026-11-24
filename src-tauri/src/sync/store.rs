@@ -35,7 +35,8 @@ pub struct Config {
     pub region: String,
     #[serde(default)]
     pub path_style: bool,
-    /// `standard` (If-None-Match) or `oss` (x-oss-forbid-overwrite).
+    /// `standard` (If-None-Match), `oss` (x-oss-forbid-overwrite), or
+    /// `kodo` (a native upload token with insertOnly).
     #[serde(default = "s3_flavor")]
     pub s3_flavor: String,
     #[serde(default = "keep")]

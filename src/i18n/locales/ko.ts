@@ -2056,6 +2056,9 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncS3FlavorLabel: "S3 호환 모드",
   syncS3Standard: "표준 S3",
   syncS3Oss: "Alibaba Cloud OSS",
+  syncS3Kodo: "Qiniu Kodo(네이티브 업로드)",
+  syncErrorRegion:
+    "이 리전에는 알려진 Qiniu 업로드 주소가 없습니다. cn-south-1 같은 Qiniu S3 리전을 사용하세요.",
   syncEncryptionLabel: "이 저장소 암호화",
   syncEncryptionPasswordLabel: "암호화 비밀번호",
   syncEncryptionPasswordNote: "12자 이상. 잃어버리면 복구할 수 없습니다.",

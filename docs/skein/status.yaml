@@ -78,27 +78,20 @@ tasks:
       not: 不改 front matter 存储格式；不做自定义 schema 校验。
       scope: 编辑器 NodeView、界面契约、i18n、测试。
       evidence: 逐屏截图 + 单测 + 导出往返。
-  - id: S3t
-    title: 同步专用测试工程
-    workstream: S
-    state: doing
-    acceptance: scripts/sync-smoke 一条命令跑双实例；媒体/大文件/多库/边界与远端清理；报告可复核。
-    spec: specs/同步测试工程.md
-    estimate: 3–5 天
-    brief:
-      problem: 同步只有手工文字 smoke 和 crate 测试，没有一条可重复的桌面双实例验收；媒体/多库/清理无法在改动后复跑。
-      expected: 一条命令跑两个 portable 实例，通过真实 Settings › Sync 配置同一远端，完成文字 A↔B 首次/双向编辑/冲突/删除，并校验、报告、清理。
-      standard: run.mjs --provider kodo --scenario text 退出码 0；两端文件 SHA-256 一致；明文远端 head 路径/hash 对、lock 不存在；报告含每轮读数；远端测试 prefix 清空；报告/数据在 .scratch 且不打印凭据。
-      not: 不在本阶段做媒体/大文件/多库/Docker/境外 provider；不碰上游；不改 app 行为；不把真实用户库或正式桶用于测试。
-      scope: 同步线 S3t1：本仓 scripts/sync-smoke + Windows 桌面；真实七牛测试桶。
-      evidence: node scripts/sync-smoke/run.mjs --provider kodo --scenario text；report.json；npm run check:quick；docs:check。
   - id: S3u
     title: Cloud Sync 插件 Kodo/重试回馈（经批准提交）
     workstream: S
-    state: todo
+    state: doing
     acceptance: 插件本地原型：Kodo 原生 create + 429/5xx 退避；真桶与插件测试通过；PR 只在用户点明仓/形式后提交。
     spec: research/同步评审/09-上游同步提案与成熟度门.md
     estimate: 3–5 天
+    brief:
+      problem: Cloud Sync 插件对所有 S3 都用 If-None-Match 条件创建；七牛 Kodo 不接受，probe 判 unsafeServer，插件用户无法用七牛。
+      expected: 插件新增七牛 Kodo provider：锁/条件创建走原生上传凭证 + insertOnly，其余读写删仍走 S3；现有 S3/WebDAV 行为不变。
+      standard: token/区域映射/multipart 单测；create 200/614 行为测试；插件 typecheck、vitest、build 通过；本地 patch/diff 与 PR 草稿；不推送。
+      not: 不改 e2e checkout、不 push/开 PR、不改 Nutstore、不带 skein 文档/内部代号/中文、不引入真实凭据。
+      scope: 上游插件仓的 Cloud Sync：temp worktree；本地原型与测试；PR 需用户另行批准。
+      evidence: npm run typecheck:cloud-sync / vitest / build:cloud-sync；kodo 单元测试；git diff。
   - id: B7
     title: 上游 1.4.7 界面功能择取（路径补全、插图拖放、插件页触控等）
     workstream: B
@@ -165,6 +158,7 @@ waiting:
   - 传输预算：协议写 32 MiB，内置引擎单文件峰值可达 128 MiB；归 S5。
   - 瞬时网络错误：S3t3 multi 的一次 E 同步出现 networkError，重跑通过；transport 级重试/退避归 S5。
   - Docker/Nextcloud/MinIO：本机无 Docker/WSL；WebDAV 由本地 Node 测试服务覆盖，Nextcloud/NAS/MinIO 真服务留外部。
+  - 插件 Kodo PR：本地原型/测试完成（0.9.0；197 tests；真桶）；patch 在 `.scratch/s3u/kodo.patch`；待用户明确“可以给 textus-plugins 提 PR”后，用干净 clone 提交，不直接推本 worktree。
   - 服务器时间：协议要求 Date 优先，内置引擎只用本地 Utc；归 S5。
   - 同步页俄语存量标签：Folder / Synced. / Last synced / Service / Server address / Remote folder / Save connection 仍英文；归文案清理。
   - D1b 观察期锚点：卡片没有 activated_at，按 created_at 计；D1f 若需要真激活时间再补字段。
@@ -223,12 +217,6 @@ questions:
     trigger: 做资产批量导入、Android 真机验收或保真测试扩容时
     when: 导入三门/Android 清单：D3 期间（手机收集与导入）；拼音检索/corpus：资产搜索或保真测试下一次改动
     spec: research/代码核对-2026-11-15.md
-  - id: U24
-    text: 同步专用测试项目放哪（in-repo scripts/sync-smoke vs 独立仓）
-    default: in-repo scripts/sync-smoke，随代码与构建走；出现非开发者独立运行的真实需求再拆仓
-    trigger: S3t 启动
-    when: S3t1 开工前定稿；无独立运行需求即维持 in-repo
-    spec: specs/同步测试工程.md
   - id: U25
     text: 境外/第三方 Provider 验收由谁做（上游/社区 vs fork 自测）
     default: fork 只验收国内可达的 S3（Bitiful/Kodo）与局域网；境外/第三方标“实现未实测”，由 S3t 工具 + 上游/社区报告逐步补；是否联系上游需用户点明仓与形式

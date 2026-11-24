@@ -1969,6 +1969,9 @@ export default {
   syncS3FlavorLabel: "S3 相容方式",
   syncS3Standard: "標準 S3",
   syncS3Oss: "阿里雲 OSS",
+  syncS3Kodo: "七牛 Kodo（原生上傳）",
+  syncErrorRegion:
+    "此區域沒有已知的七牛上傳位址。請使用七牛 S3 區域，例如 cn-south-1。",
   syncEncryptionLabel: "加密此倉庫",
   syncEncryptionPasswordLabel: "加密密碼",
   syncEncryptionPasswordNote: "至少 12 個字元。遺失後無法復原。",

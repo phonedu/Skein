@@ -251,9 +251,15 @@ pub(super) fn validate_connection(connection: &Connection) -> Result<(), String>
     }
     if connection.endpoint.trim().is_empty()
         || (!connection.prefix.is_empty() && !relative_path(&connection.prefix))
-        || !matches!(connection.s3_flavor.as_str(), "standard" | "oss")
+        || !matches!(connection.s3_flavor.as_str(), "standard" | "oss" | "kodo")
     {
         return Err(SyncError::new("invalidConfig").to_string());
+    }
+    if connection.provider == "s3"
+        && connection.s3_flavor == "kodo"
+        && textus_sync::kodo::upload_host(&connection.region).is_none()
+    {
+        return Err(SyncError::new("unsupportedRegion").to_string());
     }
     Ok(())
 }

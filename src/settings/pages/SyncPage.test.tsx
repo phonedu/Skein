@@ -508,3 +508,38 @@ it("asks before syncing while the plugin is still on", async () => {
   );
   expect(syncRunSaved).not.toHaveBeenCalled();
 });
+
+it("offers Qiniu's native create mode and saves it", async () => {
+  const s3Config: SyncConfig = {
+    provider: "s3",
+    endpoint: "https://s3.cn-south-1.qiniucs.com",
+    bucket: "bucket",
+    prefix: "work",
+    region: "cn-south-1",
+    pathStyle: true,
+    s3Flavor: "standard",
+    keepDays: 90,
+  };
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    config: s3Config,
+    hasCredentials: false,
+    connections: [],
+  });
+  vi.mocked(syncSettingsSave).mockClear();
+  const { syncLock, syncConflicts, syncHistory } =
+    await import("../../platform/ipc-sync");
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+  vi.mocked(syncLock).mockResolvedValue({ locked: false });
+  vi.mocked(syncConflicts).mockResolvedValue([]);
+  vi.mocked(syncHistory).mockResolvedValue(null);
+
+  render(page());
+  const flavor = await screen.findByLabelText(t.syncS3FlavorLabel);
+  fireEvent.click(flavor);
+  fireEvent.click(screen.getByText(t.syncS3Kodo));
+  fireEvent.click(screen.getByRole("button", { name: t.syncSave }));
+  await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
+  const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
+  expect(saved.s3Flavor).toBe("kodo");
+});

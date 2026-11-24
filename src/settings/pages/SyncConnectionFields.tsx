@@ -287,12 +287,13 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
                 onChange={(event) =>
                   setConfig({
                     ...config,
-                    s3Flavor: event.target.value as "standard" | "oss",
+                    s3Flavor: event.target.value as "standard" | "oss" | "kodo",
                   })
                 }
               >
                 <option value="standard">{t.syncS3Standard}</option>
                 <option value="oss">{t.syncS3Oss}</option>
+                <option value="kodo">{t.syncS3Kodo}</option>
               </Select>
             </SettingRow>
             <label className="sync-check">

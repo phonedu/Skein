@@ -1,0 +1,175 @@
+---
+type: research
+status: reference
+summary: 同步 Provider 支持矩阵、未适配清单与测试边界
+updated: 2026-11-24
+---
+
+# 同步 Provider 支持矩阵与测试边界
+
+> **用途**：回答三个问题——我们实现了哪些 Provider、哪些真测过、哪些明确不适配或没验；第三方/境外服务商由谁测。
+> **用户裁定（2026-11-24）**：**坚果云不推荐**（除限流外，用户与社区有文件丢失等严重问题反馈；我们未复现，但足以不把它作为主推或验收目标）。国内优先 **局域网同步（S4）** 与 **S3（缤纷云 / 七牛）**。
+> **不替代**：[同步方案](../../specs/同步方案.md)（架构）、[同步协议 v1](../../specs/同步协议-v1.md)（线格式）、[07-S3-Provider兼容性](07-S3-Provider兼容性.md)（S3 细节）、[同步测试工程](../../specs/同步测试工程.md)（S3t 专用测试项目）。
+
+## 1. 一句话结论
+
+- **已实现并真实验收**：缤纷云 S3（标准）、七牛 Kodo（原生 create）、本机 WebDAV 服务器。
+- **实现但未真实验收**：标准 S3 的其它服务商（AWS/R2/MinIO/B2 等）、第三方 WebDAV（Nextcloud/NAS/坚果云/境外）。
+- **明确不推荐/不做**：坚果云作为主推；阿里云 OSS 真桶验收（代码保留）。
+- **未实现**：LAN Hub（S4）、自动/后台同步、WebDAV 重试与退避、S5 硬化。
+
+## 2. 我们实现的能力（transport 层）
+
+两种 transport 共用 `ObjectStore`（get/has/put/create/delete），引擎不感知服务商。
+
+### 2.1 WebDAV
+
+| 项 | 实现 |
+| --- | --- |
+| 协议 | HTTPS + Basic auth；HTTP 仅允许 localhost/127.0.0.1/::1 |
+| 原子创建 | `PUT <key>.tmp-<uuid>`，再 `MOVE` 到目标，`Destination` + `Overwrite: F`；412/409 视为已存在 |
+| 目录 | 每个新前缀逐级 `MKCOL`；失败时 `PROPFIND Depth: 0` 复核是否已存在 |
+| 读写 | `GET` / `HEAD` / `PUT` / `DELETE` |
+| 超时 | 连接 20 s，总 180 s；连接池 4 s 空闲回收 |
+| 重定向 | 不跟随（`redirect::Policy::none()`） |
+| 状态映射 | 401/403 → `permissionError`；429 → `rateLimited`；507 → `quotaError`；其余 → `httpError` |
+| 重试 | **无**（429/5xx 直接失败，运行安全停下） |
+| ETag / If-Match | **不用**；不依赖弱 ETag |
+| 锁 | 不用 WebDAV `LOCK`；用协议自己的 `v1/lock.json`（create） |
+| 列表 | **不用**（不 `PROPFIND` 列目录，除 MKCOL 复核） |
+| 大文件 | 整文件在内存中 PUT；无分片/断点续传 |
+
+### 2.2 S3
+
+| 项 | 实现 |
+| --- | --- |
+| 签名 | SigV4；path-style 或 virtual-hosted |
+| 原子创建 | `Standard`：`If-None-Match: *`，412（或 409 且对象存在）视为已存在 |
+|  | `Oss`：`x-oss-forbid-overwrite: true`，409 视为已存在，400 报 `conditionalWriteUnsupported` |
+|  | `Kodo`：原生表单上传 + 上传凭证（policy `bucket:key` + `insertOnly=1`），614 视为已存在；读/改/删仍走 S3 endpoint |
+| 读写 | `GET` / `HEAD` / `PUT` / `DELETE` |
+| Region | 用户填写；Kodo 额外按 8 个 S3 区域映射 `up-*.qiniup.com` |
+| 超时/重定向 | 与 WebDAV 相同（20 s / 180 s、不跟随） |
+| 重试 | **无** |
+| Multipart / List / 预签名 / STS / 服务端加密 | **均不做**（协议按 2 MiB 块逐块 PUT；不需要 List） |
+| 状态映射 | 401/403 → permission；429 → rateLimited；507 → quota；409 → locked（条件创建）；其余 → httpError |
+
+## 3. Provider 支持矩阵
+
+状态口径：**验收通过** = 有真服务/真桌面证据；**实现未实测** = 代码路径应可用但没证据；**不兼容** = 已知协议差异会导致失败；**未实现** = 没有对应功能。
+
+| Provider | 类型 | 状态 | 证据 / 原因 |
+| --- | --- | --- | --- |
+| 本机 Node WebDAV | WebDAV | **验收通过** | S1 spike + S2 built app；S3t5 又跑了文字/移动，本地 DAV 服务作为夹具 |
+| 缤纷云 Bitiful | S3 Standard | **验收通过** | 真桶：首次/增量/16/32 MiB/冲突/杀进程/锁恢复；桌面插件互认（S1b/S2） |
+| 七牛 Kodo | S3 + 原生 create | **验收通过** | 真桶：probe 第二次 614、首次/改/删/冲突；桌面双实例（S3q，2026-11-24） |
+| 七牛标准 S3 条件写 | S3 Standard | **不兼容** | 第二次 `If-None-Match` 未被拒（`unsafeServer`）；必须选 Kodo 模式 |
+| 阿里云 OSS | S3 Oss | 实现未实测 | 用户 2026-11-21 决定不做真桶；版本控制开启后 `x-oss-forbid-overwrite` 会失效 |
+| AWS S3 / Cloudflare R2 / MinIO / Backblaze B2 | S3 Standard | 实现未实测 | 标准路径应可用；S1 曾计划 MinIO，最终用 Bitiful；无证据不写成通过 |
+| Nextcloud（自建/托管） | WebDAV | 实现未实测 | 标准 DAV，最可能可用；需要账号/实例 |
+| 群晖 / 威联通 NAS WebDAV | WebDAV | 实现未实测 | 标准 DAV，适合局域网；S4 LAN Hub 落地后更顺 |
+| 坚果云 Nutstore | WebDAV | **不推荐** | 限流之外有文件丢失等反馈；用户 2026-11-24 裁定不作为主推/验收目标；只在大库外做兼容性抽测 |
+| InfiniCLOUD / Koofr / pCloud / Yandex Disk | WebDAV | 实现未实测 | 境外服务；MOVE/限流/连通性均未知；需外部测试者 |
+| LAN Hub | 内置 | 未实现 | S4 |
+| 后台/自动同步 | — | 未实现 | v1 只做前台手动同步 |
+
+## 4. 未适配 / 已知缺口清单
+
+### 4.1 WebDAV 侧
+
+1. **只支持 Basic auth**：不支持 Digest/NTLM/OAuth/Bearer；2FA 账号必须用应用密码。
+2. **只接受受信任的 HTTPS**：自签证书、企业内网 CA、纯 HTTP（非 localhost）都会被拒。
+3. **依赖 MOVE + Overwrite:F**：不把对象存在返回 412/409 的服务器会表现异常；这类服务器需要新 flavor，目前没有。
+4. **无重试/退避**：429/502/503 会直接让本次运行失败；数据安全但体验差，媒体/大量文件更明显。
+5. **`MKCOL` 可能重复**：目录缓存只在一个 `WebDavStore` 实例内有效，而每次同步新建 store；块前缀多时会重复 MKCOL/PROPFIND，限流服务更容易被打。
+6. **403 不当作不存在**：部分 DAV 对缺失资源返回 403，会被映射成 `permissionError`（误报）。
+7. **不支持 WebDAV LOCK**：只用自己的 lock.json，不能借用服务器锁。
+8. **不跟随重定向**：服务器把 DAV 根 301 到另一个 host（或加尾斜杠）时会失败；必须填最终地址。
+9. **无自动发现**：不试 `/.well-known`，endpoint 必须手填到 DAV 根。
+10. **整文件内存 + 180 s 超时**：大附件/慢链路可能超时；无分片上传。
+11. **无配额预检**：只在 507 时失败。
+12. **无 ETag 校验**：并发正确性靠协议锁与 MOVE，不靠服务器 ETag。
+13. **无路径深度/字符兼容探测**：特殊字符会按段百分号编码，但服务器是否接受不预检。
+
+### 4.2 S3 侧
+
+1. **无 Multipart、List、预签名、STS/角色、服务端加密、存储类、对象标签**：只用最小对象读写。
+2. **条件写依赖服务商**：标准 S3 之外，OSS/Kodo 各有一套；新服务商需要新 flavor 与真桶验证。
+3. **Kodo 边界**：同 key 同 etag 的 `insertOnly` 上传返回成功而非 614（内容相同，无害）；没有原生 GET/DELETE/列举；上传域名只覆盖官方 8 个 S3 区域。
+4. **OSS 边界**：只支持 virtual-host；`x-oss-forbid-overwrite` 在开启/暂停过版本控制后失效；未真桶验收。
+5. **Region 手填**：无自动发现；填错时错误可能是 400/403/`IncorrectRegion`。
+6. **无重试/退避**：5xx/429 直接失败；锁会安全释放，重试需用户再点。
+7. **无服务器时间**：只用本地 Utc；归 S5。
+8. **128 MiB 峰值**：单文件整块读入内存，协议写 32 MiB 预算但引擎峰值可达 128 MiB；归 S5。
+
+### 4.3 跨 transport
+
+- 无自动同步/后台同步；无弱网重试策略；无 signed head / lastRevision（S5）；无 LAN Hub（S4）。
+- 无 Provider 预设/测试连接按钮（设置页保存后由首次同步的 probe 验证）。
+- 同步只收白名单扩展名：`md/markdown/mdown/mkd/txt/csv/base/canvas`、附件（图片/Office/PDF/音视频）与 `mp4/mov/webm`；`.bin`、`.zip` 等未列入的扩展名不会同步。这是设计边界，不是 bug；S3t 的二进制夹具因此用 `.mp4` 承载。
+- 手机端只验收了本机/官方插件；第三方 WebDAV/S3 在手机上的真机证据没有。
+- 多库桌面矩阵已跑（S3t3，2026-11-24）：共享连接/子仓库、同窗并发、同 prefix 拒绝、复制库 fork；库移动/改名由 move 场景覆盖。一次 E 同步出现 `networkError`，重跑通过；transport 重试归 S5。S3t4 已覆盖 32/128 MiB、空扫描、大批删除与遗留锁（Kodo/Bitiful）。
+
+## 5. 测试覆盖与证据
+
+| 层 | 覆盖 | 不覆盖 |
+| --- | --- | --- |
+| crate 单测 / 引擎 | planner、锁、历史、分块、加密、错误映射 | 真实服务差异 |
+| `*_live`（ignored） | Bitiful/Kodo/WebDAV 单 transport、probe、首次/改/删/冲突 | UI、双实例、多库、媒体 |
+| S1/S2/S3 验收 | 插件↔内置互通、built app 本机 WebDAV、真机插件、规模/失败 | 第三方 WebDAV |
+| S3q 桌面双实例 | 真实 Settings › Sync 填写、Kodo 首次/双向编辑/冲突/删除 | 媒体、多库、境外 |
+| S3t（计划） | 媒体/大文件/多库/边界/清理，一条命令 | 境外账号 |
+
+### 5.1 已跑过的实测明细
+
+| 日期 | 环境 | 场景与读数 | 没覆盖 |
+| --- | --- | --- | --- |
+| 2026-11-19（S1 WebDAV 轨） | 本机 Node WebDAV 服务，Basic auth | 上传/下载/删除/冲突；16 MiB；杀进程留锁、清锁重跑；0.6.1 旧插件读同一远端 | 商业 WebDAV、限流、2FA |
+| 2026-11-19（S1b Bitiful） | 真实桶，子账号 | 两次 create 第二次 412；首轮 5 文件（含 16 MiB PDF）；32 MiB PDF 16 块逐块 SHA-256；冲突、删除、杀进程留锁后恢复 | 第三方 WebDAV |
+| 2026-11-20（S2 built app） | portable debug，本机 WebDAV | 上传/下载/冲突/删除 + 改名/锁占用/解锁/历史恢复/打开中文件延后；设置页脏表单禁用 provider 切换 | 第三方 WebDAV（外部阻塞） |
+| 2026-11-20（S2 真实 S3） | portable debug + 缤纷云 | 导入插件生成的连接/base 首轮 0 变更；编辑后“上传 1”，远端 head 指向新哈希，块逐字节一致 | 七牛/阿里云 |
+| 2026-11-20（S2 真机插件） | 华为 OXF-AN10 + 缤纷云 | 手机插件↔桌面内置：上传/下载/冲突副本/锁互认；测试 prefix 12 个对象已清 | 第三方 WebDAV、手机内置第三方 |
+| 2026-11-20（scale） | `tests/scale.rs` | 20k 文件首轮 20,000、改 1 只传 1；128 MiB 单文件；块上传中被杀留锁；瞬时 5xx 后重试成功 | 32 MiB 预算、真实超时 |
+| 2026-11-24（S3q crate） | 真实七牛桶 | probe 首建成功/二次 614；首次/改/删/两设备冲突 2/2 通过 | UI、媒体 |
+| 2026-11-24（S3q 桌面双实例） | 两个 portable debug，真实七牛桶，同 connection/prefix/加密密码 | A 首传 1；B 1 上 1 下；双向编辑各 1 上 1 下；同改一文件 B 产生 1 冲突副本；B 删后 A 收敛 removed 1 | 图片/视频/大文件、多库、境外 |
+
+## 6. 第三方 / 境外服务商怎么测
+
+### 6.1 难点
+
+- **账号与付费**：多数境外 WebDAV 需要注册、付费或企业账号；fork 不持有，也不该为测试长期付费。
+- **网络与合规**：从国内连境外 DAV 可能慢/被限；测试结果会把“网络问题”和“服务商兼容问题”混在一起。
+- **ToS**：自动/批量上传测试要遵守服务商条款；有些服务商禁止脚本化使用。
+- **桌面 UI 路径**：只跑 crate live 不能证明设置页/双实例；但境外环境跑桌面双实例成本高。
+- **证据归属**：外部测试者给出的结果，我们只能当“外部反馈”，不能当自己的门禁读数。
+
+### 6.2 可执行路径（按推荐顺序）
+
+1. **先有工具，再请人测**：S3t 的 harness + 兼容性清单 + 报告模板先落地；否则“请上游测试”不可执行。
+2. **上游 / 社区测试标准 transport**：他们有账号、网络和真实使用场景，最适合验证 AWS/R2/Nextcloud/pCloud 等标准 S3/WebDAV。回来的报告记“外部反馈”，不改我们的验收口径。
+3. **自建/托管实例自己测**：Nextcloud 演示实例、群晖/威联通 NAS、MinIO 可以本地/公网自建；标准 DAV/S3 的关键路径能覆盖，但不能代表商业服务商的限流与边缘行为。
+4. **境外 VPS + crate live**：在服务商同区域的小 VPS 上跑 `s3_live`/`webdav_live`，可排除国内网络干扰；仍需账号与 ToS，且不覆盖桌面 UI。
+5. **临时 trial 账号**：只用于抽测，不长期持有；报告注明账号类型与额度。
+
+### 6.3 关于“交给上游测试”
+
+**值得做，但要分清三件事：**
+
+- **上游能测的是共享的 standard transport**（标准 S3/WebDAV），不是 fork 独有的 Kodo 原生 create、LAN Hub、S3t harness。
+- **上游测试不能成为 fork 的验收门**：证据在别人手里，失败也无法直接复现；只能作为外部兼容性反馈。
+- **是否联系上游是独立决定**：2026-11-21 用户定“长期不再给上游提 PR”；本轮只讨论“请上游/社区测试”，也需要用户点明仓、形式（issue/discussion/仅私下）后才动。当前 fork 的策略是先把自己的 harness 和清单做好，不主动开 upstream 工单。
+
+**建议**：fork 的验收只承诺“国内可达的 S3（Bitiful/Kodo）+ 局域网”；第三方/境外 WebDAV 标“实现未实测”，由 S3t 工具 + 上游/社区报告逐步补齐。等某个服务商有稳定外部证据，再把它升为“验收通过”。
+
+## 7. 用户裁定与待审
+
+- **2026-11-24**：坚果云不推荐；国内优先局域网 + S3。
+- **U24**：同步专用测试项目放哪（默认 in-repo `scripts/sync-smoke`）。
+- **U25**：境外/第三方 Provider 验收由谁做（默认：不阻塞 fork；S3t 工具就绪后由上游/社区测试，是否联系上游需用户点明）。
+
+## 8. 下一步
+
+1. S3t1：harness 骨架（双实例、文字、报告、清理）。
+2. S3t2：媒体/大文件/特殊名，先跑 Bitiful 与 Kodo。
+3. S3t3：多库/多 prefix/并发。
+4. S3t5：Provider 矩阵；第三方/境外只登记外部报告，不写成自己的“通过”。

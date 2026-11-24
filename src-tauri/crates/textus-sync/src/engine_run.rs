@@ -2,6 +2,7 @@
 
 use super::transfer::*;
 use super::*;
+use std::time::Duration;
 
 pub(super) async fn run(
     store: &dyn ObjectStore,
@@ -342,18 +343,35 @@ pub(super) async fn run(
     own_lock(store, owner).await?;
     store.put(HISTORY_KEY, history_json).await?;
     own_lock(store, owner).await?;
-    let written = store.put(HEAD_KEY, snapshot_json.clone()).await;
-    // Shared once the head is written, whatever the read-back says. A
-    // failed write may still have landed; a head that is ours is success.
-    let committed = store.get(HEAD_KEY).await.ok().flatten();
-    if !written.is_ok() && committed.as_deref() != Some(snapshot_json.as_slice()) {
-        return Err(SyncError::new("publishFailed"));
-    }
+    // Shared once the head is written, whatever the write's answer says: a
+    // failed write may still have landed, and a head that is ours is
+    // success. The read-back can also fail transiently or see the previous
+    // head for a moment (Qiniu's S3 endpoint did), so retry it briefly
+    // before deciding the publish failed.
+    let _ = store.put(HEAD_KEY, snapshot_json.clone()).await;
+    let committed = published_head(store, &snapshot_json).await;
     if committed.as_deref() != Some(snapshot_json.as_slice()) {
         return Err(SyncError::new("publishFailed"));
     }
     result.revision = revision;
     Ok(SyncOutcome { result, base })
+}
+
+/// The head read-back after its write: up to three retries with a short
+/// backoff. A lock is held here, so a different head is either a transient
+/// old read or a lost lock; both need the same answer, not an immediate
+/// `publishFailed` that strands the lock.
+async fn published_head(store: &dyn ObjectStore, expected: &[u8]) -> Option<Vec<u8>> {
+    const BACKOFF_MS: [u64; 3] = [100, 250, 500];
+    let mut last = store.get(HEAD_KEY).await.ok().flatten();
+    for delay in BACKOFF_MS {
+        if last.as_deref() == Some(expected) {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(delay)).await;
+        last = store.get(HEAD_KEY).await.ok().flatten();
+    }
+    last
 }
 
 async fn drop_pending_retirements(
