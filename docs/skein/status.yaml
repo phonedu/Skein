@@ -18,7 +18,7 @@ workstreams:
   - id: S
     name: 同步（S 组）
     state: doing
-    focus: S3q 完成（2026-11-24，七牛 Kodo 原生上传）；S 组剩 S4 LAN Hub / S5 硬化
+    focus: S3t 完成（2026-11-24，专用测试工程）；用户偏好局域网 + S3；S 组剩 S4 LAN Hub / S5 硬化
     spec: specs/同步方案.md
   - id: B
     name: 上游跟随（B 组）
@@ -64,6 +64,41 @@ tasks:
       not: 不改 front matter 存储格式；不做自定义 schema 校验。
       scope: 编辑器 NodeView、界面契约、i18n、测试。
       evidence: 逐屏截图 + 单测 + 导出往返。
+  - id: S3t
+    title: 同步专用测试工程
+    workstream: S
+    state: doing
+    acceptance: scripts/sync-smoke 一条命令跑双实例；媒体/大文件/多库/边界与远端清理；报告可复核。
+    spec: specs/同步测试工程.md
+    estimate: 3–5 天
+    brief:
+      problem: 同步只有手工文字 smoke 和 crate 测试，没有一条可重复的桌面双实例验收；媒体/多库/清理无法在改动后复跑。
+      expected: 一条命令跑两个 portable 实例，通过真实 Settings › Sync 配置同一远端，完成文字 A↔B 首次/双向编辑/冲突/删除，并校验、报告、清理。
+      standard: run.mjs --provider kodo --scenario text 退出码 0；两端文件 SHA-256 一致；明文远端 head 路径/hash 对、lock 不存在；报告含每轮读数；远端测试 prefix 清空；报告/数据在 .scratch 且不打印凭据。
+      not: 不在本阶段做媒体/大文件/多库/Docker/境外 provider；不碰上游；不改 app 行为；不把真实用户库或正式桶用于测试。
+      scope: 同步线 S3t1：本仓 scripts/sync-smoke + Windows 桌面；真实七牛测试桶。
+      evidence: node scripts/sync-smoke/run.mjs --provider kodo --scenario text；report.json；npm run check:quick；docs:check。
+  - id: S3u
+    title: Cloud Sync 插件 Kodo/重试回馈（经批准提交）
+    workstream: S
+    state: todo
+    acceptance: 插件本地原型：Kodo 原生 create + 429/5xx 退避；真桶与插件测试通过；PR 只在用户点明仓/形式后提交。
+    spec: research/同步评审/09-上游同步提案与成熟度门.md
+    estimate: 3–5 天
+  - id: B7
+    title: 上游 1.4.7 界面功能择取（路径补全、插图拖放、插件页触控等）
+    workstream: B
+    state: todo
+    acceptance: 按盘点文档三批推进：先做批（路径补全、图表错误原因、商店仅电脑可用/分类、插件页菜单选择修复）1–2 天；下一批（拖文件进文档、文件树接收系统文件/插入链接、插件页触控）3–5 天；其余视需要；D 组随 1.4.7 正式同步。
+    spec: research/上游1.4.7界面功能盘点.md
+    estimate: 先做批 1–2 天，下一批 3–5 天
+    brief:
+      problem: 上游 1.4.7 的界面功能本仓没有：路径补全、拖系统文件进文档（正文插图/附件链接/复制到文档旁）、文件树接收系统文件与插入链接、图表错误原因、插件商店分类与“仅电脑可用”、插件页触控与菜单选择修复。用户 2026-11-24 已确认按盘点建议择取。
+      expected: 按 research/上游1.4.7界面功能盘点.md 的三批实施：先做批（路径补全、图表错误、商店标记/分类、插件页菜单修复）1–2 天；下一批（拖放、文件树复制/插入链接、插件页触控）3–5 天；每批有测试与验证证据。
+      standard: 按“上游改动不重写”摘对应上游提交；平台差异只走 capabilities.ts；用户可见字符串补十语言；界面改动先对照裁决并补 ui-contracts。
+      not: 不做 D 组（转场/内存/Mac/Linux/iOS 专属）；B1 文件图标主题、B2 插件代码语言、B4 多 AI 端点、C3 手机插件能力核对暂缓；不整体 rebase 到 1.4.7。
+      scope: src/files、src/editor、src/plugins（商店/插件页/菜单）、src/settings、e2e；桌面为主，插件页触控涉手机。
+      evidence: 先做批：单测 + e2e + 桌面构建冒烟；下一批：桌面拖放真机与手机插件页验收。
 later:
   - id: S4
     title: 局域网 Hub
@@ -111,9 +146,11 @@ later:
     spec: specs/Textus-剪藏功能方案.md
     estimate: 桌面 1 周 + 手机 3–5 天
 waiting:
-  - 第三方 WebDAV：坚果云 / Nextcloud 无凭据，S2c-V2 等它；外部阻塞。
+  - 第三方 WebDAV/境外 Provider：坚果云 2026-11-24 用户裁定不推荐（限流之外有丢文件反馈）；Nextcloud/境外服务商无账号，归 U25/S3t 找外部测试者；不阻塞 fork。
   - 移动端加密：S3 v1 用明文仓库；内置 / 插件真机加密同步未做。
   - 传输预算：协议写 32 MiB，内置引擎单文件峰值可达 128 MiB；归 S5。
+  - 瞬时网络错误：S3t3 multi 的一次 E 同步出现 networkError，重跑通过；transport 级重试/退避归 S5。
+  - Docker/Nextcloud/MinIO：本机无 Docker/WSL；WebDAV 由本地 Node 测试服务覆盖，Nextcloud/NAS/MinIO 真服务留外部。
   - 服务器时间：协议要求 Date 优先，内置引擎只用本地 Utc；归 S5。
   - 同步页俄语存量标签：Folder / Synced. / Last synced / Service / Server address / Remote folder / Save connection 仍英文；归文案清理。
   - D1b 观察期锚点：卡片没有 activated_at，按 created_at 计；D1f 若需要真激活时间再补字段。
@@ -172,3 +209,21 @@ questions:
     trigger: 做资产批量导入、Android 真机验收或保真测试扩容时
     when: 导入三门/Android 清单：D3 期间（手机收集与导入）；拼音检索/corpus：资产搜索或保真测试下一次改动
     spec: research/代码核对-2026-11-15.md
+  - id: U24
+    text: 同步专用测试项目放哪（in-repo scripts/sync-smoke vs 独立仓）
+    default: in-repo scripts/sync-smoke，随代码与构建走；出现非开发者独立运行的真实需求再拆仓
+    trigger: S3t 启动
+    when: S3t1 开工前定稿；无独立运行需求即维持 in-repo
+    spec: specs/同步测试工程.md
+  - id: U25
+    text: 境外/第三方 Provider 验收由谁做（上游/社区 vs fork 自测）
+    default: fork 只验收国内可达的 S3（Bitiful/Kodo）与局域网；境外/第三方标“实现未实测”，由 S3t 工具 + 上游/社区报告逐步补；是否联系上游需用户点明仓与形式
+    trigger: S3t5 Provider 矩阵 / 宣称支持某 provider 前
+    when: S3t5 收尾复核；无外部证据就保持“未实测”
+    spec: research/同步评审/08-Provider支持矩阵与测试边界.md
+  - id: U26
+    text: 同步回馈上游的形态与时点（插件 transport 先 vs 内置功能；RFC 先行）
+    default: 先在 textus-plugins 提 Kodo/重试等 transport 修复；内置功能等 S3t 全绿 + S5 核心安全项 + 维护者 RFC 同意再分段 PR；不把 fork 整支当 PR
+    trigger: S3t 完成 / 决定联系上游 / 上游询问同步
+    when: S3t5 与 S5 收尾后复核；联系上游需用户点明仓与形式
+    spec: research/同步评审/09-上游同步提案与成熟度门.md

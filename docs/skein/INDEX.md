@@ -15,7 +15,8 @@
 | [Textus 手机端全局元素一致性方案](specs/Textus-手机端元素一致性方案.md) | active | 2026-11-23 | 手机端元素一致性与 PH3 验收清单 |
 | [Textus 改造方案（项目基线）](specs/Textus-改造方案.md) | active | 2026-11-23 | 产品定位、架构、数据模型、阶段与验收 |
 | [Textus 界面改造方案（界面基线）](specs/Textus-界面改造方案.md) | active | 2026-11-23 | 界面现状、设置浮层规格与剩余 pass |
-| [同步方案（内置）](specs/同步方案.md) | active | 2026-11-23 | 内置同步分层、多库、加密与迁移 |
+| [同步方案（内置）](specs/同步方案.md) | active | 2026-11-24 | 内置同步分层、多库、加密与迁移 |
+| [同步验收测试工程（专用测试项目）](specs/同步测试工程.md) | active | 2026-11-24 | 同步专用测试项目：双实例桌面 harness、媒体与多库用例 |
 | [界面契约](specs/界面契约.md) | active | 2026-11-23 | 界面适配的权威基准：令牌、桌面/手机模式、图标档位、上游新界面的适配流程与屏幕索引 |
 
 ## 提案 / 暂缓
@@ -54,6 +55,7 @@
 | [Agent 基座与竞品调研](research/Agent基座与竞品调研.md) | reference | 2026-11-23 | Agent 基座与竞品调研结论 |
 | [outl 对照调研与吸收清单](research/outl-对照与吸收.md) | reference | 2026-11-23 | outl 源码、功能、界面对照与吸收清单 |
 | [Tau 可吸收功能清单](research/Tau-可吸收功能清单.md) | reference | 2026-11-23 | Tau（LastKnightCoder/editor）可吸收功能清单：对照 Slate 皮肤与现有浮层设置，只记建议吸收项 |
+| [上游 1.4.7 界面功能盘点](research/上游1.4.7界面功能盘点.md) | reference | 2026-11-24 | v1.4.6→v1.4.7-rc.4 的界面功能清单、与本仓的差距、取舍建议 |
 | [上游的 AI 协作开发方式（参考）](research/上游AI协作开发方式.md) | reference | 2026-11-23 | 上游 AI 协作与文档自动化做法 |
 | [代码核对与墨契吸收清单（2026-11-15）](research/代码核对-2026-11-15.md) | reference | 2026-11-23 | 2026-11-15 逐文件代码核对与墨契吸收清单 |
 | [同步评审汇总与建议](research/同步评审/00-汇总与建议.md) | reference | 2026-11-23 | 同步评审汇总与建议 |
@@ -63,8 +65,10 @@
 | [架构与维护评审（子代理）](research/同步评审/04-架构与维护评审.md) | reference | 2026-11-23 | 架构与维护评审 |
 | [安全与威胁模型评审（子代理）](research/同步评审/05-安全与威胁模型评审.md) | reference | 2026-11-23 | 安全与威胁模型评审 |
 | [多库同步设计](research/同步评审/06-多库同步设计.md) | reference | 2026-11-23 | 多库同步设计 |
-| [S3 服务商兼容性（S1b 选型）](research/同步评审/07-S3-Provider兼容性.md) | reference | 2026-11-23 | S3 Provider 兼容性 |
-| [同步方向评审（讨论中）](research/同步评审/README.md) | reference | 2026-11-23 | 同步评审的阅读顺序与结论索引 |
+| [S3 服务商兼容性（S1b 选型）](research/同步评审/07-S3-Provider兼容性.md) | reference | 2026-11-24 | S3 Provider 兼容性 |
+| [同步 Provider 支持矩阵与测试边界](research/同步评审/08-Provider支持矩阵与测试边界.md) | reference | 2026-11-24 | 同步 Provider 支持矩阵、未适配清单与测试边界 |
+| [同步回馈上游：形态、成熟度门与测试边界](research/同步评审/09-上游同步提案与成熟度门.md) | reference | 2026-11-24 | 同步回馈上游的形态（插件/功能）、成熟度门与 Docker 测试边界 |
+| [同步方向评审（讨论中）](research/同步评审/README.md) | reference | 2026-11-24 | 同步评审的阅读顺序与结论索引 |
 | [同步插件多端 spike 报告（S1）](research/同步评审/spike-报告.md) | reference | 2026-11-23 | 同步插件 spike 报告 |
 | [插件 API 要点（阶段 1 · 资产插件参考）](research/插件API要点.md) | reference | 2026-11-23 | 插件 API 七工具通道要点 |
 | [插件兼容性（2026-11-22 核实）](research/插件兼容性.md) | reference | 2026-11-23 | 官方插件在 Skein 上的兼容性核实 |
