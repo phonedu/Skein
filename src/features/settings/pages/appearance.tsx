@@ -8,6 +8,7 @@ import type { Strings } from "../../../i18n/strings";
 import { appDrawsWindowFrame } from "../../../platform/window-chrome";
 import { canUseWindows, isMobileApp } from "../../../platform/capabilities";
 import { ThemeSection, ThemesTab } from "../../../settings/sections/theme";
+import { useFileIconThemes } from "../../../plugins/contributions/file-icon-themes";
 import { DocTextFold } from "../../../settings/sections/text-font";
 import { PageGroup } from "../page-group";
 import { SettingsRow } from "../settings-row";
@@ -25,6 +26,12 @@ const SIZE_NAMES = {
 
 export function AppearancePage({ t }: { t: Strings }) {
   const { settings, setSettings } = useSettings();
+  const iconThemes = useFileIconThemes();
+  // A theme whose plugin is off shows as Default; the choice stays for
+  // when it is back, as the phone's older Appearance page has it.
+  const iconTheme = iconThemes.some((x) => x.id === settings.fileIconTheme)
+    ? settings.fileIconTheme
+    : "";
   return (
     <>
       <PageGroup title={t.navAppearance}>
@@ -39,6 +46,19 @@ export function AppearancePage({ t }: { t: Strings }) {
             onChange={(value) =>
               setSettings({ uiTextScale: Number(value) as UiTextScale })
             }
+          />
+        </SettingsRow>
+        <SettingsRow label={t.fileIconThemeLabel}>
+          <SettingsSelect
+            value={iconTheme}
+            options={[
+              { value: "", label: t.fileIconThemeDefault },
+              ...iconThemes.map((theme) => ({
+                value: theme.id,
+                label: theme.label,
+              })),
+            ]}
+            onChange={(value) => setSettings({ fileIconTheme: value })}
           />
         </SettingsRow>
       </PageGroup>

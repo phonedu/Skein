@@ -89,6 +89,9 @@ export async function openWithPlugins(
   await pluginsAtStart(page, options);
   // A plugin's settings live under Textus's settings' `plugins`.
   await openApp(page, {
+    // A phone starts on Today, with no editor: the shell is what every
+    // layout has. Each test opens its own file next.
+    ready: ".app-shell",
     settings: {
       language: options.language ?? "en",
       plugins: options.settings ?? {},
@@ -113,6 +116,19 @@ export async function openPath(page: Page, path: string) {
       ).__devEmitTauriEvent("menu-open-recent", p),
     path,
   );
+}
+
+/** Opens a plugin page the way the fork's shell offers it: the top bar's
+ *  Plugins catalog, then the page's row (the old sidebar buttons are gone). */
+export async function openPluginPage(page: Page, name: string) {
+  await page.getByRole("button", { name: "Plugins", exact: true }).click();
+  // A desktop's edge column lists the pages; a folded or small tablet has
+  // only the QuickPick.
+  await page
+    .locator(".plugin-catalog-row, .quick-pick-item")
+    .filter({ hasText: name })
+    .first()
+    .click();
 }
 
 /** The frame of the plugin's tab in front. */

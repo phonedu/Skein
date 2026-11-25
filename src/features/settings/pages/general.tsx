@@ -2,6 +2,7 @@ import { useSettings } from "../../../prefs/SettingsContext";
 import { LANGS, LANG_NAMES, type Lang } from "../../../i18n/strings";
 import type { Strings } from "../../../i18n/strings";
 import {
+  canDropFilesIntoTree,
   canInstallCliCommand,
   canSetDefaultEditor,
   canUseWindows,
@@ -91,6 +92,16 @@ export function GeneralPage({ t }: { t: Strings }) {
             onChange={(on) => setSettings({ autoSuggestFilename: on })}
           />
         </SettingsRow>
+        {/* Ticked once in the drop dialog's "Don't ask again", the way back
+            is here - the row the phone's older General page already had. */}
+        {canDropFilesIntoTree && (
+          <SettingsRow label={t.confirmTreeCopyLabel}>
+            <SettingsSwitch
+              checked={settings.confirmTreeCopy}
+              onChange={(on) => setSettings({ confirmTreeCopy: on })}
+            />
+          </SettingsRow>
+        )}
       </PageGroup>
 
       {/* A desktop's: the phone has no windows to close, no default editor

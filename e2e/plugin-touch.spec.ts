@@ -6,6 +6,7 @@ import { PHONE, settled, TABLET } from "./helpers";
 import {
   hasPlugin,
   openPath,
+  openPluginPage,
   openWithPlugins,
   tabFrame,
 } from "./plugin-helpers";
@@ -91,6 +92,10 @@ test.describe("on a tablet", () => {
     test.skip(browserName !== "chromium", "touch input by CDP");
     test.skip(!hasPlugin("catvinci.kanban"), "no plugins checkout");
     await openBoard(page);
+    // A tablet's sidebar leaves less room than the board's two lists need:
+    // close it, as a reader would, so both heads are on the page.
+    await page.getByRole("button", { name: "Sidebar", exact: true }).click();
+    await page.waitForTimeout(400);
     const heads = tabFrame(page).locator(".list-head");
     const todo = (await heads.nth(0).boundingBox())!;
     const done = (await heads.nth(1).boundingBox())!;
@@ -128,7 +133,7 @@ test.describe("on a tablet", () => {
       folder: { "/work/notes/a.md": "# A\n\n#project\n" },
     });
     await openPath(page, "/work/notes/a.md");
-    await page.getByRole("button", { name: "Tags", exact: true }).tap();
+    await openPluginPage(page, "Tags");
     const row = page.locator(".plugin-list-row", { hasText: "project" });
     const box = (await row.boundingBox())!;
     const touch = await finger(page);

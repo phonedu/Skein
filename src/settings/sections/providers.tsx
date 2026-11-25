@@ -14,6 +14,11 @@ import { CustomProviderPanel } from "./custom-provider";
 import { ModelListRow, useModelListShown } from "./agent";
 import { ModelChoices } from "../pages/ModelChoices";
 import type { GroupShell } from "./group-shell";
+import { PlusIcon } from "../../engine/controls/icons";
+import { isCustomEntry, useCustomEndpoints } from "../../ai/custom-endpoints";
+
+/** What the list has picked to add a custom endpoint, in place of an id. */
+const NEW_ENDPOINT = "";
 
 /**
  * Providers' list and detail, shared by the iPad sheet and the new dialog:
@@ -32,7 +37,10 @@ export function ProvidersSections({
     catalog,
     settings.aiProvider,
   );
-  const entry = catalog.find((e) => e.id === picked) ?? catalog[0];
+  const adding = picked === NEW_ENDPOINT;
+  const entry = adding
+    ? undefined
+    : (catalog.find((e) => e.id === picked) ?? catalog[0]);
   return (
     <>
       <ModelChoices t={t} />
@@ -64,14 +72,29 @@ export function ProvidersSections({
                 )}
               </button>
             ))}
+            {/* The user's own endpoints are listed above with the rest. */}
+            <button
+              type="button"
+              className="tx-list-item providers-item"
+              aria-current={adding || undefined}
+              onClick={() => setPicked(NEW_ENDPOINT)}
+            >
+              <span className="provider-logo" aria-hidden="true">
+                <PlusIcon />
+              </span>
+              <span className="tx-truncate providers-item-name">
+                {t.customEndpointAdd}
+              </span>
+            </button>
           </div>
-          {entry && (
+          {(entry || adding) && (
             <ProviderDetail
-              key={entry.id}
+              key={entry?.id ?? NEW_ENDPOINT}
               t={t}
               entry={entry}
-              connected={connected[entry.id]}
-              onStatusChange={() => refreshConnected(entry)}
+              connected={entry && connected[entry.id]}
+              onStatusChange={() => entry && refreshConnected(entry)}
+              onPicked={(id) => setPicked(id ?? catalog[0]?.id ?? "")}
               Group={Group}
             />
           )}
@@ -83,35 +106,40 @@ export function ProvidersSections({
 
 const isSetUp = (state?: ConnectedState) => !!(state?.oauth || state?.apiKey);
 
-/** One provider: its name and state, how it is reached, its models. */
+/** One provider: its name and state, how it is reached, its models. With
+ *  no `entry`, a custom endpoint being added. */
 function ProviderDetail({
   t,
   entry,
   connected,
   onStatusChange,
+  onPicked,
   Group,
 }: {
   t: Strings;
-  entry: ProviderCatalogEntry;
+  entry?: ProviderCatalogEntry;
   connected?: ConnectedState;
   onStatusChange: () => void;
+  /** Moves the list to an endpoint just saved, or off one removed. */
+  onPicked: (id: string | null) => void;
   Group: GroupShell;
 }) {
+  const custom = !entry || isCustomEntry(entry);
   // Its state is said on its sign-in row; one with nothing to sign in to
   // says it here instead.
   const status =
-    entry.keyOptional && entry.id !== "custom"
-      ? t.providerNoKeyRequired
-      : undefined;
-  const listShown = useModelListShown(entry.id);
+    entry?.keyOptional && !custom ? t.providerNoKeyRequired : undefined;
+  const listShown = useModelListShown(entry?.id ?? NEW_ENDPOINT);
+  const endpoint = useCustomEndpoints().find((e) => e.id === entry?.id);
   return (
     <div className="providers-detail">
       <Group title={status}>
-        {entry.id === "custom" ? (
+        {custom ? (
           <CustomProviderPanel
             t={t}
-            onSaved={() => onStatusChange()}
-            onRemoved={() => onStatusChange()}
+            endpoint={endpoint}
+            onSaved={onPicked}
+            onRemoved={() => onPicked(null)}
           />
         ) : (
           <ProviderAuthPanel
@@ -122,7 +150,7 @@ function ProviderDetail({
           />
         )}
       </Group>
-      {listShown && (
+      {listShown && entry && !custom && (
         <Group title={t.providerModelsGroup}>
           <ModelListRow t={t} provider={entry.id} />
         </Group>

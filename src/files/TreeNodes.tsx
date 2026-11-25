@@ -7,12 +7,7 @@ import { useFileMark } from "../registry/file-marks";
 import { plural } from "../i18n/plural";
 import { memo, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { type DirEntryInfo } from "../platform/bindings/files";
-import {
-  ChevronIcon,
-  FolderIcon,
-  FolderOpenIcon,
-  MoreIcon,
-} from "../engine/controls/icons";
+import { ChevronIcon, MoreIcon } from "../engine/controls/icons";
 import { fs } from "../platform/ipc";
 import { useSettings } from "../prefs/SettingsContext";
 import { basename, onTheWay, parentDir } from "../utils/path";
@@ -29,7 +24,7 @@ import { byModified, useFolderListing, useFolderOpen } from "./useFolder";
 import { DraftRow } from "./DraftRow";
 import { TreeRowsInSight } from "./TreeRowsInSight";
 import type { FileOpenHow } from "./tree-shared";
-import { fileIconFor } from "../engine/controls/file-icons";
+import { FileIcon, FolderEntryIcon } from "../engine/controls/file-icons";
 import {
   folderDocumentAround,
   folderDocumentOf,
@@ -229,7 +224,6 @@ const FileNode = memo(function FileNode({
   const lang = settings.language;
   const tree = useTreeRowActions();
   const picked = useRowPicked(entry.path);
-  const Icon = fileIconFor(folderDocumentOf(entry.name)?.[0] ?? entry.name);
   const press = useLongPress(
     tree.onRowHold ? (at) => tree.onRowHold!(at, entry.path, false) : undefined,
   );
@@ -290,7 +284,10 @@ const FileNode = memo(function FileNode({
         }
         {...(tree.onRowHold ? press.handlers : {})}
       >
-        <Icon className="tree-icon" />
+        <FileIcon
+          name={folderDocumentOf(entry.name)?.[0] ?? entry.name}
+          className="tree-icon"
+        />
         <Tooltip text={entry.name} description={null} whenCut>
           <span className="tx-truncate tree-label">
             {/* The fire dot's seat. The phone hides it: the open row's
@@ -414,11 +411,11 @@ function FolderRow({
       {...(tree.onRowHold ? press.handlers : {})}
     >
       <ChevronIcon className={`chevron ${open ? "chevron-open" : ""}`} />
-      {open ? (
-        <FolderOpenIcon className="tree-icon" />
-      ) : (
-        <FolderIcon className="tree-icon" />
-      )}
+      <FolderEntryIcon
+        name={basename(path)}
+        open={open}
+        className="tree-icon"
+      />
       <Tooltip text={basename(path)} description={null} whenCut>
         <span className="tx-truncate tree-label">{basename(path)}</span>
       </Tooltip>

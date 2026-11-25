@@ -162,8 +162,11 @@ test("let go on a file's row the tree copies into its folder; Don't Ask Again st
   await expect(ask).not.toBeChecked();
   await ask.click();
   await expect(ask).toBeChecked();
-  // Asked again.
-  await page.getByRole("button", { name: "Files", exact: true }).click();
+  // Asked again. The fork's Settings is a modal over the window, so close it
+  // before reaching the sidebar's Files view again.
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".settings-dialog")).toHaveCount(0);
+  await page.getByRole("tab", { name: "Files", exact: true }).click();
   await systemDrop(page, ["/downloads/todo.md"], await centre(page, "plan.md"));
   await expect(dialog).toContainText("Copy 1 item to “trip”?");
 });
