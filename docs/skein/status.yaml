@@ -40,7 +40,7 @@ tasks:
     title: 整体接入上游 v1.4.7
     workstream: B
     kind: task
-    state: todo
+    state: doing
     acceptance: 在独立分支把 v1.4.7 整棵合并进 fork；解决 51 处冲突并让 80 个已删路径保持删除；upstream:verify、typecheck/lint/全量单测、cargo、桌面与 Android 冒烟通过；不把 docs/design、docs/images、ROADMAP 等 fork 已删内容带回来。
     spec: specs/上游1.4.7接入顺序.md
     estimate: 2–4 天
