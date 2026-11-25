@@ -1,6 +1,7 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { isImeKeydown } from "../../utils/ime";
+import { trackDrag } from "../drag/pointer-drag";
 import { usePresenceProps } from "../motion/usePresence";
 import "./sheet.css";
 
@@ -45,43 +46,52 @@ export function Sheet({
   // same tap opened: only a press made on it counts (a key's click too).
   const pressed = useRef(false);
   // A finger on the grab handle pulls the sheet down: it follows, then
-  // springs back or closes past a third of the screen.
-  const grab = useRef<{ id: number; y: number } | null>(null);
-  const [pull, setPull] = useState(0);
-  const pulled = useRef(0);
-  const onGrabDown = (e: React.TouchEvent<HTMLDivElement>) => {
+  // springs back or closes past two fifths of its own height. The pull is
+  // written straight to the element - a state update would trail the finger
+  // by a frame - and a release leaves the offset in place, so the closing
+  // animation starts from where the finger let go instead of from the top.
+  const onGrabDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!(e.target as HTMLElement).closest(".action-sheet-grab")) return;
-    grab.current = { id: e.touches[0].identifier, y: e.touches[0].clientY };
-  };
-  const onGrabMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    const held = grab.current;
-    const touch = Array.from(e.touches).find((t) => t.identifier === held?.id);
-    if (!held || !touch) return;
-    pulled.current = Math.max(0, touch.clientY - held.y);
-    setPull(pulled.current);
-  };
-  const onGrabUp = () => {
-    const held = grab.current;
-    if (!held) return;
-    grab.current = null;
-    if (pulled.current > 140) {
-      pulled.current = 0;
-      setPull(0);
-      onClose();
-    } else {
-      pulled.current = 0;
-      setPull(0);
-    }
+    const el = sheet.current;
+    if (!el) return;
+    const down = e.clientY;
+    const closeAt = Math.min(160, Math.max(72, el.offsetHeight * 0.4));
+    let pulled = 0;
+    trackDrag(e, {
+      start: () => {
+        // A finger owns the sheet now: its entrance spring (if still
+        // running) must not hold the transform away from the finger.
+        for (const animation of el.getAnimations?.() ?? []) animation.finish();
+        el.classList.add("is-pulled");
+      },
+      move: (_x, y) => {
+        pulled = Math.max(0, y - down);
+        el.style.transform = `translateY(${pulled}px)`;
+      },
+      end: (_x, y, dropped) => {
+        pulled = Math.max(pulled, Math.max(0, y - down));
+        if (dropped && pulled > closeAt) {
+          onClose();
+          return;
+        }
+        // Under the threshold: spring back, then hand the transform back to
+        // the stylesheet.
+        el.classList.replace("is-pulled", "is-settling");
+        el.style.transform = "translateY(0)";
+        const settle = () => {
+          el.classList.remove("is-settling");
+          el.style.transform = "";
+        };
+        el.addEventListener("transitionend", settle, { once: true });
+        window.setTimeout(settle, 400);
+      },
+    });
   };
   return createPortal(
     <div
       {...presence}
       className="sheet-scrim"
       onPointerDown={() => (pressed.current = true)}
-      onTouchStart={onGrabDown}
-      onTouchMove={onGrabMove}
-      onTouchEnd={onGrabUp}
-      onTouchCancel={onGrabUp}
       onClickCapture={(e) => {
         if (pressed.current || e.detail === 0) return;
         e.preventDefault();
@@ -97,11 +107,7 @@ export function Sheet({
         className={`sheet ${className}`}
         role={role}
         aria-label={label}
-        style={
-          pull
-            ? { transform: `translateY(${pull}px)`, transition: "none" }
-            : undefined
-        }
+        onPointerDown={onGrabDown}
       >
         {children}
       </div>
