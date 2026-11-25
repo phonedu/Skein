@@ -16,7 +16,7 @@ updated: 2026-11-25
 - **已实现并真实验收**：缤纷云 S3（标准）、七牛 Kodo（原生 create）、本机 WebDAV 服务器。
 - **实现但未真实验收**：标准 S3 的其它服务商（AWS/R2/MinIO/B2 等）、第三方 WebDAV（Nextcloud/NAS/坚果云/境外）。
 - **明确不推荐/不做**：坚果云作为主推；阿里云 OSS 真桶验收（代码保留）。
-- **未实现**：LAN Hub（S4）、自动/后台同步、WebDAV 重试与退避、S5 硬化。
+- **未实现**：自动/后台同步、S5 硬化。
 
 ## 2. 我们实现的能力（transport 层）
 
@@ -33,7 +33,7 @@ updated: 2026-11-25
 | 超时            | 连接 20 s，总 180 s；连接池 4 s 空闲回收                                                     |
 | 重定向          | 不跟随（`redirect::Policy::none()`）                                                         |
 | 状态映射        | 401/403 → `permissionError`；429 → `rateLimited`；507 → `quotaError`；其余 → `httpError`     |
-| 重试            | **无**（429/5xx 直接失败，运行安全停下）                                                     |
+| 重试            | 最多 4 次：429/503 等待（尊重 `Retry-After`，>60 s 报 `rateLimited`）；502/504 与无回答重发；MOVE 与锁的 DELETE 不重发 |
 | ETag / If-Match | **不用**；不依赖弱 ETag                                                                      |
 | 锁              | 不用 WebDAV `LOCK`；用协议自己的 `v1/lock.json`（create）                                    |
 | 列表            | **不用**（不 `PROPFIND` 列目录，除 MKCOL 复核）                                              |
@@ -80,7 +80,7 @@ updated: 2026-11-25
 1. **只支持 Basic auth**：不支持 Digest/NTLM/OAuth/Bearer；2FA 账号必须用应用密码。
 2. **只接受受信任的 HTTPS**：自签证书、企业内网 CA、纯 HTTP（非 localhost）都会被拒。
 3. **依赖 MOVE + Overwrite:F**：不把对象存在返回 412/409 的服务器会表现异常；这类服务器需要新 flavor，目前没有。
-4. **无重试/退避**：429/502/503 会直接让本次运行失败；数据安全但体验差，媒体/大量文件更明显。
+4. **重试已补（S10）**：429/503 退避、`Retry-After`、无回答/502/504 重发；MOVE 与锁 DELETE 不在不确定后重发。仍无签名 head/块自愈等 S5 硬化。
 5. **`MKCOL` 可能重复**：目录缓存只在一个 `WebDavStore` 实例内有效，而每次同步新建 store；块前缀多时会重复 MKCOL/PROPFIND，限流服务更容易被打。
 6. **403 不当作不存在**：部分 DAV 对缺失资源返回 403，会被映射成 `permissionError`（误报）。
 7. **不支持 WebDAV LOCK**：只用自己的 lock.json，不能借用服务器锁。
@@ -104,11 +104,11 @@ updated: 2026-11-25
 
 ### 4.3 跨 transport
 
-- 无自动同步/后台同步；无弱网重试策略；无 signed head / lastRevision（S5）；无 LAN Hub（S4）。
+- 无自动同步/后台同步；S3/WebDAV 已有有界重试（S10）；无 signed head / lastRevision（S5）；LAN Hub 已完成（S4）。
 - 无 Provider 预设/测试连接按钮（设置页保存后由首次同步的 probe 验证）。
 - 同步只收白名单扩展名：`md/markdown/mdown/mkd/txt/csv/base/canvas`、附件（图片/Office/PDF/音视频）与 `mp4/mov/webm`；`.bin`、`.zip` 等未列入的扩展名不会同步。这是设计边界，不是 bug；S3t 的二进制夹具因此用 `.mp4` 承载。
 - 手机端只验收了本机/官方插件；第三方 WebDAV/S3 在手机上的真机证据没有。
-- 多库桌面矩阵已跑（S3t3，2026-11-24）：共享连接/子仓库、同窗并发、同 prefix 拒绝、复制库 fork；库移动/改名由 move 场景覆盖。一次 E 同步出现 `networkError`，重跑通过；transport 重试归 S5。S3t4 已覆盖 32/128 MiB、空扫描、大批删除与遗留锁（Kodo/Bitiful）。
+- 多库桌面矩阵已跑（S3t3，2026-11-24）：共享连接/子仓库、同窗并发、同 prefix 拒绝、复制库 fork；库移动/改名由 move 场景覆盖。一次 E 同步出现 `networkError`，重跑通过；S10 已补 S3/WebDAV 有界重试，S5 留签名/块自愈。S3t4 已覆盖 32/128 MiB、空扫描、大批删除与遗留锁（Kodo/Bitiful）。
 
 ## 5. 测试覆盖与证据
 
@@ -133,6 +133,7 @@ updated: 2026-11-25
 | 2026-11-24（S3q crate）      | 真实七牛桶                                                     | probe 首建成功/二次 614；首次/改/删/两设备冲突 2/2 通过                                                          | UI、媒体                      |
 | 2026-11-24（S3q 桌面双实例） | 两个 portable debug，真实七牛桶，同 connection/prefix/加密密码 | A 首传 1；B 1 上 1 下；双向编辑各 1 上 1 下；同改一文件 B 产生 1 冲突副本；B 删后 A 收敛 removed 1               | 图片/视频/大文件、多库、境外  |
 | 2026-11-25（S9 真桶三问）    | 真实七牛桶，临时前缀                                           | 条件 PUT 两次 200 且第二次覆盖；两次完整 sync 通过；删锁后立即重建同 key；原生上传后立即 S3 读一致                | UI 双实例、媒体、境外         |
+| 2026-11-25（S10 重试）       | 本地 S3/WebDAV 测试 host + 缤纷云真桶                          | WebDAV GET/PUT 丢失回答重发；MOVE/锁 DELETE 不重发；标准 S3 412 同/异字节；Kodo 614 同/异字节；Bitiful 条件创建 1/1 | 真实 WebDAV 限流、弱网         |
 
 ## 6. 第三方 / 境外服务商怎么测
 

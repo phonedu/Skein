@@ -76,6 +76,7 @@ updated: 2026-11-25
      2. **Q2 连续同步与锁重建**：两次完整 sync（第二次 0 上传）通过；删除 `v1/lock.json` 后立即用 insertOnly 重建同 key 成功，读回新字节。
      3. **Q3 上传后立即读**：原生上传创建成功后立刻经 S3 endpoint GET，字节一致。
      `cargo test -p textus-sync --test kodo_live -- --ignored` 四项（probe/round-trip、首次/改/删/冲突、锁重建、连续同步+立即读）全部通过；新本地单测覆盖 614 同字节/异字节、无重发 614、400/631/401/403/507 映射与 429 有界重试。
+8. **S10 补强（2026-11-25）**：S3/WebDAV 共用同一套重试规则；Kodo 的 key 再走 `relative_path` 校验，token deadline 有单测；标准 S3 补了 412 丢失回答的本地测试（同字节算自己、异字节不算）；设置页从 `s3.bitiful.net` 识别出 Bitiful 的 `cn-east-1` 与 path-style。Bitiful 真桶 `s3_live` 在改动后复跑 1/1 通过。
 
 ## 4. 适配层要改哪里
 

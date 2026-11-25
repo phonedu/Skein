@@ -14,6 +14,7 @@ pub mod local;
 pub mod path;
 pub mod planner;
 pub mod protocol;
+mod retry;
 pub mod s3;
 pub mod store;
 pub mod webdav;

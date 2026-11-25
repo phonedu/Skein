@@ -94,6 +94,9 @@ export function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("notFound")) return t.syncErrorVersionGone;
   if (reason.includes("emptyScan")) return t.syncErrorEmpty;
   if (reason.includes("bulkDelete")) return t.syncErrorBulk;
+  if (reason.includes("rateLimited")) return t.syncErrorRateLimited;
+  if (reason.includes("quotaError")) return t.syncErrorQuota;
+  if (reason.includes("permissionError")) return t.syncErrorPermission;
   if (reason.includes("networkError") || reason.includes("httpError"))
     return t.syncErrorNetwork;
   if (
@@ -157,6 +160,8 @@ export function s3DefaultsFromEndpoint(endpoint: string): {
   }
   let match = host.match(/^s3[.-]([a-z0-9-]+)\.qiniucs\.com$/);
   if (match) return { region: match[1], s3Flavor: "kodo" };
+  if (host === "s3.bitiful.net")
+    return { region: "cn-east-1", pathStyle: true };
   match = host.match(/^oss-([a-z0-9-]+)\.aliyuncs\.com$/);
   if (match) return { region: match[1], s3Flavor: "oss" };
   match = host.match(/^s3[.-]([a-z0-9-]+)\.amazonaws\.com(\.cn)?$/);

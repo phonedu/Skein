@@ -51,10 +51,23 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
     const next = { ...config, endpoint };
     if (isS3) {
       const derived = s3DefaultsFromEndpoint(endpoint);
-      if (derived.region && !config.region.trim()) next.region = derived.region;
-      if (derived.s3Flavor && (config.s3Flavor ?? "standard") === "standard")
-        next.s3Flavor = derived.s3Flavor;
-      if (derived.pathStyle !== undefined) next.pathStyle = derived.pathStyle;
+      if (derived.s3Flavor === "kodo") {
+        // Pasting a Qiniu address switches to Kodo; keep only a region
+        // that Kodo's picker can show, and let the region decide the
+        // address that is saved.
+        const region = isKodoRegion(config.region)
+          ? config.region
+          : (derived.region ?? "");
+        next.s3Flavor = "kodo";
+        next.region = region;
+        next.endpoint = region ? kodoEndpoint(region) : "";
+        next.pathStyle = true;
+      } else {
+        if (derived.region && !config.region.trim())
+          next.region = derived.region;
+        if (derived.s3Flavor) next.s3Flavor = derived.s3Flavor;
+        if (derived.pathStyle !== undefined) next.pathStyle = derived.pathStyle;
+      }
     }
     setConfig(next);
   };

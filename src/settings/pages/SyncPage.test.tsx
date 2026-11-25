@@ -599,11 +599,16 @@ it("picks Qiniu Kodo first and asks for one of its regions", async () => {
   expect(screen.queryByLabelText(t.syncEndpointLabel)).toBeNull();
   const region = screen.getByLabelText(t.syncRegionLabel) as HTMLSelectElement;
   expect(region.value).toBe("");
+  const save = screen.getByRole("button", {
+    name: t.syncSavePreview,
+  }) as HTMLButtonElement;
+  expect(save.disabled).toBe(true);
   fireEvent.change(region, { target: { value: "ap-southeast-1" } });
+  expect(save.disabled).toBe(false);
   fireEvent.change(screen.getByLabelText(t.syncBucketLabel), {
     target: { value: "textus" },
   });
-  fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
+  fireEvent.click(save);
   await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
   const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
   expect(saved.s3Flavor).toBe("kodo");

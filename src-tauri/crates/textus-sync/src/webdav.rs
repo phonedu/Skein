@@ -3,12 +3,14 @@
 //! existing name means the object was already there.
 
 use crate::error::{Result, SyncError};
+use crate::retry::{backoff, retry_after, ATTEMPTS, LONGEST_WAIT};
 use crate::store::ObjectStore;
 use async_trait::async_trait;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use std::collections::HashSet;
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
 use uuid::Uuid;
 
 pub struct WebDavStore {
@@ -20,6 +22,8 @@ pub struct WebDavStore {
     /// Collections this session has made or seen, so a block upload does
     /// not ask for `v1/blocks/ab` again.
     dirs: Mutex<HashSet<String>>,
+    /// Until when every request waits: a busy server asked to be left.
+    quiet_until: Mutex<Option<Instant>>,
 }
 
 impl WebDavStore {
@@ -64,6 +68,7 @@ impl WebDavStore {
             username: username.to_string(),
             password: password.to_string(),
             dirs: Mutex::new(HashSet::new()),
+            quiet_until: Mutex::new(None),
         })
     }
 
@@ -103,30 +108,85 @@ impl WebDavStore {
         key: &str,
         body: Option<Vec<u8>>,
         headers: HeaderMap,
+        repeat: bool,
     ) -> Result<Response> {
-        self.send_url(method, self.url_for(key)?, body, headers)
+        self.send_url(method, self.url_for(key)?, body, headers, repeat)
             .await
     }
 
+    /// One request. Repeatable requests survive a lost answer or a gateway;
+    /// a busy server is waited out for every request. `repeat` is false for
+    /// a MOVE (it may already have happened) and the lock's DELETE.
     async fn send_url(
         &self,
         method: Method,
         url: Url,
         body: Option<Vec<u8>>,
         headers: HeaderMap,
+        repeat: bool,
     ) -> Result<Response> {
-        let mut request = self
-            .client
-            .request(method, url)
-            .basic_auth(&self.username, Some(&self.password))
-            .headers(headers);
-        if let Some(body) = body {
-            request = request.body(body);
+        for attempt in 0..ATTEMPTS {
+            self.wait_quiet().await;
+            let mut request = self
+                .client
+                .request(method.clone(), url.clone())
+                .basic_auth(&self.username, Some(&self.password))
+                .headers(headers.clone());
+            if let Some(body) = &body {
+                request = request.body(body.clone());
+            }
+            let response = match request.send().await {
+                Ok(response) => response,
+                Err(_) if repeat && attempt + 1 < ATTEMPTS => {
+                    tokio::time::sleep(backoff(attempt)).await;
+                    continue;
+                }
+                Err(_) => return Err(SyncError::new("networkError")),
+            };
+            let status = response.status().as_u16();
+            let busy = matches!(status, 429 | 503);
+            let gateway = matches!(status, 502 | 504);
+            if !(busy || (gateway && repeat)) || attempt + 1 >= ATTEMPTS {
+                return Ok(response);
+            }
+            let asked = retry_after(&response);
+            if asked > LONGEST_WAIT {
+                return Err(SyncError::new("rateLimited"));
+            }
+            let wait = backoff(attempt).max(asked);
+            if busy {
+                self.hold_until(wait);
+            }
+            tokio::time::sleep(wait).await;
         }
-        request
-            .send()
-            .await
-            .map_err(|_| SyncError::new("networkError"))
+        Err(SyncError::new("networkError"))
+    }
+
+    async fn wait_quiet(&self) {
+        loop {
+            let wait = {
+                let quiet = self
+                    .quiet_until
+                    .lock()
+                    .unwrap_or_else(|error| error.into_inner());
+                quiet
+                    .map(|until| until.saturating_duration_since(Instant::now()))
+                    .unwrap_or_default()
+            };
+            if wait.is_zero() {
+                return;
+            }
+            tokio::time::sleep(wait).await;
+        }
+    }
+
+    fn hold_until(&self, wait: Duration) {
+        let mut quiet = self
+            .quiet_until
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        let until = Instant::now() + wait;
+        *quiet = Some(quiet.map_or(until, |current| current.max(until)));
     }
 
     async fn ensure_parents(&self, key: &str) -> Result<()> {
@@ -158,6 +218,7 @@ impl WebDavStore {
                     url.clone(),
                     None,
                     HeaderMap::new(),
+                    true,
                 )
                 .await?;
             if response.status().is_success() || self.is_folder_url(url).await.unwrap_or(false) {
@@ -184,6 +245,7 @@ impl WebDavStore {
                 url,
                 None,
                 headers,
+                true,
             )
             .await?;
         Ok(response.status() == StatusCode::MULTI_STATUS || response.status() == StatusCode::OK)
@@ -206,7 +268,9 @@ impl WebDavStore {
 #[async_trait]
 impl ObjectStore for WebDavStore {
     async fn get(&self, key: &str) -> Result<Option<Vec<u8>>> {
-        let response = self.send(Method::GET, key, None, HeaderMap::new()).await?;
+        let response = self
+            .send(Method::GET, key, None, HeaderMap::new(), true)
+            .await?;
         if response.status() == StatusCode::NOT_FOUND {
             return Ok(None);
         }
@@ -221,7 +285,9 @@ impl ObjectStore for WebDavStore {
     }
 
     async fn has(&self, key: &str) -> Result<bool> {
-        let response = self.send(Method::HEAD, key, None, HeaderMap::new()).await?;
+        let response = self
+            .send(Method::HEAD, key, None, HeaderMap::new(), true)
+            .await?;
         if response.status() == StatusCode::NOT_FOUND {
             return Ok(false);
         }
@@ -234,7 +300,7 @@ impl ObjectStore for WebDavStore {
     async fn put(&self, key: &str, bytes: Vec<u8>) -> Result<()> {
         self.ensure_parents(key).await?;
         let response = self
-            .send(Method::PUT, key, Some(bytes), HeaderMap::new())
+            .send(Method::PUT, key, Some(bytes), HeaderMap::new(), true)
             .await?;
         if response.status().is_success() {
             Ok(())
@@ -263,6 +329,9 @@ impl ObjectStore for WebDavStore {
                 &temporary,
                 None,
                 headers,
+                // A MOVE may already have happened; a second could move
+                // something else or find the temporary gone.
+                false,
             )
             .await;
         let result = match moved {
@@ -282,8 +351,11 @@ impl ObjectStore for WebDavStore {
     }
 
     async fn delete(&self, key: &str) -> Result<()> {
+        // The lock's DELETE is not sent again: done the first time, a
+        // second could remove another device's lock.
+        let repeat = key != crate::protocol::LOCK_KEY;
         let response = self
-            .send(Method::DELETE, key, None, HeaderMap::new())
+            .send(Method::DELETE, key, None, HeaderMap::new(), repeat)
             .await?;
         if response.status().is_success() || response.status() == StatusCode::NOT_FOUND {
             Ok(())
@@ -359,5 +431,197 @@ mod tests {
             WebDavStore::refused(StatusCode::INTERNAL_SERVER_ERROR).args,
             vec!["500".to_string()]
         );
+    }
+
+    use std::io::{BufRead, BufReader, Read, Write};
+    use std::net::{TcpListener, TcpStream};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::thread::JoinHandle;
+    use std::time::Duration;
+
+    /// A tiny WebDAV host for the retry tests: it records each method, can
+    /// drop the first answer to one of them, and answers the rest as a
+    /// minimal server would.
+    struct TestHost {
+        port: u16,
+        methods: Arc<Mutex<Vec<String>>>,
+        drop_first: Arc<Mutex<HashSet<String>>>,
+        object: Arc<Mutex<Vec<u8>>>,
+        stop: Arc<AtomicBool>,
+        thread: Option<JoinHandle<()>>,
+    }
+
+    impl TestHost {
+        fn start() -> Self {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let port = listener.local_addr().unwrap().port();
+            let methods = Arc::new(Mutex::new(Vec::new()));
+            let drop_first = Arc::new(Mutex::new(HashSet::new()));
+            let object = Arc::new(Mutex::new(Vec::new()));
+            let stop = Arc::new(AtomicBool::new(false));
+            let thread = {
+                let methods = methods.clone();
+                let drop_first = drop_first.clone();
+                let object = object.clone();
+                let stop = stop.clone();
+                std::thread::spawn(move || {
+                    while !stop.load(Ordering::SeqCst) {
+                        let Ok((mut stream, _)) = listener.accept() else {
+                            break;
+                        };
+                        let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
+                        let Ok((line, body)) = read_request(&mut stream) else {
+                            continue;
+                        };
+                        let method = line
+                            .split_whitespace()
+                            .next()
+                            .unwrap_or_default()
+                            .to_string();
+                        let first = {
+                            let mut seen = methods.lock().unwrap();
+                            let first = !seen.iter().any(|known| known == &method);
+                            seen.push(method.clone());
+                            first
+                        };
+                        if first && drop_first.lock().unwrap().contains(&method) {
+                            continue;
+                        }
+                        match method.as_str() {
+                            "GET" => {
+                                let body = object.lock().unwrap().clone();
+                                respond(&mut stream, 200, &body);
+                            }
+                            "HEAD" => respond(&mut stream, 200, &[]),
+                            "PUT" => {
+                                *object.lock().unwrap() = body;
+                                respond(&mut stream, 201, &[]);
+                            }
+                            "MOVE" => respond(&mut stream, 201, &[]),
+                            "MKCOL" => respond(&mut stream, 201, &[]),
+                            "PROPFIND" => respond(&mut stream, 207, &[]),
+                            "DELETE" => respond(&mut stream, 200, &[]),
+                            _ => respond(&mut stream, 200, &[]),
+                        }
+                    }
+                })
+            };
+            Self {
+                port,
+                methods,
+                drop_first,
+                object,
+                stop,
+                thread: Some(thread),
+            }
+        }
+
+        fn store(&self) -> WebDavStore {
+            WebDavStore::new(&format!("http://127.0.0.1:{}", self.port), "", "u", "p").unwrap()
+        }
+
+        fn drop_first(&self, method: &str) {
+            self.drop_first.lock().unwrap().insert(method.to_string());
+        }
+
+        fn count(&self, method: &str) -> usize {
+            self.methods
+                .lock()
+                .unwrap()
+                .iter()
+                .filter(|seen| seen.as_str() == method)
+                .count()
+        }
+    }
+
+    impl Drop for TestHost {
+        fn drop(&mut self) {
+            self.stop.store(true, Ordering::SeqCst);
+            let _ = TcpStream::connect(("127.0.0.1", self.port));
+            if let Some(thread) = self.thread.take() {
+                let _ = thread.join();
+            }
+        }
+    }
+
+    fn read_request(stream: &mut TcpStream) -> std::io::Result<(String, Vec<u8>)> {
+        let mut reader = BufReader::new(stream.try_clone()?);
+        let mut line = String::new();
+        reader.read_line(&mut line)?;
+        let mut length = 0;
+        loop {
+            let mut header = String::new();
+            if reader.read_line(&mut header)? == 0 || header == "\r\n" {
+                break;
+            }
+            if let Some(value) = header.to_ascii_lowercase().strip_prefix("content-length:") {
+                length = value.trim().parse().unwrap_or(0);
+            }
+        }
+        let mut body = vec![0; length];
+        reader.read_exact(&mut body)?;
+        Ok((line, body))
+    }
+
+    fn respond(stream: &mut TcpStream, status: u16, body: &[u8]) {
+        let reason = match status {
+            200 => "OK",
+            201 => "Created",
+            207 => "Multi-Status",
+            _ => "Error",
+        };
+        let _ = write!(
+            stream,
+            "HTTP/1.1 {status} {reason}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        );
+        let _ = stream.write_all(body);
+    }
+
+    #[tokio::test]
+    async fn a_repeatable_request_survives_a_lost_answer() {
+        let host = TestHost::start();
+        host.drop_first("GET");
+        *host.object.lock().unwrap() = b"hello".to_vec();
+        let store = host.store();
+        assert_eq!(
+            store.get("v1/a.txt").await.unwrap(),
+            Some(b"hello".to_vec())
+        );
+        assert_eq!(host.count("GET"), 2);
+    }
+
+    #[tokio::test]
+    async fn a_lock_delete_is_not_sent_again_after_no_answer() {
+        let host = TestHost::start();
+        host.drop_first("DELETE");
+        let store = host.store();
+        let error = store.delete(crate::protocol::LOCK_KEY).await.unwrap_err();
+        assert_eq!(error.code, "networkError");
+        assert_eq!(host.count("DELETE"), 1);
+    }
+
+    #[tokio::test]
+    async fn a_move_is_not_sent_again_after_no_answer() {
+        let host = TestHost::start();
+        host.drop_first("MOVE");
+        let store = host.store();
+        let error = store
+            .create(crate::protocol::LOCK_KEY, b"one".to_vec())
+            .await
+            .unwrap_err();
+        assert_eq!(error.code, "networkError");
+        assert_eq!(host.count("MOVE"), 1);
+    }
+
+    #[tokio::test]
+    async fn a_put_is_sent_again_and_reaches_the_host() {
+        let host = TestHost::start();
+        host.drop_first("PUT");
+        let store = host.store();
+        store.put("v1/a.txt", b"two".to_vec()).await.unwrap();
+        assert_eq!(*host.object.lock().unwrap(), b"two");
+        assert_eq!(host.count("PUT"), 2);
     }
 }

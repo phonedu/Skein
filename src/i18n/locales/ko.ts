@@ -2203,6 +2203,9 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncErrorLocked:
     "다른 기기가 동기화 중이거나 이전 중단으로 잠금이 남아 있습니다.",
   syncErrorNetwork: "요청이 실패했습니다. 연결을 확인하세요.",
+  syncErrorRateLimited: "서버가 바쁩니다. 잠시 후 다시 시도하세요.",
+  syncErrorQuota: "저장 공간이 가득 찼거나 할당량을 초과했습니다.",
+  syncErrorPermission: "서버가 로그인 또는 권한을 거부했습니다.",
   syncErrorEmpty: "폴더가 비어 있습니다. 아무것도 삭제하지 않았습니다.",
   syncErrorBulk:
     "이 동기화는 많은 파일을 삭제합니다. 아무것도 삭제하지 않았습니다.",

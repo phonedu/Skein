@@ -9,11 +9,12 @@
 use crate::chunk::hash_hex;
 use crate::error::{Result, SyncError};
 use crate::kodo;
+use crate::retry::{backoff, http_date_ms, retry_after, ATTEMPTS, LONGEST_WAIT};
 use crate::store::ObjectStore;
 use async_trait::async_trait;
 use chrono::Utc;
 use hmac::{Hmac, Mac};
-use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE, DATE, RETRY_AFTER};
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, CONTENT_TYPE, DATE};
 use reqwest::{Client, Method, Response, StatusCode, Url};
 use sha2::Sha256;
 use std::collections::BTreeMap;
@@ -21,13 +22,6 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 type HmacSha256 = Hmac<Sha256>;
-
-/// How often one request is sent: the first time and three retries, as the
-/// Cloud Sync plugin does. A busy server (429, 503) or, for a repeatable
-/// request, a gateway (502, 504) and a lost answer are waited out.
-const ATTEMPTS: usize = 4;
-/// The longest a server may ask us to wait before the sync stops for now.
-const LONGEST_WAIT: Duration = Duration::from_secs(60);
 
 /// How a service spells a conditional create. OSS rejects
 /// `If-None-Match` on PutObject and uses its own header instead; Kodo has
@@ -135,6 +129,11 @@ impl S3Store {
     fn server_now_secs(&self) -> i64 {
         let skew = *self.skew.lock().unwrap_or_else(|error| error.into_inner());
         (Utc::now().timestamp_millis() + skew) / 1000
+    }
+
+    /// The upload token's deadline: one hour on the server's clock.
+    fn kodo_deadline(&self) -> i64 {
+        self.server_now_secs() + 3600
     }
 
     fn observe_date(&self, response: &Response) {
@@ -377,6 +376,9 @@ impl S3Store {
     /// 614 may be this run's own first try, so the key is read back and
     /// only the same bytes count as ours.
     async fn kodo_create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
+        if !crate::path::relative_path(key) {
+            return Err(SyncError::new("invalidPath"));
+        }
         let host = self
             .upload_host
             .as_deref()
@@ -388,7 +390,7 @@ impl S3Store {
         };
         // Dated by the server's clock: a device whose clock is wrong still
         // gets a token the upload host accepts.
-        let policy = kodo::put_policy(&self.bucket, &full_key, true, self.server_now_secs() + 3600);
+        let policy = kodo::put_policy(&self.bucket, &full_key, true, self.kodo_deadline());
         let token = kodo::upload_token(
             &self.access_key,
             &self.secret_key,
@@ -460,42 +462,6 @@ impl S3Store {
 struct Sent {
     response: Response,
     resent: bool,
-}
-
-/// A pause before sending again: doubling from half a second, give or take
-/// a fifth, so requests that met the same busy server spread out.
-fn backoff(attempt: usize) -> Duration {
-    let base = 500u64.saturating_mul(1u64 << attempt.min(10));
-    let nanos = Utc::now().timestamp_subsec_nanos() as u64;
-    let factor = 80 + nanos % 41;
-    Duration::from_millis(base * factor / 100)
-}
-
-/// Retry-After as a wait: seconds, or HTTP's date form.
-fn retry_after(response: &Response) -> Duration {
-    let Some(value) = response
-        .headers()
-        .get(RETRY_AFTER)
-        .and_then(|value| value.to_str().ok())
-    else {
-        return Duration::ZERO;
-    };
-    let value = value.trim();
-    if let Ok(seconds) = value.parse::<u64>() {
-        return Duration::from_secs(seconds);
-    }
-    let Some(at) = http_date_ms(value) else {
-        return Duration::ZERO;
-    };
-    Duration::from_millis((at - Utc::now().timestamp_millis()).max(0) as u64)
-}
-
-/// An HTTP date in milliseconds since the epoch. IMF-fixdate is the form
-/// servers send; the RFC 2822 parser also accepts the older forms.
-fn http_date_ms(value: &str) -> Option<i64> {
-    chrono::DateTime::parse_from_rfc2822(value)
-        .ok()
-        .map(|at| at.timestamp_millis())
 }
 
 fn upload_refused(code: u16) -> SyncError {
@@ -652,8 +618,11 @@ mod tests {
     struct TestHost {
         port: u16,
         posts: Arc<AtomicUsize>,
+        puts: Arc<AtomicUsize>,
         drop_first: Arc<AtomicBool>,
+        drop_first_put: Arc<AtomicBool>,
         post_status: Arc<AtomicU16>,
+        put_status: Arc<AtomicU16>,
         object: Arc<Mutex<Vec<u8>>>,
         stop: Arc<AtomicBool>,
         thread: Option<JoinHandle<()>>,
@@ -662,17 +631,22 @@ mod tests {
     impl TestHost {
         fn start() -> Self {
             let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-            listener.set_nonblocking(true).unwrap();
             let port = listener.local_addr().unwrap().port();
             let posts = Arc::new(AtomicUsize::new(0));
+            let puts = Arc::new(AtomicUsize::new(0));
             let drop_first = Arc::new(AtomicBool::new(true));
+            let drop_first_put = Arc::new(AtomicBool::new(false));
             let post_status = Arc::new(AtomicU16::new(0));
+            let put_status = Arc::new(AtomicU16::new(0));
             let object = Arc::new(Mutex::new(Vec::new()));
             let stop = Arc::new(AtomicBool::new(false));
             let thread = {
                 let posts = posts.clone();
+                let puts = puts.clone();
                 let drop_first = drop_first.clone();
+                let drop_first_put = drop_first_put.clone();
                 let post_status = post_status.clone();
+                let put_status = put_status.clone();
                 let object = object.clone();
                 let stop = stop.clone();
                 std::thread::spawn(move || {
@@ -680,7 +654,7 @@ mod tests {
                         match listener.accept() {
                             Ok((mut stream, _)) => {
                                 let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
-                                if let Ok((line, _)) = read_request(&mut stream) {
+                                if let Ok((line, body)) = read_request(&mut stream) {
                                     if line.starts_with("POST ") {
                                         let first = posts.fetch_add(1, Ordering::SeqCst) == 0;
                                         let forced = post_status.load(Ordering::SeqCst);
@@ -694,6 +668,18 @@ mod tests {
                                             continue;
                                         }
                                         respond(&mut stream, 614, &[]);
+                                    } else if line.starts_with("PUT ") {
+                                        let first = puts.fetch_add(1, Ordering::SeqCst) == 0;
+                                        let forced = put_status.load(Ordering::SeqCst);
+                                        if first && drop_first_put.load(Ordering::SeqCst) {
+                                            // The first PUT is lost after
+                                            // it may have landed.
+                                        } else if forced != 0 {
+                                            respond(&mut stream, forced, &[]);
+                                        } else {
+                                            *object.lock().unwrap() = body;
+                                            respond(&mut stream, 200, &[]);
+                                        }
                                     } else if line.starts_with("GET ") {
                                         let body = object.lock().unwrap().clone();
                                         respond(&mut stream, 200, &body);
@@ -701,9 +687,6 @@ mod tests {
                                         respond(&mut stream, 200, &[]);
                                     }
                                 }
-                            }
-                            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
-                                std::thread::sleep(Duration::from_millis(2));
                             }
                             Err(_) => break,
                         }
@@ -713,8 +696,11 @@ mod tests {
             Self {
                 port,
                 posts,
+                puts,
                 drop_first,
+                drop_first_put,
                 post_status,
+                put_status,
                 object,
                 stop,
                 thread: Some(thread),
@@ -741,6 +727,20 @@ mod tests {
             .unwrap();
             store.upload_host = Some(address);
             store
+        }
+
+        fn standard_store(&self) -> S3Store {
+            S3Store::new(
+                &format!("http://127.0.0.1:{}", self.port),
+                "bucket",
+                "",
+                "cn-east-1",
+                "ak",
+                "sk",
+                true,
+                S3Flavor::Standard,
+            )
+            .unwrap()
         }
     }
 
@@ -901,6 +901,27 @@ mod tests {
         .unwrap();
         *store.skew.lock().unwrap() = 3_600_000;
         assert!(store.server_now_secs() >= Utc::now().timestamp() + 3_599);
+        assert!(store.kodo_deadline() >= Utc::now().timestamp() + 7_199);
+    }
+
+    #[tokio::test]
+    async fn kodo_refuses_an_invalid_key_before_uploading() {
+        let store = S3Store::new(
+            "https://s3.cn-south-1.qiniucs.com",
+            "bucket",
+            "",
+            "cn-south-1",
+            "ak",
+            "sk",
+            true,
+            S3Flavor::Kodo,
+        )
+        .unwrap();
+        let error = store
+            .create("../outside", b"one".to_vec())
+            .await
+            .unwrap_err();
+        assert_eq!(error.code, "invalidPath");
     }
 
     #[tokio::test]
@@ -925,6 +946,34 @@ mod tests {
         // A 614 with no lost answer is never this run's create.
         host.posts.store(0, Ordering::SeqCst);
         host.drop_first.store(false, Ordering::SeqCst);
+        assert!(!store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap());
+    }
+
+    #[tokio::test]
+    async fn a_412_after_a_lost_put_is_ours_only_for_the_same_bytes() {
+        let host = TestHost::start();
+        let store = host.standard_store();
+        *host.object.lock().unwrap() = b"ours".to_vec();
+        host.put_status.store(412, Ordering::SeqCst);
+        host.drop_first_put.store(true, Ordering::SeqCst);
+        assert!(store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap());
+        assert_eq!(host.puts.load(Ordering::SeqCst), 2);
+
+        host.puts.store(0, Ordering::SeqCst);
+        *host.object.lock().unwrap() = b"other".to_vec();
+        assert!(!store
+            .create("v1/lock.json", b"ours".to_vec())
+            .await
+            .unwrap());
+
+        host.puts.store(0, Ordering::SeqCst);
+        host.drop_first_put.store(false, Ordering::SeqCst);
         assert!(!store
             .create("v1/lock.json", b"ours".to_vec())
             .await

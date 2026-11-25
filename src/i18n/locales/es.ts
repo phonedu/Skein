@@ -2364,6 +2364,10 @@ para usar una.
   syncLast: "Last synced {time}",
   syncErrorLocked: "Another device is syncing, or an old lock remains.",
   syncErrorNetwork: "The request failed. Check the connection.",
+  syncErrorRateLimited:
+    "El servidor está ocupado. Inténtalo de nuevo en un momento.",
+  syncErrorQuota: "El almacenamiento está lleno o has superado la cuota.",
+  syncErrorPermission: "El servidor rechazó el inicio de sesión o el permiso.",
   syncErrorEmpty: "The folder looks empty; nothing was deleted.",
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",

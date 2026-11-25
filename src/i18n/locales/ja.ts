@@ -2228,6 +2228,10 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncLast: "最終同期 {time}",
   syncErrorLocked: "別の端末が同期中か、前回の中断でロックが残っています。",
   syncErrorNetwork: "リクエストに失敗しました。接続を確認してください。",
+  syncErrorRateLimited:
+    "サーバーが混み合っています。しばらくしてからもう一度お試しください。",
+  syncErrorQuota: "ストレージがいっぱいか、容量を超えています。",
+  syncErrorPermission: "サーバーがサインインまたは権限を拒否しました。",
   syncErrorEmpty: "フォルダーが空です。何も削除していません。",
   syncErrorBulk: "この同期は多くのファイルを削除します。何も削除していません。",
   syncErrorConfig: "接続項目を確認してください。",

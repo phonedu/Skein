@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { resolveStrings } from "../../i18n/strings";
 import { fill } from "../../i18n/fill";
@@ -19,6 +21,12 @@ describe("sync page text", () => {
     expect(errorText(t, "identityConflict: a.md")).toBe(
       t.syncErrorIdentityConflict,
     );
+  });
+
+  it("explains busy, quota and permission refusals", () => {
+    expect(errorText(t, "rateLimited")).toBe(t.syncErrorRateLimited);
+    expect(errorText(t, "quotaError")).toBe(t.syncErrorQuota);
+    expect(errorText(t, "permissionError")).toBe(t.syncErrorPermission);
   });
 
   it("says how many documents got a new identity", () => {
@@ -59,10 +67,32 @@ describe("S3 defaults from an address", () => {
     expect(errorText(t, "regionRequired")).toBe(t.syncErrorRegion);
   });
 
+  it("keeps the Rust and TypeScript region tables equal", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src-tauri/crates/textus-sync/src/kodo.rs"),
+      "utf8",
+    );
+    const table = source.match(
+      /pub const REGIONS: \[\(&str, &str\); 8\] = \[([\s\S]*?)\];/,
+    );
+    expect(table).not.toBeNull();
+    const rust = [...table![1].matchAll(/\("([^"]+)", "([^"]+)"\)/g)].map(
+      (pair) => [pair[1], pair[2]],
+    );
+    expect(rust).toEqual(KODO_REGIONS.map(({ id, host }) => [id, host]));
+  });
+
   it("reads Alibaba OSS's flavour and region", () => {
     expect(
       s3DefaultsFromEndpoint("https://oss-cn-hangzhou.aliyuncs.com"),
     ).toEqual({ region: "cn-hangzhou", s3Flavor: "oss" });
+  });
+
+  it("reads Bitiful's fixed region and path-style address", () => {
+    expect(s3DefaultsFromEndpoint("https://s3.bitiful.net")).toEqual({
+      region: "cn-east-1",
+      pathStyle: true,
+    });
   });
 
   it("reads an AWS region and leaves the flavour standard", () => {

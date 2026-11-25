@@ -2316,6 +2316,11 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncLast: "Last synced {time}",
   syncErrorLocked: "Another device is syncing, or an old lock remains.",
   syncErrorNetwork: "The request failed. Check the connection.",
+  syncErrorRateLimited:
+    "Der Server ist beschäftigt. Versuche es gleich noch einmal.",
+  syncErrorQuota: "Der Speicher ist voll oder das Kontingent überschritten.",
+  syncErrorPermission:
+    "Der Server hat die Anmeldung oder Berechtigung abgelehnt.",
   syncErrorEmpty: "The folder looks empty; nothing was deleted.",
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",

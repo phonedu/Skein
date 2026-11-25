@@ -6,7 +6,7 @@ import type { Strings } from "../../i18n/strings";
 import { SyncConnectionFields } from "./SyncConnectionFields";
 import { SettingsGroup } from "./SettingsGroup";
 import { SyncHubJoin } from "./SyncHubJoin";
-import type { SyncConnectionType } from "./sync-page-model";
+import { isKodoRegion, type SyncConnectionType } from "./sync-page-model";
 
 export interface SyncConnectViewProps {
   t: Strings;
@@ -53,6 +53,13 @@ export function SyncConnectView(props: SyncConnectViewProps) {
     mode === "new"
       ? t.syncConnectionNew
       : `${typeName(t, type)} · ${t.syncConnectionEdit}`;
+  // Kodo's region decides its address and cannot be defaulted: without one
+  // there is nothing safe to save.
+  const kodoNeedsRegion =
+    fields.config.provider === "s3" &&
+    fields.config.s3Flavor === "kodo" &&
+    !isKodoRegion(fields.config.region);
+  const saveDisabled = busy || unsupportedRoot || kodoNeedsRegion;
   const cancel = (
     <button
       type="button"
@@ -121,7 +128,7 @@ export function SyncConnectView(props: SyncConnectViewProps) {
             <button
               type="button"
               className="tx-button primary"
-              disabled={busy || unsupportedRoot}
+              disabled={saveDisabled}
               onClick={onSave}
             >
               {t.syncSavePreview}

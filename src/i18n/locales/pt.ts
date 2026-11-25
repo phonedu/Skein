@@ -2343,6 +2343,10 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncLast: "Last synced {time}",
   syncErrorLocked: "Another device is syncing, or an old lock remains.",
   syncErrorNetwork: "The request failed. Check the connection.",
+  syncErrorRateLimited:
+    "O servidor está ocupado. Tente novamente em instantes.",
+  syncErrorQuota: "O armazenamento está cheio ou a cota foi excedida.",
+  syncErrorPermission: "O servidor recusou o início de sessão ou a permissão.",
   syncErrorEmpty: "The folder looks empty; nothing was deleted.",
   syncErrorBulk: "This sync would delete many files; nothing was deleted.",
   syncErrorConfig: "Check the connection fields.",
