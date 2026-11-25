@@ -24,6 +24,7 @@ import {
 import { emitToThisWindow } from "../platform/menu-events";
 import { openCommandPalette } from "../app/command-palette";
 import { VaultButton } from "../vaults/VaultButton";
+import { vaultName } from "../vaults/vault-model";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
 import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneToday.css";
@@ -64,7 +65,7 @@ export function PhoneToday({
     openFolder.folder ?? openFolder.treeRoot ?? null,
   );
   const root = openFolder.folder ?? openFolder.treeRoot;
-  const vault = root ? root.split(/[\\/]/).filter(Boolean).pop() : null;
+  const vault = root ? vaultName(root) : null;
   const time = (ms: number) =>
     new Date(ms).toLocaleTimeString(undefined, {
       hour: "2-digit",

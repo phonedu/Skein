@@ -1,5 +1,6 @@
 /** A library's name for the switcher: the last piece of a plain path or of
- *  a phone's SAF URL ("…/tree/primary%3ANotes" is "Notes"). */
+ *  a phone's SAF URL ("…/tree/primary%3ANotes" is "Notes"; a nested folder's
+ *  document id "primary:Documents/inbox" is "inbox"). */
 export function vaultName(path: string): string {
   const clean = path.replace(/[\\/]+$/, "");
   const last = clean.split(/[\\/]/).filter(Boolean).pop() ?? clean;
@@ -11,7 +12,12 @@ export function vaultName(path: string): string {
   }
   const colon = name.lastIndexOf(":");
   // A document id's volume ("primary:Notes"), not a drive ("C:").
-  return colon > 0 && colon < name.length - 1 ? name.slice(colon + 1) : name;
+  const named =
+    colon > 0 && colon < name.length - 1 ? name.slice(colon + 1) : name;
+  // A nested document id keeps its parents after decoding: the folder's own
+  // name is the last piece.
+  const slash = named.lastIndexOf("/");
+  return slash >= 0 ? named.slice(slash + 1) || named : named;
 }
 
 export interface VaultEntry {

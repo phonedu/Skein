@@ -25,12 +25,11 @@ import {
 } from "../engine/controls/icons";
 import { Presence } from "../engine/motion/usePresence";
 import { VaultButton } from "../vaults/VaultButton";
+import { vaultName } from "../vaults/vault-model";
 import { PhonePluginStatus } from "./PhonePluginStatus";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
 import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneHome.css";
-
-const baseName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p;
 
 export function PhoneHome({
   t,
@@ -109,7 +108,7 @@ export function PhoneHome({
           openFolder={openFolder}
           variant="files"
           current={place || null}
-          name={place ? baseName(place) : t.treeTab}
+          name={place ? vaultName(place) : t.treeTab}
         />
         <div className="ph-acts">
           <button

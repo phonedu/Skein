@@ -20,6 +20,7 @@ import { fileActionEntries } from "../../files/file-actions";
 import { currentTreeSort } from "../../files/tree-view-events";
 import { canOpenFolder } from "../../platform/capabilities";
 import { VaultButton } from "../../vaults/VaultButton";
+import { vaultName } from "../../vaults/vault-model";
 
 /**
  * The left view column: the folder's name, Today and Files, and the Files
@@ -94,9 +95,6 @@ export function Sidebar({
     [presenceRef, frame],
   );
   const root = openFolder.folder ?? openFolder.treeRoot;
-  const vaultName = root
-    ? (root.split(/[\\/]/).filter(Boolean).pop() ?? null)
-    : null;
   // The library's note count (an index label, "12+" at the cap), drawn in
   // the column's own foot.
   const [noteCount, setNoteCount] = useState<string | null>(null);
@@ -142,7 +140,7 @@ export function Sidebar({
               openFolder={openFolder}
               variant="sidebar"
               current={root}
-              name={vaultName ?? t.menuOpenFolder}
+              name={root ? vaultName(root) : t.menuOpenFolder}
             />
             <div className="sidebar-views">
               <Segmented

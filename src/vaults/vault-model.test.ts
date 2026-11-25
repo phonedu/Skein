@@ -15,6 +15,12 @@ describe("a library's name", () => {
     // The document id's volume prefix is not the name.
     expect(vaultName(SAF)).toBe("Notes");
     expect(vaultName("primary:Notes")).toBe("Notes");
+    // A nested folder's document id carries its parents: the last is it.
+    expect(
+      vaultName(
+        "content://com.android.externalstorage.documents/tree/primary%3ADocuments/document/primary%3ADocuments%2Finbox",
+      ),
+    ).toBe("inbox");
   });
 
   it("keeps a segment that is not a name", () => {
