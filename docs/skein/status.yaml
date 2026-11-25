@@ -15,16 +15,24 @@ workstreams:
     state: doing
     focus: PH3+PH4 完成（2026-11-23）：A/B/G/I 逐项证据见规格 §13；手机空态/按钮/三色统一；下一次手机任务归 D3
     spec: specs/Textus-手机端元素一致性方案.md
+    also:
+      - specs/界面契约.md
   - id: S
     name: 同步（S 组）
     state: doing
     focus: S4 LAN Hub 完成（2026-11-24）；S12 下载块复用完成（2026-11-25）；裁决 66 定下一库多后端：S13 多后端状态 → S14 首次对账 → S15 同步页入口；S6/S7 与 S5 在后
     spec: specs/单库多后端同步.md
+    also:
+      - specs/同步方案.md
+      - specs/同步页面改版.md
+      - research/同步评审/05-安全与威胁模型评审.md
   - id: B
     name: 上游跟随（B 组）
     state: doing
     focus: v1.4.6 已并线（457f6693）；v1.4.7 稳定版已出、1.4.8-rc.1 已出现；2026-11-25 用户改定先整体接入 v1.4.7（B8），B7 转为合并后的界面验收；界面契约（裁决 59）与 ui-contracts 门禁保留
     spec: specs/界面契约.md
+    also:
+      - research/上游1.4.7界面功能盘点.md
   - id: T1
     name: 主题（T1）
     state: doing
@@ -36,6 +44,21 @@ workstreams:
     focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
     spec: specs/文档体系-v3.md
 tasks:
+  - id: DOC-1
+    title: 文档台账：工作线规格声明与任务排队
+    workstream: DOC
+    kind: task
+    state: doing
+    acceptance: workstream 可声明多个相关 spec（also）；check-docs-state 拒绝未在所属工作线声明的 task/later spec；docs:task add --next 插到 Next 最前；文档体系 v3 写明两条；现有台账通过 docs:check/wrap。
+    spec: specs/文档体系-v3.md
+    estimate: 0.5 天
+    brief:
+      problem: 工作线只有一个 spec 字段，任务可指向新规格而工作线仍旧；新增任务默认排到队尾，Next 只取前 6 条，导致已登记的任务找不到。S13-S15 与 S7 的 brief 漂移就是这两处没有被自动检查拦住。
+      expected: 工作线可列 also 相关规格；每个 task/later 的 spec 必须属于所属工作线（primary 或 also），否则 docs:check 失败；docs:task add --next 把新任务插到 Next 最前；规格与命令说明同步更新。
+      standard: 不改 status/STATUS 生成语义；also 只用于校验与可追溯；不做复杂优先级排序；保持现有 schema 兼容；check 信息指出缺哪条 also。
+      not: 不重写文档系统；不改任务六行/归档流程；不做自动决定任务顺序；不改产品/同步代码。
+      scope: scripts/check-docs-state.mjs、scripts/docs-task.mjs、docs/skein/status.yaml 的 also 声明、文档体系-v3.md、生成页。
+      evidence: 现有台账通过；临时把 task 指向未声明 spec 时 check 失败；--next 插入位置手工输出；docs:check、docs:wrap 通过。
   - id: D0.5
     title: 理论小样本验证
     workstream: D1

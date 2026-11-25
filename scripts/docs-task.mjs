@@ -76,7 +76,7 @@ function usage() {
   npm run docs:task -- start <id>
   npm run docs:task -- done <id> --evidence "..."
   npm run docs:task -- add --id <id> --title "..." --workstream <id> --spec <path>
-                            [--kind task|chore] [--now] [--acceptance "..."] [--estimate "..."]
+                            [--kind task|chore] [--now] [--next] [--acceptance "..."] [--estimate "..."]
                             [--problem ...] [--expected ...] [--standard ...]
                             [--not ...] [--scope ...] [--evidence ...]`);
   process.exit(1);
@@ -244,7 +244,13 @@ if (command === "brief") {
     estimate: options.estimate ?? "—",
     ...(Object.keys(brief).length ? { brief } : {}),
   };
-  data.tasks.push(task);
+  const firstTodo = data.tasks.findIndex((item) => item.state !== "doing");
+  const at = options.next
+    ? firstTodo === -1
+      ? data.tasks.length
+      : firstTodo
+    : data.tasks.length;
+  data.tasks.splice(at, 0, task);
   save(data);
   console.log(
     missing.length && kind === "task"

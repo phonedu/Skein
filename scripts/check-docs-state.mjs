@@ -57,6 +57,26 @@ function resolveSpec(spec) {
 }
 
 const workstreams = new Set((status.workstreams ?? []).map((line) => line.id));
+const workstreamById = new Map(
+  (status.workstreams ?? []).map((line) => [line.id, line]),
+);
+const specKey = (spec) => {
+  const path = resolveSpec(spec);
+  return path ? rel(path) : String(spec).split("#")[0];
+};
+for (const line of status.workstreams ?? []) {
+  if (!line.spec) problems.push(`workstream ${line.id}: missing spec`);
+  else if (!resolveSpec(line.spec))
+    problems.push(`workstream ${line.id}: spec does not exist: ${line.spec}`);
+  if (line.also !== undefined && !Array.isArray(line.also))
+    problems.push(`workstream ${line.id}: also must be a list`);
+  for (const extra of line.also ?? []) {
+    if (!resolveSpec(extra))
+      problems.push(`workstream ${line.id}: also does not exist: ${extra}`);
+    if (specKey(extra) === specKey(line.spec))
+      problems.push(`workstream ${line.id}: also repeats its primary spec`);
+  }
+}
 const items = [
   ...(status.tasks ?? []).map((item) => ({ ...item, list: "tasks" })),
   ...(status.later ?? []).map((item) => ({ ...item, list: "later" })),
@@ -89,6 +109,16 @@ for (const item of items) {
   if (!specPath) {
     problems.push(`${item.id}: spec does not exist: ${item.spec}`);
     continue;
+  }
+  const workstream = workstreamById.get(item.workstream);
+  if (workstream) {
+    const declared = new Set(
+      [workstream.spec, ...(workstream.also ?? [])].map(specKey),
+    );
+    if (!declared.has(specKey(item.spec)))
+      problems.push(
+        `${item.id}: spec ${item.spec} is not declared by workstream ${workstream.id} (add it to also)`,
+      );
   }
   const meta = frontMatter(readFileSync(specPath, "utf8"));
   if ((item.kind ?? "task") === "chore") continue;

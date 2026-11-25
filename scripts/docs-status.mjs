@@ -51,13 +51,18 @@ function briefMissing(task) {
 }
 
 function workstreams() {
+  const name = (path) =>
+    path.split("#")[0].split("/").pop().replace(/\.md$/, "");
   return [
     "| 线 | 状态 | 当前焦点 | 出处 |",
     "| --- | --- | --- | --- |",
-    ...data.workstreams.map(
-      (line) =>
-        `| ${cell(line.name)} | ${line.state === "doing" ? "◐" : "☐"} | ${cell(line.focus)} | ${link("规格", line.spec)} |`,
-    ),
+    ...data.workstreams.map((line) => {
+      const specs = [
+        link("规格", line.spec),
+        ...(line.also ?? []).map((extra) => link(name(extra), extra)),
+      ].join(" · ");
+      return `| ${cell(line.name)} | ${line.state === "doing" ? "◐" : "☐"} | ${cell(line.focus)} | ${specs} |`;
+    }),
   ].join("\n");
 }
 
