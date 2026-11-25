@@ -7,3 +7,7 @@
 - Each library on that list has a trash that takes it off the list only: its
   folder and documents stay, and so do the project's settings and the
   library's sync binding.
+
+### Fixed
+
+- A library opened through Android's folder picker takes its name from the folder, not from the encoded `content://` address.
