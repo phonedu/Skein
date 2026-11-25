@@ -101,9 +101,10 @@ test("the phone settings keep the fork's row, line and field contracts", async (
   ]);
   await back(page);
 
-  // The theme workshop stacks on the extensions page; its preview is not
-  // pushed past the screen's edge.
-  await settingsRow(page, "扩展").tap();
+  // The theme workshop stacks on the phone; its preview is not pushed past
+  // the screen's edge. 1.4.7's Create page moved the entry to the theme
+  // store's "制作你的主题".
+  await settingsRow(page, "外观").tap();
   await page.getByRole("button", { name: "制作你的主题", exact: true }).tap();
   await expect(page.locator(".theme-workshop")).toBeVisible();
   const workshop = await page.locator(".theme-workshop").evaluate((el) => {

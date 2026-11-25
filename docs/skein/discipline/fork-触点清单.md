@@ -32,15 +32,15 @@ upstream:plan 会显示）：
 
 ### 图标档位（裁决 58，取代 56/57）
 
-| 上游也有的文件                              | fork 的改动                                                                                                       | 守卫                               |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| `src/engine/controls/icons.tsx`             | `ICON_STROKE = 1.45`（上游基线 2/1.15）；`iconSize`/`iconMarkup` 只乘 `--icon-scale × --chrome-scale`，无全局倍率 | `ui-contracts` 图标带；全量 vitest |
-| `src/engine/tokens/ds-base.css`             | 根 `--icon-scale: 1.4`；手机 `:root[mobile]` `1.35`                                                               | `ui-contracts`                     |
-| `src/engine/tokens/ds-buttons.css`          | 窗口栏等 svg `scale: 1.125 × chrome-scale`（无 growth）                                                           | `ui-contracts` desktop bar         |
-| `src/engine/controls/icon-masks.css`        | `.tx-icon` 18 × icon-scale                                                                                        | `ui-contracts`                     |
-| `src/files/FileTree.css`                    | `--icon-scale: 1.25`（上游 1.2）                                                                                  | `ui-contracts` desktop tree        |
-| `src/features/settings/settings-dialog.css` | 导航图标 `--icon-scale: 1.25`（上游 1.15）                                                                        | `ui-contracts` desktop settings    |
-| `src/features/settings/settings-phone.css`  | 行图标 `1.55`、chevron `1.2`、返回 `1.1`                                                                          | `phone-shell` + `ui-contracts`     |
+| 上游也有的文件                              | fork 的改动                                                                                                                                  | 守卫                               |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `src/engine/controls/icons.tsx`             | `ICON_STROKE = 1.35`（上游基线 2/1.15；2026-11-25 由 1.45 收一档）；`iconSize`/`iconMarkup` 只乘 `--icon-scale × --chrome-scale`，无全局倍率 | `ui-contracts` 图标带；全量 vitest |
+| `src/engine/tokens/ds-base.css`             | 根 `--icon-scale: 1.4`；手机 `:root[mobile]` `1.35`                                                                                          | `ui-contracts`                     |
+| `src/engine/tokens/ds-buttons.css`          | 窗口栏等 svg `scale: 1.125 × chrome-scale`（无 growth）                                                                                      | `ui-contracts` desktop bar         |
+| `src/engine/controls/icon-masks.css`        | `.tx-icon` 18 × icon-scale                                                                                                                   | `ui-contracts`                     |
+| `src/files/FileTree.css`                    | `--icon-scale: 1.25`（上游 1.2）                                                                                                             | `ui-contracts` desktop tree        |
+| `src/features/settings/settings-dialog.css` | 导航图标 `--icon-scale: 1.25`（上游 1.15）                                                                                                   | `ui-contracts` desktop settings    |
+| `src/features/settings/settings-phone.css`  | 行图标 `1.55`、chevron `1.2`、返回 `1.1`                                                                                                     | `phone-shell` + `ui-contracts`     |
 
 **上游最可能的覆盖方式**：给 `.tx-icon-button svg`、`.settings-phone-row-ic`、
 `.tree-icon` 等选择器新增自己的 width/height/scale。文本 diff 可能很小甚至

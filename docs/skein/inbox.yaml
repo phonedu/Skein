@@ -24,3 +24,9 @@ items:
     kind: idea
     status: resolved
     resolved_at: 2026-11-25
+  - id: I-20261125-2
+    date: 2026-11-25
+    text: 内置文件图标主题（后续）：文件图标下拉目前只有默认；插件已支持 contributes.fileIconThemes，官方 60 个插件暂无主题包。候选：自绘 Skein 一套，或引入 MIT 图标集（Seti/Material 类）做内置插件；先立裁决再动。
+    source: manual
+    kind: idea
+    status: new
