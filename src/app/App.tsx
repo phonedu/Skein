@@ -99,7 +99,6 @@ function App() {
     surface: phoneView,
     setSurface: setPhoneView,
   } = usePhoneSurfaces(activeTab.view, activeTab.path);
-
   const { tutorial, settingsOpening, pendingClose } = shell;
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
   const {
@@ -111,6 +110,12 @@ function App() {
     addBlankTab,
     addStartTab,
   } = shell.tabState;
+  // Closing a phone's last tab leaves no page to edit: back to Today, not a
+  // phantom document.
+  useEffect(() => {
+    if (phone && phoneView === "doc" && tabs.length === 0)
+      setPhoneView("today");
+  }, [phone, phoneView, tabs.length, setPhoneView]);
   // A tab brought to the front takes the editors' latest text into the
   // model first: what was typed a moment ago is not lost with the view.
   const activateDocument = useCallback(
