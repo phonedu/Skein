@@ -17,6 +17,7 @@ export function TabSwitcher({
   onActivate,
   onClose,
   onAdd,
+  activeTitle,
 }: {
   tabs: DocTab[];
   activeTabId: string;
@@ -25,6 +26,9 @@ export function TabSwitcher({
   onClose: (id: string) => void;
   /** The tab row's +, which a phone does not draw: a new tab from here. */
   onAdd: () => void;
+  /** The page in front when it is not a window tab yet (a phone's current
+   *  delivery): its name still shows, with no count. */
+  activeTitle?: string;
 }) {
   const { t } = useSettings();
   const [open, setOpen] = useState(false);
@@ -43,9 +47,11 @@ export function TabSwitcher({
           <span className="unsaved-dot" aria-hidden />
         )}
         <span className="tx-truncate tab-switcher-name">
-          {active ? tabTitle(active, t) : ""}
+          {active ? tabTitle(active, t) : (activeTitle ?? "")}
         </span>
-        <span className="tab-switcher-count">{tabs.length}</span>
+        {tabs.length > 0 && (
+          <span className="tab-switcher-count">{tabs.length}</span>
+        )}
       </button>
       <Presence show={open}>
         {open && (

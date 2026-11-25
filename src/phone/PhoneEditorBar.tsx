@@ -2,7 +2,7 @@
 // document's name, Textus AI, and ⋯ for the document's action sheet. The
 // phone has no tab strip - the library is the navigation - so what the
 // desktop puts in a right-click menu lives in this sheet.
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { Strings } from "../i18n/strings";
 import { TextusAiButton } from "../ai/TextusAiSwitch";
 import {
@@ -41,6 +41,7 @@ export function PhoneEditorBar({
   agentShortcut,
   onBack,
   onToggleAgent,
+  tabSwitcher,
 }: {
   t: Strings;
   title: string;
@@ -59,6 +60,8 @@ export function PhoneEditorBar({
   agentShortcut: string;
   onBack: () => void;
   onToggleAgent: () => void;
+  /** The phone's tabs, behind the document's name. */
+  tabSwitcher?: ReactNode;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [outlineOpen, setOutlineOpen] = useState(false);
@@ -159,10 +162,12 @@ export function PhoneEditorBar({
         >
           <BackChevronIcon />
         </button>
-        <div className={`pe-title${sub ? " pe-title-sub" : ""}`}>
-          <span className="pe-name">{title}</span>
-          {sub && <span className="pe-path">{sub}</span>}
-        </div>
+        {tabSwitcher ?? (
+          <div className={`pe-title${sub ? " pe-title-sub" : ""}`}>
+            <span className="pe-name">{title}</span>
+            {sub && <span className="pe-path">{sub}</span>}
+          </div>
+        )}
         <TextusAiButton
           className="pe-ic pe-ai"
           panelOpen={agentOpen}

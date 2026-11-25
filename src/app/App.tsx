@@ -74,6 +74,7 @@ const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
 const PhoneToday = lazyComponent(phoneParts, (m) => m.PhoneToday);
 const PhonePager = lazyComponent(phoneParts, (m) => m.PhonePager);
 const PhoneEditorBar = lazyComponent(phoneParts, (m) => m.PhoneEditorBar);
+const TabSwitcher = lazyComponent(phoneParts, (m) => m.TabSwitcher);
 // The right column's pages: the AI at the edge and a plugin's list, shown
 // when the shell first opens the column.
 const RightPanel = lazyComponent(
@@ -103,6 +104,7 @@ function App() {
   const { draftsRestoredCount, setDraftsRestoredCount, wordImported } = shell;
   const {
     tabs,
+    setTabs,
     activeTabId,
     setActiveTabId,
     liveTabs,
@@ -286,6 +288,18 @@ function App() {
                   setPhoneView("today");
                 }}
                 onToggleAgent={toggleAgentPanel}
+                tabSwitcher={
+                  <TabSwitcher
+                    tabs={tabs}
+                    activeTabId={activeTabId}
+                    activeTitle={activeTitle}
+                    onActivate={setActiveTabId}
+                    onClose={requestCloseTab}
+                    onAdd={
+                      settings.addTabShowsStartPage ? addStartTab : addBlankTab
+                    }
+                  />
+                }
               />
             )
           ) : (
@@ -375,7 +389,16 @@ function App() {
                     setPhoneView("doc");
                   }}
                   onOpenLibrary={() => setPhoneView("library")}
-                  onOpenCurrent={() => setPhoneView("doc")}
+                  onOpenCurrent={() => {
+                    // The current delivery is the phantom page when no tab
+                    // exists: opening it makes it a real tab, so the phone's
+                    // tab sheet has it.
+                    if (tabs.length === 0) {
+                      setTabs([activeTab]);
+                      setActiveTabId(activeTab.id);
+                    }
+                    setPhoneView("doc");
+                  }}
                   onCapture={captureOrBlank}
                 />
               }
