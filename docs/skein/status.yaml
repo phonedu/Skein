@@ -86,20 +86,6 @@ tasks:
       not: 不改 front matter 存储格式；不做自定义 schema 校验。
       scope: 编辑器 NodeView、界面契约、i18n、测试。
       evidence: 逐屏截图 + 单测 + 导出往返。
-  - id: B7
-    title: 上游 1.4.7 界面功能验收与补齐
-    workstream: B
-    state: doing
-    acceptance: B8 整体合入 v1.4.7 后，按盘点文档逐项验收（路径补全、Mermaid 错误原因、商店分类/仅电脑可用、插件页菜单选择、拖文件进文档、文件树接收系统文件/插入链接、插件页触控）；已有的记证据，缺的再补；D 组随 1.4.8 稳定版。
-    spec: research/上游1.4.7界面功能盘点.md
-    estimate: 1–2 天（验收与补齐）
-    brief:
-      problem: 上游 v1.4.7 改为整体合入后，界面功能不再逐项移植；需要确认路径补全、Mermaid 错误原因、商店分类/仅电脑可用、插件页菜单、拖放与触控在冲突解决后仍然可用。
-      expected: B8 合并完成后按 research/上游1.4.7界面功能盘点.md 逐项验收；已有功能的记证据，缺的再补；D 组随 1.4.8 稳定版。
-      standard: 不重复实现合并已带入的功能；验收用现有测试/e2e/真机冒烟；缺口沿用上游提交，不重写。
-      not: 不重复实现已由 B8 带入的功能；不整体 rebase（归 B8）；不追 1.4.8-rc；不做 D 组。
-      scope: src/files、src/editor、src/plugins（商店/插件页/菜单）、src/settings、e2e；桌面为主，插件页触控涉手机。
-      evidence: 逐项验收记录 + 缺口单测/e2e/桌面与手机冒烟。
   - id: S7
     title: 三种同步方式的互斥规则与切换测试
     workstream: S
