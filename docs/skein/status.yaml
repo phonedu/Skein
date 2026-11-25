@@ -146,14 +146,6 @@ tasks:
       not: 不重写同步页；不做连接管理二级页；不做一库多入口/迁移；不改协议/引擎。
       scope: src/settings/pages SyncPage/SyncSwitchView/SyncConnectionSummary/状态行、i18n 十语言、前端测试与截图。
       evidence: 桌面 1280/800 与手机 360 截图；active 后端/各后端上次结果单测；首次切换确认与预览 e2e；十语言通过。
-  - id: S6c
-    title: Android 真机冒烟同步页 v3
-    workstream: S
-    kind: task
-    state: todo
-    acceptance: 设备可用后完成 Android 真机冒烟：扫码配对、WebDAV/S3 表单（含 Kodo 区域）、切换与预览；补截图。当前无设备，保持 backlog。
-    spec: specs/同步页面改版.md
-    estimate: 0.5 天（等设备）
   - id: PH14
     title: 手机手势按 iOS 橡皮筋手感：非线性位移 + 阻尼 + 回弹
     workstream: UI
