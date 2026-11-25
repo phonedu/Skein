@@ -1,4 +1,8 @@
-import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import {
   ChevronIcon,
   CloseIcon,
@@ -29,6 +33,7 @@ import "./FileTree.css";
 import { isWithin } from "../utils/path";
 import type { FileOpenHow } from "./tree-shared";
 import { useFileTreeRows, useFileTreeState } from "./useFileTree";
+import { useTreeFileDrop } from "./useTreeFileDrop";
 import { RecentSection } from "./recent-section";
 import { ViewFoot } from "../engine/controls/view-foot";
 import { fill } from "../i18n/fill";
@@ -112,6 +117,8 @@ export function FileTree({
   const { showHidden, setShowHidden } = view;
   const { treeRef, onTreeKey, selection, picking, onRowPick } =
     useTreeSelection(root, activePath);
+  // A file manager's files over the tree: copied in, the folder lit.
+  const fileDropInto = useTreeFileDrop(treeRef, folder, reload, () => {});
   // Not on a phone: above Documents is the app's private container, and above
   // a picked folder is outside what the user granted. Not above an
   // opened folder either: that is the edge of what the user opened.
@@ -327,7 +334,7 @@ export function FileTree({
                 ref={treeRef}
                 role="tree"
                 aria-label={t.treeTab}
-                className={`tree-body${drag?.into === root ? " tx-drop-into" : ""}`}
+                className={`tree-body${drag?.into === root || fileDropInto === root ? " tx-drop-into" : ""}`}
                 data-drop-dir={root}
                 onKeyDown={onTreeKey}
                 onContextMenu={
