@@ -1,7 +1,7 @@
 # The source of STATUS.md. Run `npm run docs:status` after editing; the
 # generated page and this file are checked for drift by `npm run docs:check`.
-baseline: v1.4.6
-commit: 457f6693
+baseline: v1.4.7
+commit: 68ecd8d4
 branch: base-ui-settings
 updated: 2026-11-25
 workstreams:

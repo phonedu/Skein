@@ -9,7 +9,7 @@ updated: 2026-11-25
 
 > **自动生成，勿手改。** 源：[status.yaml](status.yaml)；生成：`npm run docs:status`。
 > 只写未完成 / 进行中；完成项由 `npm run docs:task -- done <id> --evidence "..."` 删除并归档。
-> 基线：上游稳定 tag **v1.4.6**（合并 `457f6693`）· 分支 `base-ui-settings`。
+> 基线：上游稳定 tag **v1.4.7**（合并 `68ecd8d4`）· 分支 `base-ui-settings`。
 
 ## 0. 承诺一览
 
