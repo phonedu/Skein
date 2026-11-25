@@ -143,6 +143,11 @@ function App() {
   // delivered.
   const currentTitle = activeTab.view ? "" : activeTitle;
   const { openFolder, openFile, openFileDialog, handleChange } = docs;
+  // A folder opening answers where the files are: the view column shows
+  // its tree. Today stays a click away.
+  useEffect(() => {
+    if (openFolder.folder) setSidebarView("files");
+  }, [openFolder.folder, setSidebarView]);
   // The phone document page's folder line ("交付"): where the file stands
   // in its library, when it isn't at the root. A draft has no file yet, so
   // it says that instead - the page is still the one in front.
