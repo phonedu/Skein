@@ -52,7 +52,7 @@
 .tab-switcher-group {
   overflow: hidden;
   border-radius: var(--shape-l);
-  background: var(--ui-surface);
+  background: var(--ui-surface-solid);
   /* Many tabs scroll rather than run under the status bar: Cancel and the
      gaps below take the rest, as the action sheets' groups do. */
   max-height: calc(100vh - var(--safe-top, 0px) - 154px);
@@ -163,7 +163,7 @@
   min-height: 62px;
   border: none;
   border-radius: var(--shape-l);
-  background: var(--ui-surface);
+  background: var(--ui-surface-solid);
   color: var(--ui-accent-text);
   font: inherit;
   font-size: var(--text-body);

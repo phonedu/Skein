@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { isImeKeydown } from "../../utils/ime";
 import { usePresenceProps } from "../motion/usePresence";
@@ -44,6 +44,30 @@ export function Sheet({
   // The click a tap makes after the finger lifts can reach a sheet that the
   // same tap opened: only a press made on it counts (a key's click too).
   const pressed = useRef(false);
+  // A finger on the grab handle pulls the sheet down: it follows, then
+  // springs back or closes past a third of the screen.
+  const grab = useRef<{ id: number; y: number } | null>(null);
+  const [pull, setPull] = useState(0);
+  const onGrabDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!(e.target as HTMLElement).closest(".action-sheet-grab")) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    grab.current = { id: e.pointerId, y: e.clientY };
+    e.preventDefault();
+  };
+  const onGrabMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const held = grab.current;
+    if (!held || held.id !== e.pointerId) return;
+    setPull(Math.max(0, e.clientY - held.y));
+  };
+  const onGrabUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const held = grab.current;
+    if (!held || held.id !== e.pointerId) return;
+    grab.current = null;
+    if (e.clientY - held.y > 140) {
+      setPull(0);
+      onClose();
+    } else setPull(0);
+  };
   return createPortal(
     <div
       {...presence}
@@ -64,6 +88,15 @@ export function Sheet({
         className={`sheet ${className}`}
         role={role}
         aria-label={label}
+        style={
+          pull
+            ? { transform: `translateY(${pull}px)`, transition: "none" }
+            : undefined
+        }
+        onPointerDown={onGrabDown}
+        onPointerMove={onGrabMove}
+        onPointerUp={onGrabUp}
+        onPointerCancel={onGrabUp}
       >
         {children}
       </div>

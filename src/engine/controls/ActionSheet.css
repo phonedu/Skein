@@ -16,6 +16,8 @@
 }
 
 .action-sheet-grab {
+  touch-action: none;
+  cursor: grab;
   width: 40px;
   height: 4px;
   margin: var(--space-1) auto var(--space-2);
@@ -29,14 +31,14 @@
   max-height: calc(100vh - var(--safe-top, 0px) - 154px);
   overflow-y: auto;
   border-radius: var(--shape-sheet);
-  background: var(--ui-surface);
+  background: var(--ui-surface-solid);
   box-shadow: var(--shadow-1);
 }
 
 .action-sheet-cancel {
   overflow: hidden;
   border-radius: var(--shape-sheet);
-  background: var(--ui-surface);
+  background: var(--ui-surface-solid);
 }
 
 .action-sheet-head,
@@ -163,7 +165,7 @@
 
 /* Doubled class: .action-sheet-item's "background: none" comes later. */
 .action-sheet-item.action-sheet-cancel {
-  background: var(--ui-surface);
+  background: var(--ui-surface-solid);
   justify-content: center;
   font-weight: 600;
   padding: 0 var(--space-4);

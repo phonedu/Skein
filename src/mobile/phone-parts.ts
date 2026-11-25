@@ -12,3 +12,5 @@ export { PhoneEditorBar } from "../phone/PhoneEditorBar";
 export { DocumentMenu } from "./DocumentMenu";
 // eslint-disable-next-line no-restricted-syntax -- a lazy chunk's entry passes these on
 export { TabSwitcher } from "./TabSwitcher";
+// eslint-disable-next-line no-restricted-syntax -- a lazy chunk's entry passes these on
+export { PhonePageHeader } from "../phone/PhonePageHeader";

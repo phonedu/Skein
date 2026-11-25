@@ -30,7 +30,8 @@
 }
 
 .vault-sheet .vault-head {
-  padding: var(--space-2) var(--space-6) 0;
+  padding: var(--space-1) var(--space-6) 0;
+  text-align: center;
 }
 
 /* The card the rows sit in: the panel already is one; a phone's sheet draws
@@ -45,7 +46,7 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: var(--shape-sheet);
-  background: var(--ui-surface);
+  background: var(--ui-surface-solid);
   box-shadow: var(--shadow-1);
 }
 
