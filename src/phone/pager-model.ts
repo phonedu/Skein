@@ -1,7 +1,7 @@
-/** How much of a finger's travel past the first or last page the track
- *  takes: it still moves, so the edge reads as an edge, but the page gives
- *  only a part of the way. */
-const PAGER_RESIST = 0.25;
+/** How far past the first or last page the track can be pulled, as a share
+ *  of the page: the edge gives with the finger and approaches this, never
+ *  passing it. */
+const EDGE_GIVE = 0.35;
 
 /** How far a release projects the finger's speed: a flick lands on the next
  *  page without having to cross half the screen first. */
@@ -32,8 +32,11 @@ export function pagerOffset(
 ): number {
   const raw = origin + dx;
   const last = -(count - 1) * width;
-  if (raw > 0) return raw * PAGER_RESIST;
-  if (raw < last) return last + (raw - last) * PAGER_RESIST;
+  const give = Math.max(0, width) * EDGE_GIVE;
+  const resisted = (over: number) =>
+    give > 0 ? give * (1 - Math.exp(-over / give)) : 0;
+  if (raw > 0) return resisted(raw);
+  if (raw < last) return last - resisted(last - raw);
   return raw;
 }
 

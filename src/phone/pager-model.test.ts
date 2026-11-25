@@ -10,10 +10,16 @@ describe("the pager's track under a finger", () => {
     expect(pagerOffset(-WIDTH, 120, WIDTH, PAGES)).toBe(-WIDTH + 120);
   });
 
-  it("gives only a part of a drag past either end", () => {
-    // A quarter of the way, so the edge reads as an edge.
-    expect(pagerOffset(0, 100, WIDTH, PAGES)).toBe(25);
-    expect(pagerOffset(-WIDTH, -100, WIDTH, PAGES)).toBe(-WIDTH - 25);
+  it("gives less and less past either end, up to its limit", () => {
+    const near = pagerOffset(0, 100, WIDTH, PAGES);
+    const far = pagerOffset(0, 1000, WIDTH, PAGES);
+    expect(near).toBeGreaterThan(0);
+    expect(near).toBeLessThan(100);
+    expect(far).toBeGreaterThan(near);
+    expect(far).toBeLessThanOrEqual(WIDTH * 0.35);
+    const back = pagerOffset(-WIDTH, -1000, WIDTH, PAGES);
+    expect(back).toBeLessThan(-WIDTH);
+    expect(back).toBeGreaterThanOrEqual(-WIDTH - WIDTH * 0.35);
   });
 
   it("holds a grab mid-slide: the offset starts where the track is", () => {
