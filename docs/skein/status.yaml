@@ -44,21 +44,6 @@ workstreams:
     focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
     spec: specs/文档体系-v3.md
 tasks:
-  - id: DOC-2
-    title: STATUS 改成按顺序的总任务清单
-    workstream: DOC
-    kind: task
-    state: doing
-    acceptance: STATUS.md 第一屏之后是一张任务清单，按进行中 → 待做 → 以后排序；每行含状态、ID/标题、验收/说明、规格、估算；内容不丢；工作线/Waiting/待审/Inbox 保留；生成脚本与文档体系 v3 更新；docs:check/wrap 通过。
-    spec: specs/文档体系-v3.md
-    estimate: 0.5 天
-    brief:
-      problem: STATUS.md 把任务拆成 Now、Next、Later 三块，新任务容易沉到 Next 第 6 条之后；用户要的是能从头看到尾的任务清单，而不是三个分散的表。
-      expected: STATUS.md 改为总任务清单：进行中、待做、以后同表，序号连续；同组按 status.yaml 顺序；保留验收/规格/估算；工作线与问题区保留；承诺一览仍汇总。
-      standard: 只改 docs-status 生成器和文档体系说明；不改 status.yaml schema；不改任务内容；排序稳定；缺六行的 doing 任务仍提示；docs:check/wrap 通过。
-      not: 不改任务状态/验收文字；不自动重排 status.yaml；不合并 Waiting/待审/Inbox；不改产品代码。
-      scope: scripts/docs-status.mjs、docs/skein/specs/文档体系-v3.md、生成的 STATUS.md；测试现有台账与排序。
-      evidence: 生成页顺序与 status.yaml 一致；全部 task/later 都出现；序号连续；docs:check/wrap 通过；旧 Now/Next/Later 内容无丢失。
   - id: D0.5
     title: 理论小样本验证
     workstream: D1
