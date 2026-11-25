@@ -81,7 +81,7 @@ tasks:
   - id: B7
     title: 上游 1.4.7 界面功能验收与补齐
     workstream: B
-    state: todo
+    state: doing
     acceptance: B8 整体合入 v1.4.7 后，按盘点文档逐项验收（路径补全、Mermaid 错误原因、商店分类/仅电脑可用、插件页菜单选择、拖文件进文档、文件树接收系统文件/插入链接、插件页触控）；已有的记证据，缺的再补；D 组随 1.4.8 稳定版。
     spec: research/上游1.4.7界面功能盘点.md
     estimate: 1–2 天（验收与补齐）
