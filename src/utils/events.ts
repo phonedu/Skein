@@ -181,3 +181,6 @@ export function sendAppEvent<K extends AppEventName>(
 ): void {
   window.dispatchEvent(new CustomEvent(name, { detail: detail[0] }));
 }
+
+/** A phone page's More button: the page named in the event opens its sheet. */
+export const PHONE_PAGE_MORE_EVENT = "textus:phone-page-more";

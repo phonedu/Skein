@@ -6,7 +6,6 @@ import {
   fireEvent,
   render,
   screen,
-  within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -17,7 +16,6 @@ import {
   setStatusItem,
 } from "../plugins/contributions/status-items";
 import { extensionsStartTab } from "../settings/pages/extensions-tab";
-import { emitToThisWindow } from "../platform/menu-events";
 import { openSettingsPage } from "../settings/settings-nav";
 import { PhoneHome } from "./PhoneHome";
 
@@ -155,7 +153,6 @@ function renderHome(
       activePath={null}
       onOpenFile={vi.fn()}
       onNewFile={vi.fn()}
-      onCapture={vi.fn()}
       onEntryMoved={vi.fn()}
       {...props}
     />,
@@ -178,17 +175,6 @@ describe("the phone library home", () => {
     expect(screen.getByTestId("phone-file-tree")).toBeTruthy();
   });
 
-  it("keeps the top row to the vault, ⋯ and settings", () => {
-    renderHome();
-
-    // Plugins and the palette are in the ⋯ sheet now, as on Today.
-    expect(screen.queryByRole("button", { name: en.pluginsTitle })).toBeNull();
-    expect(
-      screen.getByRole("button", { name: en.phoneMoreActions }),
-    ).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: en.settingsTitle }));
-    expect(emitToThisWindow).toHaveBeenCalledWith("menu-settings");
-  });
 
   it("shows a plugin's status and opens Plugins from it", () => {
     act(() =>
@@ -218,20 +204,11 @@ describe("the phone library home", () => {
     expect((input as HTMLInputElement).value).toBe("");
   });
 
-  it("puts the capture beside the Today | Files capsule", () => {
-    const onCapture = vi.fn();
-    renderHome({ onCapture });
-
-    const capture = screen.getByRole("button", { name: en.todayCapture });
-    expect(capture.closest(".ph-views")).toBeTruthy();
-    fireEvent.click(capture);
-    expect(onCapture).toHaveBeenCalledOnce();
-  });
 
   it("opens the library's file actions from its ⋯ sheet", () => {
     renderHome();
 
-    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent(window, new CustomEvent("textus:phone-page-more", { detail: "files" }));
     // The tree's hidden toolbar, in the sheet: create, sort, Refresh, then
     // the app's two.
     expect(screen.getByRole("menuitem", { name: en.menuNewFile })).toBeTruthy();
@@ -258,7 +235,7 @@ describe("the phone library home", () => {
   it("names a new file or folder in the tree from the sheet", () => {
     renderHome();
 
-    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent(window, new CustomEvent("textus:phone-page-more", { detail: "files" }));
     fireEvent.click(screen.getByRole("menuitem", { name: en.menuNewFile }));
     const file = fileTreeProps.last?.["draftRequest"] as {
       kind: string;
@@ -266,7 +243,7 @@ describe("the phone library home", () => {
     } | null;
     expect(file?.kind).toBe("document");
 
-    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent(window, new CustomEvent("textus:phone-page-more", { detail: "files" }));
     fireEvent.click(screen.getByRole("menuitem", { name: en.treeNewFolder }));
     const folder = fileTreeProps.last?.["draftRequest"] as {
       kind: string;
@@ -286,7 +263,7 @@ describe("the phone library home", () => {
     renderHome({ openFolder: empty });
 
     // No tree: no file actions; the palette stays, plugins do not.
-    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    fireEvent(window, new CustomEvent("textus:phone-page-more", { detail: "files" }));
     expect(screen.queryByRole("menuitem", { name: en.menuNewFile })).toBeNull();
     expect(
       screen.queryByRole("menuitem", { name: en.pluginsTitle }),
@@ -322,33 +299,6 @@ describe("the phone library home", () => {
     expect(typeof empty.start).toBe("function");
   });
 
-  it("opens the library switcher: the open one ticked, a recent one removable, the picker", async () => {
-    vaultIpc.listFolders.mockResolvedValueOnce(["/other"]);
-    renderHome();
-
-    // The chip raises the sheet.
-    fireEvent.click(screen.getByRole("button", { name: /notes/ }));
-    const sheet = await screen.findByRole("dialog", {
-      name: en.phoneVaultSwitcherTitle,
-    });
-    // The open library is marked and keeps no trash: it is not a list entry.
-    const current = sheet.querySelector(".vault-row[data-current]")!;
-    expect(current.textContent).toContain("notes");
-    expect(current.querySelector(".vault-row-check")).toBeTruthy();
-    expect(current.querySelector(".vault-row-remove")).toBeNull();
-    // A library chosen before can be switched to, or taken off the list.
-    expect(await within(sheet).findByText("other")).toBeTruthy();
-    fireEvent.click(
-      within(sheet).getByRole("button", {
-        name: `${en.vaultRemove}: other`,
-      }),
-    );
-    expect(vaultIpc.remove).toHaveBeenCalledWith("/other");
-    expect(within(sheet).queryByText("other")).toBeNull();
-    // Adding one is the folder picker.
-    fireEvent.click(within(sheet).getByRole("button", { name: en.vaultAdd }));
-    expect(openFolder.openFolderDialog).toHaveBeenCalledOnce();
-  });
 
   it("uses the Android phone rhythm for search and library rows", () => {
     // Rows stay 56 drawn (62 written at the chrome's 10/11). The search is

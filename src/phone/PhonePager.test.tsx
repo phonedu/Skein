@@ -13,6 +13,7 @@ const renderPager = (page: "today" | "files") =>
     <PhonePager
       page={page}
       onChange={() => {}}
+      header={<div>the top</div>}
       today={<div>the day</div>}
       files={<div>the library</div>}
     />,
@@ -22,6 +23,15 @@ const pageOf = (name: "today" | "files") =>
   document.querySelector(`.phone-pager-page[data-pager-page="${name}"]`)!;
 
 describe("the phone's two home pages", () => {
+  it("keeps the top row outside the track that slides", () => {
+    renderPager("today");
+    const head = document.querySelector(".phone-pager-head");
+    expect(head?.textContent).toContain("the top");
+    expect(
+      document.querySelector(".phone-pager-track .phone-pager-head"),
+    ).toBeNull();
+  });
+
   it("starts on Today; the library is not laid out until it is needed", () => {
     renderPager("today");
     expect(document.body.textContent).toContain("the day");
@@ -38,6 +48,7 @@ describe("the phone's two home pages", () => {
       <PhonePager
         page="files"
         onChange={() => {}}
+        header={<div>the top</div>}
         today={<div>the day</div>}
         files={<div>the library</div>}
       />,

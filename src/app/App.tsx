@@ -73,6 +73,7 @@ const DocumentList = lazyComponent(phoneParts, (m) => m.DocumentList);
 const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
 const PhoneToday = lazyComponent(phoneParts, (m) => m.PhoneToday);
 const PhonePager = lazyComponent(phoneParts, (m) => m.PhonePager);
+const PhonePageHeader = lazyComponent(phoneParts, (m) => m.PhonePageHeader);
 const PhoneEditorBar = lazyComponent(phoneParts, (m) => m.PhoneEditorBar);
 const TabSwitcher = lazyComponent(phoneParts, (m) => m.TabSwitcher);
 // The right column's pages: the AI at the edge and a plugin's list, shown
@@ -383,6 +384,17 @@ function App() {
               onChange={(view) =>
                 setPhoneView(view === "files" ? "library" : "today")
               }
+              header={
+                <PhonePageHeader
+                  t={t}
+                  page={phoneView === "library" ? "files" : "today"}
+                  openFolder={openFolder}
+                  onChange={(view) =>
+                    setPhoneView(view === "files" ? "library" : "today")
+                  }
+                  onCapture={captureOrBlank}
+                />
+              }
               today={
                 <PhoneToday
                   t={t}
@@ -393,7 +405,6 @@ function App() {
                     void openFile(path);
                     setPhoneView("doc");
                   }}
-                  onOpenLibrary={() => setPhoneView("library")}
                   onOpenCurrent={() => {
                     // The current delivery is the phantom page when no tab
                     // exists: opening it makes it a real tab, so the phone's
@@ -404,7 +415,6 @@ function App() {
                     }
                     setPhoneView("doc");
                   }}
-                  onCapture={captureOrBlank}
                 />
               }
               files={
@@ -412,7 +422,6 @@ function App() {
                   t={t}
                   openFolder={openFolder}
                   activePath={activeTab.path}
-                  onBack={() => setPhoneView("today")}
                   onOpenFile={(path) => {
                     void openFile(path);
                     setPhoneView("doc");
@@ -421,7 +430,6 @@ function App() {
                     addBlankTab();
                     setPhoneView("doc");
                   }}
-                  onCapture={captureOrBlank}
                   onEntryMoved={entryMoved}
                 />
               }

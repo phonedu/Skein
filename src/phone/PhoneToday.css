@@ -8,7 +8,6 @@
   overflow: hidden;
   background: var(--ui-bg);
   color: var(--ui-text);
-  padding-top: var(--safe-top, 0px);
 }
 
 .ptop {

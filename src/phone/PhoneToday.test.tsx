@@ -26,19 +26,6 @@ describe("Phone Today, the design board", () => {
     );
   });
 
-  it("keeps the capture out of the page: it is in the capsule's row", () => {
-    // 2026-11-24: the sticky card is gone; the + sits beside Today | Files on
-    // both surfaces, as the desktop's quick add does.
-    expect(css).not.toContain(".pcapture");
-    renderToday({
-      activeTitle: "",
-      activePath: null,
-      onOpenFile: vi.fn(),
-      onOpenCurrent: vi.fn(),
-    });
-    const capture = screen.getByRole("button", { name: en.todayCapture });
-    expect(capture.closest(".ph-views")).toBeTruthy();
-  });
 
   it("keeps a long delivery title inside its card", () => {
     // A button's flex default is flex-start: the title took its full length,
@@ -108,8 +95,6 @@ function renderToday(props: {
       openFolder={openFolder}
       onOpenFile={props.onOpenFile}
       onOpenCurrent={props.onOpenCurrent}
-      onOpenLibrary={vi.fn()}
-      onCapture={vi.fn()}
     />,
   );
 }

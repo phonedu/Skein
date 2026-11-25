@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   ActionSheet,
   type ActionSheetItem,
@@ -6,11 +6,9 @@ import {
 import {
   ChevronIcon,
   MarkdownFileIcon,
-  MoreIcon,
   PluginsTabIcon,
   PlusIcon,
   SearchIcon,
-  SettingsIcon,
 } from "../engine/controls/icons";
 import { Presence } from "../engine/motion/usePresence";
 import type { Strings } from "../i18n/strings";
@@ -21,12 +19,9 @@ import {
   statusItemsSnapshot,
   subscribeStatusItems,
 } from "../plugins/contributions/status-items";
-import { emitToThisWindow } from "../platform/menu-events";
+import { PHONE_PAGE_MORE_EVENT } from "../utils/events";
 import { openCommandPalette } from "../app/command-palette";
-import { VaultButton } from "../vaults/VaultButton";
-import { vaultName } from "../vaults/vault-model";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
-import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneToday.css";
 
 /**
@@ -42,8 +37,6 @@ export function PhoneToday({
   openFolder,
   onOpenFile,
   onOpenCurrent,
-  onOpenLibrary,
-  onCapture,
 }: {
   t: Strings;
   activeTitle: string;
@@ -52,10 +45,15 @@ export function PhoneToday({
   onOpenFile: (path: string) => void;
   /** The document in front, by its tab: an unsaved one has no path. */
   onOpenCurrent: () => void;
-  onOpenLibrary: () => void;
-  onCapture: () => void;
 }) {
   const [more, setMore] = useState(false);
+  useEffect(() => {
+    const onMore = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === "today") setMore(true);
+    };
+    window.addEventListener(PHONE_PAGE_MORE_EVENT, onMore);
+    return () => window.removeEventListener(PHONE_PAGE_MORE_EVENT, onMore);
+  }, []);
   const statuses = useSyncExternalStore(
     subscribeStatusItems,
     statusItemsSnapshot,
@@ -65,7 +63,6 @@ export function PhoneToday({
     openFolder.folder ?? openFolder.treeRoot ?? null,
   );
   const root = openFolder.folder ?? openFolder.treeRoot;
-  const vault = root ? vaultName(root) : null;
   const time = (ms: number) =>
     new Date(ms).toLocaleTimeString(undefined, {
       hour: "2-digit",
@@ -96,40 +93,6 @@ export function PhoneToday({
 
   return (
     <div className="phone-today">
-      <div className="ptop">
-        <VaultButton
-          t={t}
-          openFolder={openFolder}
-          variant="today"
-          current={root}
-          name={vault ?? t.menuOpenFolder}
-        />
-        <span className="ptop-spacer" />
-        <button
-          type="button"
-          className="ptop-ic"
-          aria-label={t.phoneMoreActions}
-          onClick={() => setMore(true)}
-        >
-          <MoreIcon />
-        </button>
-        <button
-          type="button"
-          className="ptop-ic"
-          aria-label={t.settingsTitle}
-          onClick={() => emitToThisWindow("menu-settings")}
-        >
-          <SettingsIcon />
-        </button>
-      </div>
-
-      <PhoneViewSeg
-        t={t}
-        value="today"
-        onChange={(view) => view === "files" && onOpenLibrary()}
-        onCapture={onCapture}
-      />
-
       <PhoneSyncStatus folder={root || null} t={t} />
 
       <div className="pbody">

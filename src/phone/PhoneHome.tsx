@@ -2,7 +2,7 @@
 // the tree, the vault name and settings in the top bar. The vault name
 // raises the library switcher: the open library, the ones chosen before,
 // and the way to add one.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";
 import type { Strings } from "../i18n/strings";
@@ -12,45 +12,33 @@ import { currentTreeSort } from "../files/tree-view-events";
 import { canOpenFolder } from "../platform/capabilities";
 import { useAppDocumentsFolder } from "../platform/native-files";
 import { emitToThisWindow } from "../platform/menu-events";
+import { PHONE_PAGE_MORE_EVENT } from "../utils/events";
 import {
   ContextMenu,
   type ContextMenuEntry,
 } from "../engine/controls/ContextMenu";
-import {
-  CloseIcon,
-  FolderIcon,
-  MoreIcon,
-  SearchIcon,
-  SettingsIcon,
-} from "../engine/controls/icons";
+import { CloseIcon, FolderIcon, SearchIcon } from "../engine/controls/icons";
 import { Presence } from "../engine/motion/usePresence";
-import { VaultButton } from "../vaults/VaultButton";
-import { vaultName } from "../vaults/vault-model";
 import { PhonePluginStatus } from "./PhonePluginStatus";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
-import { PhoneViewSeg } from "./PhoneViewSeg";
 import "./PhoneHome.css";
 
 export function PhoneHome({
   t,
   openFolder,
   activePath,
-  onBack,
   onOpenFile,
   onNewFile,
-  onCapture,
   onEntryMoved,
 }: {
   t: Strings;
   openFolder: OpenFolder;
   activePath: string | null;
   /** The library is a pushed page under Today: the way back. */
-  onBack?: () => void;
   onOpenFile: (path: string, how?: FileOpenHow, line?: number) => void;
   /** A blank document, and the page turns to it. */
   onNewFile: () => void;
   /** 记一句: the plugin's form, or a note to type in at once. */
-  onCapture: () => void;
   onEntryMoved: (from: string, to: string) => void;
 }) {
   const place = openFolder.folder ?? openFolder.treeRoot ?? "";
@@ -58,6 +46,13 @@ export function PhoneHome({
   // built-in sync can read and write on a phone.
   const appDocuments = useAppDocumentsFolder();
   const [moreOpen, setMoreOpen] = useState(false);
+  useEffect(() => {
+    const onMore = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === "files") setMoreOpen(true);
+    };
+    window.addEventListener(PHONE_PAGE_MORE_EVENT, onMore);
+    return () => window.removeEventListener(PHONE_PAGE_MORE_EVENT, onMore);
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [draftRequest, setDraftRequest] = useState<{
     kind: "document" | "folder";
@@ -102,40 +97,6 @@ export function PhoneHome({
 
   return (
     <div className="phone-home">
-      <div className="ph-top">
-        <VaultButton
-          t={t}
-          openFolder={openFolder}
-          variant="files"
-          current={place || null}
-          name={place ? vaultName(place) : t.treeTab}
-        />
-        <div className="ph-acts">
-          <button
-            type="button"
-            className="ph-ic"
-            aria-label={t.phoneMoreActions}
-            aria-haspopup="menu"
-            onClick={() => setMoreOpen(true)}
-          >
-            <MoreIcon />
-          </button>
-          <button
-            type="button"
-            className="ph-ic"
-            aria-label={t.settingsTitle}
-            onClick={() => emitToThisWindow("menu-settings")}
-          >
-            <SettingsIcon />
-          </button>
-        </div>
-      </div>
-      <PhoneViewSeg
-        t={t}
-        value="files"
-        onChange={(view) => view === "today" && onBack?.()}
-        onCapture={onCapture}
-      />
       <div className="ph-search" role="search">
         <SearchIcon aria-hidden="true" />
         <input

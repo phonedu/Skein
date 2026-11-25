@@ -26,7 +26,6 @@
   color: var(--phone-ink);
   /* The page runs under the status bar (mobile/styles/base.css): the home's
      own top bar takes the inset, with no window bar above it. */
-  padding-top: var(--safe-top, 0px);
 }
 
 .ph-top {

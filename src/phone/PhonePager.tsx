@@ -16,11 +16,14 @@ const WARM_MS = 900;
 export function PhonePager({
   page,
   onChange,
+  header,
   today,
   files,
 }: {
   page: PhonePagerPage;
   onChange: (page: PhonePagerPage) => void;
+  /** The fixed top row: the library chip, actions and segment. */
+  header: ReactNode;
   today: ReactNode;
   files: ReactNode;
 }) {
@@ -49,6 +52,7 @@ export function PhonePager({
 
   return (
     <div className="phone-pager" data-page={page} ref={root}>
+      <div className="phone-pager-head">{header}</div>
       <div className="phone-pager-track" ref={track}>
         <div
           className="phone-pager-page"
