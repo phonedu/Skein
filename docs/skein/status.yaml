@@ -154,21 +154,6 @@ tasks:
     acceptance: 设备可用后完成 Android 真机冒烟：扫码配对、WebDAV/S3 表单（含 Kodo 区域）、切换与预览；补截图。当前无设备，保持 backlog。
     spec: specs/同步页面改版.md
     estimate: 0.5 天（等设备）
-  - id: PH13
-    title: 手机今天/文件：固定顶栏与分段控件，只滑内容
-    workstream: UI
-    kind: task
-    state: doing
-    acceptance: （未填）
-    spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
-    estimate: —
-    brief:
-      problem: 2026-11-25 用户否决整页横滑：今天/文件已经有分段控件，切换应只换分段控件下面的内容，顶栏和分段控件本身不动、选中滑块平滑到另一项；把顶栏和分段控件一起滑走的整页切换，用户从未在任何软件里见过。
-      expected: 顶栏与“今天/文件”分段控件固定；横滑只移动下面的内容；分段控件的滑块随当前页平滑移到另一项；点按分段仍即时切换；两页顶栏的动作（⋯ 菜单等）随当前页生效；现有胶囊、记一句、搜索、行拖拽与点击都不变。
-      standard: 滑动过程中顶栏和分段控件的位置、尺寸不变（计算样式/截图断言）；内容跟手、松手落页；分段选中态与滑块和所落页一致；无横向溢出；只用 --dur-*/--ease-*；pager 单测与 Android WebView e2e/截图通过。
-      not: 不改两页的内容与信息架构；不动桌面/平板；不做文档页横滑；不重做库切换；**等 1.4.7 上游合并完成后再开工**。
-      scope: src/phone（PhonePager/PhoneToday/PhoneHome/PhoneViewSeg）、src/app/App.tsx、e2e；手机布局。
-      evidence: e2e 断言顶栏/分段控件在滑动中不动且内容跟手；Android 模拟器截图；分段滑块动效；pager 单测。
   - id: PH14
     title: 手机手势按 iOS 橡皮筋手感：非线性位移 + 阻尼 + 回弹
     workstream: UI
