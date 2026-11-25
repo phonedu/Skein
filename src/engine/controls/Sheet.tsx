@@ -48,31 +48,40 @@ export function Sheet({
   // springs back or closes past a third of the screen.
   const grab = useRef<{ id: number; y: number } | null>(null);
   const [pull, setPull] = useState(0);
-  const onGrabDown = (e: React.PointerEvent<HTMLDivElement>) => {
+  const pulled = useRef(0);
+  const onGrabDown = (e: React.TouchEvent<HTMLDivElement>) => {
     if (!(e.target as HTMLElement).closest(".action-sheet-grab")) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    grab.current = { id: e.pointerId, y: e.clientY };
-    e.preventDefault();
+    grab.current = { id: e.touches[0].identifier, y: e.touches[0].clientY };
   };
-  const onGrabMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onGrabMove = (e: React.TouchEvent<HTMLDivElement>) => {
     const held = grab.current;
-    if (!held || held.id !== e.pointerId) return;
-    setPull(Math.max(0, e.clientY - held.y));
+    const touch = Array.from(e.touches).find((t) => t.identifier === held?.id);
+    if (!held || !touch) return;
+    pulled.current = Math.max(0, touch.clientY - held.y);
+    setPull(pulled.current);
   };
-  const onGrabUp = (e: React.PointerEvent<HTMLDivElement>) => {
+  const onGrabUp = () => {
     const held = grab.current;
-    if (!held || held.id !== e.pointerId) return;
+    if (!held) return;
     grab.current = null;
-    if (e.clientY - held.y > 140) {
+    if (pulled.current > 140) {
+      pulled.current = 0;
       setPull(0);
       onClose();
-    } else setPull(0);
+    } else {
+      pulled.current = 0;
+      setPull(0);
+    }
   };
   return createPortal(
     <div
       {...presence}
       className="sheet-scrim"
       onPointerDown={() => (pressed.current = true)}
+      onTouchStart={onGrabDown}
+      onTouchMove={onGrabMove}
+      onTouchEnd={onGrabUp}
+      onTouchCancel={onGrabUp}
       onClickCapture={(e) => {
         if (pressed.current || e.detail === 0) return;
         e.preventDefault();
@@ -93,10 +102,6 @@ export function Sheet({
             ? { transform: `translateY(${pull}px)`, transition: "none" }
             : undefined
         }
-        onPointerDown={onGrabDown}
-        onPointerMove={onGrabMove}
-        onPointerUp={onGrabUp}
-        onPointerCancel={onGrabUp}
       >
         {children}
       </div>

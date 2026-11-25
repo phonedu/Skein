@@ -16,6 +16,7 @@
 }
 
 .action-sheet-grab {
+  position: relative;
   touch-action: none;
   cursor: grab;
   width: 40px;
@@ -23,6 +24,18 @@
   margin: var(--space-1) auto var(--space-2);
   border-radius: var(--shape-xs);
   background: color-mix(in srgb, var(--ui-text) 20%, transparent);
+}
+
+/* A fingertip's target around the 4px line: the line stays slim, the
+   whole middle of the sheet's top can be pulled. */
+.action-sheet-grab::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 .action-sheet-group {
