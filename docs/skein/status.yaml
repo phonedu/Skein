@@ -18,7 +18,7 @@ workstreams:
   - id: S
     name: 同步（S 组）
     state: doing
-    focus: S4 LAN Hub 完成（2026-11-24）；S6 进行中：S6a v3 定稿（扫码优先、必填精简、加密进高级），S6b 实现；S7 与 S5 在后
+    focus: S4 LAN Hub 完成（2026-11-24）；S12 下载块复用完成（2026-11-25）；裁决 66 定下一库多后端：S13 多后端状态 → S14 首次对账 → S15 同步页入口；S6/S7 与 S5 在后
     spec: specs/同步方案.md
   - id: B
     name: 上游跟随（B 组）
@@ -145,6 +145,51 @@ tasks:
       not: 不整页重写、不引第三方动效库；不改桌面/平板；**等 1.4.7 合并完成且 PH13（固定顶栏与分段控件）落地后再开工**；不靠逐帧手调系数反复试，先定公式与参数再实现。
       scope: src/phone（usePagerSwipe/pager-model 等已有拖拽）、engine/motion 的 token；手机布局；先横滑，后卡片下拉。
       evidence: 曲线单测（位移/阻力/回弹）；e2e 拖拽读数；Android 模拟器录屏或分帧截图。
+  - id: S13
+    title: 多后端独立同步状态
+    workstream: S
+    kind: task
+    state: todo
+    acceptance: vault 可保存多个 BackendState（connection/prefix/repository_id/base/last/加密）；同一设备只有一个 active；切换只改 active，不清旧 base/last；切回旧后端用自己的 base 增量；同连接不同库仍按 prefix 隔离；加密不一致拒绝。
+    spec: specs/单库多后端同步.md
+    estimate: 2–3 天
+    brief:
+      problem: 当前 vault 只有一个 binding、一份 base；切连接会清 base/last 并生成新 repository_id，所以 LAN 与 S3 每切一次都全量对账，无法实现参考软件的‘各后端各记各账’。
+      expected: 数据模型拆成 Vault → multiple BackendState + activeBackendId；每个后端保留自己的 connection/prefix/repository_id/base/last；普通切换只换 active；旧后端状态不删；切回旧后端只同步差异；单后端用户的配置与行为不变。
+      standard: 不改 /1 协议；复用现有 binding/base 文件结构与加密；状态迁移要兼容已有单后端数据；切换时阻断同步/插件运行；加密不一致拒绝；store 单测覆盖。
+      not: 不做首次对账的冲突策略（S14）；不做同步页 UI（S15）；不做一库多入口自动复制/迁移；不做并行写。
+      scope: src-tauri/src/sync/store*（Binding/BackendState、save/load/switch）、ipc-sync 类型、store 单测与迁移测试。
+      evidence: 多后端状态单测：切 S3 后再切回 LAN 保留两份 base；旧单后端数据迁移；同 prefix 拒绝；加密不一致拒绝；切换时同步中阻断。
+  - id: S14
+    title: 首次切换安全对账与质量矩阵
+    workstream: S
+    kind: task
+    state: todo
+    acceptance: 首次切到无状态后端时：空目标上传；非空目标只传本地独有、只下远端独有；同路径不同内容出冲突副本；不删除；首轮强制预览；空扫描/大批删除保护生效；多后端切换与回切场景矩阵通过。
+    spec: specs/单库多后端同步.md
+    estimate: 2–3 天
+    brief:
+      problem: S13 只保存状态；首次切到非空后端若按空 base 直接跑，需要明确上传/下载/冲突规则，且绝不能把另一边当成删除。没有预览和矩阵，用户第一次切换就可能产生大量冲突或误删。
+      expected: 首次对账有明确状态与预览；本地/远端都有的同路径不同内容出冲突副本；只有一边有的文件按 upload/download；无删除推断；空扫描/大批删除保护照常；切回旧后端只走差异；桌面/手机场景矩阵通过。
+      standard: 复用 planner 空 base、冲突副本、空扫描/大批删除保护；首轮必须预览；不静默覆盖/删除；store 与 engine 单测 + 桌面/手机 e2e；真实 provider 至少一家。
+      not: 不改 /1 协议；不做后端自动复制/迁移；不做并行写；不做 UI 视觉改造（S15）。
+      scope: textus-sync engine/planner 首次对账测试、src-tauri sync 运行/预览、e2e 多后端矩阵、测试文档。
+      evidence: 首次对账 5 种情况单测；两设备 LAN→S3→LAN e2e；一台 LAN 一台 S3 不互相影响；冲突副本保留；预览阻断空扫描/大批删除。
+  - id: S15
+    title: 同步页多后端入口与状态
+    workstream: S
+    kind: task
+    state: todo
+    acceptance: 同步页列出本库所有后端及当前 active；每个后端显示上次结果/时间；切换有确认与首轮预览；首次切到非空后端明确提示上传/下载/冲突；不把后端列表做成连接管理或二次导航；桌面/手机同一规则；十语言与测试通过。
+    spec: specs/单库多后端同步.md
+    estimate: 2–3 天
+    brief:
+      problem: S13/S14 有了多后端状态与安全对账，但同步页仍只有一个连接摘要和通用切换；用户看不出当前用哪个后端、各后端上次是否成功，也不知道首次切到 S3 会发生上传/检查/冲突。
+      expected: 同步页列出后端（LAN/S3/WebDAV）与 active 标记；每行显示上次同步结果；切换前确认、切换后预览；首次对账说明上传/下载/冲突；单后端用户界面不增加噪音。
+      standard: 在 S11 的服务商表单和 S6a 单页结构上增量；只用 token；桌面/手机同一套状态词；十语言；不重排页面；e2e/单测覆盖。
+      not: 不重写同步页；不做连接管理二级页；不做一库多入口/迁移；不改协议/引擎。
+      scope: src/settings/pages SyncPage/SyncSwitchView/SyncConnectionSummary/状态行、i18n 十语言、前端测试与截图。
+      evidence: 桌面 1280/800 与手机 360 截图；active 后端/各后端上次结果单测；首次切换确认与预览 e2e；十语言通过。
 later:
   - id: S5
     title: 同步硬化
