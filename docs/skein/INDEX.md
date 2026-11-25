@@ -14,6 +14,7 @@
 | [Textus 主题策略（Skein）](specs/Textus-主题策略.md) | active | 2026-11-23 | Skein 皮肤与文档主题的分层契约 |
 | [Textus 手机端全局元素一致性方案](specs/Textus-手机端元素一致性方案.md) | active | 2026-11-23 | 手机端元素一致性与 PH3 验收清单 |
 | [Textus 改造方案（项目基线）](specs/Textus-改造方案.md) | active | 2026-11-23 | 产品定位、架构、数据模型、阶段与验收 |
+| [上游 1.4.7 接入顺序](specs/上游1.4.7接入顺序.md) | active | 2026-11-25 | 先整体接入上游 v1.4.7，再按 B7 清单验收；不追 1.4.8-rc |
 | [同步方案（内置）](specs/同步方案.md) | active | 2026-11-25 | 内置同步分层、多库、加密与迁移 |
 | [同步验收测试工程（专用测试项目）](specs/同步测试工程.md) | active | 2026-11-24 | 同步专用测试项目：双实例桌面 harness、媒体与多库用例 |
 | [同步页改版与连接模型（S6 / S7）](specs/同步页面改版.md) | active | 2026-11-25 | 同步页信息架构改版，以及 WebDAV/S3/局域网 Hub 的互斥与切换规则 |
@@ -38,7 +39,7 @@
 
 ## 裁决
 
-- [裁决索引](decisions/README.md) — 64 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
+- [裁决索引](decisions/README.md) — 65 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
 
 ## 纪律
 

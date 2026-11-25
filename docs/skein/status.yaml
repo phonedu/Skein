@@ -23,7 +23,7 @@ workstreams:
   - id: B
     name: 上游跟随（B 组）
     state: doing
-    focus: v1.4.6 已并线（457f6693）；界面契约（裁决 59）与 ui-contracts 门禁已立（B4）；B5 完成：全量 167 过 / 53 明确跳 / 7 红（5 项等插件样例仓出 1.4.3-rc.5 之后版本，2 项真实缺陷转 B6）；等下一个稳定 tag
+    focus: v1.4.6 已并线（457f6693）；v1.4.7 稳定版已出、1.4.8-rc.1 已出现；2026-11-25 用户改定先整体接入 v1.4.7（B8），B7 转为合并后的界面验收；界面契约（裁决 59）与 ui-contracts 门禁保留
     spec: specs/界面契约.md
   - id: T1
     name: 主题（T1）
@@ -78,20 +78,35 @@ tasks:
       not: 不改 front matter 存储格式；不做自定义 schema 校验。
       scope: 编辑器 NodeView、界面契约、i18n、测试。
       evidence: 逐屏截图 + 单测 + 导出往返。
+  - id: B8
+    title: 整体接入上游 v1.4.7
+    workstream: B
+    kind: task
+    state: todo
+    acceptance: 在独立分支把 v1.4.7 整棵合并进 fork；解决 51 处冲突并让 80 个已删路径保持删除；upstream:verify、typecheck/lint/全量单测、cargo、桌面与 Android 冒烟通过；不把 docs/design、docs/images、ROADMAP 等 fork 已删内容带回来。
+    spec: specs/上游1.4.7接入顺序.md
+    estimate: 2–4 天
+    brief:
+      problem: 上游 1.4.7 已发布且 1.4.8-rc.1 已出现；fork 基线仍是 1.4.6，按功能择取会让差距越拉越大，之后每个稳定版都要重复解同样的冲突。
+      expected: 先把 v1.4.7 整体合入，止住分叉债；B7 的界面清单转为合并后的验收与补齐；D 组随 1.4.8 稳定版。
+      standard: 走现有 upstream:status/plan/start/clean/verify/record/finish 流程；冲突解决保留 fork 的 H0/Slate/手机壳层与已删文档；合并分支不夹带新功能。
+      not: 不直接合 1.4.8-rc；不在合并分支做新功能；不把 fork 已删的文档/图片/ROADMAP 复活；不跳过真机/桌面冒烟。
+      scope: 上游 v1.4.7 合并、51 处冲突、80 个复活路径、全量检查与桌面/Android 冒烟。
+      evidence: 合并后 upstream:verify 输出、冲突清零、全量 check/cargo、桌面构建与 Android 冒烟、已删路径检查。
   - id: B7
-    title: 上游 1.4.7 界面功能择取（路径补全、插图拖放、插件页触控等）
+    title: 上游 1.4.7 界面功能验收与补齐
     workstream: B
     state: todo
-    acceptance: 按盘点文档三批推进：先做批（路径补全、图表错误原因、商店仅电脑可用/分类、插件页菜单选择修复）1–2 天；下一批（拖文件进文档、文件树接收系统文件/插入链接、插件页触控）3–5 天；其余视需要；D 组随 1.4.7 正式同步。
+    acceptance: B8 整体合入 v1.4.7 后，按盘点文档逐项验收（路径补全、Mermaid 错误原因、商店分类/仅电脑可用、插件页菜单选择、拖文件进文档、文件树接收系统文件/插入链接、插件页触控）；已有的记证据，缺的再补；D 组随 1.4.8 稳定版。
     spec: research/上游1.4.7界面功能盘点.md
-    estimate: 先做批 1–2 天，下一批 3–5 天
+    estimate: 1–2 天（验收与补齐）
     brief:
-      problem: 上游 1.4.7 的界面功能本仓没有：路径补全、拖系统文件进文档（正文插图/附件链接/复制到文档旁）、文件树接收系统文件与插入链接、图表错误原因、插件商店分类与“仅电脑可用”、插件页触控与菜单选择修复。用户 2026-11-24 已确认按盘点建议择取。
-      expected: 按 research/上游1.4.7界面功能盘点.md 的三批实施：先做批（路径补全、图表错误、商店标记/分类、插件页菜单修复）1–2 天；下一批（拖放、文件树复制/插入链接、插件页触控）3–5 天；每批有测试与验证证据。
-      standard: 按“上游改动不重写”摘对应上游提交；平台差异只走 capabilities.ts；用户可见字符串补十语言；界面改动先对照裁决并补 ui-contracts。
-      not: 不做 D 组（转场/内存/Mac/Linux/iOS 专属）；B1 文件图标主题、B2 插件代码语言、B4 多 AI 端点、C3 手机插件能力核对暂缓；不整体 rebase 到 1.4.7。
+      problem: 上游 v1.4.7 改为整体合入后，界面功能不再逐项移植；需要确认路径补全、Mermaid 错误原因、商店分类/仅电脑可用、插件页菜单、拖放与触控在冲突解决后仍然可用。
+      expected: B8 合并完成后按 research/上游1.4.7界面功能盘点.md 逐项验收；已有功能的记证据，缺的再补；D 组随 1.4.8 稳定版。
+      standard: 不重复实现合并已带入的功能；验收用现有测试/e2e/真机冒烟；缺口沿用上游提交，不重写。
+      not: 不重复实现已由 B8 带入的功能；不整体 rebase（归 B8）；不追 1.4.8-rc；不做 D 组。
       scope: src/files、src/editor、src/plugins（商店/插件页/菜单）、src/settings、e2e；桌面为主，插件页触控涉手机。
-      evidence: 先做批：单测 + e2e + 桌面构建冒烟；下一批：桌面拖放真机与手机插件页验收。
+      evidence: 逐项验收记录 + 缺口单测/e2e/桌面与手机冒烟。
   - id: S7
     title: 三种同步方式的互斥规则与切换测试
     workstream: S
