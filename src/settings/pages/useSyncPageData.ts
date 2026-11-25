@@ -1,6 +1,6 @@
 // The sync page's data: the connection draft, the run's state and the
 // conflict/history lists, loaded and reloaded together.
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   syncConflicts,
   syncHistory,
@@ -8,6 +8,7 @@ import {
   syncSettingsGet,
   syncStatus,
   syncVaults,
+  type SyncStatus,
 } from "../../platform/ipc-sync";
 import { EMPTY_CONFIG, EMPTY_CREDENTIALS } from "./sync-page-model";
 import {
@@ -20,6 +21,10 @@ export function useSyncPageData(folderRoot: string | null, indexing: boolean) {
   const connection = useSyncConnectionState();
   const ui = useSyncUiState();
   const history = useSyncHistoryState();
+  // Each vault's last run, for the list; the open one is also in `ui.status`.
+  const [vaultStatuses, setVaultStatuses] = useState<
+    Record<string, SyncStatus | null>
+  >({});
   const {
     setConfig,
     setCredentials,
@@ -37,7 +42,20 @@ export function useSyncPageData(folderRoot: string | null, indexing: boolean) {
     void syncVaults()
       // A host that answers nothing (a preview without the engine) leaves
       // it empty rather than null.
-      .then((list) => setVaults(Array.isArray(list) ? list : []))
+      .then(async (list) => {
+        const found = Array.isArray(list) ? list : [];
+        setVaults(found);
+        const entries = await Promise.all(
+          found.map(async (vault) => {
+            try {
+              return [vault.root, await syncStatus(vault.root)] as const;
+            } catch {
+              return [vault.root, null] as const;
+            }
+          }),
+        );
+        setVaultStatuses(Object.fromEntries(entries));
+      })
       .catch(() => {});
     if (!folderRoot || indexing) return;
     try {
@@ -80,11 +98,12 @@ export function useSyncPageData(folderRoot: string | null, indexing: boolean) {
     setHistory,
     setNote,
     setVaults,
+    setVaultStatuses,
   ]);
 
   useEffect(() => {
     void reload();
   }, [reload]);
 
-  return { ...connection, ...ui, ...history, reload };
+  return { ...connection, ...ui, ...history, vaultStatuses, reload };
 }

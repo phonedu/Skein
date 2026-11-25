@@ -27,6 +27,7 @@ export interface SyncHeadlineProps {
   checking: boolean;
   preview: SyncPreview | null;
   configured: boolean;
+  formatTime: (value: string | number) => string;
   onNew: () => void;
   onRun: () => void;
   onUnlock: () => void;
@@ -48,11 +49,15 @@ export function SyncHeadline(props: SyncHeadlineProps) {
     checking,
     preview,
     configured,
+    formatTime,
     onNew,
     onRun,
     onUnlock,
     onOpenPlugins,
   } = props;
+  // Two engines on one folder would keep separate baselines: the built-in
+  // run waits until the plugin's sync for this folder is off.
+  const pluginRunning = !!status?.pluginRunning;
   const failed = !!note?.error || !!last?.error;
   const kind = failed
     ? "error"
@@ -73,7 +78,9 @@ export function SyncHeadline(props: SyncHeadlineProps) {
             <button
               type="button"
               className="tx-button primary"
-              disabled={busy || checking || dirty || unsupportedRoot}
+              disabled={
+                busy || checking || dirty || unsupportedRoot || pluginRunning
+              }
               onClick={onRun}
             >
               {busy ? t.syncRunning : t.syncNow}
@@ -93,8 +100,8 @@ export function SyncHeadline(props: SyncHeadlineProps) {
       <div className="settings-row sync-status-row">
         <div className="settings-row-text">
           <div className="sync-status-line" data-kind={kind}>
-            <span className="sync-dot" aria-hidden />
             <span className="sync-status-text">
+              <span className="sync-dot" aria-hidden />
               {checking
                 ? t.syncPreviewing
                 : busy
@@ -103,9 +110,7 @@ export function SyncHeadline(props: SyncHeadlineProps) {
             </span>
             {last?.at && !note && !busy ? (
               <span className="sync-last sync-last-inline">
-                {fill(t.syncLast, {
-                  time: new Date(last.at).toLocaleString(),
-                })}
+                {fill(t.syncLast, { time: formatTime(last.at) })}
               </span>
             ) : null}
           </div>
@@ -132,18 +137,11 @@ export function SyncHeadline(props: SyncHeadlineProps) {
         <p className="settings-error">{t.syncMobileContentOnly}</p>
       )}
       {dirty && !note && <p className="tx-list-note">{t.syncSaveFirst}</p>}
-      {status?.pluginConfigured && status.configured && (
-        <div
-          className="sync-notice"
-          data-tone={status.pluginRunning ? "warn" : undefined}
-        >
+      {pluginRunning && status.configured && (
+        <div className="sync-notice" data-tone="warn">
           <span className="sync-notice-text">
-            {status.pluginRunning
-              ? t.syncPluginStillRunning
-              : t.syncPluginStoppedShort}
-            {status.pluginRunning && (
-              <span className="sync-notice-hint">{t.syncPluginRollback}</span>
-            )}
+            {t.syncPluginStillRunning}
+            <span className="sync-notice-hint">{t.syncPluginRollback}</span>
           </span>
           <button
             type="button"
@@ -160,7 +158,7 @@ export function SyncHeadline(props: SyncHeadlineProps) {
           <span className="sync-notice-text">
             {fill(t.syncLockedAt, {
               time: lock.startedAt
-                ? new Date(lock.startedAt).toLocaleString()
+                ? formatTime(lock.startedAt)
                 : t.syncUnlockUnknown,
             })}
           </span>

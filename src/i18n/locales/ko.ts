@@ -2047,7 +2047,7 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncTypeHint:
     "유형을 선택하면 다음 단계에는 해당 유형에 필요한 항목만 표시됩니다.",
   syncSwitchNote:
-    "이 라이브러리에만 적용됩니다. 이전 기준은 지워지고 원격 파일은 남습니다.",
+    "이 라이브러리에만 적용됩니다. 이전 클라우드 파일은 남습니다. 먼저 미리 보기.",
 
   syncDiscardAsk: "저장하지 않은 변경 사항을 버릴까요?",
   syncWebdavDesc: "Nextcloud, NAS 등",
@@ -2083,12 +2083,31 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncRegionLabel: "리전",
   syncPrefixLabel: "원격 폴더",
   syncPathStyleLabel: "경로 형식 주소",
-  syncS3FlavorLabel: "S3 호환 모드",
+  syncS3FlavorLabel: "서비스 제공자",
+  syncS3Group: "오브젝트 스토리지(S3)",
+  syncS3ProvidersHint:
+    "치누, Bitiful, Alibaba Cloud OSS 등 S3 호환 서비스를 지원합니다.",
+  syncS3HelpLabel: "어떻게 입력하나요?",
+  syncS3Help:
+    "버킷(치누에서는 '공간'), 리전, AK/SK는 서비스 콘솔에서 만듭니다. AK는 계정, SK는 비밀번호입니다. 공간이 있는 리전을 고르세요.",
+  syncS3BitifulFixed:
+    "Bitiful의 주소와 리전은 고정되어 있습니다. 바꿀 필요 없습니다.",
+
   syncS3Standard: "표준 S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo(네이티브 업로드)",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "리전 선택",
   syncKodoNote: "서버 주소는 리전에서 설정됩니다.",
+  syncKodoRegionCnEast1: "화동",
+  syncKodoRegionCnEast2: "화동 2",
+  syncKodoRegionCnNorth1: "화북",
+  syncKodoRegionCnSouth1: "화남",
+  syncKodoRegionUsNorth1: "북미",
+  syncKodoRegionApSoutheast1: "아시아태평양 1",
+  syncKodoRegionApSoutheast2: "아시아태평양 2",
+  syncKodoRegionApSoutheast3: "아시아태평양 3",
   syncErrorRegion:
     "이 리전에는 알려진 Qiniu 업로드 주소가 없습니다. cn-south-1 같은 Qiniu S3 리전을 사용하세요.",
   syncHubTitle: "로컬 네트워크 허브",
@@ -2162,8 +2181,10 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
     "이 서비스는 동기화에 필요한 조건부 쓰기를 지원하지 않습니다. OSS 모드나 다른 서비스를 사용해 보세요.",
   syncAccountLabel: "사용자 이름",
   syncSecretLabel: "비밀번호",
-  syncAccessKeyLabel: "액세스 키",
-  syncSecretKeyLabel: "시크릿 키",
+  syncAccessKeyLabel: "액세스 키(AK)",
+
+  syncSecretKeyLabel: "시크릿 키(SK)",
+
   syncSavedPlaceholder: "저장됨 — 비워 두면 유지",
   syncSave: "연결 저장",
   syncNow: "지금 동기화",
@@ -2184,9 +2205,6 @@ ${AI_NAME}에게 주는 글쓰기 지침으로, 모든 문서에 적용됩니다
   syncPluginStopped:
     "Cloud Sync 플러그인이 이 폴더에서 중지되어 있습니다. 내장 동기화가 정상적으로 실행된 뒤 플러그인을 제거하세요. 제거해도 플러그인의 로컬 동기화 기록만 삭제되고 클라우드 파일은 삭제되지 않습니다.",
   syncPluginOpen: "플러그인 열기",
-  syncPluginStoppedShort: "Cloud Sync 플러그인: 이 폴더에서 사용 안 함",
-  syncPluginRunAsk:
-    "Cloud Sync 플러그인이 이 폴더에서 아직 켜져 있습니다. 지금 동기화하면 별도 기록을 쓰는 두 번째 엔진이 실행되어 중복된 충돌 사본이 생길 수 있습니다. 그래도 동기화할까요?",
   syncPluginRollback: "돌아가려면 내장 동기화를 끊으세요.",
 
   syncImportNotFound: "이 폴더의 Cloud Sync 설정을 찾지 못했습니다.",

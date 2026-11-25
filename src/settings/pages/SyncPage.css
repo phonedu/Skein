@@ -106,6 +106,13 @@
   outline: none;
 }
 
+/* A value the provider fixes (Bitiful's address and region) reads as a
+   value, not as a field waiting to be typed in. */
+.sync-page .sync-field .settings-text-input:disabled {
+  color: var(--ui-muted);
+  background: var(--ui-subtle);
+}
+
 /* Kodo's region is a picker, with the reason the address is not asked for
    underneath it rather than beside the label. */
 .sync-kodo-region {
@@ -173,6 +180,42 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sync-vault-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sync-vault-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+.sync-vault-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--ui-muted);
+}
+
+.sync-vault-status[data-state="ok"] .sync-vault-dot {
+  background: var(--ui-success);
+}
+
+.sync-vault-status[data-state="error"] {
+  color: var(--ui-danger);
+}
+
+.sync-vault-status[data-state="error"] .sync-vault-dot {
+  background: var(--ui-danger);
 }
 
 .sync-hub-subhead {
@@ -313,8 +356,15 @@
 }
 
 .sync-status-text {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.sync-status-text .sync-dot {
+  margin-top: 0.45em;
 }
 
 .sync-last-inline {
@@ -501,18 +551,36 @@ button.settings-row.sync-switch-link {
   font-size: var(--text-caption);
 }
 
-.sync-switch-confirm {
-  margin: var(--space-2) calc(20px * var(--chrome-scale, 1)) 0;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--shape-s);
-  background: color-mix(in srgb, var(--ui-accent) 7%, var(--ui-subtle));
-  font-size: var(--text-body);
-  overflow-wrap: anywhere;
-}
-
 /* ---- Forms and switch footers ---- */
 .sync-form-actions {
   justify-content: space-between;
+}
+
+.sync-panel-actions {
+  padding-bottom: var(--space-2);
+}
+
+/* The one-line provider help, the "?" tip, and a fixed-value note. */
+.sync-form-help {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) calc(20px * var(--chrome-scale, 1)) 0;
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
+}
+
+.sync-form-help-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.sync-form-hint {
+  margin: 0;
+  padding: var(--space-1) calc(20px * var(--chrome-scale, 1)) var(--space-2);
+  color: var(--ui-muted);
+  font-size: var(--text-caption);
 }
 
 .sync-actions-end {
@@ -574,8 +642,24 @@ button.settings-row.sync-switch-link {
     padding-inline: var(--space-4);
   }
 
-  .sync-switch-confirm {
-    margin-inline: var(--space-4);
+  .sync-form-help,
+  .sync-form-hint {
+    padding-inline: var(--space-4);
+  }
+
+  /* A thumb needs the connection's two actions at full size; the switch
+     one takes the row's width. */
+  .sync-conn-actions {
+    width: 100%;
+    padding-top: var(--space-2);
+  }
+
+  .sync-conn-actions .tx-button {
+    min-height: 40px;
+  }
+
+  .sync-conn-actions .tx-button:first-child {
+    flex: 1;
   }
 
   /* A form field takes the width; its name sits above it. */

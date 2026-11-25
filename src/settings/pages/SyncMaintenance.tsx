@@ -2,11 +2,16 @@
 // vaults and disconnecting this one. Folded away until asked for, or until
 // there are conflicts to show.
 import { useEffect, useState } from "react";
+import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
-import type { SyncConflict, SyncVault } from "../../platform/ipc-sync";
+import type {
+  SyncConflict,
+  SyncStatus,
+  SyncVault,
+} from "../../platform/ipc-sync";
 import { ChevronIcon } from "../../engine/controls/icons";
 import { SettingsGroup } from "./SettingsGroup";
-import { connectionLabel, vaultTypeLabel } from "./sync-page-model";
+import { connectionWhere, errorText, vaultTypeLabel } from "./sync-page-model";
 
 export interface SyncMaintenanceProps {
   t: Strings;
@@ -16,6 +21,7 @@ export interface SyncMaintenanceProps {
   vaults: SyncVault[];
   busy: boolean;
   checking: boolean;
+  formatTime: (value: string | number) => string;
   onPreview: () => void;
   onOpen: (path: string) => void;
   restore: (path: string, hash: string) => void;
@@ -31,6 +37,7 @@ export function SyncMaintenance(props: SyncMaintenanceProps) {
     vaults,
     busy,
     checking,
+    formatTime,
     onPreview,
     onOpen,
     restore,
@@ -102,9 +109,7 @@ export function SyncMaintenance(props: SyncMaintenanceProps) {
                 >
                   <span className="sync-list-text">
                     {version.path}
-                    <span className="sync-last">
-                      {new Date(version.at).toLocaleString()}
-                    </span>
+                    <span className="sync-last">{formatTime(version.at)}</span>
                   </span>
                   <button
                     type="button"
@@ -136,47 +141,75 @@ export function SyncMaintenance(props: SyncMaintenanceProps) {
   );
 }
 
-/** The synced vaults and the method each one uses. */
+/** The synced vaults: the method, where it goes, and its last run. */
 export function SyncVaults({
   t,
   vaults,
   currentRoot,
+  statuses,
+  currentStatus,
+  formatTime,
 }: {
   t: Strings;
   vaults: SyncVault[];
   /** The vault the page is showing, marked in the list. */
   currentRoot?: string;
+  /** Each vault's last run, by root; the open one may be fresher below. */
+  statuses?: Record<string, SyncStatus | null>;
+  currentStatus?: SyncStatus | null;
+  formatTime: (value: string | number) => string;
 }) {
   return (
     <SettingsGroup title={t.syncVaultsTitle} className="sync-page">
       {vaults.length === 0 ? (
         <p className="tx-list-note">{t.syncNoVaults}</p>
       ) : (
-        vaults.map((vault) => (
-          <div
-            className="sync-list-row"
-            key={vault.root}
-            aria-current={vault.root === currentRoot || undefined}
-          >
-            <span className="sync-list-text">
-              <span className="sync-conn-name">
-                <span className="sync-badge">{vaultTypeLabel(t, vault)}</span>
-                <span>{vault.name}</span>
+        vaults.map((vault) => {
+          const status =
+            (vault.root === currentRoot ? currentStatus : null) ??
+            statuses?.[vault.root] ??
+            undefined;
+          const last = status?.last;
+          const state = last?.error ? "error" : last?.result ? "ok" : "idle";
+          const statusText = last?.error
+            ? errorText(t, last.error)
+            : last?.result
+              ? fill(t.syncLast, {
+                  time: last.at ? formatTime(last.at) : "",
+                })
+              : t.syncNever;
+          return (
+            <div
+              className="sync-list-row"
+              key={vault.root}
+              aria-current={vault.root === currentRoot || undefined}
+            >
+              <span className="sync-vault-text">
+                <span className="sync-conn-name">
+                  <span className="sync-badge">{vaultTypeLabel(t, vault)}</span>
+                  <span>{vault.name}</span>
+                </span>
+                <span className="sync-last">
+                  {connectionWhere(vault)} → {vault.prefix || "/"}
+                </span>
+                {status?.configured && (
+                  <span className="sync-vault-status" data-state={state}>
+                    <span className="sync-vault-dot" aria-hidden />
+                    {statusText}
+                  </span>
+                )}
               </span>
-              <span className="sync-last">
-                {connectionLabel(vault)} → {vault.prefix || "/"}
-              </span>
-            </span>
-            {vault.root === currentRoot && (
-              <span
-                className="sync-check-mark"
-                aria-label={t.syncCurrentConnection}
-              >
-                ✓
-              </span>
-            )}
-          </div>
-        ))
+              {vault.root === currentRoot && (
+                <span
+                  className="sync-check-mark"
+                  aria-label={t.syncCurrentConnection}
+                >
+                  ✓
+                </span>
+              )}
+            </div>
+          );
+        })
       )}
     </SettingsGroup>
   );

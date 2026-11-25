@@ -21,6 +21,7 @@ import { errorText } from "./sync-page-model";
 export interface SyncHubProps {
   t: Strings;
   root: string;
+  formatTime: (value: string | number) => string;
   reload: () => Promise<void>;
   /** This vault is bound to the Hub now: the page returns to its summary. */
   onBound?: () => void;
@@ -28,7 +29,14 @@ export interface SyncHubProps {
   onBack?: () => void;
 }
 
-export function SyncHub({ t, root, reload, onBound, onBack }: SyncHubProps) {
+export function SyncHub({
+  t,
+  root,
+  formatTime,
+  reload,
+  onBound,
+  onBack,
+}: SyncHubProps) {
   const { reply, setReply, qr, load } = useHubStatus();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ error: boolean; text: string } | null>(
@@ -136,18 +144,6 @@ export function SyncHub({ t, root, reload, onBound, onBack }: SyncHubProps) {
       title={t.syncLocalService}
       className="sync-page"
       note={t.syncHubHttpWarning}
-      actions={
-        onBack ? (
-          <button
-            type="button"
-            className="text-button settings-inline-button"
-            disabled={busy}
-            onClick={onBack}
-          >
-            {t.phoneBack}
-          </button>
-        ) : undefined
-      }
     >
       <p className="tx-list-note">{t.syncHubIntro}</p>
       {note && (
@@ -216,7 +212,7 @@ export function SyncHub({ t, root, reload, onBound, onBack }: SyncHubProps) {
                         ? t.syncHubOnline
                         : device.lastSeen
                           ? fill(t.syncHubLastSeen, {
-                              time: new Date(device.lastSeen).toLocaleString(),
+                              time: formatTime(device.lastSeen),
                             })
                           : t.syncHubOffline,
                     ]

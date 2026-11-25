@@ -132,6 +132,8 @@ describe.each(LANGS.filter((lang) => lang !== "en"))("%s", (lang) => {
   const AS_WRITTEN = new Set([
     "syncWebdav",
     "syncS3Oss",
+    "syncS3Bitiful",
+    "syncS3KodoName",
     "phonePageAi",
     "apiKeyPlaceholder",
     "customBaseUrlPlaceholder",

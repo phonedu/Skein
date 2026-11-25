@@ -5,12 +5,16 @@ import { resolveStrings } from "../../i18n/strings";
 import { fill } from "../../i18n/fill";
 import {
   KODO_REGIONS,
+  connectionTypeLabel,
   errorText,
   isKodoRegion,
   kodoEndpoint,
   parseHubPairPayload,
   s3DefaultsFromEndpoint,
+  s3ProviderName,
+  s3ProviderOf,
   syncStatusText,
+  vaultTypeLabel,
 } from "./sync-page-model";
 
 const t = resolveStrings("en");
@@ -104,6 +108,62 @@ describe("S3 defaults from an address", () => {
   it("leaves an unknown or unreadable address to the fields", () => {
     expect(s3DefaultsFromEndpoint("https://s3.example.com")).toEqual({});
     expect(s3DefaultsFromEndpoint("not a url")).toEqual({});
+  });
+});
+
+describe("S3 providers", () => {
+  const bitiful = {
+    provider: "s3" as const,
+    endpoint: "https://s3.bitiful.net",
+    s3Flavor: "standard" as const,
+  };
+  const kodo = {
+    provider: "s3" as const,
+    endpoint: "https://s3.cn-south-1.qiniucs.com",
+    s3Flavor: "kodo" as const,
+  };
+  const oss = {
+    provider: "s3" as const,
+    endpoint: "https://oss-cn-hangzhou.aliyuncs.com",
+    s3Flavor: "oss" as const,
+  };
+  const plain = {
+    provider: "s3" as const,
+    endpoint: "https://s3.example.com",
+    s3Flavor: "standard" as const,
+  };
+
+  it("names the service from the flavour and the address", () => {
+    expect(s3ProviderOf(bitiful)).toBe("bitiful");
+    expect(s3ProviderOf(kodo)).toBe("kodo");
+    expect(s3ProviderOf(oss)).toBe("oss");
+    expect(s3ProviderOf(plain)).toBe("standard");
+    expect(
+      s3ProviderOf({
+        provider: "webdav",
+        endpoint: "https://dav",
+        s3Flavor: "standard",
+      }),
+    ).toBeNull();
+  });
+
+  it("gives the provider its own word", () => {
+    expect(s3ProviderName(t, "bitiful")).toBe(t.syncS3Bitiful);
+    expect(s3ProviderName(t, "kodo")).toBe(t.syncS3KodoName);
+    expect(s3ProviderName(t, "oss")).toBe(t.syncS3Oss);
+    expect(s3ProviderName(t, "standard")).toBe(t.syncS3Standard);
+  });
+
+  it("uses it in the connection and vault badges", () => {
+    expect(connectionTypeLabel(t, { id: "c1", ...bitiful })).toBe(
+      t.syncS3Bitiful,
+    );
+    expect(connectionTypeLabel(t, { id: "c2", ...kodo })).toBe(
+      t.syncS3KodoName,
+    );
+    expect(vaultTypeLabel(t, { connectionId: "c1", ...bitiful })).toBe(
+      t.syncS3Bitiful,
+    );
   });
 });
 

@@ -464,6 +464,82 @@ it("refuses a folder the app only reads through a content grant", async () => {
   flags.mobile = false;
 });
 
+it("shows each vault's own last run", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncVaults).mockResolvedValue([
+    {
+      root: "/vault",
+      name: "Work",
+      connectionId: "c1",
+      provider: "webdav",
+      endpoint: "https://dav.example.com",
+      bucket: "",
+      prefix: "notes",
+    },
+    {
+      root: "/other",
+      name: "Other",
+      connectionId: "c2",
+      provider: "webdav",
+      endpoint: "https://other.example.com",
+      bucket: "",
+      prefix: "other",
+    },
+  ]);
+  vi.mocked(syncStatus).mockImplementation(async (root) =>
+    root === "/other"
+      ? {
+          configured: true,
+          last: {
+            at: "2026-11-24T10:00:00Z",
+            result: {
+              revision: "1",
+              uploaded: 1,
+              downloaded: 0,
+              removed: 0,
+              moved: 0,
+              conflicts: [],
+              deferred: [],
+              unchanged: 0,
+            },
+          },
+        }
+      : { configured: true, last: null },
+  );
+
+  render(page());
+  expect(await screen.findByText("Work")).toBeTruthy();
+  expect(screen.getByText("Other")).toBeTruthy();
+  const states = [...document.querySelectorAll(".sync-vault-status")].map(
+    (node) => node.textContent ?? "",
+  );
+  expect(states.some((text) => text.includes("Last synced "))).toBe(true);
+  expect(states.some((text) => text.includes(t.syncNever))).toBe(true);
+});
+
+it("keeps the plugin notice away while the plugin is off", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: true,
+    config,
+    hasCredentials: true,
+    connections: [shared],
+  });
+  vi.mocked(syncStatus).mockResolvedValue({
+    configured: true,
+    last: null,
+    pluginConfigured: true,
+    pluginRunning: false,
+  });
+
+  render(page());
+  await screen.findByText(sharedNote());
+  expect(screen.queryByText(t.syncPluginStillRunning)).toBeNull();
+  expect(screen.queryByRole("button", { name: t.syncPluginOpen })).toBeNull();
+});
+
 it("does not warn before built-in sync is configured", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: false,
@@ -513,7 +589,7 @@ it("warns while the Cloud Sync plugin still runs for the folder", async () => {
   expect(onClose).toHaveBeenCalledOnce();
 });
 
-it("asks before syncing while the plugin is still on", async () => {
+it("keeps sync disabled while the plugin still syncs the folder", async () => {
   vi.mocked(syncSettingsGet).mockResolvedValue({
     configured: true,
     config,
@@ -526,21 +602,17 @@ it("asks before syncing while the plugin is still on", async () => {
     pluginConfigured: true,
     pluginRunning: true,
   });
-  vi.mocked(showConfirm).mockResolvedValue(false);
+  vi.mocked(showConfirm).mockClear();
+  vi.mocked(syncRunSaved).mockClear();
 
   render(page());
-  const button = await screen.findByRole("button", { name: t.syncNow });
-  await waitFor(() =>
-    expect((button as HTMLButtonElement).disabled).toBe(false),
-  );
+  const button = (await screen.findByRole("button", {
+    name: t.syncNow,
+  })) as HTMLButtonElement;
+  expect(button.disabled).toBe(true);
   fireEvent.click(button);
-  await waitFor(() =>
-    expect(showConfirm).toHaveBeenCalledWith(t.syncPluginRunAsk, {
-      okLabel: t.syncContinue,
-      cancelLabel: t.cancel,
-    }),
-  );
   expect(syncRunSaved).not.toHaveBeenCalled();
+  expect(showConfirm).not.toHaveBeenCalled();
 });
 
 it("reads Qiniu's native mode and region from the address", async () => {
@@ -576,6 +648,45 @@ it("reads Qiniu's native mode and region from the address", async () => {
   expect(saved.s3Flavor).toBe("kodo");
   expect(saved.region).toBe("cn-south-1");
   expect(saved.endpoint).toBe("https://s3.cn-south-1.qiniucs.com");
+  expect(saved.pathStyle).toBe(true);
+});
+
+it("fills Bitiful's address and region when its service is chosen", async () => {
+  vi.mocked(syncSettingsGet).mockResolvedValue({
+    configured: false,
+    connections: [],
+  });
+  vi.mocked(syncSettingsSave).mockClear();
+  vi.mocked(syncSettingsSave).mockResolvedValue();
+  vi.mocked(syncStatus).mockResolvedValue({ configured: false, last: null });
+
+  render(page());
+  fireEvent.click(
+    await screen.findByRole("button", { name: t.syncConnectionNew }),
+  );
+  fireEvent.click(typeButton("S3"));
+  fireEvent.change(await screen.findByLabelText(t.syncS3FlavorLabel), {
+    target: { value: "bitiful" },
+  });
+  const endpoint = (await screen.findByLabelText(
+    t.syncEndpointLabel,
+  )) as HTMLInputElement;
+  expect(endpoint.value).toBe("https://s3.bitiful.net");
+  expect(endpoint.disabled).toBe(true);
+  const region = (await screen.findByLabelText(
+    t.syncRegionLabel,
+  )) as HTMLInputElement;
+  expect(region.value).toBe("cn-east-1");
+  expect(region.disabled).toBe(true);
+  fireEvent.change(screen.getByLabelText(t.syncBucketLabel), {
+    target: { value: "textus" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: t.syncSavePreview }));
+  await waitFor(() => expect(syncSettingsSave).toHaveBeenCalledOnce());
+  const saved = vi.mocked(syncSettingsSave).mock.calls[0][1];
+  expect(saved.s3Flavor).toBe("standard");
+  expect(saved.endpoint).toBe("https://s3.bitiful.net");
+  expect(saved.region).toBe("cn-east-1");
   expect(saved.pathStyle).toBe(true);
 });
 

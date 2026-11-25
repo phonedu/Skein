@@ -23,6 +23,13 @@ export interface SyncConnectionSummaryProps {
 export function SyncConnectionSummary(props: SyncConnectionSummaryProps) {
   const { t, connection, prefix, encrypted, onSwitch, onEdit } = props;
   const shared = connection.usedBy > 1;
+  const endpointHost = (() => {
+    try {
+      return new URL(connection.endpoint).host;
+    } catch {
+      return connection.endpoint;
+    }
+  })();
   // A Hub connection's token comes from pairing; editing it here would only
   // break the pairing. Switching away is the way out.
   const hub = isHubConnection(connection);
@@ -40,9 +47,12 @@ export function SyncConnectionSummary(props: SyncConnectionSummaryProps) {
           </div>
           <div className="sync-conn-hint">
             {[
-              prefix ? `${t.syncPrefixLabel} ${prefix}` : t.syncAutoPrefix,
+              connection.provider === "s3" ? endpointHost : "",
+              `${t.syncPrefixLabel} ${prefix || "/"}`,
               encrypted ? t.syncEncrypted : t.syncNotEncrypted,
-            ].join(" · ")}
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </div>
         </div>
         <div className="settings-row-control sync-conn-actions">

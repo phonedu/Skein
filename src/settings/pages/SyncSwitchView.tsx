@@ -48,7 +48,7 @@ export function SyncSwitchView(props: SyncSwitchViewProps) {
   }[] = [
     {
       type: "s3",
-      label: "S3",
+      label: t.syncS3Group,
       rows: connections.filter(
         (connection) =>
           connection.provider === "s3" && !isHubConnection(connection),
@@ -68,8 +68,6 @@ export function SyncSwitchView(props: SyncSwitchViewProps) {
       rows: connections.filter(isHubConnection),
     },
   ];
-  const target =
-    connections.find((connection) => connection.id === selectedId) ?? null;
   const row = (connection: SyncConnection) => {
     const picked = connection.id === selectedId;
     const current = connection.id === currentId;
@@ -95,7 +93,7 @@ export function SyncSwitchView(props: SyncSwitchViewProps) {
         )}
         <span className="settings-row-text">
           <span className="sync-switch-name">
-            {connectionLabel(connection)}
+            {connectionLabel(t, connection)}
           </span>
           {connection.usedBy > 1 && (
             <span className="sync-switch-sub">
@@ -107,20 +105,8 @@ export function SyncSwitchView(props: SyncSwitchViewProps) {
     );
   };
   return (
-    <SettingsGroup
-      title={t.syncSwitchTitle}
-      className="sync-page"
-      actions={
-        <button
-          type="button"
-          className="text-button settings-inline-button"
-          disabled={busy}
-          onClick={onCancel}
-        >
-          {t.cancel}
-        </button>
-      }
-    >
+    <SettingsGroup title={t.syncSwitchTitle} className="sync-page">
+      <p className="tx-list-note">{t.syncSwitchNote}</p>
       {groups.map((group) => (
         <section
           key={group.type}
@@ -157,30 +143,27 @@ export function SyncSwitchView(props: SyncSwitchViewProps) {
           )}
         </section>
       ))}
-      {target && target.id !== currentId && (
-        <p className="sync-switch-confirm">
-          <strong>{connectionLabel(target)}</strong> · {t.syncSwitchNote}
-        </p>
-      )}
-      <div className="sync-actions sync-form-actions">
-        <span className="sync-actions-end">
-          <button
-            type="button"
-            className="text-button settings-inline-button"
-            disabled={busy}
-            onClick={onCancel}
-          >
-            {t.cancel}
-          </button>
-          <button
-            type="button"
-            className="text-button settings-inline-button"
-            disabled={busy || !selectedId || selectedId === currentId}
-            onClick={onConfirm}
-          >
-            {t.syncSwitchTo}
-          </button>
-        </span>
+      <div className="sync-panel-actions">
+        <div className="sync-actions sync-form-actions">
+          <span className="sync-actions-end">
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              disabled={busy}
+              onClick={onCancel}
+            >
+              {t.cancel}
+            </button>
+            <button
+              type="button"
+              className="text-button settings-inline-button"
+              disabled={busy || !selectedId || selectedId === currentId}
+              onClick={onConfirm}
+            >
+              {t.syncSwitchTo}
+            </button>
+          </span>
+        </div>
       </div>
     </SettingsGroup>
   );

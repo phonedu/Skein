@@ -12,6 +12,7 @@ import { isMobileApp } from "../../platform/capabilities";
 import { onBack } from "../../mobile/back";
 import { resolvedDocumentPath } from "../../platform/documents-path";
 import { useAppDocumentsFolder } from "../../platform/native-files";
+import { localeOf } from "../../i18n/langs";
 import { getUiState } from "../../storage/ui-state";
 import { SHOW_SIDEBAR_TAB_EVENT, sendAppEvent } from "../../utils/events";
 import { SettingsGroup } from "./SettingsGroup";
@@ -42,6 +43,7 @@ type SyncPanel =
 
 export function SyncPage({
   t,
+  settings,
   folderRoot: givenFolderRoot,
   openPaths,
   indexing,
@@ -67,6 +69,9 @@ export function SyncPage({
   // a folder the user gave the app access to) works.
   const unsupportedRoot =
     isMobileApp && !!folderRoot && folderRoot.startsWith("content://");
+  const language = settings?.language ?? "en";
+  const formatTime = (value: string | number) =>
+    new Date(value).toLocaleString(localeOf(language));
   const data = useSyncPageData(folderRoot, !!indexing);
   const {
     config,
@@ -75,6 +80,7 @@ export function SyncPage({
     setCredentials,
     connections,
     vaults,
+    vaultStatuses,
     savedConfig,
     saved,
     savedPassword,
@@ -112,6 +118,7 @@ export function SyncPage({
   const actions = useSyncActions({
     t,
     folderRoot: folderRoot ?? "",
+    formatTime,
     config,
     credentials,
     savedConfig,
@@ -187,7 +194,7 @@ export function SyncPage({
         <SettingsGroup className="sync-page">
           <p className="tx-list-note">{t.syncNoFolder}</p>
         </SettingsGroup>
-        <SyncVaults t={t} vaults={vaults} />
+        <SyncVaults t={t} vaults={vaults} formatTime={formatTime} />
       </>
     );
   }
@@ -323,6 +330,7 @@ export function SyncPage({
         checking={checking}
         preview={preview}
         configured={configured}
+        formatTime={formatTime}
         onNew={() => openNew()}
         onRun={() => void actions.run()}
         onUnlock={() => void actions.unlock()}
@@ -392,13 +400,21 @@ export function SyncPage({
         <SyncHub
           t={t}
           root={folderRoot}
+          formatTime={formatTime}
           reload={reload}
           onBound={() => setPanel({ kind: "none" })}
           onBack={closePanel}
         />
       )}
       {vaults.length > 0 && (
-        <SyncVaults t={t} vaults={vaults} currentRoot={folderRoot} />
+        <SyncVaults
+          t={t}
+          vaults={vaults}
+          currentRoot={folderRoot}
+          statuses={vaultStatuses}
+          currentStatus={status}
+          formatTime={formatTime}
+        />
       )}
       <SyncMaintenance
         t={t}
@@ -408,6 +424,7 @@ export function SyncPage({
         vaults={vaults}
         busy={busy}
         checking={checking}
+        formatTime={formatTime}
         onPreview={() => void actions.previewRun()}
         onOpen={(path) => onOpenFile?.(fullPath(path))}
         restore={(path, hash) => void actions.restore(path, hash)}

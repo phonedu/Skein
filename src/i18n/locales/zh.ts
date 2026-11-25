@@ -1965,7 +1965,7 @@ export default {
   syncJoinShort: "加入",
   syncSavePreview: "保存并预览",
   syncPreviewing: "正在预览…",
-  syncSwitchNote: "只影响此库；旧基准清除，远端文件保留。",
+  syncSwitchNote: "只影响此库；旧云端的文件保留；先预览再执行。",
 
   syncDiscardAsk: "放弃未保存的修改？",
   syncWebdavDesc: "Nextcloud、NAS、坚果云等",
@@ -1989,12 +1989,29 @@ export default {
   syncRegionLabel: "区域",
   syncPrefixLabel: "远端目录",
   syncPathStyleLabel: "路径式地址",
-  syncS3FlavorLabel: "S3 兼容方式",
+  syncS3FlavorLabel: "服务商",
+  syncS3Group: "对象存储（S3）",
+  syncS3ProvidersHint: "支持七牛云、缤纷云、阿里云 OSS 等 S3 兼容服务。",
+  syncS3HelpLabel: "怎么填？",
+  syncS3Help:
+    "存储桶（七牛叫「空间」）、区域和 AK/SK 在服务商控制台创建。AK 是账号，SK 是密码；区域选空间所在的，选错会连不上。",
+  syncS3BitifulFixed: "缤纷云的地址和区域固定，不用改。",
+
   syncS3Standard: "标准 S3",
   syncS3Oss: "阿里云 OSS",
   syncS3Kodo: "七牛 Kodo（原生上传）",
+  syncS3Bitiful: "缤纷云（Bitiful）",
+  syncS3KodoName: "七牛 Kodo",
   syncRegionChoose: "选择区域",
   syncKodoNote: "服务器地址由区域自动生成。",
+  syncKodoRegionCnEast1: "华东",
+  syncKodoRegionCnEast2: "华东 2",
+  syncKodoRegionCnNorth1: "华北",
+  syncKodoRegionCnSouth1: "华南",
+  syncKodoRegionUsNorth1: "北美",
+  syncKodoRegionApSoutheast1: "亚太 1",
+  syncKodoRegionApSoutheast2: "亚太 2",
+  syncKodoRegionApSoutheast3: "亚太 3",
   syncErrorRegion:
     "该区域没有已知的七牛上传地址。请使用七牛 S3 区域，例如 cn-south-1。",
   syncHubTitle: "局域网 Hub",
@@ -2064,8 +2081,10 @@ export default {
     "该服务不支持同步所需的条件写入。请尝试 OSS 模式或其他服务。",
   syncAccountLabel: "用户名",
   syncSecretLabel: "密码",
-  syncAccessKeyLabel: "访问密钥",
-  syncSecretKeyLabel: "密钥",
+  syncAccessKeyLabel: "访问密钥（AK）",
+
+  syncSecretKeyLabel: "密钥（SK）",
+
   syncSavedPlaceholder: "已保存，留空保持不变",
   syncSave: "保存连接",
   syncNow: "立即同步",
@@ -2084,9 +2103,6 @@ export default {
   syncPluginStopped:
     "Cloud Sync 插件已对这个文件夹停用。内置同步正常运行后即可卸载插件；卸载只会删除插件的本地同步记录，不会删除云端文件。",
   syncPluginOpen: "打开插件",
-  syncPluginStoppedShort: "Cloud Sync 插件：已对此文件夹停用",
-  syncPluginRunAsk:
-    "Cloud Sync 插件仍在为这个文件夹同步。现在同步会再运行一套引擎，它有自己的记录，可能产生重复的冲突副本。仍要同步？",
   syncPluginRollback: "要回到插件，断开内置同步即可。",
 
   syncImportNotFound: "没有找到这个文件夹的 Cloud Sync 设置。",

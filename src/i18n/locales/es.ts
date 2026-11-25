@@ -2202,7 +2202,7 @@ para usar una.
   syncLocalService: "Servicio de este dispositivo",
   syncTypeHint: "Elige un tipo; el paso siguiente solo muestra sus campos.",
   syncSwitchNote:
-    "Solo esta biblioteca; la base anterior se borra, los archivos remotos permanecen.",
+    "Solo esta biblioteca; los archivos de la nube anterior permanecen; primero la vista previa.",
 
   syncDiscardAsk: "¿Descartar los cambios sin guardar?",
   syncWebdavDesc: "Nextcloud, NAS y más",
@@ -2240,12 +2240,31 @@ para usar una.
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
-  syncS3FlavorLabel: "Compatibilidad S3",
+  syncS3FlavorLabel: "Proveedor",
+  syncS3Group: "Almacenamiento de objetos (S3)",
+  syncS3ProvidersHint:
+    "Compatible con Qiniu, Bitiful, Alibaba Cloud OSS y otros servicios S3.",
+  syncS3HelpLabel: "¿Cómo se rellena?",
+  syncS3Help:
+    "Crea el bucket (Qiniu lo llama «espacio»), la región y las AK/SK en la consola del proveedor. AK es la cuenta, SK el secreto; elige la región del espacio.",
+  syncS3BitifulFixed:
+    "La dirección y la región de Bitiful son fijas; no hay que cambiarlas.",
+
   syncS3Standard: "S3 estándar",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (carga nativa)",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "Elegir una región",
   syncKodoNote: "La dirección del servidor se toma de la región.",
+  syncKodoRegionCnEast1: "China Oriental",
+  syncKodoRegionCnEast2: "China Oriental 2",
+  syncKodoRegionCnNorth1: "China del Norte",
+  syncKodoRegionCnSouth1: "China del Sur",
+  syncKodoRegionUsNorth1: "Norteamérica",
+  syncKodoRegionApSoutheast1: "Asia-Pacífico 1",
+  syncKodoRegionApSoutheast2: "Asia-Pacífico 2",
+  syncKodoRegionApSoutheast3: "Asia-Pacífico 3",
   syncErrorRegion:
     "Esta región no tiene una dirección de carga de Qiniu conocida. Usa una región S3 de Qiniu como cn-south-1.",
   syncHubTitle: "Hub de red local",
@@ -2323,8 +2342,10 @@ para usar una.
     "Este servicio no admite la escritura condicional que necesita la sincronización. Prueba el modo OSS u otro servicio.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
-  syncAccessKeyLabel: "Access key",
-  syncSecretKeyLabel: "Secret key",
+  syncAccessKeyLabel: "Clave de acceso (AK)",
+
+  syncSecretKeyLabel: "Clave secreta (SK)",
+
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
@@ -2345,9 +2366,6 @@ para usar una.
   syncPluginStopped:
     "El plugin Cloud Sync está detenido para esta carpeta. Desinstálalo cuando la sincronización integrada haya funcionado con normalidad; al desinstalarlo solo se borran sus registros locales de sincronización, no los archivos en la nube.",
   syncPluginOpen: "Abrir plugins",
-  syncPluginStoppedShort: "Plugin Cloud Sync: desactivado para esta carpeta",
-  syncPluginRunAsk:
-    "El plugin Cloud Sync sigue activo para esta carpeta. Sincronizar ahora ejecuta un segundo motor con su propio registro, que puede crear copias de conflicto duplicadas. ¿Sincronizar igualmente?",
   syncPluginRollback: "Para volver, desconecta la sincronización integrada.",
 
   syncImportNotFound:

@@ -6,12 +6,19 @@ import { fill } from "../../i18n/fill";
 import type { Strings } from "../../i18n/strings";
 import type { SyncConfig, SyncCredentials } from "../../platform/ipc-sync";
 import { ChevronIcon } from "../../engine/controls/icons";
+import { InfoTip } from "../../engine/controls/InfoTip";
 import { MaskedKeyInput } from "../sections/controls";
 import {
+  BITIFUL_ENDPOINT,
+  BITIFUL_REGION,
   KODO_REGIONS,
+  isBitifulEndpoint,
   isKodoRegion,
   kodoEndpoint,
+  kodoRegionLabel,
   s3DefaultsFromEndpoint,
+  s3ProviderOf,
+  type S3Provider,
 } from "./sync-page-model";
 
 export interface SyncConnectionFieldsProps {
@@ -42,8 +49,9 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
     sharedCount,
   } = props;
   const isS3 = config.provider === "s3";
-  const flavor = config.s3Flavor ?? "standard";
-  const isKodo = isS3 && flavor === "kodo";
+  const provider = s3ProviderOf(config) ?? "standard";
+  const isKodo = provider === "kodo";
+  const isBitiful = provider === "bitiful";
 
   // A standard S3 address says which service and region it is; what it
   // implies is filled in, not asked. Kodo has no address field (below).
@@ -62,6 +70,12 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
         next.region = region;
         next.endpoint = region ? kodoEndpoint(region) : "";
         next.pathStyle = true;
+      } else if (isBitifulEndpoint(endpoint)) {
+        // Bitiful is one address and one region; the address wins over any
+        // region typed for another service.
+        next.s3Flavor = "standard";
+        next.region = BITIFUL_REGION;
+        next.pathStyle = true;
       } else {
         if (derived.region && !config.region.trim())
           next.region = derived.region;
@@ -72,10 +86,12 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
     setConfig(next);
   };
 
-  // Kodo's address is not a field: picking it drops any other address, and
-  // only the regions Qiniu publishes are offered.
-  const changeFlavor = (nextFlavor: NonNullable<SyncConfig["s3Flavor"]>) => {
-    if (nextFlavor === "kodo") {
+  // The service decides which fields exist: Kodo has no address (the region
+  // makes it), Bitiful has a fixed address and region, and standard S3 / OSS
+  // take the address the user was given. A provider change drops the address
+  // that belonged to the old one.
+  const changeProvider = (next: S3Provider) => {
+    if (next === "kodo") {
       const region = isKodoRegion(config.region) ? config.region : "";
       setConfig({
         ...config,
@@ -86,11 +102,17 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
       });
       return;
     }
-    setConfig({
-      ...config,
-      s3Flavor: nextFlavor,
-      endpoint: flavor === "kodo" ? "" : config.endpoint,
-    });
+    if (next === "bitiful") {
+      setConfig({
+        ...config,
+        s3Flavor: "standard",
+        endpoint: BITIFUL_ENDPOINT,
+        region: BITIFUL_REGION,
+        pathStyle: true,
+      });
+      return;
+    }
+    setConfig({ ...config, s3Flavor: next, endpoint: "", region: "" });
   };
 
   const changeKodoRegion = (region: string) => {
@@ -116,19 +138,27 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
             <select
               className="settings-text-input"
               disabled={locked}
-              value={flavor}
+              value={provider}
               onChange={(event) =>
-                changeFlavor(
-                  event.target.value as NonNullable<SyncConfig["s3Flavor"]>,
-                )
+                changeProvider(event.target.value as S3Provider)
               }
             >
               <option value="standard">{t.syncS3Standard}</option>
+              <option value="bitiful">{t.syncS3Bitiful}</option>
               <option value="oss">{t.syncS3Oss}</option>
               <option value="kodo">{t.syncS3Kodo}</option>
             </select>
           </label>
         )}
+        {isS3 && (
+          <div className="sync-form-help">
+            <InfoTip label={fill(t.infoTipLabel, { label: t.syncS3HelpLabel })}>
+              {t.syncS3Help}
+            </InfoTip>
+            <span className="sync-form-help-text">{t.syncS3ProvidersHint}</span>
+          </div>
+        )}
+        {isBitiful && <p className="sync-form-hint">{t.syncS3BitifulFixed}</p>}
         {!isKodo && (
           <label className="sync-field">
             <span className="settings-field-label">{t.syncEndpointLabel}</span>
@@ -137,7 +167,7 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
               type="url"
               spellCheck={false}
               placeholder="https://"
-              disabled={locked}
+              disabled={locked || isBitiful}
               value={config.endpoint}
               onChange={(event) => changeEndpoint(event.target.value)}
             />
@@ -173,11 +203,15 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
                     <option value="">{t.syncRegionChoose}</option>
                     {KODO_REGIONS.map((region) => (
                       <option key={region.id} value={region.id}>
-                        {region.id}
+                        {kodoRegionLabel(t, region.id)} ({region.id})
                       </option>
                     ))}
                   </select>
-                  <span className="tx-list-note">{t.syncKodoNote}</span>
+                  <span className="tx-list-note">
+                    {config.region
+                      ? kodoEndpoint(config.region)
+                      : t.syncKodoNote}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -188,7 +222,7 @@ export function SyncConnectionFields(props: SyncConnectionFieldsProps) {
                 <input
                   className="settings-text-input"
                   spellCheck={false}
-                  disabled={locked}
+                  disabled={locked || isBitiful}
                   value={config.region}
                   onChange={(event) =>
                     setConfig({ ...config, region: event.target.value })

@@ -238,6 +238,7 @@ pub fn vault_list(app: &tauri::AppHandle) -> Result<Vec<serde_json::Value>, Stri
                 "provider": connection.map(|connection| connection.provider.clone()).unwrap_or_default(),
                 "endpoint": connection.map(|connection| connection.endpoint.clone()).unwrap_or_default(),
                 "bucket": connection.map(|connection| connection.bucket.clone()).unwrap_or_default(),
+                "s3Flavor": connection.map(|connection| connection.s3_flavor.clone()).unwrap_or_default(),
                 "prefix": binding.prefix,
             })
         })

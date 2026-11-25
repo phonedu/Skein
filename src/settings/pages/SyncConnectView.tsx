@@ -6,7 +6,12 @@ import type { Strings } from "../../i18n/strings";
 import { SyncConnectionFields } from "./SyncConnectionFields";
 import { SettingsGroup } from "./SettingsGroup";
 import { SyncHubJoin } from "./SyncHubJoin";
-import { isKodoRegion, type SyncConnectionType } from "./sync-page-model";
+import {
+  isKodoRegion,
+  s3ProviderName,
+  s3ProviderOf,
+  type SyncConnectionType,
+} from "./sync-page-model";
 
 export interface SyncConnectViewProps {
   t: Strings;
@@ -49,10 +54,11 @@ export function SyncConnectView(props: SyncConnectViewProps) {
     onPaired,
     fields,
   } = props;
-  const title =
-    mode === "new"
-      ? t.syncConnectionNew
-      : `${typeName(t, type)} · ${t.syncConnectionEdit}`;
+  const provider = type === "s3" ? s3ProviderOf(fields.config) : null;
+  const heading = mode === "new" ? t.syncConnectionNew : t.syncConnectionEdit;
+  const title = provider
+    ? `${s3ProviderName(t, provider)} · ${heading}`
+    : `${typeName(t, type)} · ${heading}`;
   // Kodo's region decides its address and cannot be defaulted: without one
   // there is nothing safe to save.
   const kodoNeedsRegion =
@@ -60,19 +66,8 @@ export function SyncConnectView(props: SyncConnectViewProps) {
     fields.config.s3Flavor === "kodo" &&
     !isKodoRegion(fields.config.region);
   const saveDisabled = busy || unsupportedRoot || kodoNeedsRegion;
-  const cancel = (
-    <button
-      type="button"
-      className="text-button settings-inline-button"
-      disabled={busy}
-      onClick={onCancel}
-    >
-      {t.cancel}
-    </button>
-  );
-
   return (
-    <SettingsGroup title={title} className="sync-page" actions={cancel}>
+    <SettingsGroup title={title} className="sync-page">
       {mode === "new" && (
         <div
           className="sync-segmented"

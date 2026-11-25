@@ -2182,7 +2182,7 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncTypeHint:
     "Escolha um tipo; o passo seguinte mostra apenas os seus campos.",
   syncSwitchNote:
-    "Só esta biblioteca; a base antiga é apagada, os ficheiros remotos ficam.",
+    "Só esta biblioteca; os ficheiros da nuvem antiga ficam; pré-visualizar primeiro.",
 
   syncDiscardAsk: "Descartar as alterações não guardadas?",
   syncWebdavDesc: "Nextcloud, NAS e mais",
@@ -2218,12 +2218,31 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
-  syncS3FlavorLabel: "Compatibilidade S3",
+  syncS3FlavorLabel: "Fornecedor",
+  syncS3Group: "Armazenamento de objetos (S3)",
+  syncS3ProvidersHint:
+    "Compatível com Qiniu, Bitiful, Alibaba Cloud OSS e outros serviços S3.",
+  syncS3HelpLabel: "Como preencher?",
+  syncS3Help:
+    "Crie o bucket (a Qiniu chama-lhe «espaço»), a região e as AK/SK na consola do fornecedor. AK é a conta, SK o segredo; escolha a região do espaço.",
+  syncS3BitifulFixed:
+    "O endereço e a região da Bitiful são fixos; não precisa de mudar.",
+
   syncS3Standard: "S3 padrão",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (envio nativo)",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "Escolher uma região",
   syncKodoNote: "O endereço do servidor é definido pela região.",
+  syncKodoRegionCnEast1: "China Oriental",
+  syncKodoRegionCnEast2: "China Oriental 2",
+  syncKodoRegionCnNorth1: "China do Norte",
+  syncKodoRegionCnSouth1: "China do Sul",
+  syncKodoRegionUsNorth1: "América do Norte",
+  syncKodoRegionApSoutheast1: "Ásia-Pacífico 1",
+  syncKodoRegionApSoutheast2: "Ásia-Pacífico 2",
+  syncKodoRegionApSoutheast3: "Ásia-Pacífico 3",
   syncErrorRegion:
     "Esta região não tem um endereço de envio da Qiniu conhecido. Use uma região S3 da Qiniu, como cn-south-1.",
   syncHubTitle: "Hub de rede local",
@@ -2302,8 +2321,10 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
     "Este serviço não suporta a escrita condicional necessária à sincronização. Experimente o modo OSS ou outro serviço.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
-  syncAccessKeyLabel: "Access key",
-  syncSecretKeyLabel: "Secret key",
+  syncAccessKeyLabel: "Chave de acesso (AK)",
+
+  syncSecretKeyLabel: "Chave secreta (SK)",
+
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
@@ -2324,9 +2345,6 @@ Habilidades ficam na pasta skills/ ao lado deste arquivo, um arquivo
   syncPluginStopped:
     "O plugin Cloud Sync está parado para esta pasta. Desinstale-o depois que a sincronização integrada tiver funcionado normalmente; desinstalar apaga apenas os registros locais de sincronização do plugin, não os arquivos na nuvem.",
   syncPluginOpen: "Abrir plugins",
-  syncPluginStoppedShort: "Plugin Cloud Sync: desativado para esta pasta",
-  syncPluginRunAsk:
-    "O plugin Cloud Sync ainda está ativo para esta pasta. Sincronizar agora executa um segundo motor com registro próprio, o que pode criar cópias de conflito duplicadas. Sincronizar mesmo assim?",
   syncPluginRollback: "Para voltar, desligue a sincronização integrada.",
 
   syncImportNotFound:

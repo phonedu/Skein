@@ -55,6 +55,33 @@ export const isKodoRegion = (region: string): boolean =>
 export const kodoEndpoint = (region: string): string =>
   `https://s3.${region}.qiniucs.com`;
 
+/** The region a person picks: the geographic name, then the id Qiniu uses. */
+export function kodoRegionLabel(
+  t: SettingsPageProps["t"],
+  region: string,
+): string {
+  switch (region) {
+    case "cn-east-1":
+      return t.syncKodoRegionCnEast1;
+    case "cn-east-2":
+      return t.syncKodoRegionCnEast2;
+    case "cn-north-1":
+      return t.syncKodoRegionCnNorth1;
+    case "cn-south-1":
+      return t.syncKodoRegionCnSouth1;
+    case "us-north-1":
+      return t.syncKodoRegionUsNorth1;
+    case "ap-southeast-1":
+      return t.syncKodoRegionApSoutheast1;
+    case "ap-southeast-2":
+      return t.syncKodoRegionApSoutheast2;
+    case "ap-southeast-3":
+      return t.syncKodoRegionApSoutheast3;
+    default:
+      return region;
+  }
+}
+
 export function errorText(t: SettingsPageProps["t"], reason: string): string {
   if (reason.includes("identityFork")) return t.syncErrorIdentityFork;
   if (reason.includes("identityConflict")) return t.syncErrorIdentityConflict;
@@ -113,10 +140,59 @@ export const folderName = (path: string) =>
 
 type ConnectionRef = Pick<
   SyncConnection,
-  "provider" | "endpoint" | "bucket" | "prefix"
+  "provider" | "endpoint" | "bucket" | "prefix" | "s3Flavor"
 >;
 
-export function connectionLabel(connection: ConnectionRef): string {
+/** Bitiful's fixed S3 address and region: one provider, no address field
+ *  to get wrong. The backend treats it as standard S3 with path-style. */
+export const BITIFUL_ENDPOINT = "https://s3.bitiful.net";
+export const BITIFUL_REGION = "cn-east-1";
+
+/** The service an S3 connection goes to. Bitiful is standard S3 under the
+ *  hood; its address tells it apart from AWS and other standard S3. */
+export type S3Provider = "standard" | "bitiful" | "oss" | "kodo";
+
+export function isBitifulEndpoint(endpoint: string): boolean {
+  try {
+    return new URL(endpoint.trim()).hostname.toLowerCase() === "s3.bitiful.net";
+  } catch {
+    // The address is still being typed.
+    return false;
+  }
+}
+
+export function s3ProviderOf(
+  connection: Pick<SyncConnection, "provider" | "endpoint" | "s3Flavor">,
+): S3Provider | null {
+  if (connection.provider !== "s3") return null;
+  if (connection.s3Flavor === "kodo") return "kodo";
+  if (connection.s3Flavor === "oss") return "oss";
+  if (isBitifulEndpoint(connection.endpoint)) return "bitiful";
+  return "standard";
+}
+
+export function s3ProviderName(
+  t: SettingsPageProps["t"],
+  provider: S3Provider | null,
+): string {
+  switch (provider) {
+    case "kodo":
+      return t.syncS3KodoName;
+    case "bitiful":
+      return t.syncS3Bitiful;
+    case "oss":
+      return t.syncS3Oss;
+    default:
+      return t.syncS3Standard;
+  }
+}
+
+/** The provider and where it points, without a prefix: a vault's row adds
+ *  its own binding prefix after this. */
+export function connectionBaseLabel(
+  t: SettingsPageProps["t"],
+  connection: ConnectionRef,
+): string {
   let where = connection.bucket;
   if (connection.provider === "webdav") {
     try {
@@ -125,8 +201,19 @@ export function connectionLabel(connection: ConnectionRef): string {
       where = connection.endpoint;
     }
   }
-  const base = connection.prefix ? ` · ${connection.prefix}` : "";
-  return `${connection.provider === "s3" ? "S3" : "WebDAV"} · ${where || connection.endpoint}${base}`;
+  const type =
+    connection.provider === "s3"
+      ? s3ProviderName(t, s3ProviderOf(connection))
+      : "WebDAV";
+  return `${type} · ${where || connection.endpoint}`;
+}
+
+export function connectionLabel(
+  t: SettingsPageProps["t"],
+  connection: ConnectionRef,
+): string {
+  const base = connectionBaseLabel(t, connection);
+  return connection.prefix ? `${base} · ${connection.prefix}` : base;
 }
 
 /** The three ways a vault connects; "hub" is WebDAV to a local Hub. */
@@ -171,26 +258,29 @@ export function s3DefaultsFromEndpoint(endpoint: string): {
   return {};
 }
 
-/** The type's word in a badge: S3, WebDAV or the Hub's own name. */
+/** The type's word in a badge: the S3 service, WebDAV or the Hub. */
 export function connectionTypeLabel(
   t: SettingsPageProps["t"],
-  connection: Pick<SyncConnection, "id" | "provider" | "endpoint">,
+  connection: Pick<SyncConnection, "id" | "provider" | "endpoint" | "s3Flavor">,
 ): string {
   if (isHubConnection(connection)) return t.syncHubTitle;
-  return connection.provider === "s3" ? "S3" : "WebDAV";
+  if (connection.provider === "s3")
+    return s3ProviderName(t, s3ProviderOf(connection));
+  return "WebDAV";
 }
 
 /** A synced vault's method in a badge: its binding's connection type. */
 export function vaultTypeLabel(
   t: SettingsPageProps["t"],
-  vault: Pick<SyncVault, "connectionId" | "provider" | "endpoint">,
+  vault: Pick<SyncVault, "connectionId" | "provider" | "endpoint" | "s3Flavor">,
 ): string {
   const hub =
     vault.connectionId.startsWith("hub-") ||
     (vault.provider === "webdav" &&
       /\/hub\/[^/]+\/?$/.test(vault.endpoint.trim()));
   if (hub) return t.syncHubTitle;
-  return vault.provider === "s3" ? "S3" : "WebDAV";
+  if (vault.provider === "s3") return s3ProviderName(t, s3ProviderOf(vault));
+  return "WebDAV";
 }
 
 /** Where a connection points, without the prefix: the host or the bucket. */

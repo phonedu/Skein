@@ -2152,7 +2152,7 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncLocalService: "Dienst dieses Geräts",
   syncTypeHint: "Wähle einen Typ; der nächste Schritt zeigt nur dessen Felder.",
   syncSwitchNote:
-    "Nur diese Bibliothek; alte Basis wird gelöscht, entfernte Dateien bleiben.",
+    "Nur diese Bibliothek; Dateien der alten Cloud bleiben; zuerst Vorschau.",
 
   syncDiscardAsk: "Nicht gespeicherte Änderungen verwerfen?",
   syncWebdavDesc: "Nextcloud, NAS und mehr",
@@ -2191,12 +2191,31 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
-  syncS3FlavorLabel: "S3-Kompatibilität",
+  syncS3FlavorLabel: "Anbieter",
+  syncS3Group: "Objektspeicher (S3)",
+  syncS3ProvidersHint:
+    "Funktioniert mit Qiniu, Bitiful, Alibaba Cloud OSS und anderen S3-kompatiblen Diensten.",
+  syncS3HelpLabel: "Wie ausfüllen?",
+  syncS3Help:
+    "Bucket (bei Qiniu „Space“), Region und AK/SK in der Anbieter-Konsole anlegen. AK ist das Konto, SK das Geheimnis; die Region des Space wählen.",
+  syncS3BitifulFixed:
+    "Adresse und Region von Bitiful sind fest; nichts zu ändern.",
+
   syncS3Standard: "Standard-S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (nativer Upload)",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "Region wählen",
   syncKodoNote: "Die Serveradresse wird aus der Region gesetzt.",
+  syncKodoRegionCnEast1: "Ostchina",
+  syncKodoRegionCnEast2: "Ostchina 2",
+  syncKodoRegionCnNorth1: "Nordchina",
+  syncKodoRegionCnSouth1: "Südchina",
+  syncKodoRegionUsNorth1: "Nordamerika",
+  syncKodoRegionApSoutheast1: "Asien-Pazifik 1",
+  syncKodoRegionApSoutheast2: "Asien-Pazifik 2",
+  syncKodoRegionApSoutheast3: "Asien-Pazifik 3",
   syncErrorRegion:
     "Für diese Region ist keine Qiniu-Upload-Adresse bekannt. Verwende eine Qiniu-S3-Region wie cn-south-1.",
   syncHubTitle: "Lokaler Netzwerk-Hub",
@@ -2274,8 +2293,10 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
     "Dieser Dienst unterstützt das für die Sperre nötige bedingte Schreiben nicht. Versuche den OSS-Modus oder einen anderen Dienst.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
-  syncAccessKeyLabel: "Access key",
-  syncSecretKeyLabel: "Secret key",
+  syncAccessKeyLabel: "Zugriffsschlüssel (AK)",
+
+  syncSecretKeyLabel: "Geheimschlüssel (SK)",
+
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
@@ -2296,9 +2317,6 @@ Skills liegen im Ordner skills/ neben dieser Datei, je Skill eine
   syncPluginStopped:
     "Das Cloud-Sync-Plugin ist für diesen Ordner gestoppt. Deinstalliere es, sobald die interne Synchronisierung normal gelaufen ist; beim Deinstallieren werden nur die lokalen Synchronisierungsdaten des Plugins gelöscht, nicht die Dateien in der Cloud.",
   syncPluginOpen: "Plugins öffnen",
-  syncPluginStoppedShort: "Cloud Sync-Plugin: für diesen Ordner aus",
-  syncPluginRunAsk:
-    "Das Cloud-Sync-Plugin ist für diesen Ordner noch aktiv. Eine Synchronisierung startet jetzt eine zweite Engine mit eigener Aufzeichnung, die doppelte Konfliktkopien erzeugen kann. Trotzdem synchronisieren?",
   syncPluginRollback:
     "Zum Zurückgehen die eingebaute Synchronisierung trennen.",
 

@@ -1970,7 +1970,7 @@ export default {
   syncJoinShort: "加入",
   syncSavePreview: "儲存並預覽",
   syncPreviewing: "正在預覽…",
-  syncSwitchNote: "只影響此庫；舊基準清除，遠端檔案保留。",
+  syncSwitchNote: "只影響此庫；舊雲端的檔案保留；先預覽再執行。",
 
   syncDiscardAsk: "放棄未儲存的修改？",
   syncWebdavDesc: "Nextcloud、NAS、堅果雲等",
@@ -1994,12 +1994,29 @@ export default {
   syncRegionLabel: "區域",
   syncPrefixLabel: "遠端目錄",
   syncPathStyleLabel: "路徑式位址",
-  syncS3FlavorLabel: "S3 相容方式",
+  syncS3FlavorLabel: "服務商",
+  syncS3Group: "物件儲存（S3）",
+  syncS3ProvidersHint: "支援七牛雲、繽紛雲、阿里雲 OSS 等 S3 相容服務。",
+  syncS3HelpLabel: "怎麼填？",
+  syncS3Help:
+    "儲存桶（七牛叫「空間」）、區域和 AK/SK 在服務商控制台建立。AK 是帳號，SK 是密碼；區域選空間所在的，選錯會連不上。",
+  syncS3BitifulFixed: "繽紛雲的位址和區域固定，不用改。",
+
   syncS3Standard: "標準 S3",
   syncS3Oss: "阿里雲 OSS",
   syncS3Kodo: "七牛 Kodo（原生上傳）",
+  syncS3Bitiful: "繽紛雲（Bitiful）",
+  syncS3KodoName: "七牛 Kodo",
   syncRegionChoose: "選擇區域",
   syncKodoNote: "伺服器位址由區域自動產生。",
+  syncKodoRegionCnEast1: "華東",
+  syncKodoRegionCnEast2: "華東 2",
+  syncKodoRegionCnNorth1: "華北",
+  syncKodoRegionCnSouth1: "華南",
+  syncKodoRegionUsNorth1: "北美",
+  syncKodoRegionApSoutheast1: "亞太 1",
+  syncKodoRegionApSoutheast2: "亞太 2",
+  syncKodoRegionApSoutheast3: "亞太 3",
   syncErrorRegion:
     "此區域沒有已知的七牛上傳位址。請使用七牛 S3 區域，例如 cn-south-1。",
   syncHubTitle: "區域網路 Hub",
@@ -2068,8 +2085,10 @@ export default {
     "該服務不支援同步所需的條件寫入。請嘗試 OSS 模式或其他服務。",
   syncAccountLabel: "使用者名稱",
   syncSecretLabel: "密碼",
-  syncAccessKeyLabel: "存取金鑰",
-  syncSecretKeyLabel: "密鑰",
+  syncAccessKeyLabel: "存取金鑰（AK）",
+
+  syncSecretKeyLabel: "密鑰（SK）",
+
   syncSavedPlaceholder: "已儲存，留空保持不變",
   syncSave: "儲存連線",
   syncNow: "立即同步",
@@ -2088,9 +2107,6 @@ export default {
   syncPluginStopped:
     "Cloud Sync 外掛已對這個資料夾停用。內建同步正常執行後即可解除安裝外掛；解除安裝只會刪除外掛的本機同步記錄，不會刪除雲端檔案。",
   syncPluginOpen: "開啟外掛",
-  syncPluginStoppedShort: "Cloud Sync 外掛：已對此資料夾停用",
-  syncPluginRunAsk:
-    "Cloud Sync 外掛仍在為這個資料夾同步。現在同步會再執行一套引擎，它有自己的記錄，可能產生重複的衝突副本。仍要同步？",
   syncPluginRollback: "要回到外掛，斷開內建同步即可。",
 
   syncImportNotFound: "沒有找到這個資料夾的 Cloud Sync 設定。",

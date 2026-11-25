@@ -2111,8 +2111,7 @@ type /name in a conversation to use one.
   syncJoinShort: "Join",
   syncSavePreview: "Save and preview",
   syncPreviewing: "Previewing…",
-  syncSwitchNote:
-    "This vault only; the old base is cleared, remote files stay.",
+  syncSwitchNote: "This vault only; the old cloud's files stay; preview first.",
 
   syncDiscardAsk: "Discard the unsaved changes?",
   syncWebdavDesc: "Nextcloud, NAS and more",
@@ -2144,12 +2143,31 @@ type /name in a conversation to use one.
   syncRegionLabel: "Region",
   syncPrefixLabel: "Remote folder",
   syncPathStyleLabel: "Path-style addresses",
-  syncS3FlavorLabel: "S3 compatibility",
+  syncS3FlavorLabel: "Provider",
+  syncS3Group: "Object storage (S3)",
+  syncS3ProvidersHint:
+    "Works with Qiniu, Bitiful, Alibaba Cloud OSS and other S3-compatible services.",
+  syncS3HelpLabel: "How do I fill this?",
+  syncS3Help:
+    "Create the bucket (Qiniu calls it a space), region and AK/SK in the provider's console. AK is the account key; SK is the secret. Pick the region the space is in, or it will not connect.",
+  syncS3BitifulFixed:
+    "Bitiful's address and region are fixed; no need to change them.",
+
   syncS3Standard: "Standard S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (native upload)",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "Choose a region",
   syncKodoNote: "The server address is set from the region.",
+  syncKodoRegionCnEast1: "East China",
+  syncKodoRegionCnEast2: "East China 2",
+  syncKodoRegionCnNorth1: "North China",
+  syncKodoRegionCnSouth1: "South China",
+  syncKodoRegionUsNorth1: "North America",
+  syncKodoRegionApSoutheast1: "Asia-Pacific 1",
+  syncKodoRegionApSoutheast2: "Asia-Pacific 2",
+  syncKodoRegionApSoutheast3: "Asia-Pacific 3",
   syncErrorRegion:
     "This region has no known Qiniu upload address. Use a Qiniu S3 region such as cn-south-1.",
   syncHubTitle: "Local network Hub",
@@ -2225,8 +2243,10 @@ type /name in a conversation to use one.
     "This service does not support the conditional write sync needs. Try the OSS mode, or another service.",
   syncAccountLabel: "Username",
   syncSecretLabel: "Password",
-  syncAccessKeyLabel: "Access key",
-  syncSecretKeyLabel: "Secret key",
+  syncAccessKeyLabel: "Access key (AK)",
+
+  syncSecretKeyLabel: "Secret key (SK)",
+
   syncSavedPlaceholder: "Saved — leave empty to keep",
   syncSave: "Save connection",
   syncNow: "Sync now",
@@ -2247,9 +2267,6 @@ type /name in a conversation to use one.
   syncPluginStopped:
     "The Cloud Sync plugin is stopped for this folder. Uninstall it once built-in sync has run normally; uninstalling deletes its local sync records, not the cloud files.",
   syncPluginOpen: "Open plugins",
-  syncPluginStoppedShort: "Cloud Sync plugin: off for this folder",
-  syncPluginRunAsk:
-    "The Cloud Sync plugin is still on for this folder. Syncing now runs a second engine with its own record, which can create duplicate conflict copies. Sync anyway?",
   syncPluginRollback: "To go back, disconnect the built-in sync.",
 
   syncImportNotFound: "No Cloud Sync setup was found for this folder.",

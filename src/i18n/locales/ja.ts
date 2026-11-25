@@ -2066,7 +2066,7 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncTypeHint:
     "種類を選ぶと、次の画面にはその種類に必要な項目だけが表示されます。",
   syncSwitchNote:
-    "このライブラリのみ。古い基準は消え、リモートのファイルは残ります。",
+    "このライブラリのみ。古いクラウドのファイルは残ります。先にプレビュー。",
 
   syncDiscardAsk: "保存されていない変更を破棄しますか？",
   syncWebdavDesc: "Nextcloud、NAS、堅果雲など",
@@ -2104,12 +2104,30 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncRegionLabel: "リージョン",
   syncPrefixLabel: "リモートフォルダー",
   syncPathStyleLabel: "パス形式のアドレス",
-  syncS3FlavorLabel: "S3 互換モード",
+  syncS3FlavorLabel: "プロバイダー",
+  syncS3Group: "オブジェクトストレージ（S3）",
+  syncS3ProvidersHint:
+    "七牛雲、Bitiful、Alibaba Cloud OSS など S3 互換サービスに対応。",
+  syncS3HelpLabel: "入力方法",
+  syncS3Help:
+    "バケット（七牛では「空間」）、リージョン、AK/SK はサービスの管理画面で作成します。AK はアカウント、SK はパスワードです。空間のあるリージョンを選んでください。",
+  syncS3BitifulFixed: "Bitiful のアドレスとリージョンは固定です。変更不要。",
+
   syncS3Standard: "標準 S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo（ネイティブアップロード）",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "リージョンを選択",
   syncKodoNote: "サーバーアドレスはリージョンから設定されます。",
+  syncKodoRegionCnEast1: "華東",
+  syncKodoRegionCnEast2: "華東 2",
+  syncKodoRegionCnNorth1: "華北",
+  syncKodoRegionCnSouth1: "華南",
+  syncKodoRegionUsNorth1: "北米",
+  syncKodoRegionApSoutheast1: "アジア太平洋 1",
+  syncKodoRegionApSoutheast2: "アジア太平洋 2",
+  syncKodoRegionApSoutheast3: "アジア太平洋 3",
   syncErrorRegion:
     "このリージョンには既知の Qiniu アップロード先がありません。cn-south-1 などの Qiniu S3 リージョンを使用してください。",
   syncHubTitle: "ローカルネットワークHub",
@@ -2188,8 +2206,10 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
     "このサービスは同期に必要な条件付き書き込みに対応していません。OSS モードか別のサービスをお試しください。",
   syncAccountLabel: "ユーザー名",
   syncSecretLabel: "パスワード",
-  syncAccessKeyLabel: "アクセスキー",
-  syncSecretKeyLabel: "シークレットキー",
+  syncAccessKeyLabel: "アクセスキー（AK）",
+
+  syncSecretKeyLabel: "シークレットキー（SK）",
+
   syncSavedPlaceholder: "保存済み（空欄なら保持）",
   syncSave: "接続を保存",
   syncNow: "今すぐ同期",
@@ -2210,9 +2230,6 @@ ${AI_NAME}への執筆の指示です。すべての文書に適用されます�
   syncPluginStopped:
     "Cloud Sync プラグインはこのフォルダーでは停止しています。内蔵同期が正常に動いたらアンインストールできます。アンインストールで消えるのはプラグインのローカル同期記録だけで、クラウドのファイルは消えません。",
   syncPluginOpen: "プラグインを開く",
-  syncPluginStoppedShort: "Cloud Sync プラグイン：このフォルダでは停止中",
-  syncPluginRunAsk:
-    "Cloud Sync プラグインがこのフォルダーでまだ有効です。今同期すると 2 つ目のエンジンが独自の記録で動き、重複した競合コピーができることがあります。同期しますか？",
   syncPluginRollback: "戻すには、内蔵同期を切断してください。",
 
   syncImportNotFound: "このフォルダーの Cloud Sync 設定が見つかりません。",

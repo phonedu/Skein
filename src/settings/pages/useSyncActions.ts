@@ -32,6 +32,7 @@ import {
 export interface SyncActionsOptions {
   t: Strings;
   folderRoot: string;
+  formatTime: (value: string | number) => string;
   config: SyncConfig;
   credentials: SyncCredentials;
   savedConfig: SyncConfig | null;
@@ -58,6 +59,7 @@ export function useSyncActions(options: SyncActionsOptions) {
   const {
     t,
     folderRoot,
+    formatTime,
     config,
     credentials,
     savedConfig,
@@ -172,14 +174,11 @@ export function useSyncActions(options: SyncActionsOptions) {
   };
 
   const run = async (allowEmpty = false, allowBulk = false): Promise<void> => {
-    // A manual run is allowed while the plugin is on (the remote lock still
-    // serializes it), but not silently: both engines keep their own base.
-    if (!allowEmpty && !allowBulk && status?.pluginRunning) {
-      const ok = await showConfirm(t.syncPluginRunAsk, {
-        okLabel: t.syncContinue,
-        cancelLabel: t.cancel,
-      });
-      if (!ok) return;
+    // Two engines on one folder keep separate bases: the built-in run waits
+    // until the plugin's sync for this folder is off.
+    if (status?.pluginRunning) {
+      setNote({ error: true, text: t.syncPluginStillRunning });
+      return;
     }
     setBusy(true);
     setPreview(null);
@@ -237,9 +236,7 @@ export function useSyncActions(options: SyncActionsOptions) {
     if (!lock?.token) return;
     const ok = await showConfirm(
       fill(t.syncUnlockAsk, {
-        time: lock.startedAt
-          ? new Date(lock.startedAt).toLocaleString()
-          : t.syncUnlockUnknown,
+        time: lock.startedAt ? formatTime(lock.startedAt) : t.syncUnlockUnknown,
       }),
       { danger: true, okLabel: t.syncUnlock, cancelLabel: t.cancel },
     );

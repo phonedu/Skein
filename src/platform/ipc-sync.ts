@@ -72,6 +72,8 @@ export interface SyncVault {
   endpoint: string;
   bucket: string;
   prefix: string;
+  /** The connection's S3 flavour, for the provider named in the list. */
+  s3Flavor?: "standard" | "oss" | "kodo";
 }
 
 export interface SyncSettings {
@@ -307,9 +309,7 @@ export const hubStatus = (): Promise<HubReply> =>
   commands.hub_status().then((json) => parse<HubReply>(json));
 
 export const hubCode = (readOnly: boolean): Promise<HubPairing> =>
-  commands
-    .hub_code(readOnly)
-    .then((json) => parse<HubPairing>(json));
+  commands.hub_code(readOnly).then((json) => parse<HubPairing>(json));
 
 export const hubPairingQr = (): Promise<string> => commands.hub_pairing_qr();
 

@@ -2212,7 +2212,7 @@ export default {
   syncLocalService: "Служба этого устройства",
   syncTypeHint: "Выберите тип; на следующем шаге будут только его поля.",
   syncSwitchNote:
-    "Только эта библиотека; старая база удаляется, удалённые файлы остаются.",
+    "Только эта библиотека; файлы старого облака остаются; сначала предпросмотр.",
 
   syncDiscardAsk: "Отменить несохранённые изменения?",
   syncWebdavDesc: "Nextcloud, NAS и другие",
@@ -2249,12 +2249,30 @@ export default {
   syncRegionLabel: "Регион",
   syncPrefixLabel: "Удалённая папка",
   syncPathStyleLabel: "Адреса в стиле пути",
-  syncS3FlavorLabel: "Совместимость S3",
+  syncS3FlavorLabel: "Провайдер",
+  syncS3Group: "Объектное хранилище (S3)",
+  syncS3ProvidersHint:
+    "Поддерживает Qiniu, Bitiful, Alibaba Cloud OSS и другие S3-совместимые сервисы.",
+  syncS3HelpLabel: "Как заполнить?",
+  syncS3Help:
+    "Создайте бакет (в Qiniu — «пространство»), регион и AK/SK в консоли провайдера. AK — аккаунт, SK — секрет; выберите регион пространства.",
+  syncS3BitifulFixed: "Адрес и регион Bitiful фиксированы; менять не нужно.",
+
   syncS3Standard: "Стандартный S3",
   syncS3Oss: "Alibaba Cloud OSS",
   syncS3Kodo: "Qiniu Kodo (собственная загрузка)",
+  syncS3Bitiful: "Bitiful",
+  syncS3KodoName: "Qiniu Kodo",
   syncRegionChoose: "Выберите регион",
   syncKodoNote: "Адрес сервера задаётся регионом.",
+  syncKodoRegionCnEast1: "Восточный Китай",
+  syncKodoRegionCnEast2: "Восточный Китай 2",
+  syncKodoRegionCnNorth1: "Северный Китай",
+  syncKodoRegionCnSouth1: "Южный Китай",
+  syncKodoRegionUsNorth1: "Северная Америка",
+  syncKodoRegionApSoutheast1: "Азиатско-Тихоокеанский 1",
+  syncKodoRegionApSoutheast2: "Азиатско-Тихоокеанский 2",
+  syncKodoRegionApSoutheast3: "Азиатско-Тихоокеанский 3",
   syncErrorRegion:
     "Для этого региона неизвестен адрес загрузки Qiniu. Используйте регион Qiniu S3, например cn-south-1.",
   syncHubTitle: "Хаб локальной сети",
@@ -2330,8 +2348,10 @@ export default {
     "Сервис не поддерживает условную запись, необходимую синхронизации. Попробуйте режим OSS или другой сервис.",
   syncAccountLabel: "Имя пользователя",
   syncSecretLabel: "Пароль",
-  syncAccessKeyLabel: "Ключ доступа",
-  syncSecretKeyLabel: "Секретный ключ",
+  syncAccessKeyLabel: "Ключ доступа (AK)",
+
+  syncSecretKeyLabel: "Секретный ключ (SK)",
+
   syncSavedPlaceholder: "Сохранено — оставьте пустым, чтобы не менять",
   syncSave: "Сохранить подключение",
   syncNow: "Синхронизировать",
@@ -2351,9 +2371,6 @@ export default {
   syncPluginStopped:
     "Плагин Cloud Sync остановлен для этой папки. Удалите его, когда встроенная синхронизация отработает штатно; при удалении стираются только локальные записи синхронизации плагина, а не файлы в облаке.",
   syncPluginOpen: "Открыть плагины",
-  syncPluginStoppedShort: "Плагин Cloud Sync: отключён для этой папки",
-  syncPluginRunAsk:
-    "Плагин Cloud Sync всё ещё включён для этой папки. Синхронизация сейчас запустит второй движок со своей записью, что может создать повторные копии конфликтов. Всё равно синхронизировать?",
   syncPluginRollback: "Чтобы вернуться, отключите встроенную синхронизацию.",
 
   syncImportNotFound: "Для этой папки не найдена настройка Cloud Sync.",
