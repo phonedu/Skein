@@ -19,7 +19,7 @@ workstreams:
     name: 同步（S 组）
     state: doing
     focus: S4 LAN Hub 完成（2026-11-24）；S12 下载块复用完成（2026-11-25）；裁决 66 定下一库多后端：S13 多后端状态 → S14 首次对账 → S15 同步页入口；S6/S7 与 S5 在后
-    spec: specs/同步方案.md
+    spec: specs/单库多后端同步.md
   - id: B
     name: 上游跟随（B 组）
     state: doing
