@@ -158,7 +158,7 @@ tasks:
     title: 手机今天/文件：固定顶栏与分段控件，只滑内容
     workstream: UI
     kind: task
-    state: todo
+    state: doing
     acceptance: （未填）
     spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
     estimate: —
