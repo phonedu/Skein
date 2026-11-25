@@ -1,8 +1,8 @@
 ---
 type: discipline
 status: active
-summary: fork 住在上游也有的文件里的改动清单；上游 tag 合并（如 1.4.7）前后按它核对回归面
-updated: 2026-11-23
+summary: fork 住在上游也有的文件里的改动清单（含设置入口两壳、插件 e2e 环境）；上游 tag 合并前后按它核对回归面
+updated: 2026-11-25
 ---
 
 # fork 触点清单（上游合并的回归面）
@@ -52,6 +52,19 @@ upstream:plan 会显示）：
 `src/app/App.tsx`、`ActionSheet.css/tsx`、`sidebar-tabs.tsx` 等——这些是
 v1.4.6 回归的原发地，守卫是 `phone-shell` 全部断言 + R5 的逐屏走查。
 
+### 设置页的两套实现（2026-11-25 B7r）
+
+上游也有一套设置页，但 fork 的桌面壳把页面移到了 `src/features/settings/pages/*`，手机/旧面板仍在 `src/settings/pages/*`，两边共用 `src/settings/sections/*` 的一部分组件。**上游 1.4.7 的新设置项只加进 `src/settings/pages/*`，而桌面挂载的是 `features/settings` 的页面**——合并不会冲突，页面也能正常渲染，缺的是桌面入口：
+
+| 上游 1.4.7 条目        | 上游落点                              | fork 桌面缺口                          | 修复                                                  |
+| ---------------------- | ------------------------------------- | -------------------------------------- | ----------------------------------------------------- |
+| 复制文件到文件树前询问 | `settings/pages/GeneralPage.tsx`      | 桌面没有开关，勾过「不再询问」无法恢复 | `features/settings/pages/general.tsx`                 |
+| 文件图标主题选择器     | `settings/pages/AppearancePage.tsx`   | 桌面外观没有「文件图标」               | `features/settings/pages/appearance.tsx`              |
+| 自定义 AI 接口         | `settings/pages/ProvidersPage.tsx`    | 桌面模型页没有添加/编辑/删除           | `settings/sections/providers.tsx`（两壳共用）         |
+| 文件图标主题接线       | 上游 `files/TreeNodes` 用主题感知组件 | fork 的树直接画 Lucide，选了主题不生效 | `files/TreeNodes.tsx` 改 `FileIcon`/`FolderEntryIcon` |
+
+**合并时怎么查**：`git diff v<old>..v<new> -- src/settings src/features/settings src/files` 里每一条上游设置项，都在**桌面 Settings 里点一遍入口**；只跑测试不够——页面能正常渲染、e2e 也可能全绿，缺的正是入口。反向也查：fork 的 `features/settings` 页面是否漏掉了上游新增的行。文件图标主题这类“上游在自己组件里接线”的功能，还要查 fork 自己的树/列表/搜索是否也换成了主题感知组件。
+
 ## 三、插件（skein.collect，fork 私有仓）
 
 - 插件改动**不触上游源码**。0.5.1（裁决 60/61）只改插件仓的
@@ -72,10 +85,20 @@ frontmatter.get/onDid*`、`layout.open/openView`、视图注册
 
 1. `npm run upstream:verify`（默认含 `test:phone-shell` + `test:ui-contracts`；
    发布前 `--full`）——**必须真跑**，不接受"没改这些文件"的推理跳过。
-2. 全量 vitest；上游改了 Rust/绑定则 `npm run bindings` + cargo test。
-3. 插件仓单测 + collect e2e（第三节清单）。
-4. 桌面 built app + Android 真机逐屏走查，截图进合并记录（裁决 55）。
-5. 本清单有变（新 overlay、新档位）→ 当次合并记录里更新本文件。
+2. **设置入口两壳对照**：上游本次新增/改动的每个设置项，在桌面 Settings 里
+   找到入口（第二节「设置页的两套实现」表格是 1.4.7 的实例）；`git diff
+v<old>..v<new> -- src/settings src/features/settings` 逐条过，缺的补进
+   `features/settings/pages/*` 或共享 section。
+3. 全量 vitest；上游改了 Rust/绑定则 `npm run bindings` + cargo test。
+4. 插件仓单测 + collect e2e（第三节清单）。官方样例插件的 e2e
+   （plugin-touch/plugin-views/phone-plugins）要用 CI 钉住的
+   `CatVinci-Studio/textus-plugins@d0207b35756ddcdca63d1dd62a74df5ba5c4b710`
+   （1.4.7 版，kanban 0.4.14）：在该 commit 的 worktree 里 `npm ci`（PDF/
+   Excalidraw 的 `libs.json` 资源来自 `node_modules`），跑时设
+   `TEXTUS_PLUGINS_DIR=<worktree>`。本机 `C:/Project/textus-plugins` 可能停在
+   旧版（kanban 0.4.10），红灯先比对版本，别当产品回归改。
+5. 桌面 built app + Android 真机逐屏走查，截图进合并记录（裁决 55）。
+6. 本清单有变（新 overlay、新档位、新入口）→ 当次合并记录里更新本文件。
 
 ## 维护
 
