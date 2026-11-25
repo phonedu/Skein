@@ -83,7 +83,7 @@ export function TabSwitcher({
                       setOpen(false);
                     }}
                   >
-                    <span className="tx-truncate tab-switcher-tab">
+                    <span className="tab-switcher-tab">
                       {tabTitle(tab, t)}
                     </span>
                     {tab.id === activeTabId && (

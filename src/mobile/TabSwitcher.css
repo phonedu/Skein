@@ -101,6 +101,9 @@
 .tab-switcher-tab {
   flex: 1;
   min-width: 0;
+  /* A long name wraps in the sheet, where there is room to read it all;
+     the bar's own name ellipsizes. */
+  overflow-wrap: anywhere;
 }
 
 .tab-switcher-check {
