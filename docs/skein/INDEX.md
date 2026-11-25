@@ -40,7 +40,7 @@
 
 ## 裁决
 
-- [裁决索引](decisions/README.md) — 66 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
+- [裁决索引](decisions/README.md) — 67 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
 
 ## 纪律
 
