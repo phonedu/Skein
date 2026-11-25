@@ -74,6 +74,7 @@ const PhoneHome = lazyComponent(phoneParts, (m) => m.PhoneHome);
 const PhoneToday = lazyComponent(phoneParts, (m) => m.PhoneToday);
 const PhonePager = lazyComponent(phoneParts, (m) => m.PhonePager);
 const PhoneEditorBar = lazyComponent(phoneParts, (m) => m.PhoneEditorBar);
+const TabSwitcher = lazyComponent(phoneParts, (m) => m.TabSwitcher);
 // The right column's pages: the AI at the edge and a plugin's list, shown
 // when the shell first opens the column.
 const RightPanel = lazyComponent(
@@ -286,6 +287,17 @@ function App() {
                   setPhoneView("today");
                 }}
                 onToggleAgent={toggleAgentPanel}
+                tabSwitcher={
+                  <TabSwitcher
+                    tabs={tabs}
+                    activeTabId={activeTabId}
+                    onActivate={setActiveTabId}
+                    onClose={requestCloseTab}
+                    onAdd={
+                      settings.addTabShowsStartPage ? addStartTab : addBlankTab
+                    }
+                  />
+                }
               />
             )
           ) : (
