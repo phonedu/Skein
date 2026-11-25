@@ -46,6 +46,8 @@ async function swipe(
 
 const today = (page: Page) => page.locator(".phone-today");
 const library = (page: Page) => page.locator(".phone-home");
+// Today | Files lives in the fixed header now, not inside either page.
+const seg = (page: Page) => page.locator(".ph-views:visible");
 
 test("a swipe takes Today to the library and back", async ({ page }) => {
   await openApp(page, {
@@ -71,9 +73,10 @@ test("a swipe takes Today to the library and back", async ({ page }) => {
   await swipe(page, { x: 320, y: 420 }, { x: 60, y: 420 });
   await expect(library(page)).toBeVisible();
   await expect(library(page).locator(".ph-empty")).toBeVisible();
-  await expect(
-    library(page).getByRole("tab", { name: "文件" }),
-  ).toHaveAttribute("aria-selected", "true");
+  await expect(seg(page).getByRole("tab", { name: "文件" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
   await expect(today(page)).toBeHidden();
   // A swipe is not a tap on whatever it crossed.
   await expect(page.locator(".phone-editor-bar")).toHaveCount(0);
@@ -95,7 +98,7 @@ test("a swipe takes Today to the library and back", async ({ page }) => {
   await swipe(page, { x: 60, y: 420 }, { x: 320, y: 420 });
   await expect(today(page)).toBeVisible();
   await expect(library(page)).toBeHidden();
-  await expect(today(page).getByRole("tab", { name: "今天" })).toHaveAttribute(
+  await expect(seg(page).getByRole("tab", { name: "今天" })).toHaveAttribute(
     "aria-selected",
     "true",
   );
@@ -142,7 +145,7 @@ test("a swipe across a file row goes back without opening it", async ({
   // the dev picker stands in for a phone's system folder picker).
   await openPath(page, "/proj/work/note.md");
   await page.getByRole("button", { name: "回到文件库" }).tap();
-  await today(page).getByRole("tab", { name: "文件" }).tap();
+  await seg(page).getByRole("tab", { name: "文件" }).tap();
   const row = page.locator(".tree-row", { hasText: "note.md" });
   await expect(row).toBeVisible();
 

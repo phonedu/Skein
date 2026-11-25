@@ -161,6 +161,14 @@ tasks:
       not: 不整页重写、不引第三方动效库；不改桌面/平板；**等 1.4.7 合并完成且 PH13（固定顶栏与分段控件）落地后再开工**；不靠逐帧手调系数反复试，先定公式与参数再实现。
       scope: src/phone（usePagerSwipe/pager-model 等已有拖拽）、engine/motion 的 token；手机布局；先横滑，后卡片下拉。
       evidence: 曲线单测（位移/阻力/回弹）；e2e 拖拽读数；Android 模拟器录屏或分帧截图。
+  - id: U29
+    title: 收 PH13 后手机契约与分页 e2e 红灯
+    workstream: UI
+    kind: chore
+    state: doing
+    acceptance: ui-contracts 手机壳 5 项、phone-pager 2 项转绿；不降低断言；有产品回归则修产品
+    spec: specs/界面契约.md
+    estimate: —
 later:
   - id: S5
     title: 同步硬化

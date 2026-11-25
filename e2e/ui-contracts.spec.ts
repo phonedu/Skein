@@ -418,8 +418,9 @@ test.describe("the phone shell", () => {
     await expect(card.locator(".pcard-draft")).toHaveText("草稿 · 未保存");
     await card.tap();
     await expect(page.locator(".phone-editor-bar")).toBeVisible();
-    // The page says it too, where a saved page shows its folder.
-    await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
+    // The bar's name is the tab switcher now; a blank draft is named
+    // 未命名 there, and Today's card keeps saying it is unsaved.
+    await expect(page.locator(".tab-switcher-name")).toHaveText("未命名");
   });
 
   test("keeps a long current-delivery title inside its card", async ({
@@ -481,7 +482,7 @@ test.describe("the phone shell", () => {
     // The mode in force carries a check; choosing another moves it there,
     // so the palette read again says what is on instead of leaving it to
     // the page behind.
-    expect(await checked()).toContain("默认");
+    expect(await checked()).toContain("所见即所得");
     await page
       .locator(".quick-pick-item", { hasText: "源码模式" })
       .first()
@@ -489,7 +490,7 @@ test.describe("the phone shell", () => {
     await open();
     const after = await checked();
     expect(after).toContain("源码模式");
-    expect(after).not.toContain("默认");
+    expect(after).not.toContain("所见即所得");
 
     // A plugin that works on the document starts from the same sheet.
     await page.keyboard.press("Escape");
@@ -508,7 +509,7 @@ test.describe("the phone shell", () => {
     await emit(page, "menu-new-file");
     await page.locator(".pcard").tap();
     await page.locator(".pe-ai").tap();
-    await expect(page.locator(".pe-name")).toContainText("AI");
+    await expect(page.locator(".tab-switcher-name")).toContainText("AI");
     // The AI tab's step back is the document it was opened over; the AI
     // stays open behind it for the button. Back from the document is
     // Today - it used to bring the AI page forward again, so the two
@@ -518,7 +519,7 @@ test.describe("the phone shell", () => {
         (window as unknown as { textusBack: () => boolean }).textusBack(),
       );
     await back();
-    await expect(page.locator(".pe-name")).toHaveText("未命名");
+    await expect(page.locator(".tab-switcher-name")).toHaveText("未命名");
     await back();
     await expect(page.locator(".phone-today")).toBeVisible();
   });
@@ -534,7 +535,7 @@ test.describe("the phone shell", () => {
     // through the library. It has no file yet, and says so.
     await page.getByRole("button", { name: "记一句…", exact: true }).tap();
     await expect(page.locator(".phone-editor-bar")).toBeVisible();
-    await expect(page.locator(".pe-path")).toHaveText("草稿 · 未保存");
+    await expect(page.locator(".tab-switcher-name")).toHaveText("未命名");
     await page.getByRole("button", { name: "回到文件库" }).tap();
     await expect(page.locator(".pcard-draft")).toHaveText("草稿 · 未保存");
   });
@@ -587,7 +588,7 @@ test.describe("the phone shell", () => {
 
     // Settings' first group takes the page name already in the bar: its
     // head is not drawn (Appearance, Images); a later group keeps its own.
-    await page.locator(".phone-home .ph-acts .ph-ic").last().tap();
+    await page.getByRole("button", { name: "设置", exact: true }).tap();
     await page.getByRole("button", { name: "外观", exact: true }).tap();
     await expect(page.locator(".settings-phone-page")).toBeVisible();
     const firstHead = await page
