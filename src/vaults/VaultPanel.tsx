@@ -108,8 +108,10 @@ export function VaultPanel({
         className="vault-sheet"
         onClose={onClose}
       >
-        <div className="action-sheet-grab" aria-hidden />
-        {body}
+        <div className="vault-sheet-card">
+          <div className="action-sheet-grab" aria-hidden />
+          {body}
+        </div>
         <button
           type="button"
           className="action-sheet-item action-sheet-cancel"

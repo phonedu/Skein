@@ -59,8 +59,8 @@ export function ActionSheet({
 
   return (
     <Sheet role="menu" label={title} className="action-sheet" onClose={onClose}>
-      <div className="action-sheet-grab" aria-hidden />
       <div className="action-sheet-group">
+        <div className="action-sheet-grab" aria-hidden />
         {head ? (
           <div className="action-sheet-head">{head}</div>
         ) : title ? (

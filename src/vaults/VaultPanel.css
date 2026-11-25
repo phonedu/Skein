@@ -41,13 +41,16 @@
   flex-direction: column;
 }
 
-.vault-sheet .vault-group {
-  display: flex;
-  flex-direction: column;
+.vault-sheet-card {
   overflow: hidden;
   border-radius: var(--shape-sheet);
   background: var(--ui-surface-solid);
   box-shadow: var(--shadow-1);
+}
+
+.vault-sheet .vault-group {
+  display: flex;
+  flex-direction: column;
 }
 
 .vault-row {
