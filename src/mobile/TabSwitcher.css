@@ -20,7 +20,14 @@
 }
 
 .tab-switcher-name {
+  flex: 0 1 auto;
   min-width: 0;
+  max-width: 100%;
+}
+
+.tab-switcher-chevron {
+  flex: none;
+  color: var(--ui-muted);
 }
 
 .tab-switcher-count {

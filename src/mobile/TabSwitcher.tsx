@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useSettings } from "../prefs/SettingsContext";
 import { Sheet } from "../engine/controls/Sheet";
 import { Presence } from "../engine/motion/usePresence";
-import { CheckIcon, CloseIcon } from "../engine/controls/icons";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  CloseIcon,
+} from "../engine/controls/icons";
 import { tabIsDirty, tabTitle, type DocTab } from "../document/doc-tabs";
 import "./TabSwitcher.css";
 
@@ -46,12 +50,16 @@ export function TabSwitcher({
         {active && tabIsDirty(active) && (
           <span className="unsaved-dot" aria-hidden />
         )}
-        <span className="tx-truncate tab-switcher-name">
+        <span
+          className="tx-truncate tab-switcher-name"
+          title={active ? tabTitle(active, t) : (activeTitle ?? "")}
+        >
           {active ? tabTitle(active, t) : (activeTitle ?? "")}
         </span>
         {tabs.length > 0 && (
           <span className="tab-switcher-count">{tabs.length}</span>
         )}
+        <ChevronDownIcon className="tab-switcher-chevron" aria-hidden />
       </button>
       <Presence show={open}>
         {open && (
