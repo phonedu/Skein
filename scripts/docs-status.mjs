@@ -66,44 +66,31 @@ function workstreams() {
   ].join("\n");
 }
 
-function nowTasks() {
-  const tasks = data.tasks.filter((task) => task.state === "doing");
-  if (!tasks.length)
-    return "暂无进行中的任务；已排任务按优先级见 §3 Next，顶部「承诺一览」列了下一批。";
-  return tasks
-    .map((task, index) => {
-      const missing = briefMissing(task);
-      const warning = missing.length
-        ? `\n   > ⚠ 任务六行缺 ${missing.join(" / ")}；开工前跑 \`npm run docs:task -- brief ${task.id} ...\`。`
-        : "";
-      return `${index + 1}. **${task.id}** — ${task.title}。验收：${task.acceptance}规格：${link("规格", task.spec)}${
-        task.estimate ? `；估算 ${task.estimate}` : ""
-      }。${warning}`;
-    })
-    .join("\n");
-}
-
-function taskTable(tasks) {
-  if (!tasks.length) return "暂无。";
+function taskList() {
+  const doing = data.tasks.filter((task) => task.state === "doing");
+  const todo = data.tasks.filter((task) => task.state !== "doing");
+  const later = data.later ?? [];
+  const rows = [
+    ...doing.map((task) => ({ ...task, listState: "doing" })),
+    ...todo.map((task) => ({ ...task, listState: "todo" })),
+    ...later.map((task) => ({ ...task, listState: "later" })),
+  ];
+  if (!rows.length) return "暂无。";
+  const mark = { doing: "◐ 进行中", todo: "☐ 待做", later: "◌ 以后" };
   return [
-    "| # | 任务 | 状态 | 验收 / 说明 | 出处 | 估算 |",
+    "> 顺序：进行中 → 待做 → 以后；同组按 `status.yaml` 的顺序。要改顺序就改 `status.yaml`，start/done 不会自动重排。",
+    "",
+    "| # | 状态 | 任务 | 验收 / 说明 | 规格 | 估算 |",
     "| --- | --- | --- | --- | --- | --- |",
-    ...tasks.map(
-      (task) =>
-        `| **${cell(task.id)}** | ${cell(task.title)} | ${task.state === "todo" ? "☐" : "◐"} | ${cell(task.acceptance)} | ${link("规格", task.spec)} | ${cell(task.estimate ?? "—")} |`,
-    ),
-  ].join("\n");
-}
-
-function laterTable() {
-  if (!data.later?.length) return "暂无。";
-  return [
-    "| # | 任务 | 说明 | 出处 | 估算 |",
-    "| --- | --- | --- | --- | --- |",
-    ...data.later.map(
-      (task) =>
-        `| ${cell(task.id)} | ${cell(task.title)} | ${cell(task.note)} | ${link("规格", task.spec)} | ${cell(task.estimate ?? "—")} |`,
-    ),
+    ...rows.map((task, index) => {
+      const missing = task.listState === "doing" ? briefMissing(task) : [];
+      const warning = missing.length ? ` ⚠ 缺六行：${missing.join(" / ")}` : "";
+      const text =
+        task.listState === "later"
+          ? (task.note ?? "—")
+          : `${task.acceptance ?? "—"}${warning}`;
+      return `| ${index + 1} | ${mark[task.listState]} | **${cell(task.id)}** — ${cell(task.title)} | ${cell(text)} | ${link("规格", task.spec)} | ${cell(task.estimate ?? "—")} |`;
+    }),
   ].join("\n");
 }
 
@@ -155,7 +142,7 @@ function commitments() {
 
 function inboxSection() {
   if (!openInbox.length) return "";
-  return `## 7. Inbox（未分诊）
+  return `## 5. Inbox（未分诊）
 
 | ID | 日期 | 内容 | 来源 |
 | --- | --- | --- | --- |
@@ -171,7 +158,7 @@ ${openInbox
 const page = `---
 type: status
 status: active
-summary: 当前工作线、Now/Next、阻塞与触发点
+summary: 当前任务清单、工作线、阻塞与触发点
 updated: ${data.updated}
 ---
 
@@ -185,27 +172,19 @@ updated: ${data.updated}
 
 ${commitments()}
 
-## 1. 工作线
+## 1. 任务清单（按顺序）
+
+${taskList()}
+
+## 2. 工作线
 
 ${workstreams()}
 
-## 2. Now（按顺序）
-
-${nowTasks()}
-
-## 3. Next
-
-${taskTable(data.tasks.filter((task) => task.state !== "doing"))}
-
-## 4. Later（3–6 个月，按人周估算）
-
-${laterTable()}
-
-## 5. Waiting / Blocked
+## 3. Waiting / Blocked
 
 ${waiting()}
 
-## 6. 待审 / 触发点
+## 4. 待审 / 触发点
 
 ${questions()}
 
