@@ -36,6 +36,21 @@ workstreams:
     focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
     spec: specs/文档体系-v3.md
 tasks:
+  - id: B8
+    title: 整体接入上游 v1.4.7
+    workstream: B
+    kind: task
+    state: todo
+    acceptance: 在独立分支把 v1.4.7 整棵合并进 fork；解决 51 处冲突并让 80 个已删路径保持删除；upstream:verify、typecheck/lint/全量单测、cargo、桌面与 Android 冒烟通过；不把 docs/design、docs/images、ROADMAP 等 fork 已删内容带回来。
+    spec: specs/上游1.4.7接入顺序.md
+    estimate: 2–4 天
+    brief:
+      problem: 上游 1.4.7 已发布且 1.4.8-rc.1 已出现；fork 基线仍是 1.4.6，按功能择取会让差距越拉越大，之后每个稳定版都要重复解同样的冲突。
+      expected: 先把 v1.4.7 整体合入，止住分叉债；B7 的界面清单转为合并后的验收与补齐；D 组随 1.4.8 稳定版。
+      standard: 走现有 upstream:status/plan/start/clean/verify/record/finish 流程；冲突解决保留 fork 的 H0/Slate/手机壳层与已删文档；合并分支不夹带新功能。
+      not: 不直接合 1.4.8-rc；不在合并分支做新功能；不把 fork 已删的文档/图片/ROADMAP 复活；不跳过真机/桌面冒烟。
+      scope: 上游 v1.4.7 合并、51 处冲突、80 个复活路径、全量检查与桌面/Android 冒烟。
+      evidence: 合并后 upstream:verify 输出、冲突清零、全量 check/cargo、桌面构建与 Android 冒烟、已删路径检查。
   - id: D0.5
     title: 理论小样本验证
     workstream: D1
@@ -78,21 +93,6 @@ tasks:
       not: 不改 front matter 存储格式；不做自定义 schema 校验。
       scope: 编辑器 NodeView、界面契约、i18n、测试。
       evidence: 逐屏截图 + 单测 + 导出往返。
-  - id: B8
-    title: 整体接入上游 v1.4.7
-    workstream: B
-    kind: task
-    state: doing
-    acceptance: 在独立分支把 v1.4.7 整棵合并进 fork；解决 51 处冲突并让 80 个已删路径保持删除；upstream:verify、typecheck/lint/全量单测、cargo、桌面与 Android 冒烟通过；不把 docs/design、docs/images、ROADMAP 等 fork 已删内容带回来。
-    spec: specs/上游1.4.7接入顺序.md
-    estimate: 2–4 天
-    brief:
-      problem: 上游 1.4.7 已发布且 1.4.8-rc.1 已出现；fork 基线仍是 1.4.6，按功能择取会让差距越拉越大，之后每个稳定版都要重复解同样的冲突。
-      expected: 先把 v1.4.7 整体合入，止住分叉债；B7 的界面清单转为合并后的验收与补齐；D 组随 1.4.8 稳定版。
-      standard: 走现有 upstream:status/plan/start/clean/verify/record/finish 流程；冲突解决保留 fork 的 H0/Slate/手机壳层与已删文档；合并分支不夹带新功能。
-      not: 不直接合 1.4.8-rc；不在合并分支做新功能；不把 fork 已删的文档/图片/ROADMAP 复活；不跳过真机/桌面冒烟。
-      scope: 上游 v1.4.7 合并、51 处冲突、80 个复活路径、全量检查与桌面/Android 冒烟。
-      evidence: 合并后 upstream:verify 输出、冲突清零、全量 check/cargo、桌面构建与 Android 冒烟、已删路径检查。
   - id: B7
     title: 上游 1.4.7 界面功能验收与补齐
     workstream: B
