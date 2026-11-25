@@ -104,4 +104,3 @@ fn is_bulk(
         |total: usize, count: usize| count >= 2 && total > 0 && (count > 50 || count * 5 > total);
     bulk(remote.len(), remote_deletes) || bulk(local.len(), local_deletes)
 }
-

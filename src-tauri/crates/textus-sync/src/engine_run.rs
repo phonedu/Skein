@@ -53,7 +53,15 @@ pub(super) async fn run(
 
     let mut base = options.base.clone();
     let mut result = SyncResult::default();
-    let renamed = apply_renames(store, local, &mut files, &mut remote_files, &mut base, &mut result).await?;
+    let renamed = apply_renames(
+        store,
+        local,
+        &mut files,
+        &mut remote_files,
+        &mut base,
+        &mut result,
+    )
+    .await?;
 
     let actions = plan(&files, &remote_files, &base.files);
     let moves = moves(&actions, &files, &remote_files, &base.files);

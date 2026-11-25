@@ -2,7 +2,11 @@
 
 use super::*;
 
-pub(super) async fn upload_blocks(store: &dyn ObjectStore, entry: &Entry, bytes: &[u8]) -> Result<()> {
+pub(super) async fn upload_blocks(
+    store: &dyn ObjectStore,
+    entry: &Entry,
+    bytes: &[u8],
+) -> Result<()> {
     let mut offset = 0usize;
     for block in &entry.blocks {
         let end = offset + block.size as usize;
