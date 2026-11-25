@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  type MouseEvent as ReactMouseEvent,
-} from "react";
+import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from "react";
 import {
   ChevronIcon,
   CloseIcon,
@@ -34,6 +30,7 @@ import { isWithin } from "../utils/path";
 import type { FileOpenHow } from "./tree-shared";
 import { useFileTreeRows, useFileTreeState } from "./useFileTree";
 import { useTreeFileDrop } from "./useTreeFileDrop";
+import { scrollRowIntoView } from "./tree-reveal";
 import { RecentSection } from "./recent-section";
 import { ViewFoot } from "../engine/controls/view-foot";
 import { fill } from "../i18n/fill";
@@ -118,7 +115,15 @@ export function FileTree({
   const { treeRef, onTreeKey, selection, picking, onRowPick } =
     useTreeSelection(root, activePath);
   // A file manager's files over the tree: copied in, the folder lit.
-  const fileDropInto = useTreeFileDrop(treeRef, folder, reload, () => {});
+  const fileDropInto = useTreeFileDrop(
+    treeRef,
+    folder,
+    reload,
+    (path, isDir) => {
+      selection.only({ path, isDir });
+      scrollRowIntoView(treeRef.current, path);
+    },
+  );
   // Not on a phone: above Documents is the app's private container, and above
   // a picked folder is outside what the user granted. Not above an
   // opened folder either: that is the edge of what the user opened.
@@ -151,6 +156,7 @@ export function FileTree({
       treeRef,
       selection,
       onRowPick,
+      fileDropInto,
     });
 
   // A draft asked for from outside the tree (the phone's + sheet): one row

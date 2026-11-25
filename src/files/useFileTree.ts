@@ -54,6 +54,7 @@ export function useFileTreeRows({
   treeRef,
   selection,
   onRowPick,
+  fileDropInto,
 }: {
   root: string;
   folder: string | null;
@@ -78,6 +79,7 @@ export function useFileTreeRows({
   noResults: Parameters<typeof useTreeContexts>[0]["noResults"];
   onRootCount: Parameters<typeof useTreeContexts>[0]["onRootCount"];
   treeRef: RefObject<HTMLDivElement | null>;
+  fileDropInto?: string | null;
   selection: TreeSelection;
   onRowPick: NonNullable<TreeRowActions["onRowPick"]>;
 }) {
@@ -108,7 +110,7 @@ export function useFileTreeRows({
     versions,
     stale,
     refreshed,
-    dropInto: drag?.into,
+    dropInto: drag?.into ?? fileDropInto,
     desktop,
     onRowMenu,
     onRowHold: isMobileApp ? openRowMenu : null,
