@@ -76,6 +76,7 @@ import {
   remarkEmptyTaskItems,
   taskListClickPlugin,
 } from "./markdown/task-list-plugin";
+import { listTallLinePlugin } from "./markdown/list-tall-line-plugin";
 import { syntaxHighlightPlugin } from "./code/syntax-highlight-plugin";
 import { createCodeBlockView } from "./code/code-block-language-view";
 import { createCodeLineNumbersPlugin } from "./code/code-line-numbers-plugin";
@@ -269,6 +270,7 @@ export function withEditorSyntax(editor: Editor, env: CoreEnv): Editor {
       .use(headingMarkerPlugin)
       .use(remarkEmptyTaskItems)
       .use(taskListClickPlugin)
+      .use(listTallLinePlugin)
       .use(editing(cjkTaskInputPlugin))
       .use(syntaxHighlightPlugin)
       .use(

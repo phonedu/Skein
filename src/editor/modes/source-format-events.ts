@@ -1,10 +1,11 @@
 import type { EditorView } from "@codemirror/view";
-import { indentLess, indentMore } from "@codemirror/commands";
 import { editorInUse } from "../editor-in-use";
+import { indentLess, indentMore, isolateHistory } from "@codemirror/commands";
 import {
   CLEAR_FORMAT_EVENT,
   INSERT_BLOCK_EVENT,
   INSERT_LINK_EVENT,
+  INSERT_MARKDOWN_EVENT,
   TOGGLE_BLOCK_EVENT,
   TOGGLE_MARK_EVENT,
 } from "../../utils/events";
@@ -21,36 +22,41 @@ export function formatSource(view: EditorView, mark: string): boolean {
   return !view.state.readOnly && toggleSourceMark(view, mark);
 }
 
-/** The Format menu and its keys (marks, headings, lists, a quote, a link)
- *  reach the source editor in use, as they reach the rendered one. Returns
- *  the stop. */
+/** Markdown put in at the caret (Insert at Cursor, a link from the file
+ *  tree), as written: its own undo step. */
+function insertSourceMarkdown(view: EditorView, markdown: string): boolean {
+  view.dispatch(view.state.replaceSelection(markdown), {
+    annotations: isolateHistory.of("full"),
+    scrollIntoView: true,
+  });
+  return true;
+}
+
+/** What each window event does in the source editor; true when it did
+ *  something. */
+const ACTIONS: Record<string, (view: EditorView, detail: string) => boolean> = {
+  [TOGGLE_MARK_EVENT]: toggleSourceMark,
+  [TOGGLE_BLOCK_EVENT]: (view, detail) =>
+    detail === "sink-list-item"
+      ? indentMore(view)
+      : detail === "lift-list-item"
+        ? indentLess(view)
+        : setSourceBlock(view, detail),
+  [INSERT_BLOCK_EVENT]: setSourceBlock,
+  [INSERT_LINK_EVENT]: (view) => (insertSourceLink(view), true),
+  [INSERT_MARKDOWN_EVENT]: insertSourceMarkdown,
+  [CLEAR_FORMAT_EVENT]: clearSourceMarks,
+};
+
+/** The Format menu and its keys (marks, headings, lists, a quote, a link),
+ *  and Markdown put in at the caret, reach the source editor in use, as
+ *  they reach the rendered one. Returns the stop. */
 export function followFormatMenu(view: EditorView): () => void {
   const run = (e: Event) => {
     if (view.state.readOnly || !editorInUse(view.dom)) return;
-    const detail = (e as CustomEvent<string>).detail;
-    const done =
-      e.type === TOGGLE_MARK_EVENT
-        ? toggleSourceMark(view, detail)
-        : e.type === TOGGLE_BLOCK_EVENT
-          ? detail === "sink-list-item"
-            ? indentMore(view)
-            : detail === "lift-list-item"
-              ? indentLess(view)
-              : setSourceBlock(view, detail)
-          : e.type === INSERT_BLOCK_EVENT
-            ? setSourceBlock(view, detail)
-            : e.type === CLEAR_FORMAT_EVENT
-              ? clearSourceMarks(view)
-              : (insertSourceLink(view), true);
-    if (done) view.focus();
+    if (ACTIONS[e.type](view, (e as CustomEvent<string>).detail)) view.focus();
   };
-  const types = [
-    TOGGLE_MARK_EVENT,
-    TOGGLE_BLOCK_EVENT,
-    INSERT_BLOCK_EVENT,
-    INSERT_LINK_EVENT,
-    CLEAR_FORMAT_EVENT,
-  ];
+  const types = Object.keys(ACTIONS);
   for (const type of types) window.addEventListener(type, run);
   return () => {
     for (const type of types) window.removeEventListener(type, run);

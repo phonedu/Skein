@@ -3,14 +3,8 @@
 // column's header and the top bar's QuickPick on a desktop.
 import { useSyncExternalStore } from "react";
 import type { Strings } from "../../i18n/strings";
-import {
-  pluginPages,
-  type Surface,
-} from "./plugin-launcher";
-import {
-  pluginsSnapshot,
-  subscribePlugins,
-} from "../store/plugin-records";
+import { pluginPages, type Surface } from "./plugin-launcher";
+import { pluginsSnapshot, subscribePlugins } from "../store/plugin-records";
 
 export function PluginCatalogPane({ t }: { t: Strings }) {
   useSyncExternalStore(subscribePlugins, pluginsSnapshot);

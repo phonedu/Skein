@@ -7,7 +7,7 @@ Textus bringt eine eingebaute KI fürs Schreiben mit, Textus AI: Vervollständig
 Alles rund um die KI steht unter **Einstellungen › Textus AI**, auf vier Seiten: **Modelle**, **Chat und Schreiben**, **Gedächtnis und Skills** und **Externe Werkzeuge**.
 
 1. Wähle auf **Modelle** den Dienst in der Liste **Anbieter**. Melde dich mit deinem Konto an (**Konto**) oder füge einen Schlüssel ein (**API-Schlüssel**) – je nachdem, was der Dienst unterstützt. Ein Punkt in der Liste markiert jeden Dienst, den du eingerichtet hast.
-2. Für einen **Eigenen Endpunkt** (jeder OpenAI-kompatible Server: lokale Modelle, Proxys) gibst du die Basis-URL, bei Bedarf einen Schlüssel und den Modellnamen ein und speicherst.
+2. Für einen eigenen Server (jeder OpenAI-kompatible Server: lokale Modelle, Relays, Proxys) wählst du am Ende der Liste **Eigenen Endpunkt hinzufügen**, gibst ihm einen Namen, trägst die Basis-URL, bei Bedarf einen Schlüssel und den Modellnamen ein und speicherst. Du kannst mehrere anlegen: Jeder steht unter seinem Namen hier und überall, wo du ein Modell wählst.
 3. Wähle unter **Modellwahl** oben auf derselben Seite den **Anbieter für den Chat** und das **Chat-Modell**, und für Vervollständigung und Grammatik den **Anbieter fürs Schreiben** (standardmäßig **Wie im Chat**) und das **Assistenzmodell**.
 
 Die Anmeldung läuft in deinem Browser. Ob Bilder, Websuche und Änderungen am Dokument verfügbar sind, hängt vom gewählten Dienst und Modell ab.
@@ -24,7 +24,7 @@ Die fünf Wege, die du am häufigsten nutzen wirst – zuerst das Gespräch mit 
 
 ### Unterhaltungen
 
-Unterhaltungen öffnen sich als **Tabs**. Klicke auf die Schaltfläche **Textus AI** (die Funken) am rechten Ende der Fensterleiste, drücke <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> oder wähle **Ansicht › KI-Bereich**: Die KI öffnet sich in einer eigenen Insel rechts. Ihre Tabs sind Tabs wie alle anderen: Zieh einen neben ein Dokument, in eine andere Insel oder hinaus in ein eigenes Fenster.
+Unterhaltungen öffnen sich als **Tabs**. Klicke auf die Schaltfläche **Textus AI** (die Funken) am rechten Ende der Fensterleiste, drücke <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> oder wähle **Ansicht › Textus AI**: Die KI öffnet sich in einer eigenen Insel rechts. Ihre Tabs sind Tabs wie alle anderen: Zieh einen neben ein Dokument, in eine andere Insel oder hinaus in ein eigenes Fenster.
 
 - **Pro Ordner**: Unterhaltungen gehören zu dem Ordner, in dem du arbeitest, nicht zu einem einzelnen Dokument. Jede offene Unterhaltung ist ein Tab; mit der vorderen sprichst du, und zwar über das vordere Dokument. Eine geschlossene Unterhaltung bleibt im Verlauf.
 - **Neue Unterhaltung**: Klicke mit rechts auf das leere Papier eines KI-Tabs und wähle **Neue Unterhaltung** (sind noch Änderungen offen, wird vorher nachgefragt). **Gedächtnis** steht im selben Menü.

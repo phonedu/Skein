@@ -34,9 +34,11 @@ export function PhoneSyncStatus({
           const at = Date.parse(last.at);
           if (!Number.isFinite(at) || Date.now() - at > FRESH_MS) return;
           showNotice(
-            `${t.navSync} · ${last.error
-              ? fill(t.syncErrorOther, { reason: last.error })
-              : t.syncDone}`,
+            `${t.navSync} · ${
+              last.error
+                ? fill(t.syncErrorOther, { reason: last.error })
+                : t.syncDone
+            }`,
             { tone: last.error ? "error" : "info" },
           );
         })

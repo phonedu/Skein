@@ -12,14 +12,14 @@ import "./sheet.css";
  */
 export function Sheet({
   label,
-  role,
+  role = "dialog",
   className,
   onClose,
   children,
 }: {
   /** What the sheet is, for assistive technology. */
   label?: string;
-  role: "menu" | "dialog";
+  role?: "menu" | "dialog";
   className: string;
   onClose: () => void;
   children: ReactNode;

@@ -3,12 +3,7 @@
 // selection in it - a foreign colour in the Slate interface. The theme
 // lives in gen/android, which a regenerated project replaces, so every
 // Android build sets it again. Idempotent: an already-set accent is left.
-import {
-  existsSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 /** Light and night use the interface accent each theme has (base.css). */
 const THEMES = [

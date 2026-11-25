@@ -72,9 +72,7 @@ test.describe("on a desktop", () => {
       .click();
     await expect(panel).toHaveCount(0);
     await expect(chip).toContainText("alpha");
-    await page
-      .locator(".sidebar-view-seg button", { hasText: "文件" })
-      .click();
+    await page.locator(".sidebar-view-seg button", { hasText: "文件" }).click();
     await expect(page.locator(".tree-row", { hasText: "a.md" })).toBeVisible();
 
     // Taking a library off the list: the row goes, the folder's files stay.

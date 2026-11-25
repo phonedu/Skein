@@ -7,7 +7,7 @@ Textus has a built-in AI made for writing, Textus AI: completion, grammar checki
 Everything about the AI is in **Settings › Textus AI**, four pages: **Models**, **Chat & writing**, **Memory & skills** and **External tools**.
 
 1. On **Models**, pick the service in the **Providers** list. Sign in to your account (**Account**) or paste a key (**API Key**), whichever that service supports. A dot in the list marks each service you have set up.
-2. For a **Custom Endpoint** (any OpenAI-compatible server: local models, proxies), enter the base URL, a key if it needs one, and the model name, then save.
+2. For a server of your own (any OpenAI-compatible server: local models, relays, proxies), choose **Add custom endpoint** at the end of the list, give it a name, enter the base URL, a key if it needs one, and the model name, then save. Add as many as you need: each is listed under its name, here and wherever you pick a model.
 3. Under **Model choice** at the top of the same page, choose the **Chat provider** and **Chat model**, and for completion and grammar the **Writing provider** (**Same as chat** by default) and **Assist model**.
 
 Signing in happens in your browser. Whether images, web search and document edits are available depends on the service and model you choose.
@@ -24,7 +24,7 @@ The five ways you'll use most, starting with talking to it.
 
 ### Conversations
 
-Conversations open as **tabs**. Click the **Textus AI** button (the sparkles) at the right end of the window bar, press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>, or choose **View › AI Panel**: the AI opens in an island of its own on the right. Its tabs are tabs like any other: drag one beside a document, into another island, or out into a window of its own.
+Conversations open as **tabs**. Click the **Textus AI** button (the sparkles) at the right end of the window bar, press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd>, or choose **View › Textus AI**: the AI opens in an island of its own on the right. Its tabs are tabs like any other: drag one beside a document, into another island, or out into a window of its own.
 
 - **Per folder**: conversations belong to the folder you work in, not to one document. Each open conversation is a tab; the one in front is the one you are talking to, about the document in front. A closed conversation stays in History.
 - **New conversation**: right-click the empty paper of an AI tab and choose **New conversation** (with edits still undecided, it asks first). **Memory** is in the same menu.

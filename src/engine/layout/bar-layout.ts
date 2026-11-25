@@ -56,8 +56,7 @@ export function barLayout({
   phone?: boolean;
 }): BarLayout {
   const none = { menuInRail: false, sideToTop: false, railToTop: false };
-  if (phone)
-    return { rows: 1, lead: ["sidebar-toggle", "menu"], ...none };
+  if (phone) return { rows: 1, lead: ["sidebar-toggle", "menu"], ...none };
   const railShown = rail && !zen;
   const toggle: BarItem[] = railOff || zen ? ["sidebar-toggle"] : [];
   // The rail turned off but shown with the sidebar: the bar keeps its

@@ -31,6 +31,8 @@ fn groups() -> Vec<(&'static str, Builder<tauri::Wry>)> {
                     crate::commands::fs::write_text_file,
                     crate::commands::fs::write_base64_file,
                     crate::commands::fs::save_pasted_image,
+                    crate::commands::fs::dropped::save_dropped_file,
+                    crate::commands::fs::copy_into::copy_into_folder,
                     crate::commands::fs::migrate_draft_images,
                     crate::commands::fs::move_picture_to_trash,
                     crate::commands::folder::index_folder,
@@ -124,6 +126,7 @@ fn groups() -> Vec<(&'static str, Builder<tauri::Wry>)> {
             "app.ts",
             builder()
                 .commands(collect_commands![
+                    crate::drag_modifiers::drag_modifiers,
                     crate::launch::take_pending_window,
                     crate::launch::take_pending_show_help,
                     crate::launch::take_pending_menu_event,
@@ -221,7 +224,7 @@ fn groups() -> Vec<(&'static str, Builder<tauri::Wry>)> {
                 crate::auth::keys::provider_api_key_status,
                 crate::auth::keys::clear_provider_api_key,
                 crate::auth::custom_endpoint::set_custom_endpoint,
-                crate::auth::custom_endpoint::custom_endpoint_status,
+                crate::auth::custom_endpoint::custom_endpoints_status,
                 crate::auth::custom_endpoint::clear_custom_endpoint,
                 crate::auth::custom_endpoint::fetch_custom_models,
             ]),
@@ -277,6 +280,7 @@ fn groups() -> Vec<(&'static str, Builder<tauri::Wry>)> {
                 crate::plugins::access::plugin_fs_write,
                 crate::plugins::access::plugin_fs_rename,
                 crate::plugins::access::plugin_fs_trash,
+                crate::plugins::access::plugin_fs_trash_path,
                 crate::plugins::access::plugin_fs_mkdir,
                 crate::plugins::files::plugin_fs_stat,
                 crate::plugins::files::plugin_fs_create,

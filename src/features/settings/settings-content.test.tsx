@@ -43,7 +43,7 @@ vi.mock("../../ai/provider-catalog", async (importOriginal) => {
   return {
     ...actual,
     useProviderCatalog: () => [
-      { id: "custom", label: "Test", keyOptional: true },
+      { id: "custom", label: "Test", keyOptional: true, auth: ["custom"] },
     ],
   };
 });

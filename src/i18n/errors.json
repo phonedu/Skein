@@ -47,6 +47,10 @@
     "en": "A folder can't move into itself.",
     "text": "errorMoveIntoItself"
   },
+  "copyIntoItself": {
+    "en": "A folder can't be copied into itself.",
+    "text": "errorCopyIntoItself"
+  },
   "notFolder": {
     "en": "Not a folder.",
     "text": "errorNotFolder"
@@ -54,6 +58,10 @@
   "trashShownFolder": {
     "en": "The folder the tree shows can't be moved to the Trash.",
     "text": "errorTrashShownFolder"
+  },
+  "noTrash": {
+    "en": "There is no Trash here to move files to.",
+    "text": "errorNoTrash"
   },
   "outsideDocuments": {
     "en": "Outside the Textus folder.",
@@ -194,5 +202,29 @@
   "notFound": {
     "en": "Not found.",
     "text": null
+  },
+  "invalidCode": {
+    "en": "That pairing code is not right.",
+    "text": "syncHubErrorCode"
+  },
+  "alreadyRunning": {
+    "en": "Another run is already in progress.",
+    "text": "syncErrorBusy"
+  },
+  "expired": {
+    "en": "That pairing code has expired.",
+    "text": "syncHubErrorExpired"
+  },
+  "tooManyAttempts": {
+    "en": "Too many tries with that code.",
+    "text": "syncHubErrorTooMany"
+  },
+  "noLanAddress": {
+    "en": "This computer has no local network address.",
+    "text": "syncHubNoAddress"
+  },
+  "networkError": {
+    "en": "The network request failed.",
+    "text": "syncErrorNetwork"
   }
 }

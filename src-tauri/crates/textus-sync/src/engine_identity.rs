@@ -46,7 +46,7 @@ pub(super) async fn apply_renames(
                     let Some(entry) = remote_files.get(path).cloned() else {
                         continue;
                     };
-                    let bytes = download_entry(store, &entry).await?;
+                    let bytes = download_entry(store, &entry, None).await?;
                     let new_id = Uuid::new_v4().to_string();
                     let bytes = identity::with_document_id(&bytes, &new_id)
                         .ok_or_else(|| SyncError::new("invalidEntry"))?;

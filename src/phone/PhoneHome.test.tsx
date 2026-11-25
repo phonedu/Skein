@@ -46,7 +46,9 @@ vi.mock("../files/FileTree", () => ({
 
 vi.mock("../platform/capabilities", () => ({
   canOpenFolder: true,
+  hasTextusAi: true,
   isDesktopApp: false,
+  isMobileApp: true,
 }));
 
 vi.mock("../platform/native-files", () => ({
@@ -127,6 +129,7 @@ vi.mock("../engine/motion/usePresence", () => ({
   Presence: ({ show, children }: { show: boolean; children: unknown }) =>
     show ? children : null,
   usePresenceProps: () => ({ ref: () => {}, "data-state": "open" }),
+  usePresenceState: () => "open",
 }));
 
 const openFolder = {
@@ -235,14 +238,18 @@ describe("the phone library home", () => {
     expect(
       screen.getByRole("menuitem", { name: en.treeNewFolder }),
     ).toBeTruthy();
-    expect(screen.getByRole("menuitem", { name: en.treeSortName })).toBeTruthy();
+    expect(
+      screen.getByRole("menuitem", { name: en.treeSortName }),
+    ).toBeTruthy();
     expect(
       screen.getByRole("menuitem", { name: en.treeSortModified }),
     ).toBeTruthy();
     expect(screen.getByRole("menuitem", { name: en.treeRefresh })).toBeTruthy();
     // Plugins stay on Today's sheet: the library's ⋯ is file actions and
     // the palette, which acts on the library in front.
-    expect(screen.queryByRole("menuitem", { name: en.pluginsTitle })).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: en.pluginsTitle }),
+    ).toBeNull();
     expect(
       screen.getByRole("menuitem", { name: en.menuCommandPalette }),
     ).toBeTruthy();
@@ -280,10 +287,10 @@ describe("the phone library home", () => {
 
     // No tree: no file actions; the palette stays, plugins do not.
     fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    expect(screen.queryByRole("menuitem", { name: en.menuNewFile })).toBeNull();
     expect(
-      screen.queryByRole("menuitem", { name: en.menuNewFile }),
+      screen.queryByRole("menuitem", { name: en.pluginsTitle }),
     ).toBeNull();
-    expect(screen.queryByRole("menuitem", { name: en.pluginsTitle })).toBeNull();
     expect(
       screen.getByRole("menuitem", { name: en.menuCommandPalette }),
     ).toBeTruthy();

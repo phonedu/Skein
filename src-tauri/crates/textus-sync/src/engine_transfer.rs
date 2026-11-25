@@ -1,6 +1,8 @@
 //! Blocks in and out, and the conflict copy's name.
 
 use super::*;
+use crate::protocol::CHUNK_SIZE;
+use std::collections::HashMap;
 
 pub(super) async fn upload_blocks(
     store: &dyn ObjectStore,
@@ -34,14 +36,38 @@ pub(super) async fn upload_blocks(
     Ok(())
 }
 
-pub(super) async fn download_entry(store: &dyn ObjectStore, entry: &Entry) -> Result<Vec<u8>> {
+/// The blocks of the bytes already at this path, by hash. A changed file
+/// usually keeps most of them, so a download only asks the remote for the
+/// blocks that are actually missing.
+fn local_blocks(bytes: &[u8]) -> HashMap<String, &[u8]> {
+    let mut blocks = HashMap::new();
+    for chunk in bytes.chunks(CHUNK_SIZE as usize) {
+        blocks.entry(hash_hex(chunk)).or_insert(chunk);
+    }
+    blocks
+}
+
+/// `reuse` is the local version of the same path when there is one; its
+/// blocks are taken as-is, with the remote asked only for the rest.
+pub(super) async fn download_entry(
+    store: &dyn ObjectStore,
+    entry: &Entry,
+    reuse: Option<&[u8]>,
+) -> Result<Vec<u8>> {
     entry.validate()?;
+    let known = reuse.map(local_blocks).unwrap_or_default();
     let mut out = Vec::with_capacity(entry.size as usize);
     for block in &entry.blocks {
-        let bytes = store
-            .get(&block_key(&block.hash))
-            .await?
-            .ok_or_else(|| SyncError::new("missingBlock"))?;
+        let bytes = match known
+            .get(&block.hash)
+            .filter(|chunk| chunk.len() as u64 == block.size)
+        {
+            Some(chunk) => chunk.to_vec(),
+            None => store
+                .get(&block_key(&block.hash))
+                .await?
+                .ok_or_else(|| SyncError::new("missingBlock"))?,
+        };
         if bytes.len() as u64 != block.size || hash_hex(&bytes) != block.hash {
             return Err(SyncError::new("missingBlock"));
         }
@@ -56,7 +82,7 @@ pub(super) async fn download_entry(store: &dyn ObjectStore, entry: &Entry) -> Re
 /// The bytes of one entry, for the history page's restore action: the same
 /// block checks a download makes, with no local file involved.
 pub async fn read_entry(store: &dyn ObjectStore, entry: &Entry) -> Result<Vec<u8>> {
-    download_entry(store, entry).await
+    download_entry(store, entry, None).await
 }
 
 /// Writes another device's version beside the local one. A path already
@@ -134,4 +160,90 @@ pub(super) async fn skipped_head(
     // A snapshot that no longer parses cannot be folded in; the history it
     // belonged to is still better than starting over.
     Ok(Manifest::parse(&raw).ok())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::chunk::describe;
+    use crate::protocol::block_key;
+    use crate::store::MemoryStore;
+    use async_trait::async_trait;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    struct CountingStore {
+        inner: MemoryStore,
+        gets: AtomicUsize,
+    }
+
+    impl CountingStore {
+        fn new() -> Self {
+            Self {
+                inner: MemoryStore::new(),
+                gets: AtomicUsize::new(0),
+            }
+        }
+
+        fn gets(&self) -> usize {
+            self.gets.load(Ordering::SeqCst)
+        }
+
+        fn reset(&self) {
+            self.gets.store(0, Ordering::SeqCst);
+        }
+    }
+
+    #[async_trait]
+    impl ObjectStore for CountingStore {
+        async fn get(&self, key: &str) -> Result<Option<Vec<u8>>> {
+            self.gets.fetch_add(1, Ordering::SeqCst);
+            self.inner.get(key).await
+        }
+
+        async fn has(&self, key: &str) -> Result<bool> {
+            self.inner.has(key).await
+        }
+
+        async fn put(&self, key: &str, bytes: Vec<u8>) -> Result<()> {
+            self.inner.put(key, bytes).await
+        }
+
+        async fn create(&self, key: &str, bytes: Vec<u8>) -> Result<bool> {
+            self.inner.create(key, bytes).await
+        }
+
+        async fn delete(&self, key: &str) -> Result<()> {
+            self.inner.delete(key).await
+        }
+    }
+
+    #[tokio::test]
+    async fn a_changed_file_only_gets_the_blocks_it_lacks() {
+        let first = vec![1u8; CHUNK_SIZE as usize];
+        let mut changed = vec![2u8; CHUNK_SIZE as usize];
+        let tail = b"tail".to_vec();
+        let old = [first.clone(), changed.clone(), tail.clone()].concat();
+        changed[0] = 3;
+        let new = [first, changed, tail].concat();
+        let entry = describe(&new).unwrap();
+        let store = CountingStore::new();
+        let mut offset = 0;
+        for block in &entry.blocks {
+            let end = offset + block.size as usize;
+            store
+                .put(&block_key(&block.hash), new[offset..end].to_vec())
+                .await
+                .unwrap();
+            offset = end;
+        }
+
+        let downloaded = download_entry(&store, &entry, Some(&old)).await.unwrap();
+        assert_eq!(downloaded, new);
+        assert_eq!(store.gets(), 1);
+
+        store.reset();
+        let full = download_entry(&store, &entry, None).await.unwrap();
+        assert_eq!(full, new);
+        assert_eq!(store.gets(), 3);
+    }
 }

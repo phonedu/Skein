@@ -4,67 +4,216 @@
     "name": "A",
     "version": "1.0.0",
     "publisher": "a",
-    "engines": { "textus": "^1.3.0" },
+    "engines": {
+      "textus": "^1.3.0"
+    },
     "main": "host.js"
   },
   "valid": [
     {},
     {
-      "permissions": ["files.read", "network:api.example.com", "commands:c.d"]
-    },
-    { "platforms": ["desktop", "ios", "android"] },
-    { "platforms": ["android"] },
-    { "main": ["a.js", "b.js"] },
-    { "l10n": { "en": { "x": "X" } } },
-    {
-      "permissions": ["files.read"],
-      "contributes": { "embeds": [{ "id": "a.b.e", "targets": ["note"] }] }
+      "permissions": [
+        "files.read",
+        "network:api.example.com",
+        "commands:c.d"
+      ]
     },
     {
-      "requires": [{ "setting": "runInBackground" }],
-      "platforms": ["desktop"]
+      "platforms": [
+        "desktop",
+        "ios",
+        "android"
+      ]
     },
     {
+      "platforms": [
+        "android"
+      ]
+    },
+    {
+      "main": [
+        "a.js",
+        "b.js"
+      ]
+    },
+    {
+      "l10n": {
+        "en": {
+          "x": "X"
+        }
+      }
+    },
+    {
+      "permissions": [
+        "files.read"
+      ],
       "contributes": {
-        "commands": [{ "command": "a.b.go", "title": "Go" }],
-        "snippets": [{ "label": "Box", "body": "> [!NOTE]\n> $0" }],
-        "walkthroughs": [
+        "embeds": [
           {
-            "title": "Start",
-            "steps": [
-              { "title": "One", "command": "a.b.go" },
-              { "title": "Two" }
+            "id": "a.b.e",
+            "targets": [
+              "note"
             ]
           }
         ]
       }
-    }
-  ],
-  "invalid": [
-    { "id": "AB" },
-    { "id": "a" },
-    { "version": "1.0" },
-    { "name": 3 },
-    { "engines": {} },
-    { "permissions": ["root"] },
-    { "permissions": ["commands:textus"] },
-    { "platforms": ["web"] },
-    { "main": [3] },
-    { "l10n": { "en": "x" } },
-    { "contributes": { "embeds": [{ "id": "a.b.e", "targets": ["note"] }] } },
-    { "requires": [{ "setting": "nope" }] },
-    { "requires": [{ "setting": "runInBackground" }], "platforms": ["ios"] },
-    { "requires": [{ "setting": "runInBackground" }], "platforms": ["android"] }
-  ],
-  "invalidInWindow": [
-    { "contributes": { "snippets": [{ "label": "Box" }] } },
+    },
+    {
+      "requires": [
+        {
+          "setting": "runInBackground"
+        }
+      ],
+      "platforms": [
+        "desktop"
+      ]
+    },
     {
       "contributes": {
+        "commands": [
+          {
+            "command": "a.b.go",
+            "title": "Go"
+          }
+        ],
+        "snippets": [
+          {
+            "label": "Box",
+            "body": "> [!NOTE]\n> $0"
+          }
+        ],
         "walkthroughs": [
-          { "title": "S", "steps": [{ "title": "One", "command": "x.y" }] }
+          {
+            "title": "Start",
+            "steps": [
+              {
+                "title": "One",
+                "command": "a.b.go"
+              },
+              {
+                "title": "Two"
+              }
+            ]
+          }
         ]
       }
     },
-    { "contributes": { "walkthroughs": [{ "title": "S", "steps": [] }] } }
+    {
+      "requires": [
+        {
+          "setting": "runInBackground"
+        }
+      ],
+      "platforms": [
+        "ios"
+      ]
+    },
+    {
+      "requires": [
+        {
+          "setting": "runInBackground"
+        }
+      ],
+      "platforms": [
+        "android"
+      ]
+    }
+  ],
+  "invalid": [
+    {
+      "id": "AB"
+    },
+    {
+      "id": "a"
+    },
+    {
+      "version": "1.0"
+    },
+    {
+      "name": 3
+    },
+    {
+      "engines": {}
+    },
+    {
+      "permissions": [
+        "root"
+      ]
+    },
+    {
+      "permissions": [
+        "commands:textus"
+      ]
+    },
+    {
+      "platforms": [
+        "web"
+      ]
+    },
+    {
+      "main": [
+        3
+      ]
+    },
+    {
+      "l10n": {
+        "en": "x"
+      }
+    },
+    {
+      "contributes": {
+        "embeds": [
+          {
+            "id": "a.b.e",
+            "targets": [
+              "note"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "requires": [
+        {
+          "setting": "nope"
+        }
+      ]
+    }
+  ],
+  "invalidInWindow": [
+    {
+      "contributes": {
+        "snippets": [
+          {
+            "label": "Box"
+          }
+        ]
+      }
+    },
+    {
+      "contributes": {
+        "walkthroughs": [
+          {
+            "title": "S",
+            "steps": [
+              {
+                "title": "One",
+                "command": "x.y"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "contributes": {
+        "walkthroughs": [
+          {
+            "title": "S",
+            "steps": []
+          }
+        ]
+      }
+    }
   ]
 }

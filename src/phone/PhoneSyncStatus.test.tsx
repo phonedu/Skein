@@ -36,10 +36,9 @@ it("says a fresh sync finished, then leaves no box on the page", async () => {
     <PhoneSyncStatus folder={`/vault-fresh-${Date.now()}`} t={en as Strings} />,
   );
   await waitFor(() =>
-    expect(showNotice).toHaveBeenCalledWith(
-      `${en.navSync} · ${en.syncDone}`,
-      { tone: "info" },
-    ),
+    expect(showNotice).toHaveBeenCalledWith(`${en.navSync} · ${en.syncDone}`, {
+      tone: "info",
+    }),
   );
   expect(container.firstChild).toBeNull();
 });
@@ -52,7 +51,10 @@ it("stays quiet for an old result or a folder with no sync", async () => {
   const old = render(
     <PhoneSyncStatus folder={`/vault-old-${Date.now()}`} t={en as Strings} />,
   );
-  vi.mocked(syncStatus).mockResolvedValueOnce({ configured: false, last: null });
+  vi.mocked(syncStatus).mockResolvedValueOnce({
+    configured: false,
+    last: null,
+  });
   const none = render(
     <PhoneSyncStatus folder={`/vault-none-${Date.now()}`} t={en as Strings} />,
   );

@@ -75,7 +75,7 @@ updated: 2026-11-25
      1. **Q1 条件 PUT**：同一 key 连发两次 `If-None-Match: *`，body 分别为 `one`、`two`，两次都 `200`，ETag 分别为 `f97c5d…`、`b8a9f7…`，读回 `two`。**确认七牛 S3 忽略条件头并覆盖**，只有原生 insertOnly 可做锁。
      2. **Q2 连续同步与锁重建**：两次完整 sync（第二次 0 上传）通过；删除 `v1/lock.json` 后立即用 insertOnly 重建同 key 成功，读回新字节。
      3. **Q3 上传后立即读**：原生上传创建成功后立刻经 S3 endpoint GET，字节一致。
-     `cargo test -p textus-sync --test kodo_live -- --ignored` 四项（probe/round-trip、首次/改/删/冲突、锁重建、连续同步+立即读）全部通过；新本地单测覆盖 614 同字节/异字节、无重发 614、400/631/401/403/507 映射与 429 有界重试。
+        `cargo test -p textus-sync --test kodo_live -- --ignored` 四项（probe/round-trip、首次/改/删/冲突、锁重建、连续同步+立即读）全部通过；新本地单测覆盖 614 同字节/异字节、无重发 614、400/631/401/403/507 映射与 429 有界重试。
 8. **S10 补强（2026-11-25）**：S3/WebDAV 共用同一套重试规则；Kodo 的 key 再走 `relative_path` 校验，token deadline 有单测；标准 S3 补了 412 丢失回答的本地测试（同字节算自己、异字节不算）；设置页从 `s3.bitiful.net` 识别出 Bitiful 的 `cn-east-1` 与 path-style。Bitiful 真桶 `s3_live` 在改动后复跑 1/1 通过。
 
 ## 4. 适配层要改哪里
@@ -96,6 +96,8 @@ return true;
 - 探测阶段同样走这条 create，保证 `unsafeServer` 判断准确。
 
 七牛若走原生 `insertOnly`，则不是改一个头：需要上传凭证/签名，等于第二个 transport，不建议在 S1b 做。**S3q 的选择不是第二套 transport，而是“S3 读写 + 原生 create”**：只有条件创建需要 token，其余已由 S3 endpoint 验证，因此 `S3Flavor::Kodo` 只替换 `create` 的实现（`textus-sync/src/kodo.rs`）。
+9. **S12 下载块复用（2026-11-25）**：下载已存在文件时按本地旧字节的 2 MiB 块哈希复用，只 GET 缺失块；首次下载仍全量。七牛 S3 直连下载按外网流出计费，这一步直接降低大附件改动成本。
+
 
 ## 5. 结论
 

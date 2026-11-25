@@ -11,7 +11,11 @@ import { isMobileApp } from "../platform/capabilities";
 import type { FixedShortcutGroup } from "../registry/fixed-shortcuts";
 import { ChevronIcon, CloseIcon } from "../engine/controls/icons";
 import { ThemesTab } from "./sections/theme";
-import { openExtensionsTab, type ExtensionsTab } from "./pages/extensions-tab";
+import {
+  extensionsTabs,
+  openExtensionsTab,
+  type ExtensionsTab,
+} from "./pages/extensions-tab";
 import {
   SettingsSearchField,
   SettingsSearchIndex,
@@ -63,8 +67,10 @@ const SEARCHED_SUBPAGES: [Subpage, Category][] = [
   ["guides", "general"],
 ];
 
-/** The Extensions tabs the search reads, each as a page of its own. */
-const SEARCHED_TABS: ExtensionsTab[] = ["themes"];
+/** The Extensions tabs the search reads, each as a page of its own, where
+ *  the page has them. */
+const searchedTabs = (): ExtensionsTab[] =>
+  extensionsTabs().filter((tab) => tab === "themes");
 
 /** A searchable page's key: "editor", "editor/themes",
  *  "extensions/tab:themes". */
@@ -206,7 +212,7 @@ export function SettingsPanel({
       name: `${c.label} › ${subpageTitles[s]}`,
       render: () => renderSubpage(s),
     })),
-    ...(c.id === "extensions" ? SEARCHED_TABS : []).map((tab) => ({
+    ...(c.id === "extensions" ? searchedTabs() : []).map((tab) => ({
       key: tabKey(tab),
       name: `${c.label} › ${tabTitles[tab]}`,
       // Read for the index only: Get more is never pressed here.

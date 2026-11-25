@@ -9,9 +9,7 @@
   min-height: 0;
   /* The document's tab row is under the window bar: the column starts
      below it, so its own header is not drawn under the tabs. */
-  padding-top: calc(
-    var(--window-bar-height) + 40px * var(--chrome-scale)
-  );
+  padding-top: calc(var(--window-bar-height) + 40px * var(--chrome-scale));
   border-left: 1px solid var(--ui-border);
   background: var(--ui-surface);
   color: var(--ui-text);

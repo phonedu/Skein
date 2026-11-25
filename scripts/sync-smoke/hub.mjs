@@ -121,21 +121,43 @@ try {
       });
       return { repoId: reply.repoId, readOnly: reply.readOnly };
     },
-    { address: status.address, code: status.pairing.code, root: join(runDir, "vaultB") },
+    {
+      address: status.address,
+      code: status.pairing.code,
+      root: join(runDir, "vaultB"),
+    },
   );
   if (paired.readOnly) throw new Error("unexpected read-only device");
   say("instance B paired as a device");
 
-  const firstA = await syncNow(pageA, runDir, "instA", "A", join(runDir, "vaultA"));
+  const firstA = await syncNow(
+    pageA,
+    runDir,
+    "instA",
+    "A",
+    join(runDir, "vaultA"),
+  );
   expect(firstA, { uploaded: 1, downloaded: 0, removed: 0 }, "A first");
-  const firstB = await syncNow(pageB, runDir, "instB", "B", join(runDir, "vaultB"));
+  const firstB = await syncNow(
+    pageB,
+    runDir,
+    "instB",
+    "B",
+    join(runDir, "vaultB"),
+  );
   expect(firstB, { uploaded: 1, downloaded: 1, removed: 0 }, "B first");
   if (content(runDir, "vaultB/Notes/from-a.md") !== "hello from A\n") {
     throw new Error("B did not receive from-a");
   }
   say("first sync: A uploaded, B downloaded and uploaded its own file");
 
-  const secondA = await syncNow(pageA, runDir, "instA", "A", join(runDir, "vaultA"));
+  const secondA = await syncNow(
+    pageA,
+    runDir,
+    "instA",
+    "A",
+    join(runDir, "vaultA"),
+  );
   expect(secondA, { uploaded: 0, downloaded: 1 }, "A second");
   if (content(runDir, "vaultA/Notes/from-b.md") !== "hello from B\n") {
     throw new Error("A did not receive from-b");
@@ -143,9 +165,21 @@ try {
   say("A received from-b");
 
   write(runDir, "vaultB/Notes/from-b.md", "edited on B\n");
-  const editB = await syncNow(pageB, runDir, "instB", "B", join(runDir, "vaultB"));
+  const editB = await syncNow(
+    pageB,
+    runDir,
+    "instB",
+    "B",
+    join(runDir, "vaultB"),
+  );
   expect(editB, { uploaded: 1, downloaded: 0 }, "B edit");
-  const editA = await syncNow(pageA, runDir, "instA", "A", join(runDir, "vaultA"));
+  const editA = await syncNow(
+    pageA,
+    runDir,
+    "instA",
+    "A",
+    join(runDir, "vaultA"),
+  );
   expect(editA, { uploaded: 0, downloaded: 1 }, "A edit");
   if (content(runDir, "vaultA/Notes/from-b.md") !== "edited on B\n") {
     throw new Error("A did not receive the edit");
@@ -166,7 +200,10 @@ try {
   say("Hub stopped");
 
   mkdirSync(runDir, { recursive: true });
-  writeFileSync(join(runDir, "hub-smoke.json"), JSON.stringify({ ok: true, log }, null, 2));
+  writeFileSync(
+    join(runDir, "hub-smoke.json"),
+    JSON.stringify({ ok: true, log }, null, 2),
+  );
   console.log("PASS");
 } catch (error) {
   console.error(`FAIL: ${error}`);

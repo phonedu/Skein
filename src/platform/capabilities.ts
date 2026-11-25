@@ -20,6 +20,14 @@ export const isAndroidApp = isAndroidPlatform();
  *  on a tablet and the phone's on a narrow screen (usePhoneLayout). */
 export const isMobileApp = isIOSApp || isAndroidApp;
 
+/** Two fingers' pinch comes only as touches: Android's web view sends no
+ *  gesture events and no ctrl+wheel for it (app/touch-pinch.ts). */
+export const pinchFromTouches = isAndroidApp;
+
+/** The caret is placed only as the selection changes, so text zoomed
+ *  under it leaves it behind (iOS's WebKit; app/useZoom.ts's caretAgain). */
+export const caretStaysWhereTextWas = isIOSApp;
+
 /** A system Back (Android's button or gesture), which the page answers
  *  first (mobile/back.ts). */
 export const hasSystemBack = isAndroidApp;
@@ -81,6 +89,10 @@ export const canPickPluginFolder = isDesktopApp;
  *  paths (an iPad's HTML5 drop), not as the desktop's drop of paths. */
 export const filesDropAsContents = isIOSApp;
 
+/** Files from a file manager can be let go on the file tree's folders,
+ *  copied in: a phone's or an iPad's drags never reach the tree. */
+export const canDropFilesIntoTree = isDesktopApp;
+
 /** A folder picker: the dialog plugin's on desktop, Files' on iOS. */
 export const canPickFolder = isDesktopApp || isIOSApp;
 
@@ -94,6 +106,9 @@ export const canInstallCliCommand = isDesktopApp;
 
 /** Moving files to the Trash: iOS's is the Files app's Recently Deleted. */
 export const canTrashFiles = isDesktopApp || isIOSApp;
+
+/** The Trash reached through the native plugin, not Rust's. */
+export const trashesNatively = isIOSApp;
 
 /** Settings' "Default Markdown editor". iOS has no default app to set. */
 export const canSetDefaultEditor = isDesktopApp;

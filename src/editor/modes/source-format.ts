@@ -20,6 +20,7 @@ const MARKERS: Record<string, string> = {
  *  already wrapped (inside or just outside the selection). False for a mark
  *  source mode doesn't write. */
 export function toggleSourceMark(view: EditorView, mark: string): boolean {
+  if (mark === "clear") return clearSourceMarks(view);
   const marker = MARKERS[mark];
   if (!marker) return false;
   const n = marker.length;
@@ -81,25 +82,83 @@ export function toggleSourceMark(view: EditorView, mark: string): boolean {
   return true;
 }
 
-/** Takes off the mark wrapped around the selection, where one is: the
- *  selection's own pair, or the markers just outside it. */
+/** A bold, italic, strikethrough or highlight run on one line. */
+const SPAN = /(\*\*|__|~~|==|\*|_)(?=\S)([^\n]*?\S)\1/g;
+const WORD = /[\p{L}\p{N}]/u;
+
+/** Clear Formatting: the markers of every run the selection touches taken
+ *  off, as the rendered editor does; code stays. False with nothing
+ *  to clear. */
 export function clearSourceMarks(view: EditorView): boolean {
   const { state } = view;
-  const range = state.selection.main;
-  const text = state.sliceDoc(range.from, range.to);
-  for (const [mark, marker] of Object.entries(MARKERS)) {
-    const n = marker.length;
-    const before = state.sliceDoc(Math.max(0, range.from - n), range.from);
-    const after = state.sliceDoc(
-      range.to,
-      Math.min(state.doc.length, range.to + n),
+  let cleared = false;
+  const result = state.changeByRange((range) => {
+    if (range.empty) return { range };
+    const first = state.doc.lineAt(range.from).number;
+    const last = state.doc.lineAt(range.to).number;
+    const fenced = fencedLines(state.doc, first, last);
+    const gone: { from: number; to: number }[] = [];
+    for (let n = first; n <= last; n++) {
+      if (fenced(n)) continue;
+      const line = state.doc.line(n);
+      gone.push(...lineMarks(line.text, line.from, range.from, range.to));
+    }
+    if (!gone.length) return { range };
+    cleared = true;
+    const changes = state.changes(gone);
+    return {
+      changes,
+      range: EditorSelection.range(
+        changes.mapPos(range.from, 1),
+        changes.mapPos(range.to, -1),
+      ),
+    };
+  });
+  if (cleared) view.dispatch(result);
+  return cleared;
+}
+
+/** The markers of the runs in line `source` (at `start`) that touch `from`
+ *  to `to`, the runs nested in them too. */
+function lineMarks(
+  source: string,
+  start: number,
+  from: number,
+  to: number,
+): { from: number; to: number }[] {
+  // A thematic break (***, ___) marks nothing.
+  if (/^\s*([*_])(\s*\1){2,}\s*$/.test(source)) return [];
+  // Code masked; `at` holds each remaining UTF-16 unit's offset.
+  let text = source.replace(/`+[^`]*`+/g, (code) =>
+    "\u0001".repeat(code.length),
+  );
+  let at = Array.from({ length: text.length }, (_, i) => start + i);
+  const gone: { from: number; to: number }[] = [];
+  const next = () =>
+    [...text.matchAll(SPAN)].find((m) => {
+      const end = m.index + m[0].length;
+      // An underscore inside a word (snake_case) marks nothing.
+      if (
+        m[1][0] === "_" &&
+        (WORD.test(text[m.index - 1] ?? "") || WORD.test(text[end] ?? ""))
+      )
+        return false;
+      return at[m.index] < to && at[end - 1] >= from;
+    });
+  for (let m = next(); m; m = next()) {
+    const n = m[1].length;
+    const a = m.index;
+    const end = a + m[0].length;
+    gone.push(
+      { from: at[a], to: at[a] + n },
+      { from: at[end - n], to: at[end - n] + n },
     );
-    const wrapped =
-      (before === marker && after === marker) ||
-      (text.length > 2 * n && text.startsWith(marker) && text.endsWith(marker));
-    if (wrapped) return toggleSourceMark(view, mark);
+    const cut = <T extends string | number[]>(xs: T) =>
+      [xs.slice(0, a), xs.slice(a + n, end - n), xs.slice(end)] as T[];
+    text = cut(text).join("");
+    at = cut(at).flat();
   }
-  return false;
+  return gone;
 }
 
 /** A line's block prefix: its quote, heading, list or task marker. */
@@ -185,32 +244,57 @@ export function insertSourceLink(view: EditorView): void {
 
 const FENCE = /^\s*(`{3,}|~{3,})(.*)$/;
 
-/** The code fence holding line `at` (1-based), as its opening and closing
- *  line numbers; null outside one, or in one never closed. Read from the
- *  document's start, as Markdown reads it: a closing fence is of the opening
- *  one's character, as long at least, with nothing after it. */
-function fenceAround(
+/** The document's code fences, as opening and closing line numbers (1-based;
+ *  null for one never closed), read from its start as Markdown reads it: a
+ *  closing fence is of the opening one's character, as long at least, with
+ *  nothing after it. */
+function* fences(
   doc: EditorState["doc"],
-  at: number,
-): { open: number; close: number } | null {
+): Generator<{ open: number; close: number | null }> {
   let open: { line: number; marks: string } | null = null;
   for (let n = 1; n <= doc.lines; n++) {
     const found = FENCE.exec(doc.line(n).text);
     if (!found) continue;
     const [, marks, rest] = found;
-    if (!open) {
-      if (n > at) return null;
-      open = { line: n, marks };
-    } else if (
+    if (!open) open = { line: n, marks };
+    else if (
       marks[0] === open.marks[0] &&
       marks.length >= open.marks.length &&
       !rest.trim()
     ) {
-      if (n >= at) return { open: open.line, close: n };
+      yield { open: open.line, close: n };
       open = null;
     }
   }
+  if (open) yield { open: open.line, close: null };
+}
+
+/** The code fence holding line `at`; null outside one, or in one never
+ *  closed. */
+function fenceAround(
+  doc: EditorState["doc"],
+  at: number,
+): { open: number; close: number } | null {
+  for (const { open, close } of fences(doc)) {
+    if (open > at) return null;
+    if (close !== null && close >= at) return { open, close };
+  }
   return null;
+}
+
+/** Whether lines `first` to `last` are in code fences, each by its number;
+ *  an unclosed fence runs to the end, as Markdown reads it. */
+function fencedLines(
+  doc: EditorState["doc"],
+  first: number,
+  last: number,
+): (n: number) => boolean {
+  const spans: [number, number][] = [];
+  for (const { open, close } of fences(doc)) {
+    if (open > last) break;
+    if ((close ?? doc.lines) >= first) spans.push([open, close ?? doc.lines]);
+  }
+  return (n) => spans.some(([a, b]) => n >= a && n <= b);
 }
 
 /** The selected lines in a code fence, or the fence around them taken off. */

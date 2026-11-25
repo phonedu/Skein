@@ -1087,3 +1087,96 @@ async fn two_remote_copies_with_one_id_get_a_new_id() {
     let copy = String::from_utf8(first.read("copy.md").await.unwrap().unwrap()).unwrap();
     assert!(!copy.contains(DOC_ID));
 }
+
+struct CountingStore {
+    inner: MemoryStore,
+    gets: std::sync::Mutex<Vec<String>>,
+}
+
+impl CountingStore {
+    fn new() -> Self {
+        Self {
+            inner: MemoryStore::new(),
+            gets: std::sync::Mutex::new(Vec::new()),
+        }
+    }
+
+    fn block_gets(&self) -> usize {
+        self.gets
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|key| key.starts_with("v1/blocks/"))
+            .count()
+    }
+
+    fn clear(&self) {
+        self.gets.lock().unwrap().clear();
+    }
+}
+
+#[async_trait::async_trait]
+impl ObjectStore for CountingStore {
+    async fn get(&self, key: &str) -> textus_sync::Result<Option<Vec<u8>>> {
+        self.gets.lock().unwrap().push(key.to_string());
+        self.inner.get(key).await
+    }
+
+    async fn has(&self, key: &str) -> textus_sync::Result<bool> {
+        self.inner.has(key).await
+    }
+
+    async fn put(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<()> {
+        self.inner.put(key, bytes).await
+    }
+
+    async fn create(&self, key: &str, bytes: Vec<u8>) -> textus_sync::Result<bool> {
+        self.inner.create(key, bytes).await
+    }
+
+    async fn delete(&self, key: &str) -> textus_sync::Result<()> {
+        self.inner.delete(key).await
+    }
+}
+
+#[tokio::test]
+async fn a_changed_large_file_downloads_only_the_changed_block() {
+    let store = CountingStore::new();
+    let chunk = textus_sync::protocol::CHUNK_SIZE as usize;
+    let mut body = vec![1u8; chunk];
+    body.extend(vec![2u8; chunk]);
+    body.extend_from_slice(b"tail");
+    let a = MemoryLocal::new([("big.mp4".to_string(), body.clone())]);
+    let first = sync(&store, &a, options()).await.unwrap();
+
+    let b = MemoryLocal::new([]);
+    let joined = sync(&store, &b, options()).await.unwrap();
+    assert_eq!(b.read("big.mp4").await.unwrap(), Some(body.clone()));
+
+    body[chunk] = 9;
+    a.set("big.mp4", body.clone());
+    sync(
+        &store,
+        &a,
+        SyncOptions {
+            base: first.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+
+    store.clear();
+    sync(
+        &store,
+        &b,
+        SyncOptions {
+            base: joined.base,
+            ..options()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(b.read("big.mp4").await.unwrap(), Some(body));
+    assert_eq!(store.block_gets(), 1);
+}

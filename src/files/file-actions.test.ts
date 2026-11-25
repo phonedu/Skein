@@ -23,9 +23,7 @@ function flat(entries: ContextMenuEntry[]): ContextMenuItem[] {
 const labels = (entries: ReturnType<typeof fileActionEntries>) =>
   flat(entries).map((item) => item.label);
 
-const build = (
-  over: Partial<Parameters<typeof fileActionEntries>[0]> = {},
-) =>
+const build = (over: Partial<Parameters<typeof fileActionEntries>[0]> = {}) =>
   fileActionEntries({
     t: en as Strings,
     sort: "name",
@@ -76,8 +74,12 @@ describe("the file page's actions", () => {
   it("asks for the kind chosen", () => {
     const onNew = vi.fn();
     const entries = build({ onNew });
-    flat(entries).find((item) => item.label === en.menuNewFile)?.onSelect();
-    flat(entries).find((item) => item.label === en.treeNewFolder)?.onSelect();
+    flat(entries)
+      .find((item) => item.label === en.menuNewFile)
+      ?.onSelect();
+    flat(entries)
+      .find((item) => item.label === en.treeNewFolder)
+      ?.onSelect();
     expect(onNew.mock.calls).toEqual([["document"], ["folder"]]);
   });
 });

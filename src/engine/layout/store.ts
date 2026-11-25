@@ -20,6 +20,7 @@ import {
   type SplitLayout,
   type SplitRequest,
 } from "./ops";
+import { isPhoneLayout } from "../../platform/phone-layout";
 import {
   askGiveWay,
   layoutFits,
@@ -54,7 +55,8 @@ let shown: string[] = [];
  *  one last in use - with a conversation or a page in front, the document
  *  the AI reads and writes. */
 let documentId = "";
-/** A blank tab, for a split asked for with no other tab to take. */
+/** A blank tab: for a split asked for with no other tab to take, and for a
+ *  change that would leave the window none. */
 let blankTab: (() => TabRecord) | null = null;
 /** Its islands: one, a branch of one pane, when the window is unsplit. */
 let layout: SplitLayout = oneIsland([], null);
@@ -93,7 +95,12 @@ export function setWindowTabs<T extends TabRecord>(
 ): void {
   const next = update(records as readonly T[]);
   if (next === records) return;
-  records = next;
+  // Never none: what draws the window reads the tab in use, so a change
+  // taking every tab at once (the AI's put away together with no document
+  // left) keeps the window's blank one rather than leaving nothing.
+  // A phone's empty list is its library home, not a window with nothing
+  // drawn, so it is allowed there.
+  records = next.length || isPhoneLayout() || !blankTab ? next : [blankTab()];
   change();
 }
 

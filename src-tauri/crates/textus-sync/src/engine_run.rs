@@ -156,7 +156,8 @@ pub(super) async fn run(
                 let Some(entry) = remote_files.get(&action.path) else {
                     continue;
                 };
-                let bytes = download_entry(store, entry).await?;
+                let reuse = local.read(&action.path).await.ok().flatten();
+                let bytes = download_entry(store, entry, reuse.as_deref()).await?;
                 let expected = files.get(&action.path).map(|entry| entry.hash.as_str());
                 if local.apply(&action.path, bytes, expected).await? {
                     next.insert(action.path.clone(), entry.clone());
@@ -174,7 +175,8 @@ pub(super) async fn run(
                 let Some(remote_entry) = remote_files.get(&action.path) else {
                     continue;
                 };
-                let bytes = download_entry(store, remote_entry).await?;
+                let reuse = local.read(&action.path).await.ok().flatten();
+                let bytes = download_entry(store, remote_entry, reuse.as_deref()).await?;
                 // A conflict copy must not keep the original's id: it is a
                 // different document now. Give it a new id and upload its
                 // changed bytes under that entry.

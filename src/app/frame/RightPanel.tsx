@@ -4,11 +4,7 @@ import { WindowConversation } from "../../ai/chat/panel/WindowConversation";
 import { ChatHistoryMenu } from "../../ai/chat/ChatHistoryMenu";
 import { reopenConversation } from "../../ai/chat/reopen-conversation";
 import { useAgentPanel } from "../../ai/chat/panel/agent-panel";
-import {
-  CloseIcon,
-  PlusIcon,
-  ProjectIcon,
-} from "../../engine/controls/icons";
+import { CloseIcon, PlusIcon, ProjectIcon } from "../../engine/controls/icons";
 import type { PresenceHandle } from "../../engine/motion/usePresence";
 import type { Strings } from "../../i18n/strings";
 import { useSettings } from "../../prefs/SettingsContext";

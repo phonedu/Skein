@@ -246,48 +246,75 @@ test("first-line indent sets in the document's paragraphs, not a list's", async 
   expect(await indent("li p")).toBe(0);
 });
 
-test("a custom endpoint's model is picked from its list, and a name it lacks fails the test", async ({
+test("custom endpoints are added, each with its name and model, and removed", async ({
   page,
 }) => {
-  await openApp(page, { settings: { textusAi: true, aiProvider: "custom" } });
+  await openApp(page, { settings: { textusAi: true } });
   await page.evaluate(() => {
     (window as unknown as { __devInvokeResults: unknown }).__devInvokeResults =
-      {
-        custom_endpoint_status: {
-          base_url: "http://relay.test/v1",
-          api_key: null,
-          has_api_key: true,
-          model: "6.1sol",
-        },
-        fetch_custom_models: ["gpt-6.1-sol", "gpt-6.1-luna"],
-        set_custom_endpoint: null,
-      };
+      { fetch_custom_models: ["gpt-6.1-sol", "gpt-6.1-luna"] };
     window.dispatchEvent(
       new CustomEvent("textus:open-settings-page", {
         detail: { page: "providers" },
       }),
     );
   });
+  const list = page.locator(".providers-list");
   const panel = page.locator(".providers-detail");
+  const saved = () =>
+    page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __devStorage: {
+              customEndpoints: { id: string; name: string; model: string }[];
+            };
+          }
+        ).__devStorage.customEndpoints,
+    );
+  await list.getByRole("button", { name: "添加自定义接口" }).click();
+  await panel.getByRole("textbox", { name: "名称" }).fill("中转 A");
+  await panel
+    .getByRole("textbox", { name: "接口地址" })
+    .fill("http://relay-a.test/v1");
+  await panel.getByRole("textbox", { name: "模型" }).fill("6.1sol");
+  // Reached is not enough: a model the endpoint doesn't list fails the test.
   await panel.getByRole("button", { name: "测试连接" }).click();
   await expect(panel.locator(".settings-error")).toContainText("6.1sol");
-  // The list is now the model's choices, here and in the model pickers.
   const model = panel.getByRole("combobox", { name: "模型" });
   await model.click();
   await page.getByRole("option", { name: "gpt-6.1-luna" }).click();
   await panel.getByRole("button", { name: "测试连接" }).click();
   await expect(panel.locator(".settings-success")).toBeVisible();
   await panel.getByRole("button", { name: "保存" }).click();
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        (
-          (window as unknown as { __devInvokeCalls: { cmd: string }[] })
-            .__devInvokeCalls ?? []
-        ).find((c) => c.cmd === "set_custom_endpoint"),
-      ),
-    )
-    .toMatchObject({ model: "gpt-6.1-luna" });
+  await expect(list.getByRole("button", { name: "中转 A" })).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
+  // A second relay serving the same models, chosen apart by its name.
+  await list.getByRole("button", { name: "添加自定义接口" }).click();
+  await panel.getByRole("textbox", { name: "名称" }).fill("中转 B");
+  await panel
+    .getByRole("textbox", { name: "接口地址" })
+    .fill("http://relay-b.test/v1");
+  await panel.getByRole("button", { name: "获取模型列表" }).click();
+  await panel.getByRole("button", { name: "保存" }).click();
+  await expect(list.getByRole("button", { name: "中转 B" })).toBeVisible();
+  expect(await saved()).toMatchObject([
+    { name: "中转 A", model: "gpt-6.1-luna" },
+    { name: "中转 B", model: "gpt-6.1-sol" },
+  ]);
+  const chatProvider = page.getByRole("combobox", { name: "对话用的服务商" });
+  await chatProvider.click();
+  await page.getByRole("option", { name: "中转 B" }).click();
+  await expect(chatProvider).toContainText("中转 B");
+  // Removed, it leaves the lists and the chat no longer points at it.
+  await list.getByRole("button", { name: "中转 B" }).click();
+  await panel.getByRole("button", { name: "移除" }).click();
+  await page.locator(".app-dialog .close-prompt-primary").click();
+  await expect(list.getByRole("button", { name: "中转 B" })).toHaveCount(0);
+  expect(await saved()).toMatchObject([{ name: "中转 A" }]);
+  await expect(chatProvider).not.toContainText("中转 B");
 });
 
 test("the search reads the pages once its box is focused, before the first letter", async ({
@@ -322,7 +349,7 @@ test("Layout switched in Settings lays the islands out again at once", async ({
   await expect.poll(gap).toBeLessThanOrEqual(1);
 });
 
-test("the classic look turns on in one switch, and off gives back the look before it", async ({
+test("the look of earlier versions turns on in one switch, and off gives back the look before it", async ({
   page,
 }) => {
   // The fork's Appearance page is decision-locked (the classic-look switch
@@ -332,7 +359,7 @@ test("the classic look turns on in one switch, and off gives back the look befor
   await emit(page, "menu-settings");
   await nav(page).getByRole("button", { name: "外观", exact: true }).click();
   const classic = page.getByRole("switch", { name: "使用旧版本样式" });
-  const rail = page.getByRole("switch", { name: "显示左侧图标栏" });
+  const rail = page.getByRole("switch", { name: "显示图标栏", exact: true });
   const titleRow = page.getByRole("switch", { name: "标题栏单独一行显示" });
   const layout = page.getByRole("combobox", { name: "布局" });
   await expect(classic).not.toBeChecked();

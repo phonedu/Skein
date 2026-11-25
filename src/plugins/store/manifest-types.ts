@@ -1,5 +1,6 @@
 import type { VerbatimRules } from "../../editor/markdown/verbatim-rules";
 import type { Permission, PluginPlatform } from "./manifest";
+import type { PluginCategory } from "./plugin-categories";
 
 // What a plugin's manifest holds once read (manifest.ts reads and checks
 // it): its contributions and the manifest itself.
@@ -129,6 +130,23 @@ export interface FolderDocumentContribution {
   documents: string[];
 }
 
+/** A code language coloured from a grammar file of the plugin's
+ *  (editor/code/code-grammar.ts), named in a fence by its id or an alias. */
+export interface CodeLanguageContribution {
+  id: string;
+  aliases: string[];
+  /** The grammar's JSON file, inside the plugin. */
+  path: string;
+}
+
+/** A set of icons for the files and folders listed, by name and extension,
+ *  picked in Settings › Appearance. `path` is its JSON in the plugin. */
+export interface FileIconThemeContribution {
+  id: string;
+  label: string;
+  path: string;
+}
+
 export type SettingType =
   "boolean" | "string" | "number" | "enum" | "color" | "list" | "button";
 
@@ -254,6 +272,7 @@ export interface Contributes {
   customEditors: CustomEditorContribution[];
   documentTypes: DocumentTypeContribution[];
   folderDocuments: FolderDocumentContribution[];
+  fileIconThemes: FileIconThemeContribution[];
   settings: SettingContribution[];
   /** A page of its own in Settings, a webview. */
   settingsPage: { title: string } | null;
@@ -264,6 +283,7 @@ export interface Contributes {
   links: LinkContribution[];
   statusItems: StatusItemContribution[];
   codeBlocks: CodeBlockContribution[];
+  codeLanguages: CodeLanguageContribution[];
   floatingViews: FloatingViewContribution[];
   agents: AgentContribution[];
   /** Suggested, once, for a document with these. */
@@ -300,6 +320,12 @@ export interface PluginManifest {
   activationEvents: string[];
   permissions: Permission[];
   requires: Requirement[];
+  /** Does nothing without Textus AI (its tools only): where there is none
+   *  (iOS), the store doesn't list it. */
+  needsTextusAi: boolean;
+  /** Where the store lists it; none (or one this Textus doesn't know):
+   *  under Other. */
+  category?: PluginCategory;
   contributes: Contributes;
   /** `%key%` strings, by language. */
   l10n: Record<string, Record<string, string>>;

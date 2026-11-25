@@ -7,6 +7,7 @@ import PERMISSIONS from "./permissions.json";
  */
 
 import { parseContributes, parseMain } from "./manifest-parse";
+import { readCategory } from "./plugin-categories";
 import { ManifestError, list, object, text } from "./manifest-json";
 
 /** The permissions without a host, and the platforms: one list with the
@@ -120,7 +121,7 @@ export function parseManifest(raw: string | unknown): PluginManifest {
         });
   // Background code and agents are the desktop's: no phone may name them.
   const onPhone = platforms.some((p) => p !== "desktop");
-  if (inBackground && onPhone)
+  if (background && onPhone)
     throw new ManifestError(
       "The background is the desktop's only: platforms can't name ios or android.",
     );
@@ -128,6 +129,8 @@ export function parseManifest(raw: string | unknown): PluginManifest {
     throw new ManifestError(
       "Agents are the desktop's only: platforms can't name ios or android.",
     );
+  if (m.needsTextusAi !== undefined && typeof m.needsTextusAi !== "boolean")
+    throw new ManifestError("needsTextusAi is true or false.");
   const l10n: PluginManifest["l10n"] = {};
   if (m.l10n !== undefined)
     for (const [lang, table] of Object.entries(object(m.l10n, "l10n"))) {
@@ -162,6 +165,8 @@ export function parseManifest(raw: string | unknown): PluginManifest {
     ),
     permissions,
     requires,
+    needsTextusAi: m.needsTextusAi === true,
+    category: readCategory(text(m.category, "category", true)),
     contributes,
     l10n,
   };

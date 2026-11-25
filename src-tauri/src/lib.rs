@@ -23,6 +23,9 @@ mod bindings;
 mod commands;
 mod conventions;
 mod distribution;
+#[cfg(desktop)]
+mod drag_modifiers;
+#[cfg(desktop)]
 mod export_formats;
 mod ext_stats;
 mod extract;
@@ -48,6 +51,7 @@ mod trackpad;
 mod walk;
 #[cfg(any(windows, test))]
 mod webview_memory;
+#[cfg(desktop)]
 mod window_frame;
 mod window_guard;
 #[cfg(desktop)]
@@ -55,7 +59,10 @@ mod windows;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
-use tauri::{Emitter, Manager, State};
+use tauri::State;
+// Android: no files are handed to its one window (launch.rs).
+#[cfg(any(desktop, target_os = "ios"))]
+use tauri::{Emitter, Manager};
 
 #[cfg(desktop)]
 use commands::chat_window::{OpenChatWindows, PendingChatHandoffs};
@@ -146,7 +153,10 @@ fn desktop_builder(builder: tauri::Builder<tauri::Wry>) -> tauri::Builder<tauri:
 /// The desktop half of startup, run from the shared setup in `run` once the
 /// main window exists.
 #[cfg(desktop)]
-fn desktop_setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+fn desktop_setup(
+    app: &mut tauri::App,
+    opens: Option<launch::LaunchOpens>,
+) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "linux")]
     crate::editor_windows::detect_wayland();
     #[cfg(target_os = "macos")]
@@ -154,30 +164,14 @@ fn desktop_setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     #[cfg(target_os = "macos")]
     crate::trackpad::watch_trackpad(app.handle());
     #[cfg(target_os = "macos")]
-    crate::commands::traffic_lights::watch();
+    crate::commands::traffic_lights::watch(app.handle());
     // Plugins' jobs and notifications: before the links, one of which may be
     // a notification's click that started Textus.
     schedule::start(app.handle());
     // textus:// links for plugins.
     plugins::uri::listen(app.handle());
-    // Windows/Linux pass an associated file as argv; macOS parks its launch files
-    // in LAUNCH_OPENED. With none, restore last session's documents (also what an
-    // update relaunch relies on).
-    #[allow(unused_mut)]
-    let mut arg_paths = paths_from_argv(
-        std::env::args(),
-        &std::env::current_dir().unwrap_or_default(),
-    );
-    #[cfg(target_os = "macos")]
-    arg_paths.extend(LAUNCH_OPENED.lock().unwrap().take().unwrap_or_default());
-    if !arg_paths.is_empty() {
-        queue_paths_to_open(app.handle(), arg_paths);
-    } else if commands::prefs::read_restore_session_on_startup(app.handle()) {
-        queue_windows_to_open(
-            app.handle(),
-            commands::session::read_session_windows(app.handle()),
-        );
-    }
+    // What the launch opens (launch_opens, decided before the main window).
+    launch::queue_launch(app.handle(), opens);
 
     commands::cli::try_silent_install();
     cli::app::start(app.handle());
@@ -268,14 +262,22 @@ pub fn run() {
                     crate::ai::file_changes::forget_old_records(&data)
                 });
             }
+            // AI skills only where there is Textus AI: never on iOS.
+            #[cfg(not(target_os = "ios"))]
             tauri::async_runtime::spawn(plugins::moved_skills::install_moved_skills(
                 app.handle().clone(),
             ));
             plugins::document_types::refresh(app.handle());
             memory_level::watch(app.handle().clone());
+            // Windows/Linux pass an associated file as argv; macOS parks its
+            // launch files in LAUNCH_OPENED. With none, last session's documents
+            // (also what an update relaunch relies on). Decided before the main
+            // window, whose boot snapshot says whether it has any coming.
+            #[cfg(desktop)]
+            let opens = launch::launch_opens(app.handle());
             crate::editor_windows::build_main_window(app)?;
             #[cfg(desktop)]
-            desktop_setup(app)?;
+            desktop_setup(app, opens)?;
             Ok(())
         })
         .invoke_handler(invoke_handler::handler())

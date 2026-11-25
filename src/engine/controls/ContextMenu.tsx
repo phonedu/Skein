@@ -33,6 +33,10 @@ export interface ContextMenuItem {
   /** The row's mark in a phone's action sheet (the panel ignores it;
    *  the sheet draws it in a capsule). */
   Icon?: ComponentType<{ className?: string }>;
+  /** A row deeper in a hierarchy (an outline's heading, 1 the top). */
+  depth?: number;
+  /** The row being read, ticked without `checked`'s choice meaning. */
+  current?: boolean;
 }
 
 /** Items shown beside the row when it is hovered or opened; a group in

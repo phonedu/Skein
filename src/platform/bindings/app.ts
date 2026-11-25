@@ -8,6 +8,8 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 
 /** Commands */
 export const commands = {
+	/**  Sync, so it runs on the main thread, where GTK must be asked. */
+	drag_modifiers: () => __TAURI_INVOKE<DragModifiers>("drag_modifiers"),
 	/**
 	 *  What the window mounting now opens: a session's window (its documents,
 	 *  islands and folder), or files the system handed over.
@@ -369,6 +371,11 @@ export type DetachedTab_Serialize = {
 	helpDoc?: string,
 	/**  The Word document an unsaved tab was opened from. */
 	importedFrom?: string,
+};
+
+/**  Read by the file drags in src/app/file-drop/finder-drag.ts. */
+export type DragModifiers = {
+	shift: boolean,
 };
 
 /**

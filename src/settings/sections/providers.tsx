@@ -108,7 +108,11 @@ function ProviderDetail({
     <div className="providers-detail">
       <Group title={status}>
         {entry.id === "custom" ? (
-          <CustomProviderPanel t={t} onStatusChange={onStatusChange} />
+          <CustomProviderPanel
+            t={t}
+            onSaved={() => onStatusChange()}
+            onRemoved={() => onStatusChange()}
+          />
         ) : (
           <ProviderAuthPanel
             t={t}

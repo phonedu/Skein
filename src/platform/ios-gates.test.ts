@@ -31,6 +31,8 @@ const ALLOWED: Record<string, string> = {
     "which platforms a plugin's manifest names; iOS takes ios alone",
   "theme/apply-appearance.ts":
     "its WebKit draws CJK as boxes under generic system fonts",
+  "theme/imported-theme.ts":
+    "its WebKit draws CJK as boxes under generic system fonts",
   "engine/controls/elastic-overscroll.ts": "the system's own overscroll",
 };
 
