@@ -7,11 +7,11 @@ import "./PhonePager.css";
 const WARM_MS = 900;
 
 /**
- * Today and the library as two pages of one track. Both keep their own bar,
- * capsule and body - they are separate surfaces, not two lists under one
- * header - so the whole page travels, as a pushed page does. The library is
- * laid out on its first need, not with the window's first frame, so opening
- * the app costs what it did before the swipe existed.
+ * Today and the library as two pages of one track under the fixed header
+ * (the library chip, its actions and the segment): a swipe moves the pages
+ * and the segment's thumb, never the header. The library is laid out on
+ * its first need, not with the window's first frame, so opening the app
+ * costs what it did before the swipe existed.
  */
 export function PhonePager({
   page,

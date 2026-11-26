@@ -2,9 +2,9 @@
 type: spec
 status: active
 summary: 手机端元素一致性与 PH3 验收清单
-updated: 2026-11-23
+updated: 2026-11-26
 verified: v1.4.6
-tasks: [PH14]
+tasks: []
 ---
 
 # Textus 手机端全局元素一致性方案
@@ -187,7 +187,7 @@ tasks: [PH14]
 
 ## 11. 动效
 
-只动 opacity/transform；时长取 `--dur-fast/base/slow`（120/200/320），不使用裸毫秒；关键帧集中在 `motion-tokens` 白名单。Sheet 进/出用 `motion-*` 既有动作；设置子页右滑 160ms（`settings-phone-push`，已注册）。
+只动 opacity/transform；时长取 `--dur-fast/base/slow`（120/200/320），不使用裸毫秒；关键帧集中在 `motion-tokens` 白名单。Sheet 进/出用 `motion-*` 既有动作；设置子页右滑 160ms（`settings-phone-push`，已注册）。手势（今天/文件横滑、Sheet 抓手下拉）跟手时直接写 transform；松手用脚本弹簧（`engine/motion/spring.ts`，response 0.32 / damping 0.86）并交接手指速度，reduced motion 吸附；分段滑块的 `--segment-at` 随横滑进度（`--pager-seg-at`）移动，落页与内容同一弹簧。
 
 ## 12. 禁止项（审查时会打回）
 

@@ -43,9 +43,3 @@
 .sheet.is-pulled {
   transition: none;
 }
-
-/* Let go under the threshold: back up on the spring, then the transform
-   goes back to the stylesheet. */
-.sheet.is-settling {
-  transition: transform var(--dur-slow) var(--ease-spring);
-}

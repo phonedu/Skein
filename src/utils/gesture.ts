@@ -15,6 +15,30 @@ export function across(
   return Math.abs(dx) > 2 * Math.abs(t.clientY - start.y) ? dx : null;
 }
 
+export interface SwipeSample {
+  /** What the finger moves along: x across, y down. */
+  value: number;
+  t: number;
+}
+
+/** The speed over the last `windowMs` of a drag, in the sample's unit per
+ *  millisecond (positive as the value grows). A release reads what the
+ *  finger did just before it lifted, not the whole drag. */
+export function swipeVelocity(
+  samples: readonly SwipeSample[],
+  windowMs = 120,
+): number {
+  if (samples.length < 2) return 0;
+  const last = samples[samples.length - 1];
+  let first = last;
+  for (let i = samples.length - 1; i >= 0; i--) {
+    if (last.t - samples[i].t > windowMs) break;
+    first = samples[i];
+  }
+  const span = last.t - first.t;
+  return span > 0 ? (last.value - first.value) / span : 0;
+}
+
 let lastTouch = 0;
 if (typeof window !== "undefined")
   window.addEventListener(

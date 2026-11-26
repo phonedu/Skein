@@ -1,7 +1,6 @@
-// The phone's home: the open vault's file tree as the first surface —
-// the tree, the vault name and settings in the top bar. The vault name
-// raises the library switcher: the open library, the ones chosen before,
-// and the way to add one.
+// The phone's home: the open vault's file tree as the first surface. The
+// vault name, its actions and the Today | Files segment live in the fixed
+// header above it (PhonePageHeader), not in this page.
 import { useEffect, useState } from "react";
 import type { OpenFolder } from "../app/useOpenFolder";
 import type { FileOpenHow } from "../files/tree-shared";

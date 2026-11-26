@@ -55,20 +55,60 @@ test("a swipe takes Today to the library and back", async ({ page }) => {
     ready: ".phone-today",
     animations: true,
   });
-  // What the track does as the finger goes: every move takes it further
-  // left, from Today towards the library.
+  // What the track and the segment's thumb do as the finger goes, and what
+  // the track does frame by frame after it lifts: the spring takes the
+  // finger's own speed, so a flick keeps going instead of easing from rest.
   await page.evaluate(() => {
-    const log: number[] = [];
-    (window as unknown as { __pagerDrags: number[] }).__pagerDrags = log;
+    const drags: { x: number; thumb: number }[] = [];
+    (
+      window as unknown as { __pagerDrags: { x: number; thumb: number }[] }
+    ).__pagerDrags = drags;
     document.querySelector(".phone-pager")?.addEventListener(
       "touchmove",
       () => {
         const track = document.querySelector<HTMLElement>(".phone-pager-track");
-        if (track?.style.transform)
-          log.push(new DOMMatrixReadOnly(track.style.transform).m41);
+        const seg = document.querySelector<HTMLElement>(
+          ".phone-pager-head .tx-segmented.is-equal",
+        );
+        const thumb = seg
+          ? getComputedStyle(seg, "::before").transform
+          : "none";
+        drags.push({
+          x: track?.style.transform
+            ? new DOMMatrixReadOnly(track.style.transform).m41
+            : 0,
+          thumb:
+            thumb && thumb !== "none" ? new DOMMatrixReadOnly(thumb).m41 : 0,
+        });
       },
       { passive: true },
     );
+    const spring: { t: number; x: number }[] = [];
+    let ended: number | null = null;
+    document
+      .querySelector(".phone-pager")
+      ?.addEventListener("touchend", () => (ended = performance.now()), {
+        passive: true,
+      });
+    const started = performance.now();
+    const tick = (now: number) => {
+      const track = document.querySelector<HTMLElement>(".phone-pager-track");
+      spring.push({
+        t: now,
+        x: track
+          ? new DOMMatrixReadOnly(getComputedStyle(track).transform).m41
+          : 0,
+      });
+      const done = ended === null ? now - started > 4000 : now - ended > 500;
+      if (!done) requestAnimationFrame(tick);
+      else
+        (
+          window as unknown as {
+            __pagerSpring: { spring: typeof spring; ended: number | null };
+          }
+        ).__pagerSpring = { spring, ended };
+    };
+    requestAnimationFrame(tick);
   });
   await swipe(page, { x: 320, y: 420 }, { x: 60, y: 420 });
   await expect(library(page)).toBeVisible();
@@ -87,13 +127,43 @@ test("a swipe takes Today to the library and back", async ({ page }) => {
     ),
   ).toBeLessThanOrEqual(0);
 
-  const offsets = await page.evaluate(
-    () => (window as unknown as { __pagerDrags: number[] }).__pagerDrags,
+  const drags = await page.evaluate(
+    () =>
+      (window as unknown as { __pagerDrags: { x: number; thumb: number }[] })
+        .__pagerDrags,
   );
+  const offsets = drags.map((drag) => drag.x);
   expect(offsets.length).toBeGreaterThan(4);
   expect(offsets.every((offset) => offset <= 0)).toBe(true);
   // The last move has the track most of a page across, under the finger.
   expect(offsets[offsets.length - 1]).toBeLessThan(-180);
+  // The segment's thumb travels with the finger, not after it.
+  const thumbs = drags.map((drag) => drag.thumb);
+  expect(thumbs[0]).toBeLessThan(10);
+  expect(thumbs[thumbs.length - 1]).toBeGreaterThan(40);
+
+  await page.waitForFunction(() =>
+    Boolean((window as unknown as { __pagerSpring?: unknown }).__pagerSpring),
+  );
+  const { spring, ended } = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __pagerSpring: { spring: { t: number; x: number }[]; ended: number };
+        }
+      ).__pagerSpring,
+  );
+  const after = spring.filter((frame) => frame.t > ended);
+  const beforeEnd = spring.filter((frame) => frame.t <= ended);
+  expect(after.length).toBeGreaterThan(4);
+  // The first frame after the lift has already moved well past the finger's
+  // last place: the flick's speed went into the spring. (The sampler's own
+  // frame may run before the spring's first one, so either of the first two
+  // frames counts.)
+  const firstMove = Math.min(after[0].x, after[1].x);
+  expect(firstMove).toBeLessThan(beforeEnd[beforeEnd.length - 1].x - 20);
+  // And it lands on the library's place.
+  expect(Math.abs(after[after.length - 1].x + 390)).toBeLessThan(1);
 
   await swipe(page, { x: 60, y: 420 }, { x: 320, y: 420 });
   await expect(today(page)).toBeVisible();
@@ -102,6 +172,34 @@ test("a swipe takes Today to the library and back", async ({ page }) => {
     "aria-selected",
     "true",
   );
+});
+
+test("a capsule tap slides the content, and the script gives the track back", async ({
+  page,
+}) => {
+  await openApp(page, {
+    settings: { language: "zh" },
+    ready: ".phone-today",
+    animations: true,
+  });
+  await seg(page).getByRole("tab", { name: "文件" }).tap();
+  await expect(library(page)).toBeVisible();
+  await expect(today(page)).toBeHidden();
+  // The spring ran with the page, then handed the transform back to the
+  // stylesheet (the thumb's fractional place with it).
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const root = document.querySelector<HTMLElement>(".phone-pager")!;
+        const track =
+          document.querySelector<HTMLElement>(".phone-pager-track")!;
+        return {
+          inline: track.style.transform,
+          segAt: root.style.getPropertyValue("--pager-seg-at"),
+        };
+      }),
+    )
+    .toEqual({ inline: "", segAt: "" });
 });
 
 test("a short, slow pull comes back to the page it left", async ({ page }) => {

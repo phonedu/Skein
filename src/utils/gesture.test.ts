@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import { heldByFinger } from "./gesture";
+import { heldByFinger, swipeVelocity } from "./gesture";
 
 function contextmenu(pointerType?: string, button = 0) {
   const e = new MouseEvent("contextmenu", { button });
@@ -30,5 +30,23 @@ describe("a contextmenu held by a finger", () => {
     // Android's double tap and handle drag come as "mouse" ones.
     expect(heldByFinger(contextmenu("mouse"))).toBe(true);
     expect(heldByFinger(contextmenu("pen"))).toBe(false);
+  });
+});
+
+describe("a release's speed", () => {
+  it("reads the last moves, not the whole drag", () => {
+    expect(
+      swipeVelocity([
+        { value: 300, t: 0 },
+        { value: 290, t: 400 },
+        { value: 250, t: 500 },
+        { value: 200, t: 560 },
+      ]),
+    ).toBeCloseTo(-50 / 60);
+  });
+
+  it("is zero without a move to measure", () => {
+    expect(swipeVelocity([])).toBe(0);
+    expect(swipeVelocity([{ value: 10, t: 100 }])).toBe(0);
   });
 });

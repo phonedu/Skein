@@ -14,6 +14,7 @@ const OWN_LOOPS: Record<string, string> = {
   "engine/frame/clock.ts tick": "the frame clock",
   "engine/motion/tween.ts tick": "the shared tween",
   "engine/motion/reveal.ts step": "the shared reveal",
+  "engine/motion/spring.ts step": "the shared spring",
   "engine/drag/edge-scroll.ts run": "the shared edge scroll",
   "ai/revision/stream-follow-plugin.ts tick": "follows a growing rewrite",
   // Waits a few frames for something to be drawn; nothing moves.

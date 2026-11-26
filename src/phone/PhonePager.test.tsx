@@ -59,15 +59,21 @@ describe("the phone's two home pages", () => {
     expect(pageOf("today").hasAttribute("inert")).toBe(true);
   });
 
-  it("travels on the motion tokens, and only by its transform", () => {
-    expect(css).toMatch(
-      /transition: transform var\(--dur-slow\) var\(--ease-settle\);/,
-    );
+  it("travels on its transform alone, written by the script", () => {
+    // The page it is on places the track...
     expect(css).toMatch(
       /\.phone-pager\[data-page="files"\]\s*\.phone-pager-track \{\s*transform: translate3d\(-100%, 0, 0\);/,
     );
-    // No copied clock: durations come from the tokens the reduced-motion
-    // switch shortens.
+    // ...and a drag or a release writes the transform every frame, so no
+    // clock-driven transition may fight the finger.
+    expect(css).not.toMatch(/transition: transform/);
+    // The thumb reads the track's fraction, with its own transition off
+    // while the script writes that fraction.
+    expect(css).toMatch(/var\(--pager-seg-at, var\(--segment-at, 0\)\)/);
+    expect(css).toMatch(
+      /\.phone-pager\[data-moving="on"\]\s*\.phone-pager-head\s*\.tx-segmented\.is-equal::before \{\s*transition: none;/,
+    );
+    // No copied clock: durations come from the engine's springs.
     expect(css).not.toMatch(/\b\d+(\.\d+)?m?s\b/);
   });
 });

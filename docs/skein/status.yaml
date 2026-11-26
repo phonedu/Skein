@@ -3,7 +3,7 @@
 baseline: v1.4.7
 commit: 68ecd8d4
 branch: base-ui-settings
-updated: 2026-11-25
+updated: 2026-11-26
 workstreams:
   - id: D1
     name: 资产闭环
@@ -146,21 +146,6 @@ tasks:
       not: 不重写同步页；不做连接管理二级页；不做一库多入口/迁移；不改协议/引擎。
       scope: src/settings/pages SyncPage/SyncSwitchView/SyncConnectionSummary/状态行、i18n 十语言、前端测试与截图。
       evidence: 桌面 1280/800 与手机 360 截图；active 后端/各后端上次结果单测；首次切换确认与预览 e2e；十语言通过。
-  - id: PH14
-    title: 手机手势按 iOS 橡皮筋手感：非线性位移 + 阻尼 + 回弹
-    workstream: UI
-    kind: task
-    state: doing
-    acceptance: 横滑松手按速度交接的弹簧落页（不是固定 320ms）；Sheet 下拉按速度/距离关闭并带初速度回弹；分段滑块跟手且与内容同步收尾。观察项（Sheet 进入 450ms、Android 无原生滚动橡皮筋、PhonePager 旧注释）记录在 brief.not，另行评估。
-    spec: specs/Textus-手机端元素一致性方案.md#11-动效
-    estimate: —
-    brief:
-      problem: 当前手机横滑只用线性阻尼（PAGER_RESIST 0.25）+ CSS 过渡松手回弹，手感生硬。iOS 的橡皮筋是“非线性位移 + 阻尼 + 回弹”：手指移动与控件位移不成正比，越拉越难、松手弹回；用户举例卡片下拉展开用渐近式 maxExpansion*(1-exp(normalized*0.65))。
-      expected: 手机手势按 iOS 手感：位移随手指非线性增长并渐近饱和，越界有阻尼，松手按位置/速度回弹；先覆盖今天/文件横滑，再看库面板与卡片下拉；不做线性系数、固定时长的死硬动效。已做：指数越界阻尼（5446bfb8）、Sheet 抓手下拉与从松手位置关闭（f9f5ff77/02d17b8a）；还差：横滑松手速度交接、Sheet 下拉的速度判定、分段滑块跟手。
-      standard: 位移曲线单调、连续、有渐近上界；松手回弹无跳变；松手把手指速度交给弹簧（横滑用 pagerVelocity 作初速度，Sheet 用下拉速度）；分段滑块的 --segment-at 随拖动进度走，落页与内容同一弹簧；参数集中可调（阻尼系数 k、上界、回弹弹簧）；reduced motion 收敛；单测曲线 + Android WebView 实滑/录屏；只借交互模型，不照搬 Apple 私有代码。
-      not: 本轮不做：Sheet 进入时长（450ms 是否收到 320–400，观察项）、Android WebView 无原生 ScrollView 橡皮筋（是否自研另议）、PhonePager 旧注释清理（顺手）；不整页重写、不引第三方动效库、不改桌面/平板、不逐帧手调系数；1.4.7 合并与 PH13 均已完成，不再等。
-      scope: src/phone（usePagerSwipe/pager-model）、engine/motion（新增弹簧积分器，纯逻辑+单测）、PhoneViewSeg/Segmented 的分数滑块、engine/controls/Sheet 的下拉速度；手机布局；先横滑，后卡片下拉。
-      evidence: 弹簧积分器单测（位移/阻力/回弹/初速度）；e2e 或分帧截图断言松手后的运动；Android 模拟器实滑/录屏。
 later:
   - id: S5
     title: 同步硬化
@@ -242,6 +227,21 @@ questions:
     trigger: 真实教程 / 多平台对比需求
     when: D0.5 收尾复盘时定；无真实需求即关闭
     spec: proposals/Textus-文档便携与呈现扩展方案.md
+  - id: PH15
+    title: 手机设置-扩展页的分段 tab 是否加左右横滑
+    note: 扩展页是设置内页（themes/plugins/skills/mcp/create，手机更少），分段下面是各自独立的长列表与懒加载面板；确实用的是 Segmented（settings/pages/ExtensionsPage.tsx:61）。要做就复用 PH13 的 Pager 壳（固定分段、只滑内容、滑块跟手），不顺手塞进 PH14；先确认产品是否需要。
+    spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
+    estimate: —
+  - id: PH16
+    title: 合并 1.4.7 带入的 e2e 与 fork 外壳对不齐（12 红）
+    note: phone-touch.spec（上游 1.4.7 新增）按上游假定写：移动端一律 phone 壳（844 宽也期望 data-window-chrome=mobile）、有 Activity rail、启动即有文档；fork 的 H0 与断点（600/840）不同，启动页是今天，另有 fork-shell 的插件入口已从 QuickPick 改成右页边 catalog（测试仍找 listbox）。在 HEAD（stash 掉 PH14 改动）上同样红，与 PH14 无关。逐条按 fork 裁定：改测试（document:true / 断点期望）或补外壳，不与功能改动混在一起。
+    spec: archive/2026-11-25-upstream-v1.4.7.md
+    estimate: 0.5–1 天
+  - id: PH17
+    title: 内置文件图标主题（候选）
+    note: 文件图标下拉目前只有默认；插件已支持 contributes.fileIconThemes，官方 60 个插件暂无主题包。候选：自绘 Skein 一套，或引入 MIT 图标集（Seti/Material 类）做内置插件；先立裁决再动。
+    spec: decisions/README.md
+    estimate: 按件估算
   - id: U20
     text: 每文档 Base64 图片存储
     default: 不做默认存储；先走 ED3；若做则默认关、可提取、AI / 搜索跳过

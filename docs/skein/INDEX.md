@@ -12,7 +12,7 @@
 | --- | --- | --- | --- |
 | [Textus Agent 工具契约](specs/Textus-Agent工具契约.md) | active | 2026-11-23 | Agent 七工具的输入输出、权限与确认门槛 |
 | [Textus 主题策略（Skein）](specs/Textus-主题策略.md) | active | 2026-11-23 | Skein 皮肤与文档主题的分层契约 |
-| [Textus 手机端全局元素一致性方案](specs/Textus-手机端元素一致性方案.md) | active | 2026-11-23 | 手机端元素一致性与 PH3 验收清单 |
+| [Textus 手机端全局元素一致性方案](specs/Textus-手机端元素一致性方案.md) | active | 2026-11-26 | 手机端元素一致性与 PH3 验收清单 |
 | [Textus 改造方案（项目基线）](specs/Textus-改造方案.md) | active | 2026-11-23 | 产品定位、架构、数据模型、阶段与验收 |
 | [上游 1.4.7 接入顺序](specs/上游1.4.7接入顺序.md) | active | 2026-11-25 | 先整体接入上游 v1.4.7，再按 B7 清单验收；不追 1.4.8-rc |
 | [单库多后端同步](specs/单库多后端同步.md) | active | 2026-11-25 | 一个库多个独立后端（局域网/S3/WebDAV），每后端各留同步基线；同一设备仅一个 active 后端 |

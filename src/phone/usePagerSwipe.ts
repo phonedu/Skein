@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
 import { HOLD_MS } from "../engine/drag/hold-drag";
 import { swallowNextClick } from "../engine/drag/pointer-drag";
+import { motionAllowed } from "../engine/motion/motion";
+import { runSpring, type SpringRun } from "../engine/motion/spring";
 import { scaledPx } from "../engine/tokens/chrome-scale";
 import { TOUCH_SLOP_PX } from "../utils/gesture";
 import {
@@ -44,58 +46,78 @@ interface Swipe {
 
 interface Flow {
   drag: Swipe | null;
-  timer: number;
+  spring: SpringRun | null;
+  /** The last offset drawn: a finger or a page change starts from here,
+   *  not from the class's resting place. */
+  offset: number | null;
   /** The page last drawn: an outside change (the capsule, Back) moves the
    *  track without a finger. */
   page: PhonePagerPage;
 }
 
-/** The track's offset as drawn now: a CSS transition may have it between
- *  pages when a finger takes it. */
-function trackOffsetPx(
-  track: HTMLDivElement,
-  width: number,
-  page: PhonePagerPage,
-): number {
+/** The track's offset as drawn now: a spring may have it between pages
+ *  when a finger takes it. */
+function trackOffsetPx(track: HTMLDivElement): number {
   const transform = getComputedStyle(track).transform;
-  if (!transform || transform === "none") return -pageAt(page) * width;
+  if (!transform || transform === "none") return 0;
   return new DOMMatrixReadOnly(transform).m41;
 }
 
-function setTrack(track: HTMLDivElement, offset: number): void {
+/** The track where it is, and the segment's thumb with it: the thumb's
+ *  fractional place is the track's own, so a drag moves both. */
+function drawTrack(
+  root: HTMLElement,
+  track: HTMLDivElement,
+  flow: Flow,
+  offset: number,
+  width: number,
+): void {
   track.style.transform = `translate3d(${offset}px, 0, 0)`;
-}
-
-/** The transition the track's stylesheet gives it, in ms: the release's own
- *  timer, so it ends even where transitions are switched off. */
-function settleMs(track: HTMLDivElement): number {
-  const [first = "0s"] = getComputedStyle(track).transitionDuration.split(",");
-  const value = Number.parseFloat(first);
-  if (!Number.isFinite(value)) return 0;
-  return first.trim().endsWith("ms") ? value : value * 1000;
+  flow.offset = offset;
+  const at = width > 0 ? Math.min(1, Math.max(0, -offset / width)) : 0;
+  root.style.setProperty("--pager-seg-at", String(at));
 }
 
 /** Both pages show while the track travels; the one it left stops being
  *  reachable once it has come to rest. */
-function beginMove(
-  root: HTMLElement,
-  track: HTMLDivElement,
-  flow: Flow,
-  ms: number,
-): void {
-  root.dataset.moving = "on";
-  if (flow.timer) window.clearTimeout(flow.timer);
-  flow.timer = window.setTimeout(() => endMove(root, track, flow), ms + 64);
-}
-
 function endMove(root: HTMLElement, track: HTMLDivElement, flow: Flow): void {
   // A finger on the track owns it: its release ends the move instead.
   if (flow.drag) return;
-  if (flow.timer) window.clearTimeout(flow.timer);
-  flow.timer = 0;
+  flow.spring?.stop();
+  flow.spring = null;
   delete root.dataset.moving;
-  delete root.dataset.dragging;
+  root.style.removeProperty("--pager-seg-at");
   track.style.transform = "";
+}
+
+/** Carries the track the rest of the way on a spring that starts with the
+ *  finger's own speed: a flick keeps going, a slow drag eases in. The next
+ *  touch may take it again from wherever it is. */
+function startSpring(
+  root: HTMLElement,
+  track: HTMLDivElement,
+  flow: Flow,
+  from: number,
+  to: number,
+  velocity: number,
+  width: number,
+): void {
+  flow.spring?.stop();
+  const draw = (value: number) => drawTrack(root, track, flow, value, width);
+  if (!motionAllowed()) {
+    endMove(root, track, flow);
+    return;
+  }
+  flow.spring = runSpring({
+    from,
+    to,
+    velocity,
+    draw,
+    done: () => {
+      flow.spring = null;
+      endMove(root, track, flow);
+    },
+  });
 }
 
 /** Whether the touch is in something a sideways drag edits rather than a
@@ -111,10 +133,11 @@ function editsText(target: EventTarget | null): boolean {
 
 /**
  * Today and the library as one track under a finger: a sideways drag takes
- * the track where it goes, a release lands on the page the drag and its
- * speed choose, and a change from outside (the capsule, Back) slides the
- * track the same way. Purely the gesture: the pages themselves are the
- * caller's.
+ * the track where it goes, a release hands its speed to a spring that
+ * lands on the page the drag and its speed choose, and a change from
+ * outside (the capsule, Back) travels the same way. The segment's thumb
+ * follows the track's fractional place, so the two move as one. Purely the
+ * gesture: the pages themselves are the caller's.
  */
 export function usePagerSwipe({
   root,
@@ -132,13 +155,18 @@ export function usePagerSwipe({
 }): void {
   const live = useRef({ page, onChange, needFiles });
   live.current = { page, onChange, needFiles };
-  const flow = useRef<Flow>({ drag: null, timer: 0, page });
+  const flow = useRef<Flow>({
+    drag: null,
+    spring: null,
+    offset: null,
+    page,
+  });
 
   useEffect(() => {
     const el = root.current;
     if (!el) return;
     // The same object throughout the gesture (`flow.current` is never
-    // replaced): the cleanup may read the timer it left behind.
+    // replaced): the cleanup may read the spring it left behind.
     const state = flow.current;
     const down = (e: TouchEvent) => {
       // A second finger, or a new press: the old drag is not this one, and
@@ -196,24 +224,28 @@ export function usePagerSwipe({
         drag.y0 = touch.clientY;
         const trackNow = track.current;
         if (!trackNow) return;
-        drag.origin = trackOffsetPx(trackNow, drag.width, live.current.page);
+        // A spring still carrying the track is stopped where it is: the
+        // finger takes it from there. The track as drawn is the truth here,
+        // also after a resize moved the class's resting place.
+        flow.current.spring?.stop();
+        flow.current.spring = null;
+        drag.origin = trackOffsetPx(trackNow);
         drag.samples = [{ x: touch.clientX, t: performance.now() }];
         live.current.needFiles();
         el.dataset.moving = "on";
-        el.dataset.dragging = "on";
-        if (flow.current.timer) {
-          window.clearTimeout(flow.current.timer);
-          flow.current.timer = 0;
-        }
-        setTrack(trackNow, drag.origin);
+        drawTrack(el, trackNow, flow.current, drag.origin, drag.width);
       }
       if (e.cancelable) e.preventDefault();
+      const trackNow = track.current;
+      if (!trackNow) return;
       const moved = touch.clientX - drag.x0;
-      if (track.current)
-        setTrack(
-          track.current,
-          pagerOffset(drag.origin, moved, drag.width, PHONE_PAGES.length),
-        );
+      drawTrack(
+        el,
+        trackNow,
+        flow.current,
+        pagerOffset(drag.origin, moved, drag.width, PHONE_PAGES.length),
+        drag.width,
+      );
       drag.samples.push({ x: touch.clientX, t: performance.now() });
       if (drag.samples.length > 24) drag.samples.shift();
     };
@@ -229,6 +261,7 @@ export function usePagerSwipe({
       }
       const touch = e.changedTouches[0];
       const moved = (touch?.clientX ?? drag.x0) - drag.x0;
+      const velocity = pagerVelocity(drag.samples);
       const offset = pagerOffset(
         drag.origin,
         moved,
@@ -236,26 +269,28 @@ export function usePagerSwipe({
         PHONE_PAGES.length,
       );
       const target = dropped
-        ? pagerTarget(
-            offset,
-            pagerVelocity(drag.samples),
-            drag.width,
-            PHONE_PAGES.length,
-          )
+        ? pagerTarget(offset, velocity, drag.width, PHONE_PAGES.length)
         : drag.base;
       if (dropped) {
         // Also stops the click a released touch would send to what it was on.
         if (e.cancelable) e.preventDefault();
         swallowNextClick();
       }
-      // The finger let go: the stylesheet's transition carries the track the
-      // rest of the way. The reflow makes the drag's position the start.
-      delete el.dataset.dragging;
-      void trackNow.offsetWidth;
-      setTrack(trackNow, -target * drag.width);
-      beginMove(el, trackNow, flow.current, settleMs(trackNow));
+      // The page this very gesture decided is not an outside change: the
+      // layout effect must not start a second spring and lose the speed.
+      flow.current.page = PHONE_PAGES[target];
       if (target !== pageAt(live.current.page))
         live.current.onChange(PHONE_PAGES[target]);
+      // The finger's speed is the spring's own: px/ms becomes px/s.
+      startSpring(
+        el,
+        trackNow,
+        flow.current,
+        offset,
+        -target * drag.width,
+        dropped ? velocity * 1000 : 0,
+        drag.width,
+      );
     };
     const up = (e: TouchEvent) => release(e, true);
     const cancel = (e: TouchEvent) => release(e, false);
@@ -268,7 +303,7 @@ export function usePagerSwipe({
       el.removeEventListener("touchmove", move);
       el.removeEventListener("touchend", up);
       el.removeEventListener("touchcancel", cancel);
-      if (state.timer) window.clearTimeout(state.timer);
+      state.spring?.stop();
     };
   }, [root, track]);
 
@@ -277,6 +312,7 @@ export function usePagerSwipe({
   useLayoutEffect(() => {
     const current = flow.current;
     if (current.page === page) return;
+    const previous = current.page;
     current.page = page;
     live.current.needFiles();
     const el = root.current;
@@ -284,9 +320,29 @@ export function usePagerSwipe({
     if (!el || !trackNow) return;
     if (current.drag) {
       current.drag = null;
-      delete el.dataset.dragging;
-      trackNow.style.transform = "";
+      endMove(el, trackNow, current);
+      return;
     }
-    beginMove(el, trackNow, current, settleMs(trackNow));
+    const width = el.clientWidth;
+    if (width <= 0) {
+      endMove(el, trackNow, current);
+      return;
+    }
+    // The class's transform has already moved to the new page; the inline
+    // one puts the track back where it was seen before the first frame,
+    // and the spring carries it from there. A spring already running has
+    // its last drawn offset; at rest, the previous page's place (read at
+    // this width, so a turned screen still starts true).
+    const running = current.spring !== null;
+    const from =
+      running && current.offset !== null
+        ? current.offset
+        : -pageAt(previous) * width;
+    const target = -pageAt(page) * width;
+    endMove(el, trackNow, current);
+    if (!motionAllowed()) return;
+    el.dataset.moving = "on";
+    drawTrack(el, trackNow, current, from, width);
+    startSpring(el, trackNow, current, from, target, 0, width);
   }, [page, root, track]);
 }

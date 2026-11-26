@@ -1,7 +1,7 @@
-/* The phone's two home pages as one track: the side a page is on, and the
-   gesture that takes it across, live in usePagerSwipe; here are only the
-   lengths and the layer rules. The whole page travels - each has its own
-   bar - so nothing but the track's transform animates. */
+/* The phone's two home pages as one track under a fixed header. The
+   track's transform and the segment's thumb are written from script
+   (usePagerSwipe) on a spring that starts with the finger's speed; nothing
+   here is on a clock. */
 .phone-pager {
   position: relative;
   flex: 1;
@@ -19,6 +19,19 @@
   background: var(--ui-bg);
 }
 
+/* The thumb follows the track's fractional place, so a drag moves the
+   pages and the segment as one; its own transition is off while the pager
+   writes it, and the segment's value takes over once the track rests. */
+.phone-pager-head .tx-segmented.is-equal::before {
+  transform: translateX(calc(100% * var(--pager-seg-at, var(--segment-at, 0))));
+}
+
+.phone-pager[data-moving="on"]
+  .phone-pager-head
+  .tx-segmented.is-equal::before {
+  transition: none;
+}
+
 .phone-pager-track {
   display: flex;
   width: 100%;
@@ -27,17 +40,10 @@
   /* Pages are laid out from their own left edge; the second starts one
      track-width to the right. */
   transform: translate3d(0, 0, 0);
-  transition: transform var(--dur-slow) var(--ease-settle);
 }
 
 .phone-pager[data-page="files"] .phone-pager-track {
   transform: translate3d(-100%, 0, 0);
-}
-
-/* A finger on the track: it goes exactly where the finger is, on the frame
-   it is, so no transition may trail it. */
-.phone-pager[data-dragging="on"] .phone-pager-track {
-  transition: none;
 }
 
 .phone-pager-page {

@@ -1,3 +1,5 @@
+import { swipeVelocity } from "../utils/gesture";
+
 /** How far past the first or last page the track can be pulled, as a share
  *  of the page: the edge gives with the finger and approaches this, never
  *  passing it. */
@@ -11,10 +13,6 @@ const PROJECT_MS = 200;
  *  throw, and one fast frame at the end must not carry two pages. */
 const VELOCITY_CAP = 3;
 
-/** The moves a release's speed reads: what the finger did just before it
- *  lifted, not the whole drag. */
-const SAMPLE_MS = 120;
-
 export interface PagerSample {
   x: number;
   t: number;
@@ -22,8 +20,8 @@ export interface PagerSample {
 
 /** The track's offset while the finger is `dx` from where it took it:
  *  it follows the finger across the pages' span, and gives only
- *  PAGER_RESIST past either end. `count` pages stand from 0 to -(count-1)
- *  widths. */
+ *  EDGE_GIVE past either end, less and less as it goes. `count` pages stand
+ *  from 0 to -(count-1) widths. */
 export function pagerOffset(
   origin: number,
   dx: number,
@@ -56,15 +54,7 @@ export function pagerTarget(
   return Math.max(0, Math.min(count - 1, at));
 }
 
-/** Pixels per millisecond over the last SAMPLE_MS of the drag. */
+/** Pixels per millisecond over the last moves of the drag. */
 export function pagerVelocity(samples: readonly PagerSample[]): number {
-  if (samples.length < 2) return 0;
-  const last = samples[samples.length - 1];
-  let first = last;
-  for (let i = samples.length - 1; i >= 0; i--) {
-    if (last.t - samples[i].t > SAMPLE_MS) break;
-    first = samples[i];
-  }
-  const span = last.t - first.t;
-  return span > 0 ? (last.x - first.x) / span : 0;
+  return swipeVelocity(samples.map(({ x, t }) => ({ value: x, t })));
 }
