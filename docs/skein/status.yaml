@@ -146,20 +146,6 @@ tasks:
       not: 不重写同步页；不做连接管理二级页；不做一库多入口/迁移；不改协议/引擎。
       scope: src/settings/pages SyncPage/SyncSwitchView/SyncConnectionSummary/状态行、i18n 十语言、前端测试与截图。
       evidence: 桌面 1280/800 与手机 360 截图；active 后端/各后端上次结果单测；首次切换确认与预览 e2e；十语言通过。
-  - id: D3
-    title: 多端入口完善
-    note: 手机独立完成“收集 → 次日确认”；冲突中心；系统分享按待审默认不做。
-    spec: specs/D3-手机入口与插件页导航.md
-    estimate: 入口片 4.5–7 天；冲突中心随 S14/S15
-    brief:
-      problem: 2026-11-27 用户走查手机：插件操作全在「更多」→「插件」启动器（10 项、含重复），资产列表行操作只能长按，插件页 ⋯ 是文档动作，详情返回回今天；「收集 → 次日确认」只有前半在首页。
-      expected: 今天页按插件名给出状态行（待确认、资产），一次点击进确认中心/资产列表；触屏列表行有可见 ⋯；插件页 ⋯ 只留适用项；返回回打开它的页面；有冲突时今天页有入口。数据与 Markdown 文件不变。
-      standard: 方案 §7 的 e2e/单测/真机判据通过；D3a–D3d 各片 check:quick + 相关测试绿；桌面/平板无回归；不改插件 API；十语言；只用令牌。
-      not: 系统分享收集；桌面小组件/通知；第二套插件路由；宿主写资产业务逻辑；文档页 ⋯ 内联全部插件命令；D3e 的冲突 diff/保留/删除（等 S14）。
-      scope: fork 宿主 src/ 与 skein.collect 插件；手机/折叠为主，桌面/平板回归；本次 D3a→D3d，D3e 待 S14；两仓分别提交。
-      evidence: npm run check:quick；vitest 新增/相关用例；Playwright phone e2e（两行入口、行 ⋯、插件页 ⋯、返回）；iPhone UA Chromium 截图 + Android 返回手势；桌面回归。
-    acceptance: 方案 §7 的 e2e/单测/真机判据通过；D3a–D3d 各片 check:quick + 相关测试绿；桌面/平板无回归；不改插件 API；十语言；只用令牌。
-    state: doing
 later:
   - id: S5
     title: 同步硬化

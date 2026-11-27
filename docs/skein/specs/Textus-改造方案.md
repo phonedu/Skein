@@ -2,9 +2,9 @@
 type: spec
 status: active
 summary: 产品定位、架构、数据模型、阶段与验收
-updated: 2026-11-23
+updated: 2026-11-27
 verified: v1.4.6
-tasks: [D0.5, D2, D3, ED1]
+tasks: [D0.5, D2, ED1]
 ---
 
 # Textus 改造方案（项目基线）
