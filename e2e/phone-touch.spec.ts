@@ -1,41 +1,61 @@
 import { expect, type Page, test } from "@playwright/test";
-import { emit, openApp, pasteMarkdown, PHONE, TABLET } from "./helpers";
+import { emit, openApp, pasteMarkdown } from "./helpers";
 import { hasPlugin } from "./plugin-helpers";
 
-// A phone turned on its side, and what a finger reaches on a phone and a
-// touch tablet.
+// The fork's shell is decided by width (裁决 34/PH13): below 600 is the
+// phone's single column, 600–839 the fold, 840 and up the tablet's app
+// chrome. A phone turned on its side is 844 wide, so it takes the tablet's
+// chrome — the tests below say what that means, rather than expecting the
+// upstream's always-mobile shell.
+const ANDROID = {
+  userAgent:
+    "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+  viewport: { width: 390, height: 844 },
+  hasTouch: true,
+  isMobile: true,
+};
+const PHONE = ANDROID;
 const PHONE_SIDEWAYS = {
-  ...PHONE,
+  ...ANDROID,
   viewport: { width: 844, height: 390 },
   screen: { width: 844, height: 390 },
+};
+const TABLET = {
+  ...ANDROID,
+  viewport: { width: 820, height: 1180 },
+  screen: { width: 820, height: 1180 },
 };
 
 test.describe("a phone on its side", () => {
   test.use(PHONE_SIDEWAYS);
 
-  test("keeps the phone's layout, Settings in one column", async ({ page }) => {
+  test("takes the tablet's chrome, Settings a full page", async ({ page }) => {
     await openApp(page, { settings: { language: "en" } });
     await expect(page.locator("html")).toHaveAttribute(
       "data-window-chrome",
-      "mobile",
+      "app",
     );
-    await expect(page.locator(".document-menu-button")).toBeVisible();
-    await page.getByRole("button", { name: "Menu", exact: true }).tap();
-    await page.getByRole("menuitem", { name: /Settings/ }).tap();
-    await expect(page.locator(".settings-layout")).toHaveCSS(
-      "flex-direction",
-      "column",
-    );
-    // Every category in the list, none clipped: the sidebar scrolls it.
-    const nav = page.locator(".settings-nav");
-    await expect(nav.getByRole("button", { name: "About" })).toBeAttached();
-    const clipped = await nav.evaluate(
-      (el) => el.scrollHeight - el.clientHeight,
-    );
-    expect(clipped).toBeLessThanOrEqual(1);
+    await expect(page.locator(".window-bar")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Plugins", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Settings", exact: true }).tap();
+    await expect(page.locator(".settings-phone")).toBeVisible();
+    // Every category is in the list; the page scrolls, nothing clips it
+    // sideways.
+    await expect(page.locator(".settings-phone-row").first()).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+        ),
+      )
+      .toBeLessThanOrEqual(1);
   });
 
-  test("keeps its island and rail clear of the cutout and the far corner", async ({
+  test("keeps its chrome clear of the cutout and the far corner", async ({
     page,
   }) => {
     await openApp(page);
@@ -44,22 +64,14 @@ test.describe("a phone on its side", () => {
       style.setProperty("--native-safe-left", "47px");
       style.setProperty("--native-safe-right", "47px");
     });
-    const island = (await page
-      .locator("section.island")
-      .first()
-      .boundingBox())!;
-    expect(island.x).toBeGreaterThanOrEqual(47);
-    // Its whole width shows, a margin short of the corner's room.
-    expect(island.x + island.width).toBeLessThan(844 - 47);
-    await page.locator(".window-bar-sidebar-toggle").tap();
-    const rail = (await page.locator(".activity-rail").boundingBox())!;
-    expect(rail.x).toBeGreaterThanOrEqual(47);
-    await page.locator(".window-bar-sidebar-toggle").tap();
-    await page.locator(".window-menu-button").tap();
-    await page.getByRole("menuitem", { name: /设置/ }).tap();
-    const settings = (await page.locator(".settings-panel").boundingBox())!;
-    expect(settings.x).toBeGreaterThanOrEqual(47);
-    expect(settings.x + settings.width).toBeLessThanOrEqual(844 - 47);
+    // The window bar keeps between the insets: the root is padded, and the
+    // bar is positioned inside it.
+    const bar = (await page.locator(".window-bar").boundingBox())!;
+    expect(bar.x).toBeGreaterThanOrEqual(47);
+    expect(bar.x + bar.width).toBeLessThanOrEqual(844 - 47);
+    const shell = (await page.locator(".app-shell").boundingBox())!;
+    expect(shell.x).toBeGreaterThanOrEqual(47);
+    expect(shell.x + shell.width).toBeLessThanOrEqual(844 - 47);
   });
 });
 
@@ -92,55 +104,55 @@ function reach(page: Page, selector: string) {
 
 const TOUCH_DEVICES = [
   { name: "a phone", device: PHONE },
-  {
-    name: "a touch tablet",
-    device: { ...TABLET, viewport: { width: 820, height: 1180 } },
-  },
+  { name: "a touch tablet", device: TABLET },
 ];
 
 for (const { name, device } of TOUCH_DEVICES)
   test.describe(`on ${name}`, () => {
     test.use(device);
 
-    test("a command has one way in: the rail, the empty sidebar and ☰ don't repeat another's", async ({
+    test("a command has one way in: no rail, no repeat in ⋯ or the menu", async ({
       page,
     }) => {
-      await openApp(page, { settings: { language: "en" } });
       const phone = name === "a phone";
-      const toggle = page.locator(".window-bar-sidebar-toggle:visible");
-      if (phone) await toggle.tap();
-      const rail = page.getByRole("navigation", { name: "Activity bar" });
-      await expect(rail.getByRole("button", { name: "Files" })).toBeVisible();
-      // A phone's outline is ⋯'s, its Settings ☰'s; a tablet's are the
-      // desktop's.
-      for (const button of ["Outline", "Settings"])
-        await expect
-          .soft(rail.getByRole("button", { name: button }))
-          .toHaveCount(phone ? 0 : 1);
-      if (!phone) await rail.getByRole("button", { name: "Files" }).tap();
-      const sidebar = page.getByRole("complementary", { name: "Sidebar" });
-      await expect
-        .soft(sidebar.locator(".start-page-action"))
-        .toHaveCount(phone ? 0 : 1);
-      // A line saying ☰ opens files; a tablet adds Open Folder's row.
-      await expect
-        .soft(sidebar)
-        .toContainText("Open a document or a folder from the menu.");
-      if (phone) await page.mouse.click(380, 400);
-      await page.getByRole("button", { name: "Menu", exact: true }).tap();
-      await expect(
-        page.getByRole("menuitem", { name: /Settings/ }),
-      ).toHaveCount(1);
-      // A phone's sidebar is the bar's button (a tablet's is under View).
-      if (phone)
-        await expect
-          .soft(
-            page.locator(".context-menu").getByText("Sidebar", { exact: true }),
-          )
-          .toHaveCount(0);
+      await openApp(page, {
+        settings: { language: "en" },
+        ...(phone ? { ready: ".phone-today" } : {}),
+      });
+      // The activity rail went with H0: nothing is permanent but the bar.
+      await expect(page.locator(".activity-rail")).toHaveCount(0);
+      if (phone) {
+        // Today's ⋯ has the two app-wide ways in, each once.
+        await page.getByRole("button", { name: "More actions" }).tap();
+        const sheet = page.locator(".action-sheet");
+        await expect(sheet).toBeVisible();
+        await expect(
+          sheet.getByRole("menuitem", { name: "Plugins" }),
+        ).toHaveCount(1);
+        await expect(
+          sheet.getByRole("menuitem", { name: "Command Palette…" }),
+        ).toHaveCount(1);
+        // Settings is the gear beside it, not a row in the sheet.
+        await expect(
+          sheet.getByRole("menuitem", { name: /Settings/ }),
+        ).toHaveCount(0);
+        await page.getByRole("button", { name: "Cancel" }).tap();
+        await expect(
+          page.getByRole("button", { name: "Settings", exact: true }),
+        ).toHaveCount(1);
+      } else {
+        // The tablet's ways in are the sidebar's Settings and the bar's
+        // Plugins button, each once; no rail repeats them.
+        await expect(
+          page.getByRole("button", { name: "Settings", exact: true }),
+        ).toHaveCount(1);
+        await expect(
+          page.getByRole("button", { name: "Plugins", exact: true }),
+        ).toBeVisible();
+      }
     });
 
-    test("every bar, rail, tree and menu control takes a 44pt tap", async ({
+    test("every bar, list, menu and settings control takes a fingertip tap", async ({
       page,
     }) => {
       await page.addInitScript(() => {
@@ -153,12 +165,13 @@ for (const { name, device } of TOUCH_DEVICES)
           },
         });
       });
-      await openApp(page, { settings: { language: "en" } });
       const phone = name === "a phone";
-      // Each control in first, then measured until the window is placed:
-      // until the bar's controls are measured (a second or two, cold, on a
-      // slow machine) the tabs' row runs under ⋯, the +'s target over it,
-      // and a tablet's sidebar is clipped while it slides in.
+      await openApp(page, {
+        settings: { language: "en" },
+        ...(phone ? { ready: ".phone-today" } : {}),
+      });
+      // 48 written draws about 44 at the phone's 10/11 (the editor bar's
+      // buttons are the contract): a tap's reach is at least 43.
       const big = async (selectors: string[]) => {
         for (const selector of selectors) {
           await expect(
@@ -169,91 +182,30 @@ for (const { name, device } of TOUCH_DEVICES)
               .poll(async () => (await reach(page, selector))[side], {
                 message: `${selector} ${side === "width" ? "wide" : "tall"}`,
               })
-              .toBeGreaterThanOrEqual(44);
+              .toBeGreaterThanOrEqual(43);
         }
       };
-      await big([
-        ".window-menu-button",
-        ".tab-bar-add",
-        // A tablet's x keeps its size: in its 32px tab a fingertip's target
-        // would take the taps meant for the tab.
-        ...(phone
-          ? [
-              ".tab-pill-close",
-              ".window-bar-sidebar-toggle",
-              ".document-menu-button",
-            ]
-          : []),
-      ]);
-      await emit(page, "menu-open-folder");
-      await expect(page.locator(".tree-row").first()).toBeVisible();
-      await big([
-        ".activity-rail-item",
-        // A phone's Settings is ☰'s: no gear.
-        ...(phone ? [] : [".activity-rail-settings"]),
-        ".tree-tool",
-        ".tree-row",
-      ]);
-      // A phone's tools keep to their glyphs, their targets overlapping:
-      // the folder's name has more of the row than they do, and each tool
-      // a tap across the whole step from it to the next.
       if (phone) {
-        const row = await page.evaluate(() => {
-          const width = (el: Element) => el.getBoundingClientRect().width;
-          const tools = [
-            ...document.querySelectorAll(".tree-toolbar .tree-tool"),
-          ];
-          const boxes = tools.map((el) => el.getBoundingClientRect());
-          const across = tools.map((el, i) => {
-            const { left, right, top, height } = boxes[i];
-            const y = top + height / 2;
-            let x = left;
-            while (el.contains(document.elementFromPoint(x - 1, y))) x--;
-            let end = right;
-            while (el.contains(document.elementFromPoint(end, y))) end++;
-            return end - x;
-          });
-          return {
-            name: width(document.querySelector(".tree-root-label")!),
-            tools: boxes.at(-1)!.right - boxes[0].left,
-            step: boxes[1].left - boxes[0].left,
-            across,
-          };
-        });
-        expect.soft(row.name).toBeGreaterThan(row.tools);
-        for (const width of row.across)
-          expect.soft(width).toBeGreaterThanOrEqual(row.step - 1);
-      }
-      // A tablet's Settings list, in the sidebar.
-      if (!phone) {
-        await page.locator(".activity-rail-settings").tap();
-        await expect(page.locator(".tx-list-item").first()).toBeVisible();
-        await big([".tx-list-item"]);
-      }
-      if (phone) await page.mouse.click(380, 400);
-      await page.getByRole("button", { name: "Menu", exact: true }).tap();
-      await big([".context-menu-item"]);
-      // Settings' search box, a tap at its very edge too; a page's pills,
-      // "?" and switches.
-      if (phone) {
-        await page.getByRole("menuitem", { name: /Settings/ }).tap();
-        const search = page.locator(".settings-search");
-        await expect(search).toBeVisible();
-        await big([".settings-search input"]);
-        const box = (await search.boundingBox())!;
-        await page.touchscreen.tap(box.x + box.width / 2, box.y + 1);
-        await expect(search.locator("input")).toBeFocused();
-        await page.getByRole("button", { name: "Extensions" }).tap();
-        const controls = [
-          ".settings-panel .tx-button",
-          ".settings-panel .info-tip-button",
-          ".settings-panel .tx-switch",
-        ];
-        for (const selector of controls)
-          await expect(
-            page.locator(`${selector}:visible`).first(),
-          ).toBeVisible();
-        await big(controls);
+        await big([".ptop-ic", ".pcard"]);
+        await emit(page, "menu-new-file");
+        await page.locator(".pcard").tap();
+        await expect(page.locator(".phone-editor-bar")).toBeVisible();
+        await big([".pe-ic", ".pe-more", ".tab-switcher-button"]);
+        await page.locator(".pe-more").tap();
+        await big([".action-sheet button"]);
+        await page.getByRole("button", { name: "Cancel" }).tap();
+        await page.locator(".pe-ic").first().tap();
+        await page.getByRole("button", { name: "Settings", exact: true }).tap();
+        await expect(page.locator(".settings-phone")).toBeVisible();
+        await big([".settings-phone-row", ".settings-phone-ic"]);
+      } else {
+        await emit(page, "menu-open-folder");
+        await expect(page.locator(".tree-row").first()).toBeVisible();
+        await big([".tree-row"]);
+        // Settings is a page on a tablet too; its rows take a fingertip.
+        await page.getByRole("button", { name: "Settings", exact: true }).tap();
+        await expect(page.locator(".settings-phone")).toBeVisible();
+        await big([".settings-phone-row"]);
       }
     });
   });
@@ -262,37 +214,39 @@ test.describe("a phone's bar buttons", () => {
   test.use(PHONE);
 
   test("keep no grey fill once a tap is over", async ({ page }) => {
-    await openApp(page, { settings: { language: "en" } });
-    const toggle = page.locator(".window-bar-sidebar-toggle:visible");
-    await toggle.tap();
-    await expect(page.locator(".activity-rail")).toBeVisible();
-    // Closed again by the toggle, the last thing tapped.
-    await toggle.tap();
-    await expect(toggle).toHaveAttribute("aria-pressed", "false");
-    await expect(toggle).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await openApp(page, {
+      settings: { language: "en" },
+      ready: ".phone-today",
+    });
+    const more = page.getByRole("button", { name: "More actions" });
+    await more.tap();
+    await expect(page.locator(".action-sheet")).toBeVisible();
+    await page.getByRole("button", { name: "Cancel" }).tap();
+    await expect(more).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
   });
 });
 
 test.describe("a phone's Extensions page", () => {
   test.use(PHONE);
 
-  test("sets each section's title level with its buttons", async ({ page }) => {
-    await openApp(page, { settings: { language: "en" } });
-    await page.getByRole("button", { name: "Menu", exact: true }).tap();
-    await page.getByRole("menuitem", { name: /Settings/ }).tap();
-    await page.getByRole("button", { name: "Extensions" }).tap();
+  test("keeps each section's buttons level", async ({ page }) => {
+    await openApp(page, {
+      settings: { language: "en" },
+      ready: ".phone-today",
+    });
+    await page.getByRole("button", { name: "Settings", exact: true }).tap();
+    await expect(page.locator(".settings-phone")).toBeVisible();
+    await page.getByRole("button", { name: "Extensions", exact: true }).tap();
+    await expect(page.locator(".settings-group-head").first()).toBeVisible();
     await expect(page.locator(".settings-group-actions").first()).toBeVisible();
     // With a catalog, Available's sort and its Hide.
     if (hasPlugin("catvinci.abc"))
       await expect(page.getByRole("button", { name: "Hide" })).toBeVisible();
-    // Each control's centre, from its title's. Controls too wide to fit
-    // beside the title wrap onto a line of their own under it (by design;
-    // how wide depends on the fonts): then level with one another.
+    // A group's controls sit level with one another: beside the title, or
+    // wrapped together under it. (The title's own line box is taller than
+    // the phone's 40px controls, so its centre is not the measure.)
     const off = await page.evaluate(() =>
       [...document.querySelectorAll(".settings-group-head")].flatMap((head) => {
-        const title = head
-          .querySelector(".settings-group-title")!
-          .getBoundingClientRect();
         const controls = [
           ...head.querySelectorAll(
             ".settings-group-actions :is(button, .ui-select)",
@@ -300,11 +254,8 @@ test.describe("a phone's Extensions page", () => {
         ]
           .filter((el) => el.checkVisibility())
           .map((el) => el.getBoundingClientRect());
-        const wrapped =
-          controls.length > 0 &&
-          controls.every((box) => box.top >= title.bottom);
-        const level = wrapped ? controls[0] : title;
-        const middle = level.top + level.height / 2;
+        if (!controls.length) return [];
+        const middle = controls[0].top + controls[0].height / 2;
         return controls.map((box) =>
           Math.round(Math.abs(box.top + box.height / 2 - middle)),
         );
@@ -318,40 +269,49 @@ test.describe("a phone's Extensions page", () => {
 test.describe("a phone's document menu", () => {
   test.use(PHONE);
 
-  test("opens the outline's menu on the outline's key, not the sidebar", async ({
+  test("opens the outline from ⋯, over the page not a sidebar", async ({
+    page,
+  }) => {
+    // The upstream shell opened the outline from its own key in a menu; the
+    // fork's phone has the bar's sheet as the way in (H0), so the test
+    // follows that entry and still guards against a sidebar rail coming
+    // back.
+    await openApp(page, {
+      settings: { language: "en" },
+      ready: ".phone-today",
+    });
+    await emit(page, "menu-new-file");
+    await page.locator(".pcard").tap();
+    await expect(page.locator(".phone-editor-bar")).toBeVisible();
+    await page.waitForSelector('[data-active-tab="true"] .ProseMirror');
+    await pasteMarkdown(page, "# One\n\n## Two\n");
+    await page.locator(".pe-more").tap();
+    const sheet = page.locator(".action-sheet");
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole("menuitem", { name: "Outline" }).tap();
+    await expect(page.getByRole("menu", { name: "Outline" })).toBeVisible();
+    await expect(page.locator(".activity-rail")).toHaveCount(0);
+  });
+
+  test("is the app's sheet under ⋯, its rows a fingertip tall, the outline too", async ({
     page,
   }) => {
     await openApp(page, {
-      settings: { language: "en", shortcuts: { showOutline: "mod+shift+u" } },
+      settings: { language: "en" },
+      ready: ".phone-today",
     });
+    await emit(page, "menu-new-file");
+    await page.locator(".pcard").tap();
+    await expect(page.locator(".phone-editor-bar")).toBeVisible();
+    await page.waitForSelector('[data-active-tab="true"] .ProseMirror');
     await pasteMarkdown(page, "# One\n\n## Two\n");
-    await page.keyboard.press("ControlOrMeta+Shift+u");
+    await page.locator(".pe-more").tap();
+    const sheet = page.locator(".action-sheet");
+    await expect(sheet).toBeVisible();
+    for (const row of await sheet.locator("button").all())
+      expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(43);
+    await sheet.getByRole("menuitem", { name: "Outline" }).tap();
     await expect(page.getByRole("menu", { name: "Outline" })).toBeVisible();
-    await expect(page.locator(".activity-rail")).toBeHidden();
-  });
-
-  test("is the desktop's menu under ⋯, its rows a fingertip tall, the outline too", async ({
-    page,
-  }) => {
-    await openApp(page, { settings: { language: "en" } });
-    const more = page.locator(".document-menu-button");
-    await more.tap();
-    const menu = page.locator(".context-menu");
-    await expect(menu).toBeVisible();
-    await expect(page.locator(".sheet-scrim")).toHaveCount(0);
-    const button = (await more.boundingBox())!;
-    const box = (await menu.boundingBox())!;
-    // Hung from ⋯: under it, its right edge at the button's.
-    expect(box.y).toBeGreaterThanOrEqual(button.y + button.height);
-    expect(
-      Math.abs(box.x + box.width - (button.x + button.width)),
-    ).toBeLessThan(12);
-    for (const row of await menu.locator(".context-menu-item").all())
-      expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-    await page.getByRole("menuitem", { name: "Outline" }).tap();
-    await expect(page.getByRole("menu", { name: "Outline" })).toHaveClass(
-      /context-menu/,
-    );
   });
 });
 
@@ -359,16 +319,26 @@ test.describe("a phone's menu from a page over the window", () => {
   test.use(PHONE);
 
   test("shows over Settings, taking the tap", async ({ page }) => {
-    await openApp(page, { settings: { language: "en" } });
-    await page.getByRole("button", { name: "Menu", exact: true }).tap();
-    await page.getByRole("menuitem", { name: /Settings/ }).tap();
-    await page.getByRole("button", { name: "General" }).tap();
-    await page.locator(".ui-select:visible").first().tap();
-    const menu = page.locator(".context-menu");
+    await openApp(page, {
+      settings: { language: "en" },
+      ready: ".phone-today",
+    });
+    await page.getByRole("button", { name: "Settings", exact: true }).tap();
+    await expect(page.locator(".settings-phone")).toBeVisible();
+    await page.getByRole("button", { name: "General", exact: true }).tap();
+    const select = page.locator(".settings-pill:visible").first();
+    await expect(select).toBeVisible();
+    await select.tap();
+    const menu = page
+      .locator('.context-menu, .action-sheet, [role="listbox"]')
+      .first();
     await expect(menu).toBeVisible();
     const box = (await menu.boundingBox())!;
     const onTop = await page.evaluate(
-      ([x, y]) => !!document.elementFromPoint(x, y)?.closest(".context-menu"),
+      ([x, y]) =>
+        !!document
+          .elementFromPoint(x, y)
+          ?.closest('.context-menu, .action-sheet, [role="listbox"]'),
       [box.x + box.width / 2, box.y + box.height / 2],
     );
     expect(onTop).toBe(true);
@@ -379,13 +349,19 @@ test.describe("a phone's unsaved-changes prompt", () => {
   test.use(PHONE);
 
   test("is the app's alert, its answers a fingertip tall", async ({ page }) => {
-    await openApp(page, { settings: { language: "en" } });
-    await page.locator(".ProseMirror:visible").tap();
-    await page.keyboard.type("Hello");
-    await page.locator(".tab-pill-close").first().tap();
+    await openApp(page, {
+      settings: { language: "en" },
+      ready: ".phone-today",
+    });
+    await emit(page, "menu-new-file");
+    await page.locator(".pcard").tap();
+    await expect(page.locator(".phone-editor-bar")).toBeVisible();
+    await page.waitForSelector('[data-active-tab="true"] .ProseMirror');
+    await pasteMarkdown(page, "Hello");
+    await page.locator(".tab-switcher-button").tap();
+    await page.locator(".tab-switcher-close").first().tap();
     const prompt = page.locator(".close-prompt.app-dialog");
     await expect(prompt).toBeVisible();
-    await expect(page.locator(".sheet-scrim")).toHaveCount(0);
     for (const answer of await prompt.locator("button").all())
       expect((await answer.boundingBox())!.height).toBeGreaterThanOrEqual(43);
   });
