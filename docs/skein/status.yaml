@@ -44,48 +44,6 @@ workstreams:
     focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
     spec: specs/文档体系-v3.md
 tasks:
-  - id: D0.5
-    title: 理论小样本验证
-    workstream: D1
-    state: todo
-    acceptance: 4 周 10 个真实交付物；封装 ≥3 条资产并真实调用；复用率 ≥30%；≥3 条反例。
-    spec: specs/Textus-改造方案.md#8-实施计划
-    estimate: 4 周日历
-  - id: T1
-    title: 主题分层与 Skein 皮肤阶段 1
-    workstream: T1
-    state: todo
-    acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
-    spec: specs/Textus-主题策略.md
-    estimate: 3–5 天
-  - id: T2
-    title: 内置并完整适配上游皮肤主题（Paper/Forest 起）
-    workstream: T1
-    state: todo
-    acceptance: 至少 2 个上游主题成为 Skein 皮肤主题（显式 --ui-*/--doc-*，浅/深两套）；桌面/手机/平板逐屏过；主题选择器分组标出“Skein 皮肤”；默认仍是 Slate。
-    spec: specs/Textus-主题策略.md
-    estimate: 5–8 天
-    brief:
-      problem: 用户 2026-11-22 定了“精选几个上游主题内置并完整适配”，但到现在只有阶段 0 文档：界面锁 Slate，上游 Paper/Forest/Prism 只当文档主题，整套界面还没有第二个可选皮肤。
-      expected: 从 Paper/Forest 起（Prism 是帧主题，成本另估），把选中的主题做成完整皮肤主题：皮肤与正文一起换，浅/深两套，桌面/手机/平板一致；选择器能看出“Skein 皮肤”与“仅正文”。
-      standard: 排在 T1 分层之后；只用 token，不在组件里写死颜色；许可证干净的才收；每个皮肤补浅/深截图与对比度抽查；沿用裁决 37。
-      not: 不做自有主题包格式/主题编辑器；不给全部上游/社区主题逐个适配；不换默认 Slate。
-      scope: 主题模块与内置主题表、设置›外观的主题选择器、i18n、ui-contracts/e2e 选择器分组、截图证据。
-      evidence: 每个皮肤浅/深 × 桌面/手机截图；切换时界面不闪、--ui-* 按皮肤变化；对比度抽查记录。
-  - id: UI-p3
-    title: 完整属性表呈现
-    workstream: UI
-    state: todo
-    acceptance: YAML 画成键值行：增删改、类型推断、嵌套；源码模式/导出/往返一致；桌面与手机同族。
-    spec: specs/界面契约.md
-    estimate: 3–5 天
-    brief:
-      problem: 折叠只解决噪音；成熟编辑器还能查看与编辑属性。
-      expected: 属性表格可查看、增删改，底层仍是同一份 YAML。
-      standard: 先写裁决再动；复用现有 token；round-trip 测试。
-      not: 不改 front matter 存储格式；不做自定义 schema 校验。
-      scope: 编辑器 NodeView、界面契约、i18n、测试。
-      evidence: 逐屏截图 + 单测 + 导出往返。
   - id: S7
     title: 三种同步方式的互斥规则与切换测试
     workstream: S
@@ -101,6 +59,42 @@ tasks:
       not: 不重复实现 S13/S14 的多后端状态与首次对账；不要求切换清 base；不做多活动后端并行写；不改协议 v1。
       scope: specs 的规则与矩阵、src-tauri/src/sync 的绑定/切换逻辑、同步页切换入口、store 单测与桌面/手机 e2e。
       evidence: 3×3 场景矩阵结果、切换/回切/复制库 e2e、store 单测与规则评审记录。
+  - id: PH16
+    title: 合并 1.4.7 带入的 e2e 与 fork 外壳对不齐（12 红）
+    workstream: UI
+    kind: task
+    state: doing
+    acceptance: e2e/phone-touch.spec.ts 在 chromium 下 0 失败；同样的选择器/断点规则写进测试注释或复用 helpers；ui-contracts/phone-shell/PH13/PH14 的断言不动；若测试暴露真 bug，单独记并先说明。
+    spec: specs/Textus-手机端元素一致性方案.md
+    estimate: 0.5–1 天
+    brief:
+      problem: 1.4.7 合并带入的 e2e/phone-touch.spec.ts（12 条）按上游手机壳假定写：844 宽期望 data-window-chrome=mobile、有 activity rail、启动即有文档；fork 的 H0 与 600/840 断点不同，启动页是今天，插件入口在右页边 catalog；在 HEAD 上同样 12 条红，与 PH13/PH14 无关。
+      expected: 12 条按 fork 的外壳与断点改到能真实检验 H0 手机行为（今天/文件/文档、⋯ sheet、触控尺寸、设置、AI 返回），保留每条测试的意图；不为了过测改产品。
+      standard: e2e/phone-touch.spec.ts 在 chromium 下 0 失败；ui-contracts/phone-shell/PH13/PH14 的断言不动；若测试暴露真 bug，单独记并先向用户说明。
+      not: 不改产品行为迁就旧测试；不碰 plugin-touch 的 3 条样例仓问题；不动 ui-contracts 既有断言；不顺手做 PH15/PH17。
+      scope: e2e/phone-touch.spec.ts（及必要的 e2e helpers/夹具）；手机/平板/横屏；桌面无关。
+      evidence: npx playwright test e2e/phone-touch.spec.ts --project=chromium --workers=1（0 失败）；逐条对照裁决 34/67 与 PH13/PH14；记录每条改的是哪条期望、依据是什么。
+  - id: D0.5
+    title: 理论小样本验证
+    workstream: D1
+    state: todo
+    acceptance: 4 周 10 个真实交付物；封装 ≥3 条资产并真实调用；复用率 ≥30%；≥3 条反例。
+    spec: specs/Textus-改造方案.md#8-实施计划
+    estimate: 4 周日历
+  - id: UI-p3
+    title: 完整属性表呈现
+    workstream: UI
+    state: todo
+    acceptance: YAML 画成键值行：增删改、类型推断、嵌套；源码模式/导出/往返一致；桌面与手机同族。
+    spec: specs/界面契约.md
+    estimate: 3–5 天
+    brief:
+      problem: 折叠只解决噪音；成熟编辑器还能查看与编辑属性。
+      expected: 属性表格可查看、增删改，底层仍是同一份 YAML。
+      standard: 先写裁决再动；复用现有 token；round-trip 测试。
+      not: 不改 front matter 存储格式；不做自定义 schema 校验。
+      scope: 编辑器 NodeView、界面契约、i18n、测试。
+      evidence: 逐屏截图 + 单测 + 导出往返。
   - id: S13
     title: 多后端独立同步状态
     workstream: S
@@ -146,6 +140,27 @@ tasks:
       not: 不重写同步页；不做连接管理二级页；不做一库多入口/迁移；不改协议/引擎。
       scope: src/settings/pages SyncPage/SyncSwitchView/SyncConnectionSummary/状态行、i18n 十语言、前端测试与截图。
       evidence: 桌面 1280/800 与手机 360 截图；active 后端/各后端上次结果单测；首次切换确认与预览 e2e；十语言通过。
+  - id: T1
+    title: 主题分层与 Skein 皮肤阶段 1
+    workstream: T1
+    state: todo
+    acceptance: 导入主题不再派生 / 覆盖 --ui-*；保留 --doc-*；Prism 降级或做完整皮肤。
+    spec: specs/Textus-主题策略.md
+    estimate: 3–5 天
+  - id: T2
+    title: 内置并完整适配上游皮肤主题（Paper/Forest 起）
+    workstream: T1
+    state: todo
+    acceptance: 至少 2 个上游主题成为 Skein 皮肤主题（显式 --ui-*/--doc-*，浅/深两套）；桌面/手机/平板逐屏过；主题选择器分组标出“Skein 皮肤”；默认仍是 Slate。
+    spec: specs/Textus-主题策略.md
+    estimate: 5–8 天
+    brief:
+      problem: 用户 2026-11-22 定了“精选几个上游主题内置并完整适配”，但到现在只有阶段 0 文档：界面锁 Slate，上游 Paper/Forest/Prism 只当文档主题，整套界面还没有第二个可选皮肤。
+      expected: 从 Paper/Forest 起（Prism 是帧主题，成本另估），把选中的主题做成完整皮肤主题：皮肤与正文一起换，浅/深两套，桌面/手机/平板一致；选择器能看出“Skein 皮肤”与“仅正文”。
+      standard: 排在 T1 分层之后；只用 token，不在组件里写死颜色；许可证干净的才收；每个皮肤补浅/深截图与对比度抽查；沿用裁决 37。
+      not: 不做自有主题包格式/主题编辑器；不给全部上游/社区主题逐个适配；不换默认 Slate。
+      scope: 主题模块与内置主题表、设置›外观的主题选择器、i18n、ui-contracts/e2e 选择器分组、截图证据。
+      evidence: 每个皮肤浅/深 × 桌面/手机截图；切换时界面不闪、--ui-* 按皮肤变化；对比度抽查记录。
 later:
   - id: S5
     title: 同步硬化
@@ -182,6 +197,26 @@ later:
     note: 贴 URL → inbox/N-*.md；只做公开页，不碰登录态。
     spec: proposals/Textus-剪藏功能方案.md
     estimate: 桌面 1 周 + 手机 3–5 天
+  - id: PH18
+    title: 编辑器有序/无序列表的缩进与渲染（手机优先）
+    note: 2026-11-26 用户在手机上看到列表（有序/无序）的缩进与渲染问题；下载上游同版本复现，同样存在（不是 fork 独有）。先对照上游最新版/issue 是否已修，再按 fork 的手机布局与排版 tokens 修；覆盖富文本与源码两种视图、嵌套层级、导出往返；手机真机或触屏 e2e 取过程中帧，附上游与 fork 的对照截图。
+    spec: specs/界面契约.md
+    estimate: 2–4 天
+  - id: PH19
+    title: 文件树图标取舍与第三层缩进
+    note: 2026-11-26 用户观察：① 树里的文件图标加上后影响读标题，问到底要不要保留（要就会连到 PH17 的文件图标主题）；② 第三层（文件）相对第二层（文件夹）缩进过多，第一→第二层（都是文件夹）的缩进正常。先量当前缩进步进与图标占位（手机/平板/桌面），给出“去图标/图标弱化”“缩进按层级统一、文件不再额外进一级”的对照截图与建议，再改；同族三端一致。
+    spec: specs/界面契约.md
+    estimate: 1–2 天
+  - id: PH17
+    title: 内置文件图标主题（候选）
+    note: 文件图标下拉目前只有默认；插件已支持 contributes.fileIconThemes，官方 60 个插件暂无主题包。候选：自绘 Skein 一套，或引入 MIT 图标集（Seti/Material 类）做内置插件；先立裁决再动。与 PH19 同源：PH19 若定去掉树里的图标，本项作废。
+    spec: specs/界面契约.md
+    estimate: 按件估算
+  - id: PH15
+    title: 手机设置-扩展页的分段 tab 是否加左右横滑
+    note: 扩展页是设置内页（themes/plugins/skills/mcp/create，手机更少），分段下面是各自独立的长列表与懒加载面板；确实用的是 Segmented（settings/pages/ExtensionsPage.tsx:61）。要做就复用 PH13 的 Pager 壳（固定分段、只滑内容、滑块跟手），不顺手塞进 PH14；先确认产品是否需要。
+    spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
+    estimate: —
 waiting:
   - 第三方 WebDAV/境外 Provider：坚果云 2026-11-24 用户裁定不推荐（限流之外有丢文件反馈）；Nextcloud/境外服务商无账号，归 U25/S3t 找外部测试者；不阻塞 fork。
   - 移动端加密：S3 v1 用明文仓库；内置 / 插件真机加密同步未做。
@@ -221,31 +256,6 @@ questions:
     trigger: 真实教程 / 多平台对比需求
     when: D0.5 收尾复盘时定；无真实需求即关闭
     spec: proposals/Textus-文档便携与呈现扩展方案.md
-  - id: PH15
-    title: 手机设置-扩展页的分段 tab 是否加左右横滑
-    note: 扩展页是设置内页（themes/plugins/skills/mcp/create，手机更少），分段下面是各自独立的长列表与懒加载面板；确实用的是 Segmented（settings/pages/ExtensionsPage.tsx:61）。要做就复用 PH13 的 Pager 壳（固定分段、只滑内容、滑块跟手），不顺手塞进 PH14；先确认产品是否需要。
-    spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
-    estimate: —
-  - id: PH16
-    title: 合并 1.4.7 带入的 e2e 与 fork 外壳对不齐（12 红）
-    note: phone-touch.spec（上游 1.4.7 新增）按上游假定写：移动端一律 phone 壳（844 宽也期望 data-window-chrome=mobile）、有 Activity rail、启动即有文档；fork 的 H0 与断点（600/840）不同，启动页是今天，另有 fork-shell 的插件入口已从 QuickPick 改成右页边 catalog（测试仍找 listbox）。在 HEAD（stash 掉 PH14 改动）上同样红，与 PH14 无关。逐条按 fork 裁定：改测试（document:true / 断点期望）或补外壳，不与功能改动混在一起。
-    spec: archive/2026-11-25-upstream-v1.4.7.md
-    estimate: 0.5–1 天
-  - id: PH17
-    title: 内置文件图标主题（候选）
-    note: 文件图标下拉目前只有默认；插件已支持 contributes.fileIconThemes，官方 60 个插件暂无主题包。候选：自绘 Skein 一套，或引入 MIT 图标集（Seti/Material 类）做内置插件；先立裁决再动。与 PH19 同源：PH19 若定去掉树里的图标，本项作废。
-    spec: decisions/README.md
-    estimate: 按件估算
-  - id: PH18
-    title: 编辑器有序/无序列表的缩进与渲染（手机优先）
-    note: 2026-11-26 用户在手机上看到列表（有序/无序）的缩进与渲染问题；下载上游同版本复现，同样存在（不是 fork 独有）。先对照上游最新版/issue 是否已修，再按 fork 的手机布局与排版 tokens 修；覆盖富文本与源码两种视图、嵌套层级、导出往返；手机真机或触屏 e2e 取过程中帧，附上游与 fork 的对照截图。
-    spec: specs/界面契约.md
-    estimate: 2–4 天
-  - id: PH19
-    title: 文件树图标取舍与第三层缩进
-    note: 2026-11-26 用户观察：① 树里的文件图标加上后影响读标题，问到底要不要保留（要就会连到 PH17 的文件图标主题）；② 第三层（文件）相对第二层（文件夹）缩进过多，第一→第二层（都是文件夹）的缩进正常。先量当前缩进步进与图标占位（手机/平板/桌面），给出“去图标/图标弱化”“缩进按层级统一、文件不再额外进一级”的对照截图与建议，再改；同族三端一致。
-    spec: specs/界面契约.md
-    estimate: 1–2 天
   - id: U20
     text: 每文档 Base64 图片存储
     default: 不做默认存储；先走 ED3；若做则默认关、可提取、AI / 搜索跳过
