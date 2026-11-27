@@ -40,9 +40,11 @@ import { windowIsDark } from "../engine/tokens/appearance";
 import { usePluginMenuSync } from "../plugins/contributions/usePluginMenu";
 import { placeOnArrival, tabInUse } from "../engine/layout/store";
 import { besideOrSay, openBesideOrSay } from "./menu/split-here";
+import { pageInFrontNow } from "../phone/phone-surface-state";
 import {
   INSERT_BLOCK_EVENT,
   SHOW_FOLDER_EVENT,
+  SHOW_PHONE_DOC_EVENT,
   sendAppEvent,
 } from "../utils/events";
 import { useSettings } from "../prefs/SettingsContext";
@@ -333,15 +335,31 @@ export function usePluginWindow({
     });
     setWindowAccess({
       rootPath: () => rootRef.current,
-      openFile: (path, { place, asDocument, where, preview }) =>
+      openFile: (path, { place, asDocument, where, preview }) => {
         void (preview ? lookRef : openRef).current(path, {
           ...(place ? { place } : {}),
           ...(asDocument ? { asDocument } : {}),
-          ...(where ? { where, byPlugin: true } : {}),
+          ...(where ? { where } : {}),
+          byPlugin: true,
           ...(preview ? { preview } : {}),
-        }),
-      openUntitled: (content, title, where) =>
-        addTab({ content, savedContent: "", draftTitle: title }, where),
+        });
+        // A phone shows what was asked for, even when the tab was already
+        // the active one behind Today.
+        sendAppEvent(SHOW_PHONE_DOC_EVENT);
+      },
+      openUntitled: (content, title, where) => {
+        const from = pageInFrontNow() ? tabInUse() : null;
+        addTab(
+          {
+            content,
+            savedContent: "",
+            draftTitle: title,
+            ...(from ? { openedFrom: from } : {}),
+          },
+          where,
+        );
+        sendAppEvent(SHOW_PHONE_DOC_EVENT);
+      },
       openGuide: (content, title) => {
         const open = tabsRef.current.find(
           (tab) => !tab.path && tab.content === content,
@@ -350,6 +368,9 @@ export function usePluginWindow({
         else addTab({ content, savedContent: content, draftTitle: title });
       },
       openPluginTab: (view: PluginTabView, where?: Where) => {
+        // The page a plugin page came from: the phone's Back goes there
+        // first (ruling 68). Today leaves its tab behind, so nothing there.
+        const from = pageInFrontNow() ? tabInUse() : null;
         // A view already open in a tab comes to the front.
         const open = tabsRef.current.find(
           (tab) =>
@@ -358,10 +379,19 @@ export function usePluginWindow({
             tab.view.resource === view.resource,
         );
         if (open) {
-          const from = tabInUse();
+          if (from && from !== open.id)
+            setTabs((prev) =>
+              prev.map((tab) =>
+                tab.id === open.id ? { ...tab, openedFrom: from } : tab,
+              ),
+            );
           setActiveTabId(open.id);
-          if (where === "beside") openBesideOrSay(open.id, from, false);
-        } else addTab({ view }, where);
+          if (where === "beside")
+            openBesideOrSay(open.id, from ?? tabInUse(), false);
+        } else addTab({ view, ...(from ? { openedFrom: from } : {}) }, where);
+        // The phone shows the page in front, even when its tab was already
+        // active behind Today (the active id does not change then).
+        sendAppEvent(SHOW_PHONE_DOC_EVENT);
       },
       tabs: () => tabsRef.current.map(info),
       activeTab: () => {

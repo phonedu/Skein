@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePhoneLayout } from "../engine/controls/usePhoneLayout";
 import { afterStartupRestore } from "../document/reload-tabs";
 import { takeWindowSession } from "../document/launch-window";
+import { setPhoneSurfaceNow } from "../phone/phone-surface-state";
 
 /** The phone's three surfaces: Today, the library, and the document (or a
  *  plugin page) in front. A desktop has none of them - its surfaces are
@@ -14,7 +15,13 @@ export function usePhoneSurfaces(
   activePath?: string | null,
 ) {
   const phone = usePhoneLayout();
-  const [surface, setSurface] = useState<PhoneSurface>("today");
+  const [surface, setSurfaceState] = useState<PhoneSurface>("today");
+  // The same change outside React: a page opened from Today has no page to
+  // come back to, one opened from a page in front does.
+  const setSurface = useCallback((next: PhoneSurface) => {
+    setPhoneSurfaceNow(next);
+    setSurfaceState(next);
+  }, []);
   // The launch brings its last documents back in front. On a phone that is
   // not a page the user opened: the app still starts on Today, with them
   // behind it. Only what comes to the front once the launch's restore has
@@ -58,14 +65,14 @@ export function usePhoneSurfaces(
     }
     lastPath.current = activePath ?? null;
     lastView.current = activeView;
-  }, [phone, activeView, activePath, launched, launchFile]);
+  }, [phone, activeView, activePath, launched, launchFile, setSurface]);
   useEffect(() => {
     // Handed files arrive before the restore has finished learning what
     // they are: once known, the page the launch hid shows after all.
     if (!launchFile || !hidden.current) return;
     hidden.current = false;
     setSurface("doc");
-  }, [launchFile]);
+  }, [launchFile, setSurface]);
   return {
     phone,
     surface,

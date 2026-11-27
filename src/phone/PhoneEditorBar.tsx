@@ -1,8 +1,9 @@
 // The document page's top row on the phone: back to the library home, the
-// document's name, Textus AI, and ⋯ for the document's action sheet. The
-// phone has no tab strip - the library is the navigation - so what the
-// desktop puts in a right-click menu lives in this sheet.
-import { useMemo, useState, type ReactNode } from "react";
+// document's name, Textus AI, and ⋯ for the document's action sheet (a
+// plugin page in front gets its own). The phone has no tab strip - the
+// library is the navigation - so what the desktop puts in a right-click
+// menu lives in this sheet.
+import { useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { Strings } from "../i18n/strings";
 import { TextusAiButton } from "../ai/TextusAiSwitch";
 import {
@@ -12,6 +13,11 @@ import {
 import { Presence } from "../engine/motion/usePresence";
 import { showNotice } from "../engine/controls/notices";
 import { BackChevronIcon, PluginsTabIcon } from "../engine/controls/icons";
+import {
+  contextItemsVersion,
+  contributedContextItems,
+  subscribeContextItems,
+} from "../registry/context-menu-items";
 import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
 import {
   CommandPaletteActionIcon,
@@ -41,6 +47,7 @@ export function PhoneEditorBar({
   agentShortcut,
   onBack,
   onToggleAgent,
+  pluginView,
   tabSwitcher,
 }: {
   t: Strings;
@@ -60,11 +67,27 @@ export function PhoneEditorBar({
   agentShortcut: string;
   onBack: () => void;
   onToggleAgent: () => void;
+  /** The active tab's plugin page, when it is one: its actions replace the
+   *  document's (a document's outline and find mean nothing on a page). */
+  pluginView?: { plugin: string; view: string } | null;
   /** The phone's tabs, behind the document's name. */
   tabSwitcher?: ReactNode;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [outlineOpen, setOutlineOpen] = useState(false);
+  // A plugin's own buttons over its page ("view/title"), as the desktop
+  // draws them beside the view.
+  useSyncExternalStore(subscribeContextItems, contextItemsVersion);
+  const viewActions = useMemo(
+    () =>
+      pluginView
+        ? contributedContextItems("view/title", {
+            path: null,
+            view: pluginView.view,
+          }).map((item) => ({ label: item.label, onSelect: item.onSelect }))
+        : [],
+    [pluginView],
+  );
 
   // The outline is read when it is opened, not on every keystroke.
   const outline = useMemo(
@@ -87,56 +110,68 @@ export function PhoneEditorBar({
     setOutlineOpen(true);
   };
 
-  const items: (ActionSheetItem | "separator")[] = [
-    {
-      label: t.phoneDocActionOutline,
-      Icon: OutlineActionIcon,
-      onSelect: openOutline,
+  const paletteItem: ActionSheetItem = {
+    label: t.menuCommandPalette,
+    Icon: CommandPaletteActionIcon,
+    onSelect: () => {
+      setSheetOpen(false);
+      void import("../app/command-palette-entry").then((m) =>
+        m.openCommandPalette(),
+      );
     },
-    {
-      label: t.phoneDocActionFind,
-      Icon: FindActionIcon,
-      onSelect: () =>
-        window.dispatchEvent(new CustomEvent(TOGGLE_FIND_REPLACE_EVENT)),
+  };
+  const pluginsItem: ActionSheetItem = {
+    label: t.pluginsTitle,
+    Icon: PluginsTabIcon,
+    onSelect: () => {
+      setSheetOpen(false);
+      void import("../plugins/views/plugin-launcher").then((m) =>
+        m.openPluginLauncher(),
+      );
     },
-    {
-      label: t.menuToggleSourceMode,
-      Icon: SourceActionIcon,
-      onSelect: () => emitToThisWindow("menu-toggle-source-mode"),
-    },
-    // App-wide actions, with this document in front: the palette's
-    // document commands (export, modes) and a plugin that works on the
-    // document had no way in from this page before.
-    {
-      label: t.menuCommandPalette,
-      Icon: CommandPaletteActionIcon,
-      onSelect: () => {
-        setSheetOpen(false);
-        void import("../app/command-palette-entry").then((m) =>
-          m.openCommandPalette(),
-        );
-      },
-    },
-    {
-      label: t.pluginsTitle,
-      Icon: PluginsTabIcon,
-      onSelect: () => {
-        setSheetOpen(false);
-        void import("../plugins/views/plugin-launcher").then((m) =>
-          m.openPluginLauncher(),
-        );
-      },
-    },
-    {
-      label: t.phoneDocActionShare,
-      Icon: ShareActionIcon,
-      // A document that has not been saved has nothing to hand on.
-      disabled: !path,
-      onSelect: () => {
-        if (path) void nativeFiles.share(path).catch(() => {});
-      },
-    },
-  ];
+  };
+  // A plugin page keeps its own life: its view's actions, the palette and
+  // the launcher; the document's outline, find, source and share mean
+  // nothing here.
+  const items: (ActionSheetItem | "separator")[] = pluginView
+    ? [
+        ...viewActions,
+        ...(viewActions.length ? (["separator"] as const) : []),
+        paletteItem,
+        pluginsItem,
+      ]
+    : [
+        {
+          label: t.phoneDocActionOutline,
+          Icon: OutlineActionIcon,
+          onSelect: openOutline,
+        },
+        {
+          label: t.phoneDocActionFind,
+          Icon: FindActionIcon,
+          onSelect: () =>
+            window.dispatchEvent(new CustomEvent(TOGGLE_FIND_REPLACE_EVENT)),
+        },
+        {
+          label: t.menuToggleSourceMode,
+          Icon: SourceActionIcon,
+          onSelect: () => emitToThisWindow("menu-toggle-source-mode"),
+        },
+        // App-wide actions, with this document in front: the palette's
+        // document commands (export, modes) and a plugin that works on the
+        // document had no way in from this page before.
+        paletteItem,
+        pluginsItem,
+        {
+          label: t.phoneDocActionShare,
+          Icon: ShareActionIcon,
+          // A document that has not been saved has nothing to hand on.
+          disabled: !path,
+          onSelect: () => {
+            if (path) void nativeFiles.share(path).catch(() => {});
+          },
+        },
+      ];
 
   const outlineItems: (ActionSheetItem | "separator")[] = outline.map(
     ({ heading, index }) => ({

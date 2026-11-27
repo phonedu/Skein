@@ -28,6 +28,7 @@ import { isDocumentName } from "../files/document-name";
 import { documentPathOf } from "../files/folder-documents";
 import { placeOnArrival } from "../engine/layout/store";
 import { besideOrSay, openBesideOrSay } from "./menu/split-here";
+import { pageInFrontNow } from "../phone/phone-surface-state";
 import type { Strings } from "../i18n/strings";
 import type { TabState } from "./tabs/useTabState";
 import { splitForDrop } from "./islands/split-drop";
@@ -254,6 +255,13 @@ export function useFileOpening(opts: {
           (!open.asDocument && tab.view?.resource === path),
       );
       if (existing) {
+        // A plugin opened it: the page it was opened from is the way back.
+        if (open.byPlugin && from && existing.id !== from && pageInFrontNow())
+          setTabs((prev) =>
+            prev.map((tab) =>
+              tab.id === existing.id ? { ...tab, openedFrom: from } : tab,
+            ),
+          );
         // Opened on purpose (not a look): the preview tab stays.
         if (existing.preview && !open.preview)
           setTabs((prev) =>
@@ -297,6 +305,10 @@ export function useFileOpening(opts: {
         ...(doc.view ? {} : lastViewMode()),
         ...doc,
         ...(open.preview ? { preview: true } : {}),
+        // A plugin opened it: the page it was opened from is the way back.
+        ...(open.byPlugin && from && pageInFrontNow()
+          ? { openedFrom: from }
+          : {}),
       };
       const jump =
         newTab.path && openingJump(open, path, newTab.diskMtime, restoreCarets);

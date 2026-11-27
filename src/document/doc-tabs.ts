@@ -63,6 +63,10 @@ export interface DocTab {
   /** A plugin's view or custom editor shown instead of a document; a custom
    *  editor's file is its `resource`, which the plugin saves itself. */
   view?: PluginTabView;
+  /** The tab it was opened from (a card's detail from the asset list, a
+   *  card opened from its detail): the phone's Back goes there first
+   *  (ruling 68). Kept for the session, not in the saved tabs. */
+  openedFrom?: string;
   /** The start page, shown until something opens in this tab. */
   start?: boolean;
   /** Opened by a single click, to look: the next such click shows its file

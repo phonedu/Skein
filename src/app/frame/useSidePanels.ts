@@ -20,6 +20,11 @@ import { useNarrowIslands } from "./useNarrowIslands";
 import { useSidebarWidth } from "./sidebar-width";
 import { useLayoutMode } from "../../engine/controls/useLayoutMode";
 import { useRightPanel } from "./useRightPanel";
+import { addedSidebarTabs } from "../../registry/sidebar-tabs";
+import { currentStrings } from "../../i18n/current";
+
+/** The view column's own tabs. */
+const OWN_SIDEBAR_TABS = ["tree", "outline", "search"];
 
 /** A sidebar tab's id. */
 export type SidebarTabId = string;
@@ -179,24 +184,66 @@ export function useSidePanels(aiOn: boolean, activeTabId: string) {
       340 <
       480;
 
-  // A menu's or a shortcut's way into the view column: a Files tab opens
-  // the Files view at it; anything else (a plugin's old sidebar request)
-  // lands on Files, where the plugin pages no longer live.
+  // A plugin's own list page, opened where the surface has room for it:
+  // the edge column on a desktop or tablet, the page in front on a phone
+  // or fold. False when `id` names no plugin tab.
+  const openPluginSidebarTab = useCallback((id: SidebarTabId) => {
+    if (OWN_SIDEBAR_TABS.includes(id)) return false;
+    const added = addedSidebarTabs().find((tab) => tab.id === id);
+    if (!added?.plugin) return false;
+    const plugin = added.plugin;
+    const page = added.id;
+    const kind = added.type === "webview" ? "view" : "list";
+    const title = added.label(currentStrings());
+    // The page's opener lives with the plugin pages, off the startup
+    // path: a click that reaches here has already begun.
+    void import("../../plugins/views/plugin-launcher").then((m) =>
+      m.openPluginPage(plugin, page, kind, title),
+    );
+    return true;
+  }, []);
+
+  // What a menu item and a plugin's layout.showSidebarTab ask for: the
+  // tab, shown. Unlike the shortcut's way it never puts the column away.
+  const openSidebarTab = useCallback(
+    (id: SidebarTabId) => {
+      if (openPluginSidebarTab(id)) return;
+      setSidebarView("files");
+      setPanelMode(OWN_SIDEBAR_TABS.includes(id) ? id : "tree");
+      setOpen(true);
+    },
+    [openPluginSidebarTab, setSidebarView, setPanelMode, setOpen],
+  );
+
+  // A shortcut's way into the view column: a Files tab opens the Files
+  // view at it, or puts the column away when it already shows it. A
+  // plugin's list tab is a page of its own and always opens.
   const showSidebarTab = useCallback(
     (id: SidebarTabId) => {
-      const fileIds = ["tree", "outline", "search"];
-      const target = fileIds.includes(id) ? id : "tree";
+      if (openPluginSidebarTab(id)) return;
+      const target = OWN_SIDEBAR_TABS.includes(id) ? id : "tree";
       const shown = open && sidebarView === "files" && panelMode === target;
-      setOpen(!shown);
-      if (!shown) {
-        setSidebarView("files");
-        setPanelMode(target);
+      if (shown) {
+        setOpen(false);
+        return;
       }
+      setSidebarView("files");
+      setPanelMode(target);
+      setOpen(true);
     },
-    [open, sidebarView, panelMode, setOpen, setPanelMode, setSidebarView],
+    [
+      openPluginSidebarTab,
+      open,
+      sidebarView,
+      panelMode,
+      setOpen,
+      setPanelMode,
+      setSidebarView,
+    ],
   );
 
   return {
+    openSidebarTab,
     showSidebarTab,
     sidebarView,
     setSidebarView,

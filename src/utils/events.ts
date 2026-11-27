@@ -165,6 +165,7 @@ interface AppEvents {
   [ENTRY_TRASHED_EVENT]: string;
   [FILE_RELOADED_EVENT]: string;
   [BLOCK_MENU_EVENT]: BlockMenuRequest;
+  "textus:phone-show-doc": undefined;
 }
 
 export type AppEventName = keyof AppEvents;
@@ -184,3 +185,7 @@ export function sendAppEvent<K extends AppEventName>(
 
 /** A phone page's More button: the page named in the event opens its sheet. */
 export const PHONE_PAGE_MORE_EVENT = "textus:phone-page-more";
+
+/** A plugin page was asked for: a phone shows the page in front, even when
+ *  its tab was already the active one behind Today. */
+export const SHOW_PHONE_DOC_EVENT = "textus:phone-show-doc";

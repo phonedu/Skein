@@ -27,6 +27,7 @@ import { formatCombo } from "../utils/shortcuts";
 import { fixedShortcutGroups } from "../registry/fixed-shortcuts";
 import { commands, runCommand } from "../registry/commands";
 import { platformName } from "../platform/window-chrome";
+import { SHOW_PHONE_DOC_EVENT } from "../utils/events";
 import { Presence } from "../engine/motion/usePresence";
 import { AgentPanelProvider } from "../ai/chat/panel/agent-panel";
 import { aiFeatures } from "../prefs/ai-features";
@@ -117,6 +118,14 @@ function App() {
     if (phone && phoneView === "doc" && tabs.length === 0)
       setPhoneView("today");
   }, [phone, phoneView, tabs.length, setPhoneView]);
+  // A plugin page asked for from Today comes to the front: its tab may
+  // already be the active one, so no id changes for the pages to notice.
+  useEffect(() => {
+    if (!phone) return;
+    const show = () => setPhoneView("doc");
+    window.addEventListener(SHOW_PHONE_DOC_EVENT, show);
+    return () => window.removeEventListener(SHOW_PHONE_DOC_EVENT, show);
+  }, [phone, setPhoneView]);
   // A tab brought to the front takes the editors' latest text into the
   // model first: what was typed a moment ago is not lost with the view.
   const activateDocument = useCallback(
@@ -169,14 +178,16 @@ function App() {
     return rel && rel !== "." && !rel.startsWith("..") ? rel : null;
   })();
 
-  useBackStep({
+  // The phone's one step back, for the bar's chevron and Android's Back
+  // alike (the contract has them the same way).
+  const backStep = useBackStep({
     phone,
-    // The AI page in front, not merely open behind a document: its tab
-    // keeps the AI for the button (useAiTabs), and Back from it is that
-    // tab's step back to the document; after that the way out is Today.
     agentOpen: agentPanel.open && pageOf(activeTab) === "ai",
-    inDoc: phoneView !== "today",
+    surface: phoneView,
+    openedFrom: activeTab.openedFrom,
+    tabExists: (id) => tabs.some((tab) => tab.id === id),
     closeAgent: () => agentPanel.setOpen(false),
+    activateTab: setActiveTabId,
     toHome: () => setPhoneView("today"),
   });
 
@@ -284,15 +295,15 @@ function App() {
                 path={activeTab.path}
                 content={activeTab.content}
                 tabId={activeTab.id}
+                pluginView={
+                  activeTab.view && activeTab.view.kind !== "page"
+                    ? activeTab.view
+                    : null
+                }
                 showAgent={aiFeatures(settings, tutorial.active).chat}
                 agentOpen={agentPanel.open}
                 agentShortcut={formatCombo(settings.shortcuts.toggleAgentPanel)}
-                onBack={() => {
-                  // A step, not a jump: from the AI page back to the
-                  // document, and from the document back to Today.
-                  if (agentPanel.open) return toggleAgentPanel();
-                  setPhoneView("today");
-                }}
+                onBack={() => void backStep()}
                 onToggleAgent={toggleAgentPanel}
                 tabSwitcher={
                   <TabSwitcher

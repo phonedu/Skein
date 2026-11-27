@@ -7,6 +7,7 @@ import { PhoneEditorBar } from "./PhoneEditorBar";
 import en from "../i18n/locales/en";
 import type { Strings } from "../i18n/strings";
 import { TOGGLE_FIND_REPLACE_EVENT } from "../utils/events";
+import { registerContextItems } from "../registry/context-menu-items";
 import { takeTabJump } from "../editor/tab-jump";
 
 const editorBarCss = readFileSync("src/phone/PhoneEditorBar.css", "utf8");
@@ -94,6 +95,7 @@ function setup(
   showAgent: boolean,
   sub: string | null = null,
   doc: { content?: string; path?: string | null; tabId?: string } = {},
+  pluginView: { plugin: string; view: string } | null = null,
 ) {
   const onBack = vi.fn();
   render(
@@ -104,6 +106,7 @@ function setup(
       path={doc.path === undefined ? "/笔记/周三的雨.md" : doc.path}
       content={doc.content ?? ""}
       tabId={doc.tabId ?? "tab-1"}
+      pluginView={pluginView}
       showAgent={showAgent}
       agentOpen={false}
       agentShortcut="⌘J"
@@ -208,6 +211,48 @@ describe("the phone's editor bar", () => {
     expect(share.disabled).toBe(true);
     fireEvent.click(share);
     expect(shared).toEqual([]);
+  });
+
+  it("gives a plugin page its own actions, not the document's", () => {
+    const refresh = vi.fn();
+    const undo = registerContextItems("view/title", () => [
+      { label: "Refresh", plugin: "skein.collect", onSelect: refresh },
+    ]);
+    setup(
+      true,
+      null,
+      {},
+      {
+        plugin: "skein.collect",
+        view: "skein.collect.assets",
+      },
+    );
+    fireEvent.click(screen.getByRole("button", { name: en.phoneMoreActions }));
+    // The page's own button, then the app-wide ways in.
+    expect(screen.getByRole("menuitem", { name: "Refresh" })).toBeTruthy();
+    expect(
+      screen.getByRole("menuitem", { name: en.menuCommandPalette }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("menuitem", { name: en.pluginsTitle }),
+    ).toBeTruthy();
+    // A document's actions mean nothing on a page.
+    expect(
+      screen.queryByRole("menuitem", { name: en.phoneDocActionOutline }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: en.phoneDocActionFind }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: en.menuToggleSourceMode }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: en.phoneDocActionShare }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Refresh" }));
+    expect(refresh).toHaveBeenCalledOnce();
+    undo();
   });
 
   it("keeps phone editor controls at the Android touch size", () => {

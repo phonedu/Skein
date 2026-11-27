@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { configurePlugins } from "../store/plugin-records";
 import type { Strings } from "../../i18n/strings";
@@ -31,13 +37,20 @@ vi.mock("../manager", () => ({ askPlugin: vi.fn(async () => null) }));
 
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.clearAllMocks();
   configurePlugins({
-    strings: () => ({}) as Strings,
+    strings: () =>
+      ({
+        pluginMoreFor: "{name} more",
+      }) as Strings,
     language: () => "en",
     dark: () => false,
   });
 });
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 it("opens a row's menu for a finger held on it, as a right-click does", () => {
   render(<PluginListPane plugin="catvinci.tags" view="tags" />);
@@ -59,4 +72,17 @@ it("opens a row's menu for a finger held on it, as a right-click does", () => {
   fireEvent.touchStart(plain, { touches: [{ clientX: 30, clientY: 80 }] });
   act(() => vi.advanceTimersByTime(600));
   expect(screen.queryAllByRole("menuitem")).toHaveLength(0);
+});
+
+it("gives a row with actions a button for them, which does not open the row", () => {
+  render(<PluginListPane plugin="catvinci.tags" view="tags" />);
+  const more = screen.getByRole("button", { name: "planning more" });
+  fireEvent.click(more);
+  expect(screen.getByRole("menuitem", { name: "Rename" })).toBeTruthy();
+  // The row's own action stays its own: the button's click is not a pick.
+  expect(askPlugin).not.toHaveBeenCalled();
+  // The row without actions has no button.
+  expect(
+    screen.queryAllByRole("button", { name: /project more/ }),
+  ).toHaveLength(0);
 });

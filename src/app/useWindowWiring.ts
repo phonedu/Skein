@@ -239,8 +239,9 @@ function useMenuBridgeFor(
         side ? { formatBar: true, formatBarSide: side } : { formatBar: false },
       ),
     showSidebarTab: (id: string) => {
-      panels.setPanelMode(id);
-      panels.setPanelOpen(true);
+      // The view column's own tabs, or a plugin's page where the surface
+      // keeps it (layout.showSidebarTab's way in).
+      panels.openSidebarTab(id);
     },
     onOpenAgentPanel: () => {
       if (!panels.agentPanel.open) panels.toggleAgentPanel();

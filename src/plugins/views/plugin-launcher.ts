@@ -42,7 +42,7 @@ function hasEdge(): boolean {
 
 /** A plugin page: a list at the page's edge where there is one, else the
  *  page's own tab (or, on a phone, the page in front). */
-function openPage(
+export function openPluginPage(
   plugin: string,
   view: string,
   kind: "list" | "view",
@@ -78,7 +78,7 @@ export function pluginPages(): Surface[] {
       description: record ? pluginName(record) : plugin,
       plugin,
       view: tab.id,
-      run: () => openPage(plugin, tab.id, kind, tab.label(t)),
+      run: () => openPluginPage(plugin, tab.id, kind, tab.label(t)),
     });
   }
 
@@ -92,7 +92,7 @@ export function pluginPages(): Surface[] {
         description: pluginName(record),
         plugin: record.id,
         view: view.id,
-        run: () => openPage(record.id, view.id, kind, title),
+        run: () => openPluginPage(record.id, view.id, kind, title),
       });
     }
   }
@@ -105,14 +105,35 @@ export function pluginPages(): Surface[] {
   });
 }
 
-function surfaces(): Surface[] {
+/** The pages and commands the launcher lists, in its order: plugin pages
+ *  first, then commands (one whose title is its plugin's page left out),
+ *  then the Extensions page. */
+export function pluginSurfaces(): Surface[] {
   const t = currentStrings();
-  const out = pluginPages();
+  const pages = pluginPages();
+  // A command whose title is one of its plugin's pages opens that same
+  // page: the page answers, and the list says it once (the confirm
+  // center, the review page).
+  const pageLabels = new Map<string, Set<string>>();
+  for (const page of pages) {
+    if (!page.plugin) continue;
+    const labels = pageLabels.get(page.plugin) ?? new Set<string>();
+    labels.add(page.label);
+    pageLabels.set(page.plugin, labels);
+  }
+  const commandOwner = new Map<string, string>();
+  for (const record of pluginsSnapshot().records)
+    for (const command of record.manifest?.contributes.commands ?? [])
+      commandOwner.set(command.command, record.id);
+  const out = [...pages];
 
   for (const command of commands()) {
     if (command.id.startsWith("textus.") || command.palette === false) continue;
+    const owner = commandOwner.get(command.id);
+    const title = command.title(t);
+    if (owner && pageLabels.get(owner)?.has(title)) continue;
     out.push({
-      label: command.title(t),
+      label: title,
       run: () => void runCommand(command.id),
     });
   }
@@ -147,7 +168,7 @@ export function openPluginCatalog(): void {
 /** The QuickPick over the plugin's pages and commands, filtered as it is
  *  typed. */
 export async function openPluginLauncher(): Promise<void> {
-  const items: QuickPickItem[] = surfaces().map((surface) => ({
+  const items: QuickPickItem[] = pluginSurfaces().map((surface) => ({
     label: surface.label,
     description: surface.description,
     value: surface,

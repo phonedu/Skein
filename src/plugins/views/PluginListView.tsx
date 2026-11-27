@@ -13,7 +13,8 @@ import {
 } from "react";
 import { ContextMenu } from "../../engine/controls/ContextMenu";
 import { runCommand } from "../../registry/commands";
-import { ChevronIcon } from "../../engine/controls/icons";
+import { ChevronIcon, MoreIcon } from "../../engine/controls/icons";
+import { fill } from "../../i18n/fill";
 import { ListRowIcon } from "./list-row-icon";
 import { getWindowAccess } from "../app-bridge";
 import { mayOpen } from "../may-open";
@@ -341,6 +342,29 @@ export const PluginListPane = memo(function PluginListPane({
                     <span className="plugin-list-detail">{item.detail}</span>
                   )}
                 </span>
+                {item.actions?.length ? (
+                  // A finger cannot right-click: the row says where its
+                  // menu is; a held finger and a right-click still open it.
+                  <button
+                    type="button"
+                    className="plugin-row-more"
+                    aria-label={fill(t.pluginMoreFor, {
+                      name: item.label,
+                    })}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const box = e.currentTarget.getBoundingClientRect();
+                      setMenu({
+                        x: box.right,
+                        y: box.bottom,
+                        item,
+                      });
+                    }}
+                  >
+                    <MoreIcon />
+                  </button>
+                ) : null}
               </div>
             </div>
           );

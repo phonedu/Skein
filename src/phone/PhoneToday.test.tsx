@@ -4,11 +4,22 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "../i18n/locales/en";
 import type { OpenFolder } from "../app/useOpenFolder";
+import {
+  removeStatusItem,
+  setStatusItem,
+} from "../plugins/contributions/status-items";
 import { PhoneToday } from "./PhoneToday";
 
-vi.mock("../files/useTodayChanges", () => ({ useTodayChanges: () => [] }));
+const { runCommand } = vi.hoisted(() => ({ runCommand: vi.fn() }));
 
-afterEach(cleanup);
+vi.mock("../files/useTodayChanges", () => ({ useTodayChanges: () => [] }));
+vi.mock("../registry/commands", () => ({ runCommand }));
+
+afterEach(() => {
+  cleanup();
+  removeStatusItem("skein.collect");
+  runCommand.mockClear();
+});
 
 /**
  * Today's phone surface, as the 2026-11-22 board settled it: a borderless
@@ -25,7 +36,6 @@ describe("Phone Today, the design board", () => {
       /\.ptop-vault-icon \{[^}]*width: 22px;[^}]*height: 22px;[^}]*background: none;[^}]*color: var\(--ui-muted\);/s,
     );
   });
-
 
   it("keeps a long delivery title inside its card", () => {
     // A button's flex default is flex-start: the title took its full length,
@@ -131,5 +141,47 @@ describe("Phone Today, the current document card", () => {
     expect(onOpenFile).toHaveBeenCalledWith("/proj/note.md");
     expect(onOpenCurrent).not.toHaveBeenCalled();
     expect(screen.queryByText("Draft · not saved")).toBeNull();
+  });
+});
+
+describe("Phone Today, the plugin rows", () => {
+  it("shows a plugin's rows under its name and runs the row's command", () => {
+    // The today page is the daily entry (ruling 68): what the plugin
+    // reports is a row, not something behind More › Plugins.
+    setStatusItem("skein.collect", "pending", {
+      text: "2 to confirm",
+      command: "skein.collect.confirm",
+    });
+    setStatusItem("skein.collect", "assets", {
+      text: "Assets · 12 cards",
+      command: "skein.collect.assets",
+    });
+    renderToday({
+      activeTitle: "",
+      activePath: null,
+      onOpenFile: vi.fn(),
+      onOpenCurrent: vi.fn(),
+    });
+    // One group label for the plugin's two rows.
+    expect(screen.getAllByText("skein.collect")).toHaveLength(1);
+    expect(screen.getByText("2 to confirm")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Assets · 12 cards/ }));
+    expect(runCommand).toHaveBeenCalledWith("skein.collect.assets");
+    // The rows stand in the day's body: the empty state is gone.
+    expect(screen.queryByText(en.todayEmptyTitle)).toBeNull();
+  });
+
+  it("leaves a row without a command unpressable", () => {
+    setStatusItem("skein.collect", "idle", { text: "Nothing to confirm" });
+    renderToday({
+      activeTitle: "",
+      activePath: null,
+      onOpenFile: vi.fn(),
+      onOpenCurrent: vi.fn(),
+    });
+    const row = screen.getByRole("button", {
+      name: /Nothing to confirm/,
+    }) as HTMLButtonElement;
+    expect(row.disabled).toBe(true);
   });
 });

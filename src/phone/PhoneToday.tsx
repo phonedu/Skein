@@ -1,4 +1,10 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   ActionSheet,
   type ActionSheetItem,
@@ -18,7 +24,15 @@ import { runCommand } from "../registry/commands";
 import {
   statusItemsSnapshot,
   subscribeStatusItems,
+  withDeclared,
 } from "../plugins/contributions/status-items";
+import {
+  pluginName,
+  pluginRecord,
+  pluginsSnapshot,
+  subscribePlugins,
+  windowInfo,
+} from "../plugins/store/plugin-records";
 import { PHONE_PAGE_MORE_EVENT } from "../utils/events";
 import { openCommandPalette } from "../app/command-palette";
 import { PhoneSyncStatus } from "./PhoneSyncStatus";
@@ -58,7 +72,35 @@ export function PhoneToday({
     subscribeStatusItems,
     statusItemsSnapshot,
   );
-  const pending = statuses.filter((item) => item.plugin === "skein.collect");
+  const plugins = useSyncExternalStore(subscribePlugins, pluginsSnapshot);
+  // The same set the desktop's status area reads: what plugins set now,
+  // and what an on plugin declares before its code has started. Each
+  // plugin's rows stand under its name - the host shows and jumps, it
+  // does not know what the rows mean.
+  const statusGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      { plugin: string; name: string; items: typeof statuses }
+    >();
+    for (const item of withDeclared(
+      statuses,
+      plugins,
+      windowInfo().language(),
+    )) {
+      let group = groups.get(item.plugin);
+      if (!group) {
+        const record = pluginRecord(item.plugin);
+        group = {
+          plugin: item.plugin,
+          name: record ? pluginName(record) : item.plugin,
+          items: [],
+        };
+        groups.set(item.plugin, group);
+      }
+      group.items.push(item);
+    }
+    return [...groups.values()];
+  }, [statuses, plugins]);
   const changes = useTodayChanges(
     openFolder.folder ?? openFolder.treeRoot ?? null,
   );
@@ -96,7 +138,7 @@ export function PhoneToday({
       <PhoneSyncStatus folder={root || null} t={t} />
 
       <div className="pbody">
-        {!activeTitle && !pending.length && !changes.length ? (
+        {!activeTitle && !statusGroups.length && !changes.length ? (
           <div className="pempty">
             <span className="pempty-mark" aria-hidden>
               <PlusIcon />
@@ -131,24 +173,25 @@ export function PhoneToday({
           </>
         ) : null}
 
-        {pending.length ? (
-          <>
-            <div className="plabel tx-section-label">{t.todayPending}</div>
-            {pending.map((item) => (
+        {statusGroups.map((group) => (
+          <Fragment key={group.plugin}>
+            <div className="plabel tx-section-label">{group.name}</div>
+            {group.items.map((item) => (
               <button
                 key={item.key}
                 type="button"
                 className="prow"
                 disabled={!item.command}
                 onClick={() => item.command && runCommand(item.command)}
+                title={item.tooltip ?? item.text}
               >
                 <span className="prow-dot" aria-hidden />
                 <span className="prow-text">{item.text}</span>
                 <ChevronIcon className="prow-chev" />
               </button>
             ))}
-          </>
-        ) : null}
+          </Fragment>
+        ))}
 
         {changes.length ? (
           <>
