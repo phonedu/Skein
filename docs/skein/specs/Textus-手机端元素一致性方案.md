@@ -4,7 +4,7 @@ status: active
 summary: 手机端元素一致性与 PH3 验收清单
 updated: 2026-11-27
 verified: v1.4.6
-tasks: [PH16, PH15]
+tasks: [PH15]
 ---
 
 # Textus 手机端全局元素一致性方案

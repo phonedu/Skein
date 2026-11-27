@@ -59,21 +59,6 @@ tasks:
       not: 不重复实现 S13/S14 的多后端状态与首次对账；不要求切换清 base；不做多活动后端并行写；不改协议 v1。
       scope: specs 的规则与矩阵、src-tauri/src/sync 的绑定/切换逻辑、同步页切换入口、store 单测与桌面/手机 e2e。
       evidence: 3×3 场景矩阵结果、切换/回切/复制库 e2e、store 单测与规则评审记录。
-  - id: PH16
-    title: 合并 1.4.7 带入的 e2e 与 fork 外壳对不齐（12 红）
-    workstream: UI
-    kind: task
-    state: doing
-    acceptance: e2e/phone-touch.spec.ts 在 chromium 下 0 失败；同样的选择器/断点规则写进测试注释或复用 helpers；ui-contracts/phone-shell/PH13/PH14 的断言不动；若测试暴露真 bug，单独记并先说明。
-    spec: specs/Textus-手机端元素一致性方案.md
-    estimate: 0.5–1 天
-    brief:
-      problem: 1.4.7 合并带入的 e2e/phone-touch.spec.ts（12 条）按上游手机壳假定写：844 宽期望 data-window-chrome=mobile、有 activity rail、启动即有文档；fork 的 H0 与 600/840 断点不同，启动页是今天，插件入口在右页边 catalog；在 HEAD 上同样 12 条红，与 PH13/PH14 无关。
-      expected: 12 条按 fork 的外壳与断点改到能真实检验 H0 手机行为（今天/文件/文档、⋯ sheet、触控尺寸、设置、AI 返回），保留每条测试的意图；不为了过测改产品。
-      standard: e2e/phone-touch.spec.ts 在 chromium 下 0 失败；ui-contracts/phone-shell/PH13/PH14 的断言不动；若测试暴露真 bug，单独记并先向用户说明。
-      not: 不改产品行为迁就旧测试；不碰 plugin-touch 的 3 条样例仓问题；不动 ui-contracts 既有断言；不顺手做 PH15/PH17。
-      scope: e2e/phone-touch.spec.ts（及必要的 e2e helpers/夹具）；手机/平板/横屏；桌面无关。
-      evidence: npx playwright test e2e/phone-touch.spec.ts --project=chromium --workers=1（0 失败）；逐条对照裁决 34/67 与 PH13/PH14；记录每条改的是哪条期望、依据是什么。
   - id: D0.5
     title: 理论小样本验证
     workstream: D1
@@ -231,6 +216,7 @@ waiting:
   - D1r 复核非阻断：详情页触控沿用 App 手机 40px、计数仍西文数字、历史上限 50 条无截断提示、取消对话框无专门提示；不影响验收，归 D3/UI 文案清理。
   - D1r 修复后真机：复验时华为 OXF_AN10 从 adb 断开，改用 Xiaoshidan_API35 模拟器完成列表 → 详情 → 版本对比/打开；下次真机连接补一次详情 / 版本冒烟。
   - H9 SAF：2026-11-21 关闭；content:// 不做，除非出现真实用户场景。
+  - 手机 showOutline 快捷键无可见效果：手机不渲染侧栏，入口在文档 ⋯ 的大纲；要么按键打开 ⋯ 的大纲 sheet，要么在手机隐藏该快捷键。PH16 走查发现，归下一手机任务/PH15。
 questions:
   - id: U11
     text: 默认连接 / 远端子仓库改名 / 同库双连接 / 多用户共享 / 库只读
