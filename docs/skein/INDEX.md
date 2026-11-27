@@ -10,6 +10,7 @@
 
 | 文档 | 状态 | 更新 | 说明 |
 | --- | --- | --- | --- |
+| [D3 手机入口与插件页导航](specs/D3-手机入口与插件页导航.md) | active | 2026-11-27 | 手机端把收集、待确认、资产库放到今天页；插件页行操作可见、⋯只留适用项；插件页返回回到来处；冲突入口接 S14/S15。 |
 | [Textus Agent 工具契约](specs/Textus-Agent工具契约.md) | active | 2026-11-23 | Agent 七工具的输入输出、权限与确认门槛 |
 | [Textus 主题策略（Skein）](specs/Textus-主题策略.md) | active | 2026-11-23 | Skein 皮肤与文档主题的分层契约 |
 | [Textus 手机端全局元素一致性方案](specs/Textus-手机端元素一致性方案.md) | active | 2026-11-26 | 手机端元素一致性与 PH3 验收清单 |
@@ -40,7 +41,7 @@
 
 ## 裁决
 
-- [裁决索引](decisions/README.md) — 67 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
+- [裁决索引](decisions/README.md) — 68 条，按 ID 查；新裁决写 `decisions/NNNN-*.md`。
 
 ## 纪律
 

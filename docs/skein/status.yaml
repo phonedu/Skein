@@ -3,7 +3,7 @@
 baseline: v1.4.7
 commit: 68ecd8d4
 branch: base-ui-settings
-updated: 2026-11-26
+updated: 2026-11-27
 workstreams:
   - id: D1
     name: 资产闭环
@@ -13,7 +13,7 @@ workstreams:
   - id: UI
     name: 手机端 UI
     state: doing
-    focus: PH3+PH4 完成（2026-11-23）：A/B/G/I 逐项证据见规格 §13；手机空态/按钮/三色统一；下一次手机任务归 D3
+    focus: D3a–D3d 完成（2026-11-27）：今天页插件行、列表行 ⋯、插件页 ⋯、返回记来处；D3e 冲突入口等 S14
     spec: specs/Textus-手机端元素一致性方案.md
     also:
       - specs/界面契约.md
@@ -146,6 +146,20 @@ tasks:
       not: 不重写同步页；不做连接管理二级页；不做一库多入口/迁移；不改协议/引擎。
       scope: src/settings/pages SyncPage/SyncSwitchView/SyncConnectionSummary/状态行、i18n 十语言、前端测试与截图。
       evidence: 桌面 1280/800 与手机 360 截图；active 后端/各后端上次结果单测；首次切换确认与预览 e2e；十语言通过。
+  - id: D3
+    title: 多端入口完善
+    note: 手机独立完成“收集 → 次日确认”；冲突中心；系统分享按待审默认不做。
+    spec: specs/D3-手机入口与插件页导航.md
+    estimate: 入口片 4.5–7 天；冲突中心随 S14/S15
+    brief:
+      problem: 2026-11-27 用户走查手机：插件操作全在「更多」→「插件」启动器（10 项、含重复），资产列表行操作只能长按，插件页 ⋯ 是文档动作，详情返回回今天；「收集 → 次日确认」只有前半在首页。
+      expected: 今天页按插件名给出状态行（待确认、资产），一次点击进确认中心/资产列表；触屏列表行有可见 ⋯；插件页 ⋯ 只留适用项；返回回打开它的页面；有冲突时今天页有入口。数据与 Markdown 文件不变。
+      standard: 方案 §7 的 e2e/单测/真机判据通过；D3a–D3d 各片 check:quick + 相关测试绿；桌面/平板无回归；不改插件 API；十语言；只用令牌。
+      not: 系统分享收集；桌面小组件/通知；第二套插件路由；宿主写资产业务逻辑；文档页 ⋯ 内联全部插件命令；D3e 的冲突 diff/保留/删除（等 S14）。
+      scope: fork 宿主 src/ 与 skein.collect 插件；手机/折叠为主，桌面/平板回归；本次 D3a→D3d，D3e 待 S14；两仓分别提交。
+      evidence: npm run check:quick；vitest 新增/相关用例；Playwright phone e2e（两行入口、行 ⋯、插件页 ⋯、返回）；iPhone UA Chromium 截图 + Android 返回手势；桌面回归。
+    acceptance: 方案 §7 的 e2e/单测/真机判据通过；D3a–D3d 各片 check:quick + 相关测试绿；桌面/平板无回归；不改插件 API；十语言；只用令牌。
+    state: doing
 later:
   - id: S5
     title: 同步硬化
@@ -157,11 +171,6 @@ later:
     note: Rust 资产服务；绕过界面无法写正式状态；Android 真机。
     spec: specs/Textus-改造方案.md
     estimate: 4–6 周
-  - id: D3
-    title: 多端入口完善
-    note: 手机独立完成“收集 → 次日确认”；冲突中心；系统分享按待审默认不做。
-    spec: specs/Textus-改造方案.md
-    estimate: 3–5 周
   - id: ED1
     title: 块与呈现扩展（候选池）
     note: Mermaid 试点 → 画廊 → 筛选视图 → 多列布局；不做块数据库。
@@ -196,8 +205,7 @@ waiting:
   - 插件 Kodo PR：#85 已由 [#90](https://github.com/CatVinci-Studio/textus-plugins/pull/90) 取代；三问真桶结果已回帖，等上游 review/merge。
   - 服务器时间：Kodo 上传 token 已用服务器 Date（S9）；S3 SigV4 时间戳仍用本机时钟，归 S5。
   - D1b 观察期锚点：卡片没有 activated_at，按 created_at 计；D1f 若需要真激活时间再补字段。
-  - D1b 手机入口：窄屏确认中心已在桌面 WebView 344 CSS px 验过；Android/iOS 入口归 D3。
-  - D1e 手机返回栈：从插件启动器打开的资产列表进入详情后，系统/应用返回回「今天」而不是列表；插件页导航归 D3（详情页内的来源链返回已可用）。
+  - D3e 冲突入口：等 S14（冲突副本可枚举）后接今天页状态行；页面与动作沿用设置 › 同步的既有冲突区，不新造页面。
   - 桌面窄窗详情：800 CSS 左右且右页边（资产列表）打开时，详情被三栏挤压；属 H0 右页边断点，归 D3/UI，不在插件页内硬改。
   - D1r 复核非阻断：详情页触控沿用 App 手机 40px、计数仍西文数字、历史上限 50 条无截断提示、取消对话框无专门提示；不影响验收，归 D3/UI 文案清理。
   - D1r 修复后真机：复验时华为 OXF_AN10 从 adb 断开，改用 Xiaoshidan_API35 模拟器完成列表 → 详情 → 版本对比/打开；下次真机连接补一次详情 / 版本冒烟。
