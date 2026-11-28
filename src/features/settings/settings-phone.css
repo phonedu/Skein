@@ -1,7 +1,8 @@
 /* Settings as the phone's page: fullscreen over everything, the list of
-   pages first, a pushed page under the same bar for the section. Laid as
-   Android's settings are - a centred top app bar, a search field, grouped
-   cards of 56px rows - in the paper and ink of the phone's home. */
+   pages first, a pushed page under the same bar for the section. The
+   consistency spec's card (§6): a paper surface with a hairline stroke and
+   the 14 radius, rows inset in it - no shadow, which only floats may wear
+   (§12.7). */
 .settings-phone {
   position: fixed;
   inset: 0;
@@ -138,11 +139,11 @@ button.settings-phone-ic:active {
 
 .settings-phone-card {
   overflow: hidden;
-  /* Glass, not a stroked box: the shadow is the edge. */
-  border: 0;
-  border-radius: var(--shape-card);
+  /* The spec's card (§6): the surface, a hairline stroke, the 14 radius.
+     No shadow: only what floats may carry one (§12.7). */
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
-  box-shadow: var(--shadow-card);
 }
 
 .settings-phone-row {
@@ -277,16 +278,14 @@ button.settings-phone-ic:active {
   padding: 0;
 }
 
-/* The rows' card: one frame, hairlines between rows inset to the text. */
+/* The rows' card: one frame, hairlines between rows inset to the text.
+   The spec's card again: stroke, 14 radius, no shadow, and no padding of
+   its own - the rows carry the inset. */
 .settings-phone .settings-content-host .settings-page-group-body {
   overflow: hidden;
-  border: 0;
-  border-radius: var(--shape-card);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
-  box-shadow: var(--shadow-card);
-  /* The last row's control otherwise sits 4px off the card's bottom edge;
-     the card keeps the same 16px inset the rows use at their sides. */
-  padding-block: var(--space-3);
 }
 
 /* Every row in the card - a fold's nested ones included - keeps the card's
@@ -414,12 +413,12 @@ button.settings-phone-ic:active {
   /* The host's own gap (settings-host.css) is the only space before this
      block now; a margin-top here stacked a second one on top of it. */
   margin: 0;
-  /* The same glass card as the groups around it, not the desktop's
-     bordered well. */
-  border: 0;
-  border-radius: var(--shape-card);
+  /* The spec's card, like the groups around it - not the desktop's
+     bordered well, and no shadow. */
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
-  box-shadow: var(--shadow-card);
 }
 
 .settings-phone .settings-advanced > summary {
@@ -449,10 +448,9 @@ button.settings-phone-ic:active {
 }
 
 .settings-phone .settings-content-host .settings-group-body {
-  border: 0;
-  border-radius: var(--shape-card);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
-  box-shadow: var(--shadow-card);
 }
 
 .settings-phone .settings-content-host .settings-group-body > .tx-list-note {
@@ -512,6 +510,10 @@ button.settings-phone-ic:active {
    the insets and the hairlines. */
 .settings-phone .providers-page {
   padding: 0;
+  /* The page's own panel is a card like the rest: stroke, 14, no shadow. */
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
 }
 
@@ -746,11 +748,9 @@ button.settings-phone-ic:active {
 }
 
 .settings-phone .settings-phone-body .settings-group-body {
-  border: 0;
-  border-radius: var(--shape-card);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--shape-m);
   background: var(--ui-surface);
-  box-shadow: var(--shadow-card);
-  padding-block: var(--space-3);
 }
 
 .settings-phone .settings-phone-body .settings-group-body > .settings-row {

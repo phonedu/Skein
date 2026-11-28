@@ -2,7 +2,7 @@
 type: status
 status: active
 summary: 当前任务清单、工作线、阻塞与触发点
-updated: 2026-11-28
+updated: 2026-11-29
 ---
 
 # 状态
@@ -45,8 +45,9 @@ updated: 2026-11-28
 | 18 | ◌ 以后 | **PH19** — 文件树图标取舍与第三层缩进 | 2026-11-26 用户观察：① 树里的文件图标加上后影响读标题，问到底要不要保留（要就会连到 PH17 的文件图标主题）；② 第三层（文件）相对第二层（文件夹）缩进过多，第一→第二层（都是文件夹）的缩进正常。先量当前缩进步进与图标占位（手机/平板/桌面），给出“去图标/图标弱化”“缩进按层级统一、文件不再额外进一级”的对照截图与建议，再改；同族三端一致。 | [规格](specs/界面契约.md) | 1–2 天 |
 | 19 | ◌ 以后 | **PH17** — 内置文件图标主题（候选） | 文件图标下拉目前只有默认；插件已支持 contributes.fileIconThemes，官方 60 个插件暂无主题包。候选：自绘 Skein 一套，或引入 MIT 图标集（Seti/Material 类）做内置插件；先立裁决再动。与 PH19 同源：PH19 若定去掉树里的图标，本项作废。 | [规格](specs/界面契约.md) | 按件估算 |
 | 20 | ◌ 以后 | **PH15** — 手机设置-扩展页的分段 tab 是否加左右横滑 | 扩展页是设置内页（themes/plugins/skills/mcp/create，手机更少），分段下面是各自独立的长列表与懒加载面板；确实用的是 Segmented（settings/pages/ExtensionsPage.tsx:61）。要做就复用 PH13 的 Pager 壳（固定分段、只滑内容、滑块跟手），不顺手塞进 PH14；先确认产品是否需要。 | [规格](specs/Textus-手机端元素一致性方案.md#9-分节与层级) | — |
-| 21 | ◌ 以后 | **VID1** — 视频笔记插件（本地优先） | 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文 | [规格](proposals/视频笔记与媒体宿主能力.md) | 1 周 + AI 3 天 |
-| 22 | ◌ 以后 | **MED1** — 宿主媒体视图原语（本地流式 + 在线内嵌） | 宿主提供可控媒体表面：本地 Range 流式、原生 webview 播放、currentTime/seek/截图，只向插件暴露播放操作。VID1 的在线内嵌与长视频依赖它；不要放宽插件 sandbox。见 spec §4。 | [规格](proposals/视频笔记与媒体宿主能力.md) | 3–4 周（含安全评审） |
+| 21 | ◌ 以后 | **PH21** — 设置入口统一：iPhone/iPad 也走全屏设置页，旧 sheet 退役 | 2026-11-28 发现：设置有两套——新全屏页 SettingsPhone（Android 走，showSettingsDialog→SettingsHost mobile 分支）与旧 SettingsPanel sheet（isIOSApp=true 的 iPhone/iPad 走，SettingsLayer）。旧面板是上游桌面弹窗被全屏化（平铺文字、10px 图标、无分组），与新全屏页、与 H0「手机/折叠/平板=全屏页」的裁定都不一致；fork 的 iOS 模拟器不可用，iPhone 侧行为只在 e2e（iPhone UA）可见。做法：openSettings/openUpdates/插件页/Create 的 inTabs 分支按「isMobileApp 或手机布局」改走 SettingsPhone（插件页 tab 化保留或并入，随裁决 67 复核）；旧 sheet 与 mobile/styles 里对 .settings-panel 的手机适配随之退役；iPhone UA 的 e2e 同步改断言。 | [规格](specs/界面契约.md) | 1–2 天 |
+| 22 | ◌ 以后 | **VID1** — 视频笔记插件（本地优先） | 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文 | [规格](proposals/视频笔记与媒体宿主能力.md) | 1 周 + AI 3 天 |
+| 23 | ◌ 以后 | **MED1** — 宿主媒体视图原语（本地流式 + 在线内嵌） | 宿主提供可控媒体表面：本地 Range 流式、原生 webview 播放、currentTime/seek/截图，只向插件暴露播放操作。VID1 的在线内嵌与长视频依赖它；不要放宽插件 sandbox。见 spec §4。 | [规格](proposals/视频笔记与媒体宿主能力.md) | 3–4 周（含安全评审） |
 
 ## 2. 工作线
 

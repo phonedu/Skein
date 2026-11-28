@@ -3,7 +3,7 @@
 baseline: v1.4.7
 commit: 68ecd8d4
 branch: base-ui-settings
-updated: 2026-11-28
+updated: 2026-11-29
 workstreams:
   - id: D1
     name: 资产闭环
@@ -218,6 +218,11 @@ later:
     note: 扩展页是设置内页（themes/plugins/skills/mcp/create，手机更少），分段下面是各自独立的长列表与懒加载面板；确实用的是 Segmented（settings/pages/ExtensionsPage.tsx:61）。要做就复用 PH13 的 Pager 壳（固定分段、只滑内容、滑块跟手），不顺手塞进 PH14；先确认产品是否需要。
     spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
     estimate: —
+  - id: PH21
+    title: 设置入口统一：iPhone/iPad 也走全屏设置页，旧 sheet 退役
+    note: 2026-11-28 发现：设置有两套——新全屏页 SettingsPhone（Android 走，showSettingsDialog→SettingsHost mobile 分支）与旧 SettingsPanel sheet（isIOSApp=true 的 iPhone/iPad 走，SettingsLayer）。旧面板是上游桌面弹窗被全屏化（平铺文字、10px 图标、无分组），与新全屏页、与 H0「手机/折叠/平板=全屏页」的裁定都不一致；fork 的 iOS 模拟器不可用，iPhone 侧行为只在 e2e（iPhone UA）可见。做法：openSettings/openUpdates/插件页/Create 的 inTabs 分支按「isMobileApp 或手机布局」改走 SettingsPhone（插件页 tab 化保留或并入，随裁决 67 复核）；旧 sheet 与 mobile/styles 里对 .settings-panel 的手机适配随之退役；iPhone UA 的 e2e 同步改断言。
+    spec: specs/界面契约.md
+    estimate: 1–2 天
   - id: VID1
     title: 视频笔记插件（本地优先）
     note: 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文

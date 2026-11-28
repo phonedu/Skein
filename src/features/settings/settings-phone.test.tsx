@@ -155,10 +155,11 @@ describe("the phone's settings", () => {
     expect(settingsPhoneCss).toContain("box-sizing: border-box;");
   });
 
-  it("draws the phone list as glass cards under a borderless bar and a bare search row", () => {
-    // Design board (2026-11-22): the phone bar has no hairline, search is
-    // a bare 44px row (no border, no fill, no focus ring), section titles
-    // sit flush with the card, and the card is glass without a stroke.
+  it("draws the phone list as the spec's cards under a borderless bar and a bare search row", () => {
+    // The consistency spec (§6, §12.7): the phone bar has no hairline,
+    // search is a bare 44px row (no border, no fill, no focus ring),
+    // section titles sit flush with the card, and the card is a stroked
+    // paper surface at the 14 radius - no shadow, only floats cast one.
     // The row hairline starts at the text and stops 16px short of the edge.
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone-top \{[^}]*border-bottom: 0;/s,
@@ -173,7 +174,7 @@ describe("the phone's settings", () => {
       /\.settings-phone-section-title \{[^}]*padding: 0;/s,
     );
     expect(settingsPhoneCss).toMatch(
-      /\.settings-phone-card \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,
+      /\.settings-phone-card \{[^}]*border: 1px solid var\(--ui-border\);[^}]*border-radius: var\(--shape-m\);[^}]*background: var\(--ui-surface\);/s,
     );
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone-row \+ \.settings-phone-row::before \{[^}]*right: var\(--space-4\);/s,
@@ -187,11 +188,15 @@ describe("the phone's settings", () => {
     );
   });
 
-  it("draws a subpage's rows as a glass card: 56/72, a 48\u00d728 switch, the hairline stopping 16 short", () => {
-    // Design board (2026-11-22): the subpage keeps the real page, in the
-    // same glass card. Written 62/80 draw 56/72 at the phone's 10/11.
+  it("draws a subpage's rows as the spec's card: 56/72, a 48×28 switch, the hairline stopping 16 short", () => {
+    // The subpage keeps the real page, in the spec's card (§6): stroked
+    // surface, the 14 radius, no padding of its own. Written 62/80 draw
+    // 56/72 at the phone's 10/11. No shadow in the phone's scope (§12.7).
     expect(settingsPhoneCss).toMatch(
-      /\.settings-phone \.settings-content-host \.settings-page-group-body \{[^}]*border: 0;[^}]*border-radius: var\(--shape-card\);[^}]*background: var\(--ui-surface\);[^}]*box-shadow: var\(--shadow-card\);/s,
+      /\.settings-phone \.settings-content-host \.settings-page-group-body \{[^}]*border: 1px solid var\(--ui-border\);[^}]*border-radius: var\(--shape-m\);[^}]*background: var\(--ui-surface\);/s,
+    );
+    expect(settingsPhoneCss).not.toMatch(
+      /\.settings-phone[^{]*\{[^}]*box-shadow: var\(--shadow-card\)/,
     );
     expect(settingsPhoneCss).toMatch(
       /\.settings-phone \.settings-content-host \.settings-page-group-body \.settings-row \{[^}]*min-height: 62px;/s,

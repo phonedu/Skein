@@ -71,25 +71,17 @@ const BUILT_IN: SettingsPageDef[] = [
     label: (t) => t.navAppearance,
     Icon: lucide(Palette, NAV_ICON),
   },
+  // Plugins, themes and skills, then sync: what the app can do and how it
+  // reaches the library, ahead of the pages that tune how it writes.
   {
-    id: "edit-text",
-    group: "edit",
-    label: (t) => t.navEditText,
-    Icon: lucide(Type, NAV_ICON),
+    id: "extensions",
+    label: (t) => t.navExtensions,
+    Icon: lucide(Puzzle, NAV_ICON),
   },
   {
-    id: "edit-img",
-    group: "edit",
-    label: (t) => t.navEditImages,
-    Icon: lucide(Image, NAV_ICON),
-  },
-  {
-    id: "edit-export",
-    group: "edit",
-    // Its PDF and Pandoc exports are the desktop's.
-    available: () => canExportPdf || canExportWithPandoc,
-    label: (t) => t.menuExport,
-    Icon: lucide(FileDown, NAV_ICON),
+    id: "sync",
+    label: (t) => t.navSync,
+    Icon: lucide(Cloud, NAV_ICON),
   },
   {
     id: "providers",
@@ -120,18 +112,25 @@ const BUILT_IN: SettingsPageDef[] = [
     label: (t) => t.navExternalTools,
     Icon: lucide(Wrench, NAV_ICON),
   },
-  // Plugins, themes and skills: a phone manages them in Settings; the
-  // desktop and a tablet reach the same page from the top bar's plugin
-  // entry (the H0 shell has no rail to hold them).
   {
-    id: "extensions",
-    label: (t) => t.navExtensions,
-    Icon: lucide(Puzzle, NAV_ICON),
+    id: "edit-text",
+    group: "edit",
+    label: (t) => t.navEditText,
+    Icon: lucide(Type, NAV_ICON),
   },
   {
-    id: "sync",
-    label: (t) => t.navSync,
-    Icon: lucide(Cloud, NAV_ICON),
+    id: "edit-img",
+    group: "edit",
+    label: (t) => t.navEditImages,
+    Icon: lucide(Image, NAV_ICON),
+  },
+  {
+    id: "edit-export",
+    group: "edit",
+    // Its PDF and Pandoc exports are the desktop's.
+    available: () => canExportPdf || canExportWithPandoc,
+    label: (t) => t.menuExport,
+    Icon: lucide(FileDown, NAV_ICON),
   },
   {
     id: "shortcuts",
