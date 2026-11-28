@@ -3,7 +3,7 @@
 baseline: v1.4.7
 commit: 68ecd8d4
 branch: base-ui-settings
-updated: 2026-11-27
+updated: 2026-11-28
 workstreams:
   - id: D1
     name: 资产闭环
@@ -43,6 +43,8 @@ workstreams:
     state: doing
     focus: 文档 v3 已完成（2026-11-24）：分层、台账、承诺入口、提交门禁；日常按 docs:wrap 收工
     spec: specs/文档体系-v3.md
+    also:
+      - discipline/publishing-gate.md
 tasks:
   - id: S7
     title: 三种同步方式的互斥规则与切换测试
@@ -146,6 +148,28 @@ tasks:
       not: 不做自有主题包格式/主题编辑器；不给全部上游/社区主题逐个适配；不换默认 Slate。
       scope: 主题模块与内置主题表、设置›外观的主题选择器、i18n、ui-contracts/e2e 选择器分组、截图证据。
       evidence: 每个皮肤浅/深 × 桌面/手机截图；切换时界面不闪、--ui-* 按皮肤变化；对比度抽查记录。
+  - id: SH1
+    title: 分享卡片插件（图片卡片/长图导出）
+    note: 对标醒文（能力对齐、组织自成一派）：标签页选模板+实时预览，设置五组内容驱动（样式/内容/版面/外观/字排，2026-11-28 截图核对后改定）；export.registerFormat 注册 PNG 导出，沙箱内 foreignObject 栅格化（实测全通过，证据 .scratch/card-export-spike）。纯插件无宿主依赖；WebKit 未验、剪贴板图片复制需核心 API（均后议）。见 proposal §4/§5。
+    spec: specs/分享卡片导出.md
+    estimate: 1 周（2–3 模板 + 预览页 + 两条导出 + 十语言）
+    brief:
+      problem: 想把笔记发成图片卡片（朋友圈/小红书/群聊），现在只能截图或把文字粘进第三方工具重排；标题/作者/日期/来源要手填，主题与正文样式全部丢失。
+      expected: SH1 插件：预览页选模板+实时预览，设置五组（样式/内容/版面/外观/字排），两条导出（预览页写库内附件、文件›导出另存）；v1 收 2–3 内置模板、内容自动填充、比例预设、边距密度/圆角/行高字距段距、倍率 1x/2x、长图与分页两种模式。
+      standard: 界面只用 token 遵守界面契约；文案十语言；导出 PNG @2x；分页质量：标题不孤行、列表与代码块不拦腰拆；沙箱内 foreignObject 栅格化（Chromium 已验）；插件关停卸载无残留。
+      not: 不做纹理库（窗影/树影/纸纹）、水印定位透明度、开源字体包、渐变撞色背景、自定义背景图（均 v1.x）；不做模板商店、导入字体、剪贴板图片、手机版；不碰宿主导出管线与沙箱。
+      scope: skein-plugins 新插件仓、specs/分享卡片导出.md（含界面设计节）、十语言文案；验收截图与导出产物留档。
+      evidence: 预览页逐组设置截图、registerFormat 导出 PNG 与库内产物、分页长文样张、npm run docs:wrap 通过输出。
+    acceptance: 界面只用 token 遵守界面契约；文案十语言；导出 PNG @2x；分页质量：标题不孤行、列表与代码块不拦腰拆；沙箱内 foreignObject 栅格化（Chromium 已验）；插件关停卸载无残留。
+    state: doing
+  - id: C1
+    title: 代码注释去掉裁决编号，过推送闸门
+    workstream: DOC
+    kind: chore
+    state: doing
+    acceptance: src/、e2e/ 注释不再出现裁决编号/PH 任务号；gate fork 扫描干净；不改行为。
+    spec: discipline/publishing-gate.md
+    estimate: —
 later:
   - id: S5
     title: 同步硬化
@@ -204,7 +228,7 @@ later:
     estimate: —
   - id: VID1
     title: 视频笔记插件（本地优先）
-    note: 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文 #t= 透传可选。分工、限制与验收见 spec §5/§7。
+    note: 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文
     spec: proposals/视频笔记与媒体宿主能力.md
     estimate: 1 周 + AI 3 天
   - id: MED1

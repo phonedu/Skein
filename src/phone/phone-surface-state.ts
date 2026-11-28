@@ -4,7 +4,7 @@ import { isPhoneLayout } from "../platform/phone-layout";
 /**
  * The phone's surface as it stands, for code outside React: a plugin page
  * opened from Today has no page to come back to, one opened from a page in
- * front comes back to it (ruling 68). Kept in step by usePhoneSurfaces.
+ * front comes back to it. Kept in step by usePhoneSurfaces.
  */
 let surface: PhoneSurface = "today";
 

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { PHONE, emit, settled } from "./helpers";
 import { hasPlugin, openWithPlugins } from "./plugin-helpers";
 
-// The phone's daily entry (D3a, ruling 68): Today carries the plugin's
+// The phone's daily entry: Today carries the plugin's
 // status rows - the confirmations and the library - so neither is behind
 // More › Plugins. The plugin is the checkout's skein.collect copy.
 test.use(PHONE);
@@ -143,7 +143,7 @@ test("today's plugin rows open the confirm center and the asset list", async ({
   const detail = page.frameLocator("iframe").first();
   await expect(detail.locator("body")).toContainText("交付前的旧清单");
 
-  // Back: the list it was opened from, not Today (ruling 68).
+  // Back: the list it was opened from, not Today.
   await page.getByRole("button", { name: "回到文件库" }).tap();
   await settled(page);
   await expect(

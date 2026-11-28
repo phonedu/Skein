@@ -65,7 +65,7 @@ export interface DocTab {
   view?: PluginTabView;
   /** The tab it was opened from (a card's detail from the asset list, a
    *  card opened from its detail): the phone's Back goes there first
-   *  (ruling 68). Kept for the session, not in the saved tabs. */
+   *  Kept for the session, not in the saved tabs. */
   openedFrom?: string;
   /** The start page, shown until something opens in this tab. */
   start?: boolean;

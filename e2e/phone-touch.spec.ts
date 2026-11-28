@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { emit, openApp, pasteMarkdown } from "./helpers";
 import { hasPlugin } from "./plugin-helpers";
 
-// The fork's shell is decided by width (裁决 34/PH13): below 600 is the
+// The fork's shell is decided by width: below 600 is the
 // phone's single column, 600–839 the fold, 840 and up the tablet's app
 // chrome. A phone turned on its side is 844 wide, so it takes the tablet's
 // chrome — the tests below say what that means, rather than expecting the

@@ -369,7 +369,7 @@ export function usePluginWindow({
       },
       openPluginTab: (view: PluginTabView, where?: Where) => {
         // The page a plugin page came from: the phone's Back goes there
-        // first (ruling 68). Today leaves its tab behind, so nothing there.
+        // first. Today leaves its tab behind, so nothing there.
         const from = pageInFrontNow() ? tabInUse() : null;
         // A view already open in a tab comes to the front.
         const open = tabsRef.current.find(

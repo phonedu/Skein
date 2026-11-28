@@ -146,7 +146,7 @@ describe("Phone Today, the current document card", () => {
 
 describe("Phone Today, the plugin rows", () => {
   it("shows a plugin's rows under its name and runs the row's command", () => {
-    // The today page is the daily entry (ruling 68): what the plugin
+    // The today page is the daily entry: what the plugin
     // reports is a row, not something behind More › Plugins.
     setStatusItem("skein.collect", "pending", {
       text: "2 to confirm",
