@@ -202,6 +202,16 @@ later:
     note: 扩展页是设置内页（themes/plugins/skills/mcp/create，手机更少），分段下面是各自独立的长列表与懒加载面板；确实用的是 Segmented（settings/pages/ExtensionsPage.tsx:61）。要做就复用 PH13 的 Pager 壳（固定分段、只滑内容、滑块跟手），不顺手塞进 PH14；先确认产品是否需要。
     spec: specs/Textus-手机端元素一致性方案.md#9-分节与层级
     estimate: —
+  - id: VID1
+    title: 视频笔记插件（本地优先）
+    note: 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文 #t= 透传可选。分工、限制与验收见 spec §5/§7。
+    spec: proposals/视频笔记与媒体宿主能力.md
+    estimate: 1 周 + AI 3 天
+  - id: MED1
+    title: 宿主媒体视图原语（本地流式 + 在线内嵌）
+    note: 宿主提供可控媒体表面：本地 Range 流式、原生 webview 播放、currentTime/seek/截图，只向插件暴露播放操作。VID1 的在线内嵌与长视频依赖它；不要放宽插件 sandbox。见 spec §4。
+    spec: proposals/视频笔记与媒体宿主能力.md
+    estimate: 3–4 周（含安全评审）
 waiting:
   - 第三方 WebDAV/境外 Provider：坚果云 2026-11-24 用户裁定不推荐（限流之外有丢文件反馈）；Nextcloud/境外服务商无账号，归 U25/S3t 找外部测试者；不阻塞 fork。
   - 移动端加密：S3 v1 用明文仓库；内置 / 插件真机加密同步未做。
