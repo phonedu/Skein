@@ -284,3 +284,9 @@ questions:
     trigger: 下次改桌面侧栏或手机文件页时
     when: 下一次文件页改动（B7 或手机文件页修缮）时定
     spec: research/上游1.4.7界面功能盘点.md
+  - id: U28
+    text: 是否从 Tauri 2 迁到 Tauri 3（alpha；可插拔运行时 / CEF）
+    default: 不迁。3.0 仍是 alpha（2026-11-06 alpha.6），生产用 2.12.x；fork 只跟上游 release tag，升级由上游先走。CEF 仅当桌面渲染一致性成为真实问题、且接受 Chromium 级安装包体积时再评估
+    trigger: Tauri 3 正式版发布 / 上游升 3.0 / 出现必须靠 CEF 解决的桌面渲染差异
+    when: 每次上游大版本同步时复核
+    spec: discipline/工程菜谱.md
