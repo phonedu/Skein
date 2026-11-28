@@ -228,7 +228,7 @@ later:
     estimate: —
   - id: VID1
     title: 视频笔记插件（本地优先）
-    note: 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文
+    note: 代码块内嵌播放器 + 视频文件编辑器；时间戳/字幕/截图/位置/AI。先做本地 MVP，在线用 layout.openWebPage 过渡；正文 #t= 透传可选。分工、限制与验收见 spec §5/§7。
     spec: proposals/视频笔记与媒体宿主能力.md
     estimate: 1 周 + AI 3 天
   - id: MED1
