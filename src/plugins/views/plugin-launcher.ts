@@ -16,12 +16,14 @@ import { openExtensionsTab } from "../../settings/pages/extensions-tab";
 import { openSettingsPage } from "../../settings/settings-nav";
 import { layoutMode } from "../../platform/layout-mode";
 import { openRightPanelView } from "./right-panel-view";
+import { openSidebarView } from "../../engine/layout/sidebar-view-request";
 
 /**
- * The plugin entry of the H0 shell: one search surface over the plugin
- * pages a plugin declares (its sidebar tabs and views) and its commands.
- * It replaces the old activity rail's plugin icons: nothing is permanent
- * but the top bar's button.
+ * The plugin entry: one search surface over the plugin pages a plugin
+ * declares (its sidebar tabs and views) and its commands. On a desktop and
+ * a tablet the top bar's button opens the left column's Plugins view; a
+ * phone and a fold have no column to open, so the button's QuickPick is
+ * their one way in.
  */
 export interface Surface {
   label: string;
@@ -154,12 +156,7 @@ export function pluginSurfaces(): Surface[] {
  *  there is no column. */
 export function openPluginCatalog(): void {
   if (hasEdge()) {
-    openRightPanelView({
-      plugin: "textus",
-      view: "plugins",
-      kind: "catalog",
-      title: currentStrings().pluginsTitle,
-    });
+    openSidebarView("plugins");
     return;
   }
   void openPluginLauncher();

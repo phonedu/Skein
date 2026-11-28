@@ -13,7 +13,6 @@ import {
   PluginTabPane,
   ViewTitleActions,
 } from "../../plugins/views/plugin-views";
-import { PluginCatalogPane } from "../../plugins/views/PluginCatalogPane";
 import {
   rightPanelRequest,
   subscribeRightPanelView,
@@ -93,9 +92,7 @@ export function RightPanel({
           </div>
         ) : null}
         {/* A plugin's own buttons over its view ("view/title"). */}
-        {!agent && view && view.kind !== "catalog" ? (
-          <ViewTitleActions view={view.view} />
-        ) : null}
+        {!agent && view ? <ViewTitleActions view={view.view} /> : null}
         <button
           type="button"
           className="right-panel-close"
@@ -117,9 +114,7 @@ export function RightPanel({
         </div>
       ) : view ? (
         <div className="right-panel-body">
-          {view.kind === "catalog" ? (
-            <PluginCatalogPane t={t} />
-          ) : view.kind === "list" ? (
+          {view.kind === "list" ? (
             <PluginListPane
               plugin={view.plugin}
               view={view.view}

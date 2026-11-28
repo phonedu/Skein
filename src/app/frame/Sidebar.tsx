@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { useSidebarFrame } from "./useSidebarFrame";
 import { useSideToTop } from "../../engine/layout/useBarLayout";
 import { Segmented } from "../../engine/controls/Segmented";
@@ -21,11 +21,23 @@ import { currentTreeSort } from "../../files/tree-view-events";
 import { canOpenFolder } from "../../platform/capabilities";
 import { VaultButton } from "../../vaults/VaultButton";
 import { vaultName } from "../../vaults/vault-model";
+import { lazyComponent } from "../../lazy/lazy-component";
+import { lazyModule } from "../../lazy/lazy-module";
+
+// The plugin catalog is a click away, not the column's opening view: it
+// loads when the Plugins view is first asked for.
+const PluginCatalog = lazyComponent(
+  lazyModule(
+    "plugin-catalog",
+    () => import("../../plugins/views/PluginCatalogPane"),
+  ),
+  (m) => m.PluginCatalogPane,
+);
 
 /**
- * The left view column: the folder's name, Today and Files, and the Files
- * view's own tabs. There is no activity rail: the column is the navigation,
- * the desktop's two-column default.
+ * The left view column: the folder's name, Today, Files and Plugins, and
+ * the Files view's own tabs. There is no activity rail: the column is the
+ * navigation, the desktop's two-column default.
  */
 export function Sidebar({
   open,
@@ -152,6 +164,7 @@ export function Sidebar({
                 options={[
                   { id: "today", label: t.treeDayToday },
                   { id: "files", label: t.treeTab },
+                  { id: "plugins", label: t.pluginsTitle },
                 ]}
               />
               <button
@@ -214,7 +227,7 @@ export function Sidebar({
                 onOpenFile={(path) => onOpenFile(path)}
                 onCapture={onCapture}
               />
-            ) : (
+            ) : view === "files" ? (
               <shown.Panel
                 t={t}
                 openFolder={openFolder}
@@ -229,6 +242,10 @@ export function Sidebar({
                 onNoteCount={setNoteCount}
                 draftRequest={draftRequest}
               />
+            ) : (
+              <Suspense fallback={null}>
+                <PluginCatalog t={t} />
+              </Suspense>
             )}
           </div>
           {/* The column's one foot: Settings, and the library's count when

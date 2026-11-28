@@ -1,15 +1,16 @@
 import { createSubscribers } from "../../utils/store";
 
 /**
- * The plugin page the H0 shell's right column shows (an asset list, a
- * confirm center). One at a time, as the column is one: asking for another
+ * The plugin page the shell's right column shows (an asset list, a confirm
+ * center). One at a time, as the column is one: asking for another
  * replaces it, and the request count says a fresh ask came even when it is
- * the same page again - a closed column opens.
+ * the same page again - a closed column opens. The pages' catalog is the
+ * left column's Plugins view, not a page of this one.
  */
 export interface RightPanelView {
   plugin: string;
   view: string;
-  kind: "list" | "view" | "web" | "catalog";
+  kind: "list" | "view" | "web";
   title: string;
   resource?: string;
   state?: unknown;

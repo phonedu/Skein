@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -22,6 +23,10 @@ import { useLayoutMode } from "../../engine/controls/useLayoutMode";
 import { useRightPanel } from "./useRightPanel";
 import { addedSidebarTabs } from "../../registry/sidebar-tabs";
 import { currentStrings } from "../../i18n/current";
+import {
+  sidebarViewRequest,
+  subscribeSidebarViewRequest,
+} from "../../engine/layout/sidebar-view-request";
 
 /** The view column's own tabs. */
 const OWN_SIDEBAR_TABS = ["tree", "outline", "search"];
@@ -29,8 +34,9 @@ const OWN_SIDEBAR_TABS = ["tree", "outline", "search"];
 /** A sidebar tab's id. */
 export type SidebarTabId = string;
 
-/** The view column's two views: today's work, or the library. */
-export type SidebarView = "today" | "files";
+/** The view column's three views: today's work, the library, and the
+ *  plugins' pages. */
+export type SidebarView = "today" | "files" | "plugins";
 
 function subscribeWindowResize(onChange: () => void) {
   window.addEventListener("resize", onChange);
@@ -165,6 +171,20 @@ export function useSidePanels(aiOn: boolean, activeTabId: string) {
     panelMode,
     setPanelMode,
   } = useViewColumn(open);
+  // The top bar's plugin button asks the column for its Plugins view
+  // (sidebar-view-request): it opens there, one entry rather than a
+  // second panel.
+  const asked = useSyncExternalStore(
+    subscribeSidebarViewRequest,
+    sidebarViewRequest,
+  );
+  const answered = useRef(0);
+  useLayoutEffect(() => {
+    if (asked.request === answered.current || !asked.view) return;
+    answered.current = asked.request;
+    setSidebarView(asked.view);
+    setOpen(true);
+  }, [asked, setSidebarView, setOpen]);
   // The right column's page: the AI at the edge, or a plugin's list.
   const { toggleAgentPanel, rightPanel } = useRightPanel(
     agentPanel,
@@ -266,9 +286,10 @@ export function useSidePanels(aiOn: boolean, activeTabId: string) {
 
 /** The view column's view, remembered; it opens on Today. */
 function useSidebarView() {
-  const [view, setView] = useState<SidebarView>(() =>
-    getUiState("sidebarView") === "files" ? "files" : "today",
-  );
+  const [view, setView] = useState<SidebarView>(() => {
+    const stored = getUiState("sidebarView");
+    return stored === "files" || stored === "plugins" ? stored : "today";
+  });
   useEffect(() => {
     setUiState("sidebarView", view);
   }, [view]);

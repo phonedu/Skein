@@ -1,10 +1,11 @@
-// The right column's plugin catalog: every page the installed plugins
-// declare, grouped by plugin. It replaces the old icon pair in the
-// column's header and the top bar's QuickPick on a desktop.
+// The left column's Plugins view: every page the installed plugins
+// declare, grouped by plugin. It is where the top bar's plugin button
+// lands on a desktop and a tablet.
 import { useSyncExternalStore } from "react";
 import type { Strings } from "../../i18n/strings";
 import { pluginPages, type Surface } from "./plugin-launcher";
 import { pluginsSnapshot, subscribePlugins } from "../store/plugin-records";
+import "./plugin-catalog.css";
 
 export function PluginCatalogPane({ t }: { t: Strings }) {
   useSyncExternalStore(subscribePlugins, pluginsSnapshot);

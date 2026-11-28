@@ -15,8 +15,9 @@ export interface UiState {
   sidebarOpen: boolean;
   /** The sidebar tab last shown: files, outline or clipboard. */
   sidebarTab: string;
-  /** The view column's view: today's work, or the library. */
-  sidebarView: "today" | "files";
+  /** The view column's view: today's work, the library, or the plugins'
+   *  pages. */
+  sidebarView: "today" | "files" | "plugins";
   /** Rust's (commands/prefs.rs, recents.rs): the last editor window's
    *  inner size and place, in logical pixels, and the recent files and
    *  folders of File › Open Recent, newest first. */
